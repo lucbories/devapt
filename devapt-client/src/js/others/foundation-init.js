@@ -9,8 +9,8 @@
  * @license		Apache License Version 2.0, January 2004; see LICENSE.txt or http://www.apache.org/licenses/
  */
 
-define(['modernizr', 'Devapt', 'foundation'],
-function(m, Devapt, f)
+define(['modernizr', 'Devapt', 'foundation.alert', 'foundation.dropdown', 'foundation.tooltip', 'foundation.topbar'],
+function(m, Devapt, undefined)
 {
 	console.log('Loading Foundation 5.0.2 Init');
 	
@@ -19,28 +19,14 @@ function(m, Devapt, f)
 	
 	function libapt_foundation_init($, window)
 	{
+		console.log('Loading Foundation 5.0.2 Init libapt_foundation_init');
+		
 		'use strict';
-
-		var $doc = $(document),
+		
+		var $doc = $(document);
 		Modernizr = window.Modernizr;
-
-		$.fn.foundationAlerts           ? $doc.foundationAlerts() : null;
-		$.fn.foundationAccordion        ? $doc.foundationAccordion() : null;
-		$.fn.foundationTooltips         ? $doc.foundationTooltips() : null;
-		$.fn.foundationButtons          ? $doc.foundationButtons() : null;
-		$.fn.foundationNavigation       ? $doc.foundationNavigation() : null;
-		$.fn.foundationTopBar           ? $doc.foundationTopBar() : null;
-		$.fn.foundationCustomForms      ? $doc.foundationCustomForms() : null;
-		$.fn.foundationMediaQueryViewer ? $doc.foundationMediaQueryViewer() : null;
-		$.fn.foundationTabs             ? $doc.foundationTabs() : null;
-
-
-		// UNCOMMENT THE LINE YOU WANT BELOW IF YOU WANT IE8 SUPPORT AND ARE USING .block-grids
-		// $('.block-grid.two-up>li:nth-child(2n+1)').css({clear: 'both'});
-		// $('.block-grid.three-up>li:nth-child(3n+1)').css({clear: 'both'});
-		// $('.block-grid.four-up>li:nth-child(4n+1)').css({clear: 'both'});
-		// $('.block-grid.five-up>li:nth-child(5n+1)').css({clear: 'both'});
-
+		
+		$doc.foundation();
 		
 		// Hide address bar on mobile devices
 		if (Modernizr.touch)
@@ -59,19 +45,56 @@ function(m, Devapt, f)
 			);
 		}
 	}
-
-	(
-		function ($, window, undefined)
+	
+	
+	// INIT WIDGETS
+	var $ = Devapt.jQuery();
+	$(document).ready(
+		function()
 		{
+			console.log('Loading Foundation 5.0.2 Init widgets');
+			
+			var $ = Devapt.jQuery();
 			libapt_foundation_init($, window);
 		}
-	)(Devapt.jQuery(), this);
+	);
 	
 	return $;
 } );
 
 
 
+
+	
+	
+	// RUN INIT
+	/*(
+		function ($, window)
+		{
+			// console.log($);
+			// console.log($('document'));
+			libapt_foundation_init($, window);
+		}
+	)(Devapt.jQuery(), this);*/
+
+		// $.fn.foundationAlerts           ? $doc.foundationAlerts() : null;
+		// $.fn.foundationAccordion        ? $doc.foundationAccordion() : null;
+		// $.fn.foundationTooltips         ? $doc.foundationTooltips() : null;
+		// $.fn.foundationButtons          ? $doc.foundationButtons() : null;
+		// $.fn.foundationNavigation       ? $doc.foundationNavigation() : null;
+		// $.fn.foundationTopBar           ? $doc.foundationTopBar() : null;
+		// $.fn.foundationCustomForms      ? $doc.foundationCustomForms() : null;
+		// $.fn.foundationMediaQueryViewer ? $doc.foundationMediaQueryViewer() : null;
+		// $.fn.foundationTabs             ? $doc.foundationTabs() : null;
+		
+		
+		// UNCOMMENT THE LINE YOU WANT BELOW IF YOU WANT IE8 SUPPORT AND ARE USING .block-grids
+		// $('.block-grid.two-up>li:nth-child(2n+1)').css({clear: 'both'});
+		// $('.block-grid.three-up>li:nth-child(3n+1)').css({clear: 'both'});
+		// $('.block-grid.four-up>li:nth-child(4n+1)').css({clear: 'both'});
+		// $('.block-grid.five-up>li:nth-child(5n+1)').css({clear: 'both'});
+
+		
 /*
 $(document).ready(
 	function()

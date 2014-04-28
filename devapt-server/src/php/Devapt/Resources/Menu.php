@@ -44,6 +44,9 @@ class Menu extends AbstractResource
 	/// @brief		menu tooltip (string)
 	protected $menu_tooltip				= null;
 	
+	/// @brief		menu kind of type (string)
+	protected $menu_type				= null;
+	
 	/// @brief		menu icon url (string)
 	protected $menu_icon_url			= null;
 	
@@ -79,10 +82,22 @@ class Menu extends AbstractResource
 	static public $attributes_required_list		= array('name', 'label');
 	
 	/// @brief		Menu position left (string)
+	static public $MENU_ACCESS					= "menu_access";
+	
+	/// @brief		Menu position left (string)
 	static public $MENU_POSITION_LEFT			= "left";
 	
 	/// @brief		Menu position right (string)
 	static public $MENU_POSITION_RIGHT			= "right";
+	
+	/// @brief		Menu menu item type (string)
+	static public $MENU_TYPE_MENU				= "MENU";
+	
+	/// @brief		Menu separator type (string)
+	static public $MENU_TYPE_SEPARATOR			= "SEPARATOR";
+	
+	/// @brief		Menu label type (string)
+	static public $MENU_TYPE_LABEL				= "LABEL";
 	
 	
 	
@@ -102,12 +117,13 @@ class Menu extends AbstractResource
 		
 		
 		// REGISTER ACCESSES
-		\Devapt\Security\Authorization::registerRoleAccess($this->getResourceName(), 'MENU_DISPLAY', $this->getResourceAccess());
+		\Devapt\Security\Authorization::registerRoleAccess($this->getResourceName(), Menu::$MENU_ACCESS, $this->getResourceAccess());
 		
 		
 		// SET RESOURCE ATTRIBUTES
 		$this->menu_label		= array_key_exists('label', $arg_resource_record) ? $arg_resource_record['label'] : '';
 		$this->menu_tooltip		= array_key_exists('tooltip', $arg_resource_record) ? $arg_resource_record['tooltip'] : '';
+		$this->menu_type		= array_key_exists('type', $arg_resource_record) ? $arg_resource_record['type'] : self::$MENU_TYPE_MENU;
 		
 		$this->menu_icon_url	= array_key_exists('icon.url', $arg_resource_record) ? $arg_resource_record['icon_url'] : '';
 		$this->menu_icon_alt	= array_key_exists('icon.alt', $arg_resource_record) ? $arg_resource_record['icon_alt'] : '';
@@ -115,6 +131,13 @@ class Menu extends AbstractResource
 		$this->menu_display_url	= array_key_exists('display.url', $arg_resource_record) ? $arg_resource_record['display.url'] : '';
 		$this->menu_display_page= array_key_exists('display.page', $arg_resource_record) ? $arg_resource_record['display.page'] : '';
 		$this->menu_display_js	= array_key_exists('display.js', $arg_resource_record) ? $arg_resource_record['display.js'] : '';
+		if ( array_key_exists('display', $arg_resource_record) )
+		{
+			$display_record = $arg_resource_record['display'];
+			$this->menu_display_url		= array_key_exists('url', $display_record) ? $display_record['url'] : '';
+			$this->menu_display_page	= array_key_exists('page', $display_record) ? $display_record['page'] : '';
+			$this->menu_display_js		= array_key_exists('js', $display_record) ? $display_record['js'] : '';
+		}
 		
 		$this->menu_position	= array_key_exists('position', $arg_resource_record) ? $arg_resource_record['position'] : '';
 		$this->menu_index		= array_key_exists('index', $arg_resource_record) ? $arg_resource_record['index'] : '';
@@ -145,6 +168,15 @@ class Menu extends AbstractResource
 	public function getMenuTooltip()
 	{
 		return $this->menu_tooltip;
+	}
+	
+	/**
+	 * @brief		Get menu type
+	 * @return		string
+	 */
+	public function getMenuType()
+	{
+		return $this->menu_type;
 	}
 	
 	/**
@@ -239,7 +271,7 @@ class Menu extends AbstractResource
 	 */
 	public function hasMenuItems()
 	{
-		return count($this->menu_items_names) > 0 || count($this->menu_items);
+		return count($this->menu_items_names) > 0 || count($this->menu_items) > 0;
 	}
 	
 	/**
@@ -257,11 +289,11 @@ class Menu extends AbstractResource
 	 $ @param[in]	arg_menu_resource	menu resource (object)
 	 * @return		nothing
 	 */
-	public function addMenu($arg_menu_resource)
+/*	public function addMenu($arg_menu_resource)
 	{
 		// if ($arg_menu_resource instanceof Devapt\Resources\Menu)
 		{
 			$this->menu_items[] = $arg_menu_resource;
 		}
-	}
+	}*/
 }

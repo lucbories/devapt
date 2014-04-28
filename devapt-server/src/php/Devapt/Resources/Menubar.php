@@ -232,7 +232,7 @@ class Menubar extends AbstractResource
 	 $ @param[in]	arg_menu_resource	menu resource (object)
 	 * @return		nothing
 	 */
-	public function addMenu($arg_menu_resource)
+/*	public function addMenu($arg_menu_resource)
 	{
 		if ( ! is_object(arg_menu_resource) )
 		{
@@ -244,5 +244,5 @@ class Menubar extends AbstractResource
 		{
 			$this->menubar_items[] = $arg_menu_resource;
 		}
-	}
+	}*/
 }

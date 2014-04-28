@@ -11,11 +11,12 @@
         <title>{{application.title}}</title>
 		
         <!-- CSS, feeds and favicon -->
-	    <link href="{{application.favico.url}}" rel="shortcut icon" type="{{application.favico.format}}">
+		<link href="{{application.favico.url}}" rel="shortcut icon" type="{{application.favico.format}}">
+		<link href="{{application.url.base}}home/public/css/app.css" rel="stylesheet" type="text/css" media="all">
 		
         <!-- JavaScript -->
         <script type="text/javascript" src="{{application.url.base}}../../devapt-client/lib/require-2.1.10/require.min.js"></script>
-        <script type="text/javascript" src="{{application.url.base}}/home/public/js/app.js"></script>
+        <script type="text/javascript" src="{{application.url.base}}home/public/js/app.js"></script>
 		
         <!-- IE Fix for HTML5 Tags -->
         <!--[if lt IE 9]>
@@ -26,12 +27,11 @@
 	
     <body>
         <!-- Header -->
-        <header id="header" class="row">
-			
+        <header id="header" class="row devapt_page_header">
             <!-- Logo -->
             <div class="three mobile-two columns" id="logo">
                 <h1>
-                    <a href="/" title="">
+                    <a href="#" title="">
                         <img src="{{application.url.base}}{{application.layouts.default.logo.url}}" width="173" height="41" alt="{{application.layouts.default.logo.alt}}">
                     </a>
                 </h1>

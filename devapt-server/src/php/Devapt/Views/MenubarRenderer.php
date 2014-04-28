@@ -20,6 +20,8 @@ use Devapt\Application\Application;
 use Devapt\Resources\Menubar;
 use Devapt\Resources\Menu;
 
+use Devapt\Security\Authentication;
+
 // DEBUG
 use Devapt\Core\Trace;
 
@@ -114,11 +116,11 @@ final class MenubarRenderer
 			// TRACE::trace_var($context, "current_menu_0.name at left", $current_menu_0->getName(), self::$TRACE_CONTROLLED_MENUS_BAR);
 			if ($menus_bar_format === Menubar::$MENUBAR_FORMAT_TOP)
 			{
-				self::addTopBarMenu($current_menu_0);
+				$buffer .= self::addTopBarMenu($current_menu_0);
 			}
 			else
 			{
-				// self::addMenu($current_menu_0);
+				$buffer .= self::addMenu($current_menu_0);
 			}
 		}
 		if ($menus_bar_format === Menubar::$MENUBAR_FORMAT_TOP)
@@ -134,19 +136,19 @@ final class MenubarRenderer
 				// TRACE::trace_var($context, "current_menu_0.name at right", $current_menu_0->getName(), self::$TRACE_CONTROLLED_MENUS_BAR);
 				if ($menus_bar_format == Menubar::$MENUBAR_FORMAT_TOP)
 				{
-					self::addTopBarMenu($current_menu_0);
+					$buffer .= self::addTopBarMenu($current_menu_0);
 				}
 				else
 				{
-					// self::addMenu($current_menu_0);
+					$buffer .= self::addMenu($current_menu_0);
 				}
 			}
-			// self::renderTopBarMenuLogout();
+			$buffer .= self::renderTopBarMenuLogout();
 			$buffer .= '</ul>';
 		}
 		
 		// LEAVE MENUS BAR LAYOUT
-		self::leaveMenuBar($menus_bar_format, $menus_bar_orientation);
+		$buffer .= self::leaveMenuBar($menus_bar_format, $menus_bar_orientation);
 		
 		
 		// CHECK RENDERED BUFFER
@@ -185,9 +187,9 @@ final class MenubarRenderer
 		// ENTER TOP MENUBAR
 		if ($format === Menubar::$MENUBAR_FORMAT_TOP)
 		{
-			$buffer .= '<nav class="top-bar">';
-			$buffer .= '<ul>';
-				$buffer .= '<li>';
+			$buffer .= '<nav class="top-bar" data-topbar>';
+			$buffer .= '<ul class="title-area">';
+				$buffer .= '<li class="name">';
 					$buffer .= '<h1>';
 						$link = $appcfg->getUrlBase();
 						$label = $appcfg->getShortLabel();
@@ -200,12 +202,12 @@ final class MenubarRenderer
 					$buffer .= '</h1>';
 				$buffer .= '</li>';
 				
-				$buffer .= '<li>';
+				$buffer .= '<li class="name">';
 					$buffer .= '<a href="#"></a>';
 				$buffer .= '</li>';
 			$buffer .= '</ul>';
 			
-			$buffer .= '<section>';
+			$buffer .= '<section class="top-bar-section">';
 			return $buffer;
 		}
 		
@@ -214,13 +216,11 @@ final class MenubarRenderer
 		// VERTICAL ORIENTATION
 		if ($arg_orientation == MenuBar::$ORIENTATION_VERTICAL)
 		{
-			$buffer .= '<ul class="nav-bar vertical">';
-			return $buffer;
+			return '<ul class="nav-bar vertical">';
 		}
 		
 		// DEFAULT : HORIZONTAL ORIENTATION
-		$buffer .= '<ul class="nav-bar">';
-		return $buffer;
+		return '<ul class="nav-bar">';
 	}
 	
 	
@@ -233,37 +233,43 @@ final class MenubarRenderer
 	{
 		$buffer = '';
 		
-		// ENTER MENU
-		$buffer .= '<li class="has-dropdown">';
+		// MENU CHILDS
+		$menu_childs		= $arg_menu_object->getMenuItems();
+		$menu_childs_count	= count($menu_childs);
 		
-		// MENU HEADER
+		// MENU ATTRIBUTES
 		$menu_label		= $arg_menu_object->getMenuLabel();
 		$menu_label_tag	= $menu_label;
 		$menu_icon_url	= $arg_menu_object->getMenuIconUrl();
 		$menu_icon_tag	= "";
 		if ( ! is_null($menu_icon_url) )
 		{
-			$menu_icon_tag	= "<img src='$menu_icon_url' class='libapt_menu_icon'></img>";
-			$menu_label_tag	= "<span>$menu_icon_tag$menu_label</span>";
+			$menu_icon_tag	= '<img src="'.$menu_icon_url.'" class="libapt_menu_icon"></img>';
+			$menu_label_tag	= '<span>'.$menu_icon_tag.$menu_label.'</span>';
 		}
 		$menu_tooltip	= $arg_menu_object->getMenuTooltip();
-		$menu_tooltip_attribute = "";
+		$menu_tooltip_attribute = '';
 		if ( ! is_null($menu_tooltip) )
 		{
-			$menu_tooltip_attribute = " title='$menu_tooltip'";
+			$menu_tooltip_attribute = ' title="'.$menu_tooltip.'"';
 		}
 		
-		$buffer .= '<a href="#" class="libapt_i18n" '.$menu_tooltip_attribute.'>'.$menu_label_tag.'</a>\n';
-		
-		// MENU CHILDS
-		$menu_childs		= $arg_menu_object->getMenuItems();
-		$menu_childs_count	= count($menu_childs);
-		if ($menu_childs_count > 0)
+		// ENTER MENU
+		if ($menu_childs_count === 0)
 		{
-			$buffer .= '<ul class="dropdown">';
-				$this->addTopBarMenuChilds($menu_childs);
-			$buffer .= '</ul>';
+			$buffer .= '<li>';
+			// $buffer .= '<a href="#" class="libapt_i18n" '.$menu_tooltip_attribute.'>'.$menu_label_tag.'</a>';
+			$buffer .= self::addMenuChild($arg_menu_object);
+			$buffer .= '</li>';
+			return $buffer;
 		}
+
+		$buffer .= '<li class="has-dropdown">';
+		$buffer .= '<a href="#" class="libapt_i18n" '.$menu_tooltip_attribute.'>'.$menu_label_tag.'</a>';
+		
+		$buffer .= '<ul class="dropdown">';
+		$buffer .= self::addTopBarMenuChilds($menu_childs);
+		$buffer .= '</ul>';
 		
 		// LEAVE MENU
 		$buffer .= '</li>';
@@ -281,58 +287,55 @@ final class MenubarRenderer
 	static public function addTopBarMenuChilds($arg_menu_childs)
 	{
 		$buffer = '';
-		// $format = $arg_menubar_resource->getMenubarFormat();
 		$app = Application::getInstance();
 		$appcfg = $app->getConfig();
 		
 		foreach($arg_menu_childs as $menu_child)
 		{
-			if ( ! $app->hasAuthentication() || Authorization::checkLogged($menu_child->getResourceName(), "MENU_DISPLAY") )
+			if ( ! $app->hasAuthentication() || Authorization::checkLogged($menu_child->getResourceName(), Menu::$MENU_ACCESS) )
 			{
-				if ( $menu_child->hasChilds() )
+				if ( $menu_child->hasMenuItems() )
 				{
-					$menu_label = $menu_child->getLabel();
+					$menu_label		= $menu_child->getMenuLabel();
 					$menu_label_tag	= $menu_label;
-					$menu_icon_url	= $menu_child->getIconUrl();
+					$menu_icon_url	= $menu_child->getMenuIconUrl();
 					if ( ! is_null($menu_icon_url) )
 					{
-						$menu_icon_tag	= "<img src='$menu_icon_url' class='libapt_menu_icon'></img>";
-						$menu_label_tag	= "<span>$menu_icon_tag<span class='libapt_i18n'>$menu_label</span></span>";
+						$menu_icon_tag	= '<img src="'.$menu_icon_url.'" class="libapt_menu_icon"></img>';
+						$menu_label_tag	= '<span>'.$menu_icon_tag.'<span class="libapt_i18n">'.$menu_label.'</span></span>';
 					}
 					
 					$buffer .= '<li class="has-dropdown">';
-						$buffer .= '<a href="#">'.$menu_label_tag.'</a>\n';
+						$buffer .= '<a href="#">'.$menu_label_tag.'</a>';
 						$buffer .= '<ul class="dropdown">';
-							$this->addTopBarMenuChilds($menu_child->getMenuItems());
+						$buffer .= self::addTopBarMenuChilds($menu_child->getMenuItems());
 						$buffer .= '</ul>';
 					$buffer .= '</li>';
 				}
 				else
 				{
-					switch ($menu_child->getType())
+					switch ($menu_child->getMenuType())
 					{
 						case Menu::$MENU_TYPE_SEPARATOR:
 							$buffer .= '<li class="divider" />';
 							break;
 						case Menu::$MENU_TYPE_LABEL:
 							$buffer .= '<li>';
-							$buffer .= '<label id="'.$menu_child->getLabel().'" class="libapt_i18n" />';
+							$buffer .= '<label id="'.$menu_child->getMenuLabel().'" class="libapt_i18n" />';
 							$buffer .= '</li>';
 							break;
 						default :
 							$buffer .= '<li>';
-							// $this->addMenuChild($menu_child, null);
+							$buffer .= self::addMenuChild($menu_child);
 							$buffer .= '</li>';
 							break;
 					}
 				}
 			}
 		}
+		
+		return $buffer;
 	}
-	
-	
-	
-	
 	
 	
 	/**
@@ -342,46 +345,50 @@ final class MenubarRenderer
 	 */
 	static public function addMenu($arg_menu_object)
 	{
+		$buffer = '';
+		
 		// MENU HAS NO CHILDS
-		if ( ! $arg_menu_object->hasChilds() )
+		if ( ! $arg_menu_object->hasMenuItems() )
 		{
-			HTML::enterLI();
-			$this->addMenuChild($arg_menu_object);
-			HTML::leaveLI();
-			return;
+			$buffer .= '<li>';
+			$buffer .= self::addMenuChild($arg_menu_object);
+			$buffer .= '</li>';
+			return $buffer;
 		}
 		
 		// ENTER MENU
-		HTML::enterLI(null, "has-flyout");
+		$buffer .= '<li class="has-flyout">';
 		
 		// MENU HEADER
-		$menu_label		= $arg_menu_object->getLabel();
+		$menu_label		= $arg_menu_object->getMenuLabel();
 		$menu_label_tag	= $menu_label;
-		$menu_icon_url	= $arg_menu_object->getIconUrl();
+		$menu_icon_url	= $arg_menu_object->getMenuIconUrl();
 		$menu_icon_tag	= "";
 		if ( ! is_null($menu_icon_url) )
 		{
-			$menu_icon_tag	= "<img src='$menu_icon_url' class='libapt_menu_icon'></img>";
-			$menu_label_tag	= "<span>$menu_icon_tag<span class='libapt_i18n'>$menu_label</span></span>";
-			HTML::addBufferLine("<a href='#' class='main'>".$menu_label_tag."</a>\n");
+			$menu_icon_tag	= '<img src="'.$menu_icon_url.'" class="libapt_menu_icon"></img>';
+			$menu_label_tag	= '<span>'.$menu_icon_tag.'<span class="libapt_i18n">'.$menu_label.'</span></span>';
+			$buffer .= '<a href="#" class="main">'.$menu_label_tag.'</a>';
 		}
 		else
 		{
-			HTML::addBufferLine("<a href='#' class='main libapt_i18n'>".$menu_label_tag."</a>\n");
+			$buffer .= '<a href="#" class="main libapt_i18n">'.$menu_label_tag.'</a>';
 		}
 		
-		HTML::addBufferLine("<a class='flyout-toggle' href='#'>");
-			HTML::addBufferLine("<span> </span>");
-		HTML::addBufferLine("</a>\n");
+		$buffer .= '<a class="flyout-toggle" href="#">';
+		$buffer .=		'<span> </span>';
+		$buffer .= '</a>';
 		
 		// MENU CHILDS
-		$menu_childs = $arg_menu_object->getChilds();
-		HTML::enterUL(null, "flyout", "style='display: none;'");
-			$this->addMenuChilds($menu_childs);
-		HTML::leaveUL();
+		$menu_childs = $arg_menu_object->getMenuItems();
+		$buffer .= '<ul class="flyout" style="display: none;">';
+		$buffer .= self::addMenuChilds($menu_childs);
+		$buffer .= '</ul>';
 		
 		// LEAVE MENU
-		HTML::leaveLI();
+		$buffer .= '</li>';
+		
+		return $buffer;
 	}
 	
 	
@@ -393,43 +400,46 @@ final class MenubarRenderer
 	 */
 	static public function addMenuChilds($arg_menu_childs)
 	{
+		$buffer = '';
+		
 		foreach($arg_menu_childs as $menu_child)
 		{
-			if ( ! Application::getInstance()->hasAuthentication() || Authorization::checkLogged($menu_child->getName(), "MENU_DISPLAY") )
+			if ( ! Application::getInstance()->hasAuthentication() || Authorization::checkLogged($menu_child->getName(), Menu::$MENU_ACCESS) )
 			{
-				if ( $menu_child->hasChilds() )
+				if ( $menu_child->hasMenuItems() )
 				{
-					$menu_label = $menu_child->getLabel();
+					$menu_label = $menu_child->getMenuLabel();
 					$menu_label_tag	= $menu_label;
-					$menu_icon_url	= $menu_child->getIconUrl();
-					$menu_link_tag	= "";
+					$menu_icon_url	= $menu_child->getMenuIconUrl();
+					$menu_link_tag	= '';
 					if ( ! is_null($menu_icon_url) )
 					{
-						$menu_icon_tag	= "<img src='$menu_icon_url' class='libapt_menu_icon'></img>";
-						$menu_label_tag	= "<span>$menu_icon_tag<span class='libapt_i18n'>$menu_label</span></span>";
-						$menu_link_tag	= "<a href='#' class='main'>".$menu_label_tag."</a>\n";
+						$menu_icon_tag	= '<img src="'.$menu_icon_url.'" class="libapt_menu_icon"></img>';
+						$menu_label_tag	= '<span>'.$menu_icon_tag.'<span class="libapt_i18n">'.$menu_label.'</span></span>';
+						$menu_link_tag	= '<a href="#" class="main">'.$menu_label_tag.'</a>';
 					}
 					else
 					{
-						$menu_link_tag	= "<a href='#' class='main libapt_i18n'>".$menu_label_tag."</a>\n";
+						$menu_link_tag	= '<a href="#" class="main libapt_i18n">'.$menu_label_tag.'</a>';
 					}
 					
-					HTML::enterLI(null, "has-flyout");
-						HTML::addBufferLine();
-						HTML::addBufferLine("<a class='flyout-toggle' href='#'>");
-						HTML::enterUL(null, "flyout", "style='display: none;'");
-							$this->addMenuChilds($menu_child->getChilds());
-						HTML::leaveUL();
-					HTML::leaveLI();
+					$buffer .= '<li class="has-flyout">';
+					$buffer .=	'<a class="flyout-toggle" href="#">';
+					$buffer .=	'<ul class="flyout" style="display: none;">';
+					$buffer .=	self::addMenuChilds($menu_child->getMenuItems());
+					$buffer .=	'</ul>';
+					$buffer .= '</li>';
 				}
 				else
 				{
-					HTML::enterLI();
-					$this->addMenuChild($menu_child, null);
-					HTML::leaveLI();
+					$buffer .= '<li>';
+					$buffer .=	self::addMenuChild($menu_child, null);
+					$buffer .= '</li>';
 				}
 			}
 		}
+		
+		return $buffer;
 	}
 	
 	
@@ -441,62 +451,51 @@ final class MenubarRenderer
 	 */
 	static public function addMenuChild($arg_menu_child)
 	{
-		$menu_label			= $arg_menu_child->getLabel();
-		$action_view		= $arg_menu_child->getActionView();
-		$action_model		= $arg_menu_child->getActionModel();
-		$action_json		= $arg_menu_child->getActionJson();
-		$action_view_opds	= $arg_menu_child->getActionViewOperands();
-		$action_model_opds	= $arg_menu_child->getActionModelOperands();
-		$action_js			= $arg_menu_child->getActionJS();
+		$buffer = '';
 		
-		$js = "";
-		$link = "";
+		$menu_label		= $arg_menu_child->getMenuLabel();
+		
+		$display_url	= $arg_menu_child->getMenuDisplayUrl();
+		$display_page	= $arg_menu_child->getMenuDisplayPage();
+		$display_js		= $arg_menu_child->getMenuDisplayJs();
+		
+		$icon_url		= $arg_menu_child->getMenuIconUrl();
+		$icon_alt		= $arg_menu_child->getMenuIconAlt();
+		
+		$js = '';
+		$link = 'unknow';
 		
 		// JS ACTION
-		if ( $arg_menu_child->hasActionJS() )
+		if ( ! is_null($display_js) && $display_js !== '' )
 		{
-			$link = "#";
-			$js = " onclick='$action_js'";
+			$link = '#';
+			$js = ' onclick="'.$display_js.'"';
 		}
 		
-		// LINK
-		if ( $arg_menu_child->hasLinkUrl() )
+		// LINK ACTION
+		if ( ! is_null($display_url) && $display_url !== '' )
 		{
-			$link = $arg_menu_child->getLinkUrl();
-		}
-		else
-		{
-			$opds_str = "";
-			if ( ! is_null($action_view_opds) && $action_view_opds != "" )
-			{
-				$opds_str = $action_view_opds;
-			}
-			if ( ! is_null($action_model_opds) )
-			{
-				$opds_str .= ($opds_str == "" ? "" : "&") . $action_model_opds;
-			}
-			if ( ! ( is_null($action_view) && is_null($action_model) ) )
-			{
-				$link = Urls::getActionUrl($action_model, $action_view, $opds_str);
-			}
-			if ( ! is_null($action_json) && $action_json != "" )
-			{
-				$link .= ($link == "" ? "?" : "&") . "jsonAction=$action_json";
-			}
+			$link = $display_url;
 		}
 		
-		$menu_icon_url	= $arg_menu_child->getIconUrl();
-		if ( ! is_null($menu_icon_url) )
+		// DISPLAY PAGE ACTION
+		else if ( is_string($display_page) && $display_page !== '' )
 		{
-			$menu_icon_tag	= "<img src='$menu_icon_url' class='libapt_menu_icon'></img>";
-			$menu_label_tag	= "<a href='$link' style='padding:5px;'	$js>$menu_icon_tag<span class='libapt_i18n'>$menu_label</span></a>";
-			HTML::addBufferLine($menu_label_tag);
+			$app = Application::getInstance();
+			$appcfg = $app->getConfig();
+			$app_base = $appcfg->getUrlBase();
+			$link = $app_base.'views/'.$display_page.'/html_page';
 		}
-		else
+		
+		// HAS ICON
+		if ( ! is_null($icon_url) && $icon_url !== '' )
 		{
-			$menu_label_tag	= "<a href='$link' class='libapt_i18n' $js>$menu_label</a>\n";
-			HTML::addBufferLine($menu_label_tag);
+			$menu_icon_tag	= '<img src="'.$icon_url.'" alt="'.( is_null($icon_alt) ? '' : $icon_alt ).'" class="libapt_menu_icon"></img>';
+			return '<a href="'.$link.'" style="padding:5px;" '.$js.'>'.$menu_icon_tag.'<span class="libapt_i18n">'.$menu_label.'</span></a>';
 		}
+		
+		// HASN'T ICON
+		return '<a href="'.$link.'" class="libapt_i18n" '.$js.'>'.$menu_label.'</a>';
 	}
 	
 	
@@ -510,6 +509,8 @@ final class MenubarRenderer
 	 */
 	static public function leaveMenuBar($arg_format, $arg_orientation)
 	{
+		$buffer = '';
+		
 		// TOP MENUS BAR
 		if ($arg_format == Menubar::$MENUBAR_FORMAT_TOP)
 		{
@@ -530,16 +531,23 @@ final class MenubarRenderer
 	 */
 	static public function renderTopBarMenuLogout()
 	{
+		$buffer = '';
+		
 		if (Authentication::isEnabled() && ! Application::getInstance()->hasAutoLogin() )
 		{
-			HTML::enterLI();
+			$buffer .= '<li>';
 			if ( Authentication::isLogged() )
 			{
-				$logout_img = THEMES::getIconUrl('exit_48');
-				$tooltip = "Logout current logged user : ".Authentication::getLogin();
-				HTML::addBufferLine("<a href='#' class='libapt_i18n' title='$tooltip'><img id='logout_img' src=\"$logout_img\" alt=\"logout\" onclick=\"$('#logout_form').submit();\"></img></a>");
+				// TODO
+				// $logout_img = THEMES::getIconUrl('exit_48');
+				$logout_img = 'logout.png';
+				
+				$tooltip = 'Logout current logged user : '.Authentication::getLogin();
+				$buffer .= '<a href="#" class="libapt_i18n" title="'.$tooltip.'"><img id="logout_img" src="'.$logout_img.'" alt="logout" onclick="$(\'#logout_form\').submit();"></img></a>';
 			}
-			HTML::leaveLI();
+			$buffer .= '</li>';
 		}
+		
+		return $buffer;
 	}
 }
