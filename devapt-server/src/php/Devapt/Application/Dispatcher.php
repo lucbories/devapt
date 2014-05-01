@@ -138,7 +138,7 @@ final class Dispatcher
 		}
 		
 		// HOME PAGE
-		if ($uri_path_count === $app_path_count)
+		if ($uri_path_count === $app_path_count || ($uri_path_items[$app_path_count] === 'index.php' && $uri_path_count === $app_path_count + 1 ))
 		{
 			$uri_path_items = self::switchUrl(Application::getInstance()->getConfig()->getUrlHome());
 			$uri_path_count	= count($uri_path_items);

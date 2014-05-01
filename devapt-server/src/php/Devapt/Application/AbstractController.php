@@ -45,7 +45,7 @@ abstract class AbstractController implements ControllerInterface
 	
 	public function dispatch($arg_resource_name, $arg_action_name, $arg_id, $arg_request, $arg_response)
 	{
-		// RESERT AUTHORIZATION FLAG
+		// RESET AUTHORIZATION FLAG
 		$this->authorization_is_cheched = false;
 		
 		// SEARCH RESOURCE OBJECT

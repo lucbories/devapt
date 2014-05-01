@@ -20,6 +20,8 @@ use Zend\Config\Reader\Ini AS IniReader;
 use Zend\Debug\Debug;
 use Devapt\Core\Trace;
 
+use Zend\Json\Json as JsonFormatter;
+
 final class Broker
 {
 	// STATIC ATTRIBUTES
@@ -90,6 +92,44 @@ final class Broker
 		}
 		
 		return null;
+	}
+	
+	
+	
+	/**
+	 * @brief		Get a resource JSON declaration with a given name
+	 * @param[in]	arg_resource_name	resource name
+	 * @return		string|null
+	 */
+	static public function getResourceJson($arg_resource_name)
+	{
+		// A RESOURCE OBJECT IS CACHED
+		if ( ! Broker::hasResourceObject($arg_resource_name) )
+		{
+			Trace::warning("Resources\Broker.getResourceJson: resource not found [$arg_resource_name]");
+			return null;
+		}
+		
+		// GET RESOURCE RECORDS
+		$resource_record = Broker::$resources_records_array[$arg_resource_name];
+		
+		// SANITIZE RECORDS
+		$resource_type = $resource_record['class_type'];
+		switch($resource_type)
+		{
+			case 'view': // TODO
+			case 'model':
+			case 'menu':
+			case 'connexion':
+				Trace::warning("Resources\Broker.getResourceJson: requested resource is a connexion [$arg_resource_name]");
+				return null;
+		}
+		
+		// FORMAT JSON STRING
+		$jsonOptions = null;
+		$json_str = JsonFormatter::encode($resource_record, null, $jsonOptions);
+		
+		return $json_str;
 	}
 	
 	
@@ -227,21 +267,48 @@ final class Broker
 		$records_array = $reader->fromFile($arg_file_path_name);
 		// Debug::dump($records_array);
 		
+		if ( ! self::loadResourcesRecords($records_array) )
+		{
+			Debug::dump("Resources\Broker.loadResourcesIniFile: bad file content [$arg_file_path_name]");
+			return false;
+		}
+		
+		Broker::$loaded_files[$arg_file_path_name] = 'loaded';
+		return true;
+	}
+	
+	
+	
+	/**
+	 * @brief		Load resource from an array of records
+	 * @param[in]	arg_records		array
+	 * @return		boolean
+	 */
+	static public function loadResourcesRecords($arg_records)
+	{
+		// CHECK ARRAY
+		if ( ! is_array($arg_records) || count($arg_records) === 0 )
+		{
+			Debug::dump("Resources\Broker.loadResourcesRecords: bad records array");
+			return false;
+		}
+		
+		// TODO
 		
 		// PROCESS application.menusbars.xxx, application.views.xxx, etc
 		$application_resources_collection = array();
-		if ( is_array($records_array) && array_key_exists('application', $records_array) )
+		if ( is_array($arg_records) && array_key_exists('application', $arg_records) )
 		{
 			Trace::debug('Broker::loadResourcesIniFile: an application collection exists');
-			$app_resources = $records_array['application'];
+			$app_resources = $arg_records['application'];
 			foreach($app_resources as $resource_collection_name => $resource_collection_record)
 			{
 				Trace::debug('Broker::loadResourcesIniFile: a collection exists [' . $resource_collection_name . ']');
 				$application_resources_collection[$resource_collection_name] = $resource_collection_record;
 			}
-			unset($records_array['application']);
+			unset($arg_records['application']);
 		}
-		// Debug::dump($records_array);
+		// Debug::dump($arg_records);
 		// Debug::dump($application_resources_collection);
 		
 		
@@ -272,9 +339,9 @@ final class Broker
 		
 		
 		// CHECK RECORDS
-		if ( is_array($records_array) && count($records_array) > 0 )
+		if ( is_array($arg_records) && count($arg_records) > 0 )
 		{
-			foreach($records_array as $key => $record)
+			foreach($arg_records as $key => $record)
 			{
 				$record['name'] = $key;
 				$checked_record = Broker::getCheckedResourceRecord($record);
@@ -286,7 +353,6 @@ final class Broker
 			}
 		}
 		
-		Broker::$loaded_files[$arg_file_path_name] = 'loaded';
 		return true;
 	}
 	

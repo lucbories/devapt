@@ -63,7 +63,7 @@ final class JsWrapper
 	static public function addModelResource($arg_model_resource, $arg_response)
 	{
 		// CHECK RESOURCE OBJECT
-		if ( ! is_object($arg_view_resource) )
+		if ( ! is_object($arg_model_resource) )
 		{
 			Trace::warning('JsWrapper: bad resource object');
 			return false;
