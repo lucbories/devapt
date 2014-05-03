@@ -117,9 +117,9 @@ final class Broker
 		$resource_type = $resource_record['class_type'];
 		switch($resource_type)
 		{
-			case 'view': // TODO
-			case 'model':
-			case 'menu':
+			// case 'view': // TODO
+			// case 'model':
+			// case 'menu':
 			case 'connexion':
 				Trace::warning("Resources\Broker.getResourceJson: requested resource is a connexion [$arg_resource_name]");
 				return null;
@@ -329,7 +329,7 @@ final class Broker
 						$checked_record = Broker::getCheckedResourceRecord($resource_record);
 						if ( ! is_null($checked_record) )
 						{
-							Broker::$resources_records_array[$resource_name] = $checked_record;
+							Broker::registerResourceRecord($checked_record);
 						}
 					}
 				}
@@ -348,12 +348,52 @@ final class Broker
 				// Debug::dump($checked_record);
 				if ( ! is_null($checked_record) )
 				{
-					Broker::$resources_records_array[$key] = $checked_record;
+					Broker::registerResourceRecord($checked_record);
 				}
 			}
 		}
 		
+		
+		
 		return true;
+	}
+	
+	
+	
+	/**
+	 * @brief		Register a checked resource record
+	 * @param[in]	arg_resource_record	resource record
+	 * @return		array
+	 */
+	static public function registerResourceRecord($arg_resource_record)
+	{
+		$name = $arg_resource_record['name'];
+		
+		Broker::$resources_records_array[$name] = $arg_resource_record;
+		
+		$get_action = \Devapt\Application\ResourceController::$RESOURCES_ACTION_GET;
+		
+		$access = null;
+		
+		if ( array_key_exists(AbstractResource::$RESOURCE_ACCESS, $arg_resource_record) )
+		{
+			$access = $arg_resource_record[AbstractResource::$RESOURCE_ACCESS];
+		}
+		
+		if ( array_key_exists(View::$VIEW_ACCESS_ROLE, $arg_resource_record) )
+		{
+			$access = $arg_resource_record[View::$VIEW_ACCESS_ROLE];
+		}
+		
+		if ( array_key_exists(Model::$MODEL_ACCESS_ROLE_READ, $arg_resource_record) )
+		{
+			$access = $arg_resource_record[Model::$MODEL_ACCESS_ROLE_READ];
+		}
+		
+		if ( ! is_null($access) )
+		{
+			\Devapt\Security\Authorization::registerRoleAccess($name, $get_action, $access);
+		}
 	}
 	
 	

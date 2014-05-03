@@ -122,4 +122,7 @@ require.config(
 	}
 );
 
-require(['Devapt', 'others/foundation-init']);
+require(['Devapt', 'others/foundation-init'], function(Devapt, undefined)
+{
+	Devapt.run();
+} );

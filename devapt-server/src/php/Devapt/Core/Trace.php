@@ -375,7 +375,7 @@ final class Trace
 		}
 		
 		// REGISTER OPTIONAL FILE WRITER
-		if ( is_string($arg_file_path_name) && is_writable($arg_file_path_name) )
+		if ( is_string($arg_file_path_name) /*&& is_writable($arg_file_path_name)*/ )
 		{
 			self::$file_writer = new \Zend\Log\Writer\Stream($arg_file_path_name);
 			self::$logger->addWriter(self::$file_writer);

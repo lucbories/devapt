@@ -430,17 +430,10 @@ abstract class AbstractApplication
      */
     public function initDispatcher()
 	{
-		// REGISTER RESOURCES CONTROLLER
-		// if ( ! Dispatcher::registerController('resources', new ResourcesController() ) )
-		// {
-			// Debug::dump('Resources controller registration failed.');
-			// return false;
-		// }
-		
 		// REGISTER MODELS CONTROLLER
 		if ( ! Dispatcher::registerController('models', new ModelController() ) )
 		{
-			Debug::dump('Models controller registration failed.');
+			Debug::dump('Application: Models controller registration failed.');
 			return false;
 		}
 		
@@ -454,7 +447,7 @@ abstract class AbstractApplication
 		// REGISTER RESOURCES CONTROLLER
 		if ( ! Dispatcher::registerController('resources', new ResourceController() ) )
 		{
-			Debug::dump('Resources controller registration failed.');
+			Debug::dump('Application: Resources controller registration failed.');
 			return false;
 		}
 		

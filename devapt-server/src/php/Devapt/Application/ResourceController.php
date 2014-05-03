@@ -25,6 +25,11 @@ use Devapt\Resources\View as ViewResource;
 
 class ResourceController extends AbstractController
 {
+	// STATIC ATTRIBUTES
+	static public $RESOURCES_ACTION_GET		= 'get_resource';
+	
+	
+	
     /**
      * Constructor
      */
@@ -77,7 +82,7 @@ class ResourceController extends AbstractController
 		// SEND JSON RESPONSE
 		$arg_response->send();
 		
-		Trace::info('ResourceController: Render view success ['.$arg_resource_name.']');
+		Trace::info('ResourceController: get action success ['.$arg_resource_name.']');
 		return true;
 	}
 }
