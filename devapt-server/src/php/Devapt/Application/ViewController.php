@@ -77,6 +77,9 @@ class ViewController extends AbstractController
 			return false;
 		}
 		
+		// RENDER JS
+		JsWrapper::initJsResources($arg_response);
+		
 		// PAGE FOOTER
 		if ($arg_action_name === 'html_page')
 		{
@@ -84,9 +87,6 @@ class ViewController extends AbstractController
 			$page_footer_content = PageFooterViewRenderer::render('default', $arg_response);
 			$arg_response->setContent($content.$page_footer_content);
 		}
-		
-		// RENDER JS
-		JsWrapper::initJsResources($arg_response);
 		
 		// SEND RENDERED VIEW
 		$arg_response->send();

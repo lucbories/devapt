@@ -42,7 +42,7 @@ final class JsWrapper
 		$js_buffer = '';
 		foreach(self::$js_resources_buffers as $js_resource_buffer)
 		{
-			$js_buffer .= $js_resource_buffer.'\n';
+			$js_buffer .= $js_resource_buffer;
 		}
 		
 		// UPDATE RESPONSE
@@ -50,8 +50,12 @@ final class JsWrapper
 		{
 			$buffer = '';
 			$buffer .= '<SCRIPT type="text/javascript">';
-			$buffer .= '$(document).ready( function() {\n'.$js_buffer.'}\n );\n';
-			$buffer .= '</SCRIPT>';
+			$buffer .= 'console.info(\'Devapt.main define\');';
+			$buffer .= 'define(\'main\', [\'Devapt\', \'core/resources\'], function(Devapt, DevaptResources) {';
+			$buffer .= 'console.info(\'Devapt.main\');';
+			$buffer .= 'var $ = Devapt.jQuery();';
+			$buffer .= '$(document).ready( function() {'.$js_buffer.'} );';
+			$buffer .= '} );  var main = require([\'main\']);  </SCRIPT>';
 			
 			$content = $arg_response->getContent();
 			$content .= $buffer;
@@ -76,12 +80,19 @@ final class JsWrapper
 			return false;
 		}
 		
-		Trace::info('JsWrapper: Render model JS resource success ['.$arg_resource_name.']');
+		// GET RESOURCE DECLARATION
+		$resource_name = $arg_model_resource->getResourceName();
+		$resource_json_str = ResourcesBroker::getResourceJson($resource_name);
+		
+		// SAVE BUFFER
+		$this->js_resources_buffers[] = 'DevaptResources.add_cached_declaration('.$resource_json_str.');';
+		
+		Trace::info('JsWrapper: Render model JS resource success ['.$resource_name.']');
 		return true;
 	}
 	
 	
-	static public function addViewResource($arg_view_resource, $arg_response)
+	static public function addViewResource($arg_view_resource, $arg_response, $arg_view_tag_id)
 	{
 		// CHECK RESOURCE OBJECT
 		if ( ! is_object($arg_view_resource) )
@@ -97,7 +108,16 @@ final class JsWrapper
 			return false;
 		}
 		
-		Trace::info('JsWrapper: Render view JS resource success ['.$arg_resource_name.']');
+		// GET RESOURCE DECLARATION
+		$resource_name = $arg_view_resource->getResourceName();
+		$resource_json_str = ResourcesBroker::getResourceJson($resource_name);
+		
+		// SAVE BUFFER
+		$js_code = 'DevaptResources.add_cached_declaration('.$resource_json_str.');';
+		$js_code .= 'DevaptViews.render(\''.$resource_name.'\',\''.$arg_view_tag_id.'\');';
+		self::$js_resources_buffers[] = $js_code;
+		
+		Trace::info('JsWrapper: Render view JS resource success ['.$resource_name.']');
 		return true;
 	}
 }

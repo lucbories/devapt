@@ -85,6 +85,7 @@ final class ViewRenderer
 			{
 				// GET RENDERED BUFFER
 				$str_result = IncludeViewRenderer::render($arg_view_resource, $arg_response);
+				// Trace::trace_var($context, 'str_result', $str_result, true);
 				
 				// CHECK RENDERED BUFFER
 				if ( ! is_string($str_result) )
@@ -107,6 +108,7 @@ final class ViewRenderer
 			{
 				// GET RENDERED BUFFER
 				$str_result = TemplateViewRenderer::render($arg_view_resource, $arg_response);
+				// Trace::trace_var($context, 'str_result', $str_result, true);
 				
 				// CHECK RENDERED BUFFER
 				if ( ! is_string($str_result) )
@@ -125,16 +127,18 @@ final class ViewRenderer
 				return true;
 			}
 			
-			case 'JsModelView':
-			case 'JsView':
+			// case 'JsModelView':
+			// case 'JsView':
+			default:
 			{
 				// GET RENDERED BUFFER
 				$str_result = JsViewRenderer::render($arg_view_resource, $arg_response);
+				// Trace::trace_var($context, 'str_result', $str_result, true);
 				
 				// CHECK RENDERED BUFFER
 				if ( ! is_string($str_result) )
 				{
-					Trace::warning('ViewRenderer::render: TemplateViewRenderer result is not a string');
+					Trace::warning('ViewRenderer::render: default result is not a string');
 					$arg_response->setStatusCode($arg_response::STATUS_CODE_500);
 					return false;
 				}

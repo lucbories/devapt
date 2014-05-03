@@ -19,6 +19,8 @@ namespace Devapt\Views;
 // DEBUG
 use Devapt\Core\Trace;
 
+use Devapt\Application\JsWrapper;
+
 final class JsViewRenderer
 {
 	/**
@@ -47,8 +49,8 @@ final class JsViewRenderer
 		}
 		
 		// CHECK VIEW NAME
-		$view_name = $arg_view_resource->getName();
-		if ( is_string($view_name) && $view_name != '')
+		$view_name = $arg_view_resource->getResourceName();
+		if ( ! is_string($view_name) || $view_name === '')
 		{
 			Trace::info('JsViewRenderer::render: view name is not valid');
 			return null;
@@ -68,9 +70,21 @@ final class JsViewRenderer
 				Trace::warning('JsViewRenderer::render: bad model resource object for name ['.$model_name.']');
 				return null;
 			}
-			JsWrapper::addModelResource($model_resource);
+			
+			$result = JsWrapper::addModelResource($model_resource, $arg_response);
+			if (! $result)
+			{
+				Trace::warning('JsViewRenderer::render: bad model resource declaration for name ['.$model_name.']');
+				return null;
+			}
 		}
-		JsWrapper::addViewResource($arg_view_resource);
+		
+		$result = JsWrapper::addViewResource($arg_view_resource, $arg_response, $view_tag_id);
+		if (! $result)
+		{
+			Trace::warning('JsViewRenderer::render: bad view resource declaration for name ['.$view_name.']');
+			return null;
+		}
 		
 		return $buffer;
 	}

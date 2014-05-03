@@ -103,6 +103,22 @@ define('Devapt', ['jquery'], function($)
 		}
 	}
 	
+	
+	/**
+	 * @memberof			Devapt
+	 * @public
+	 * @static
+	 * @method				Devapt.run()
+	 * @desc				Run application
+	 * @return {nothing}
+	 */
+	Devapt.run = function()
+	{
+		console.log('Devapt.run');
+		// init GUI Backend, cache, event
+	}
+	
+	
 	// Bootstrap
 	// Devapt.use('addons-datatables-all');
 	// Devapt.use('addons-dygraph-all');

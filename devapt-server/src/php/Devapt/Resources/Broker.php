@@ -25,6 +25,8 @@ use Zend\Json\Json as JsonFormatter;
 final class Broker
 {
 	// STATIC ATTRIBUTES
+	static public $TRACE_BROKER					= true;
+	
 	static private $resources_objects_array		= array();
 	static private $resources_records_array		= array();
 	static private $resources_files_array		= array();
@@ -52,9 +54,13 @@ final class Broker
 	 */
 	static public function hasResourceObject($arg_resource_name)
 	{
+		$context = 'Broker::hasResourceObject('.$arg_resource_name. ')';
+		Trace::enter($context, '', Broker::$TRACE_BROKER);
+		
 		// A RESOURCE OBJECT IS CACHED
 		if ( array_key_exists($arg_resource_name, Broker::$resources_objects_array) )
 		{
+			Trace::leave($context, 'resource object found in cache', Broker::$TRACE_BROKER);
 			return true;
 		}
 		
@@ -63,6 +69,8 @@ final class Broker
 		{
 			$resource_record	= Broker::$resources_records_array[$arg_resource_name];
 			$resource_object	= Broker::buildResourceObjectFromRecord($resource_record);
+			
+			Trace::leave($context, 'resource record found in cache', Broker::$TRACE_BROKER);
 			return ! is_null($resource_object);
 		}
 		
@@ -70,10 +78,12 @@ final class Broker
 		if ( Broker::searchResource($arg_resource_name) )
 		{
 			$resource_object	= Broker::$resources_objects_array[$arg_resource_name];
+			
+			Trace::leave($context, 'resource found in not loaded providers', Broker::$TRACE_BROKER);
 			return ! is_null($resource_object);
 		}
 		
-		return false;
+		return Trace::leaveko($context, '', false, Broker::$TRACE_BROKER);
 	}
 	
 	
@@ -85,13 +95,17 @@ final class Broker
 	 */
 	static public function getResourceObject($arg_resource_name)
 	{
+		$context = 'Broker::getResourceObject('.$arg_resource_name. ')';
+		Trace::enter($context, '', Broker::$TRACE_BROKER);
+		
 		// A RESOURCE OBJECT IS CACHED
 		if ( Broker::hasResourceObject($arg_resource_name) )
 		{
-			return Broker::$resources_objects_array[$arg_resource_name];
+			$resource = Broker::$resources_objects_array[$arg_resource_name];
+			return Trace::leaveok($context, 'resource object found in cache', $resource, Broker::$TRACE_BROKER);
 		}
 		
-		return null;
+		return Trace::leaveko($context, '', null, Broker::$TRACE_BROKER);
 	}
 	
 	
@@ -103,6 +117,9 @@ final class Broker
 	 */
 	static public function getResourceJson($arg_resource_name)
 	{
+		$context = 'Broker::getResourceJson('.$arg_resource_name. ')';
+		Trace::enter($context, '', Broker::$TRACE_BROKER);
+		
 		// A RESOURCE OBJECT IS CACHED
 		if ( ! Broker::hasResourceObject($arg_resource_name) )
 		{
@@ -129,7 +146,7 @@ final class Broker
 		$jsonOptions = null;
 		$json_str = JsonFormatter::encode($resource_record, null, $jsonOptions);
 		
-		return $json_str;
+		return Trace::leaveok($context, '', $json_str, Broker::$TRACE_BROKER);
 	}
 	
 	
@@ -141,6 +158,10 @@ final class Broker
 	 */
 	static public function searchResource($arg_resource_name)
 	{
+		$context = 'Broker::searchResource('.$arg_resource_name.')';
+		
+		Trace::enter($context, '', Broker::$TRACE_BROKER);
+		
 		// Debug::dump( Broker::$resources_files_array );
 		foreach(Broker::$resources_files_array as $file_path_name)
 		{
@@ -163,7 +184,7 @@ final class Broker
 			if ( array_key_exists($arg_resource_name, Broker::$resources_objects_array) )
 			{
 				// Debug::dump('A RESOURCE OBJECT IS CACHED:'.$arg_resource_name );
-				return true;
+				return Trace::leaveok($context, 'resource object found in cache', true, Broker::$TRACE_BROKER);
 			}
 			
 			// A RESOURCE RECORD IS CACHED
@@ -172,13 +193,15 @@ final class Broker
 				// Debug::dump('A RESOURCE RECORD IS CACHED:'.$arg_resource_name );
 				$resource_record	= Broker::$resources_records_array[$arg_resource_name];
 				$resource_object	= Broker::buildResourceObjectFromRecord($resource_record);
-				return ! is_null($resource_object) && array_key_exists($arg_resource_name, Broker::$resources_objects_array);
+				$result = ! is_null($resource_object) && array_key_exists($arg_resource_name, Broker::$resources_objects_array);
+				Trace::leave($context, 'resource record found in cache ?', Broker::$TRACE_BROKER);
+				return $result;
 			}
 		}
 		
 		// Debug::dump(Broker::$resources_records_array);
 		Trace::warning("Resources\Broker.searchResource: resource [$arg_resource_name] not found");
-		return false;
+		Trace::leaveko($context, 'resource not found', false, Broker::$TRACE_BROKER);
 	}
 	
 	
@@ -190,14 +213,17 @@ final class Broker
 	 */
 	static public function addSearchFile($arg_file_path_name)
 	{
+		$context = 'Broker::addSearchFile('.$arg_file_path_name. ')';
+		Trace::enter($context, '', Broker::$TRACE_BROKER);
+		
 		if ( is_null($arg_file_path_name) || ! file_exists($arg_file_path_name) || ! is_readable($arg_file_path_name) )
 		{
 			Debug::dump("Resources\Broker.addSearchFile: bad file path name [$arg_file_path_name]");
-			return false;
+			return Trace::leaveko($context, 'bad file path name', false, Broker::$TRACE_BROKER);
 		}
 		
 		Broker::$resources_files_array[] = $arg_file_path_name;
-		return true;
+		return Trace::leaveok($context, '', true, Broker::$TRACE_BROKER);
 	}
 	
 	
@@ -209,20 +235,23 @@ final class Broker
 	 */
 	static public function loadResourcesFile($arg_file_path_name)
 	{
+		$context = 'Broker::loadResourcesFile('.$arg_file_path_name. ')';
+		Trace::enter($context, '', Broker::$TRACE_BROKER);
+		
 		// Debug::dump("Resources\Broker.loadResourcesFile: load file path name [$arg_file_path_name]");
 		
 		// CHECK FILE PATH NAME
 		if ( is_null($arg_file_path_name) || ! file_exists($arg_file_path_name) || ! is_readable($arg_file_path_name) )
 		{
 			Debug::dump("Resources\Broker.loadResourcesFile: bad file path name [$arg_file_path_name]");
-			return false;
+			return Trace::leaveko($context, 'bad file path name', false, Broker::$TRACE_BROKER);
 		}
 		
 		// CHECK IF LOADED
 		if ( array_key_exists($arg_file_path_name, Broker::$loaded_files ) )
 		{
 			Debug::dump("Resources\Broker.loadResourcesFile: file already loaded [$arg_file_path_name]");
-			return true;
+			return Trace::leaveok($context, '', true, Broker::$TRACE_BROKER);
 		}
 		
 		// GET FILE TYPE
@@ -230,18 +259,18 @@ final class Broker
 		if ( ! is_array($file_parts) || count($file_parts) < 2)
 		{
 			Debug::dump("Resources\Broker.loadResourcesFile: bad file type for [$arg_file_path_name]");
-			return false;
+			return Trace::leaveko($context, 'bad file path name', false, Broker::$TRACE_BROKER);
 		}
 		$file_extension = array_pop($file_parts);
 		
 		// CALL FILE TYPE LOADER
 		switch($file_extension)
 		{
-			case 'ini': return Broker::loadResourcesIniFile($arg_file_path_name);
+			case 'ini': return Trace::leaveok($context, '', Broker::loadResourcesIniFile($arg_file_path_name), Broker::$TRACE_BROKER);
 		}
 		
 		Debug::dump("Resources\Broker.loadResourcesFile: bad file extension for [$arg_file_path_name]");
-		return false;
+		return Trace::leaveko($context, 'bad file extension', false, Broker::$TRACE_BROKER);
 	}
 	
 	
@@ -253,11 +282,14 @@ final class Broker
 	 */
 	static public function loadResourcesIniFile($arg_file_path_name)
 	{
+		$context = 'Broker::loadResourcesIniFile('.$arg_file_path_name. ')';
+		Trace::enter($context, '', Broker::$TRACE_BROKER);
+		
 		// CHECK FILE PATH NAME
 		if ( is_null($arg_file_path_name) || ! file_exists($arg_file_path_name) || ! is_readable($arg_file_path_name) )
 		{
 			Debug::dump("Resources\Broker.loadResourcesIniFile: bad file path name [$arg_file_path_name]");
-			return false;
+			return Trace::leaveko($context, 'bad file path name', false, Broker::$TRACE_BROKER);
 		}
 		
 		
@@ -270,11 +302,11 @@ final class Broker
 		if ( ! self::loadResourcesRecords($records_array) )
 		{
 			Debug::dump("Resources\Broker.loadResourcesIniFile: bad file content [$arg_file_path_name]");
-			return false;
+			return Trace::leaveko($context, 'bad file content', false, Broker::$TRACE_BROKER);
 		}
 		
 		Broker::$loaded_files[$arg_file_path_name] = 'loaded';
-		return true;
+		return Trace::leaveok($context, '', true, Broker::$TRACE_BROKER);
 	}
 	
 	
@@ -286,6 +318,9 @@ final class Broker
 	 */
 	static public function loadResourcesRecords($arg_records)
 	{
+		$context = 'Broker::loadResourcesRecords(records)';
+		Trace::enter($context, '', Broker::$TRACE_BROKER);
+		
 		// CHECK ARRAY
 		if ( ! is_array($arg_records) || count($arg_records) === 0 )
 		{
@@ -380,12 +415,12 @@ final class Broker
 			$access = $arg_resource_record[AbstractResource::$RESOURCE_ACCESS];
 		}
 		
-		if ( array_key_exists(View::$VIEW_ACCESS_ROLE, $arg_resource_record) )
+		else if ( array_key_exists(View::$VIEW_ACCESS_ROLE, $arg_resource_record) )
 		{
 			$access = $arg_resource_record[View::$VIEW_ACCESS_ROLE];
 		}
 		
-		if ( array_key_exists(Model::$MODEL_ACCESS_ROLE_READ, $arg_resource_record) )
+		else if ( array_key_exists(Model::$MODEL_ACCESS_ROLE_READ, $arg_resource_record) )
 		{
 			$access = $arg_resource_record[Model::$MODEL_ACCESS_ROLE_READ];
 		}

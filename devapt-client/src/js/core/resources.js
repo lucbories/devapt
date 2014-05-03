@@ -45,18 +45,88 @@ define(['Devapt', 'core/traces', 'core/types', 'core/classes', 'core/inheritance
 	
 	
 	/**
-	 * @memberof	DevaptResources
+	 * @memberof					DevaptResources
 	 * @public
 	 * @static
-	 * @method				DevaptResources.get(arg_resource_name)
-	 * @desc				Get a resource from the resources repositories
-	 * @param {string}		arg_resource_name	The resource name
-	 * @return {object}		A LibaptModel object
+	 * @method						DevaptResources.add_cached_declaration(arg_resource_json)
+	 * @desc						Add a resource declaration to the resources cache
+	 * @param {object}				arg_resource_json	The resource declaration
+	 * @return {boolean}			success of failure
+	 */
+	DevaptResources.add_cached_declaration = function (arg_resource_json)
+	{
+		var context = 'DevaptResources.add_cached_declaration(arg_resource_json)';
+		DevaptTraces.trace_enter(context, '', DevaptResources.resources_trace);
+		
+		
+		// CHECK ARGS
+		if ( ! DevaptTypes.is_object(arg_resource_json) )
+		{
+			DevaptTraces.trace_error(context, 'bad args', DevaptResources.resources_trace);
+			return false;
+		}
+		
+		// GET RESOURCE NAME
+		var resource_name = arg_resource_json['name'];
+		if ( ! DevaptTypes.is_string(resource_name) || resource_name === '' )
+		{
+			DevaptTraces.trace_error(context, 'bad resource name', DevaptResources.resources_trace);
+			return false;
+		}
+		
+		// REGISTER RESOURCE
+		DevaptResources.resources_by_name[resource_name] = arg_resource_json;
+		
+		
+		DevaptTraces.trace_leave(context, 'success', DevaptResources.resources_trace);
+		return true;
+	}
+	
+	
+	/**
+	 * @memberof					DevaptResources
+	 * @public
+	 * @static
+	 * @method						DevaptResources.get_cached_declaration(arg_resource_name)
+	 * @desc						Get a resource declaration from the resources cache
+	 * @param {string}				arg_resource_name	The resource name
+	 * @return {object|null}		A DevaptModel object
+	 */
+	DevaptResources.get_cached_declaration = function (arg_resource_name)
+	{
+		var context = 'DevaptResources.get_cached_declaration(resoure name)';
+		DevaptTraces.trace_enter(context, '', DevaptResources.resources_trace);
+		
+		
+		// CHECK RESOURCE NAME
+		if ( ! DevaptTypes.is_string(arg_resource_name) || arg_resource_name === '' )
+		{
+			DevaptTraces.trace_error(context, 'bad resource name', DevaptResources.resources_trace);
+			return null;
+		}
+		
+		// REGISTER RESOURCE
+		var resource_declaration = DevaptResources.resources_by_name[arg_resource_name];
+		
+		
+		DevaptTraces.trace_leave(context, 'success', DevaptResources.resources_trace);
+		return true;
+	}
+	
+	
+	/**
+	 * @memberof					DevaptResources
+	 * @public
+	 * @static
+	 * @method						DevaptResources.get(arg_resource_name)
+	 * @desc						Get a resource from the resources repositories
+	 * @param {string}				arg_resource_name	The resource name
+	 * @return {object}				A DevaptModel object
 	 */
 	DevaptResources.get = function (arg_resource_name)
 	{
 		var context = 'DevaptResources.get(model name)';
-		Libapt.trace_enter(context, '', DevaptResources.resources_trace);
+		DevaptTraces.trace_enter(context, '', DevaptResources.resources_trace);
 		
 		// GET RESOURCE FROM CACHE
 		var model = DevaptResources.resources_by_name[arg_model_name];
@@ -76,14 +146,14 @@ define(['Devapt', 'core/traces', 'core/types', 'core/classes', 'core/inheritance
 					model_settings = datas;
 				}
 			var ko_cb	= null;
-			Libapt.load_script(url, is_async, use_cache, ok_cb, ko_cb, 'json');
-			if ( ! Libapt.is_null(model_settings) )
+			Devapt.load_script(url, is_async, use_cache, ok_cb, ko_cb, 'json');
+			if ( ! DevaptTypes.is_null(model_settings) )
 			{
-				DevaptResources.create( model_settings);
+				DevaptResources.create(model_settings);
 			}
 			else
 			{
-				Libapt.trace_error(context, 'model settings not found', DevaptResources.resources_trace);
+				DevaptTraces.trace_error(context, 'model settings not found', DevaptResources.resources_trace);
 				return null;
 			}
 			
@@ -91,13 +161,13 @@ define(['Devapt', 'core/traces', 'core/types', 'core/classes', 'core/inheritance
 			model = DevaptResources.resources_by_name[arg_model_name];
 			if (! model)
 			{
-				Libapt.trace_error(context, 'model not found', DevaptResources.resources_trace);
+				DevaptTraces.trace_error(context, 'model not found', DevaptResources.resources_trace);
 				return null;
 			}
 		}
 		
 		
-		Libapt.trace_leave(context, 'model found', DevaptResources.resources_trace);
+		DevaptTraces.trace_leave(context, 'model found', DevaptResources.resources_trace);
 		return model;
 	}
 	
@@ -109,12 +179,12 @@ define(['Devapt', 'core/traces', 'core/types', 'core/classes', 'core/inheritance
 	 * @method					DevaptResources.init_default_providers()
 	 * @desc					Get a resource from the resources repositories
 	 * @param {string}			arg_resource_name	The resource name
-	 * @return {object}			A LibaptModel object
+	 * @return {object}			A DevaptModel object
 	 */
 	DevaptResources.init_default_providers = function ()
 	{
 		var context = 'DevaptResources.init_default_providers()';
-		Libapt.trace_enter(context, '', DevaptResources.resources_trace);
+		DevaptTraces.trace_enter(context, '', DevaptResources.resources_trace);
 		
 		
 		// SET JSON PROVIDERS
@@ -160,7 +230,7 @@ define(['Devapt', 'core/traces', 'core/types', 'core/classes', 'core/inheritance
 		DevaptResources.resources_providers['json'] = json_provider;
 		
 		
-		Libapt.trace_leave(context, '', DevaptResources.resources_trace);
+		DevaptTraces.trace_leave(context, '', DevaptResources.resources_trace);
 	}
 	
 	
