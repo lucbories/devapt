@@ -9,7 +9,7 @@
  * @license		Apache License Version 2.0, January 2004; see LICENSE.txt or http://www.apache.org/licenses/
  */
 
-define(['Devapt', 'core/traces', 'core/types'], function(Devapt, DevaptTrace, DevaptTypes)
+define(['Devapt', 'core/traces', 'core/types', 'jStorage'], function(Devapt, DevaptTrace, DevaptTypes, jStorage)
 {
 	/**
 	 * @memberof	DevaptCache

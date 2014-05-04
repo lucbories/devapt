@@ -9,7 +9,7 @@
  * @license		Apache License Version 2.0, January 2004; see LICENSE.txt or http://www.apache.org/licenses/
  */
 
-define(['Devapt', 'core/traces', 'core/types', 'core/classes', 'core/inheritance'], function(Devapt, DevaptTraces, DevaptTypes, DevaptClasses, DevaptInheritance)
+define(['Devapt', 'core/traces', 'core/types', 'core/cache'/*, 'core/classes', 'core/inheritance'*/], function(Devapt, DevaptTraces, DevaptTypes, DevaptCache/*, DevaptClasses, DevaptInheritance*/)
 {
 	/**
 	 * @memberof	DevaptResources
@@ -33,7 +33,7 @@ define(['Devapt', 'core/traces', 'core/types', 'core/classes', 'core/inheritance
 	 * @static
 	 * @desc		Resources repository cache (access by name)
 	 */
-	DevaptResources.resources_by_name = {};
+	// DevaptResources.resources_by_name = {};
 	
 	/**
 	 * @memberof	DevaptResources
@@ -75,7 +75,8 @@ define(['Devapt', 'core/traces', 'core/types', 'core/classes', 'core/inheritance
 		}
 		
 		// REGISTER RESOURCE
-		DevaptResources.resources_by_name[resource_name] = arg_resource_json;
+		// DevaptResources.resources_by_name[resource_name] = arg_resource_json;
+		DevaptCache.set_into_cache(resource_name, arg_resource_json, 0);
 		
 		
 		DevaptTraces.trace_leave(context, 'success', DevaptResources.resources_trace);
@@ -106,11 +107,12 @@ define(['Devapt', 'core/traces', 'core/types', 'core/classes', 'core/inheritance
 		}
 		
 		// REGISTER RESOURCE
-		var resource_declaration = DevaptResources.resources_by_name[arg_resource_name];
+		// var resource_declaration = DevaptResources.resources_by_name[arg_resource_name];
+		var resource_declaration = DevaptCache.get_from_cache(resource_name, null);
 		
 		
-		DevaptTraces.trace_leave(context, 'success', DevaptResources.resources_trace);
-		return true;
+		DevaptTraces.trace_leave(context, (DevaptTypes.is_null(resource_declaration) ? 'not found' : 'success'), DevaptResources.resources_trace);
+		return resource_declaration;
 	}
 	
 	
@@ -128,14 +130,16 @@ define(['Devapt', 'core/traces', 'core/types', 'core/classes', 'core/inheritance
 		var context = 'DevaptResources.get(model name)';
 		DevaptTraces.trace_enter(context, '', DevaptResources.resources_trace);
 		
+		
 		// GET RESOURCE FROM CACHE
-		var model = DevaptResources.resources_by_name[arg_model_name];
+		// var model = DevaptResources.resources_by_name[arg_resource_name];
+		var model = DevaptCache.get_from_cache(arg_resource_name, null);
 		
 		// IF RESOURCE IS NOT CACHED, ASK THE RESOURCES PROVIDERS
 		if (! model)
 		{
 			// GET THE MODEL SETTINGS FROM THE SERVER AND CREATE THE MODEL
-			var url			= 'index.php?resourceAction=getModel' + arg_model_name;
+			var url			= 'index.php?resourceAction=getModel' + arg_resource_name;
 			var use_cache	= true;
 			var is_async	= false;
 			
@@ -158,7 +162,8 @@ define(['Devapt', 'core/traces', 'core/types', 'core/classes', 'core/inheritance
 			}
 			
 			// CHECK MODEL
-			model = DevaptResources.resources_by_name[arg_model_name];
+			// model = DevaptResources.resources_by_name[arg_resource_name];
+			model = DevaptCache.get_from_cache(arg_resource_name, null);
 			if (! model)
 			{
 				DevaptTraces.trace_error(context, 'model not found', DevaptResources.resources_trace);
@@ -191,7 +196,7 @@ define(['Devapt', 'core/traces', 'core/types', 'core/classes', 'core/inheritance
 		var json_provider = function(arg_resource_name)
 		{
 			// INIT REQUEST ARGS
-			var url			= 'index.php?resourceAction=getResource' + arg_resource_name;
+			var url			= '/resources/' + arg_resource_name + '/get_resource';
 			var use_cache	= true;
 			var is_async	= true;
 			
@@ -210,7 +215,8 @@ define(['Devapt', 'core/traces', 'core/types', 'core/classes', 'core/inheritance
 						{
 							if (datas)
 							{
-								DevaptResources.resources_by_name[arg_resource_name] = datas;
+								// DevaptResources.resources_by_name[arg_resource_name] = datas;
+								DevaptResources.add_cached_declaration(datas);
 							}
 						},
 					
@@ -233,6 +239,7 @@ define(['Devapt', 'core/traces', 'core/types', 'core/classes', 'core/inheritance
 		DevaptTraces.trace_leave(context, '', DevaptResources.resources_trace);
 	}
 	
+	DevaptResources.init_default_providers();
 	
 	return DevaptResources;
 });
