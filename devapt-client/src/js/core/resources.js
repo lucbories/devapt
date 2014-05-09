@@ -25,15 +25,15 @@ define(['Devapt', 'core/traces', 'core/types', 'core/cache'/*, 'core/classes', '
 	 * @static
 	 * @desc		Trace flag
 	 */
-	DevaptResources.resources_trace = false;
+	DevaptResources.resources_trace = true;
 	
 	/**
 	 * @memberof	DevaptResources
 	 * @public
 	 * @static
-	 * @desc		Resources repository cache (access by name)
+	 * @desc		Resources instances repository cache (access by name)
 	 */
-	// DevaptResources.resources_by_name = {};
+	DevaptResources.resources_instanes_by_name = {};
 	
 	/**
 	 * @memberof	DevaptResources
@@ -50,7 +50,7 @@ define(['Devapt', 'core/traces', 'core/types', 'core/cache'/*, 'core/classes', '
 	 * @static
 	 * @method						DevaptResources.add_cached_declaration(arg_resource_json)
 	 * @desc						Add a resource declaration to the resources cache
-	 * @param {object}				arg_resource_json	The resource declaration
+	 * @param {object}				arg_resource_json	The resource declaration (json object)
 	 * @return {boolean}			success of failure
 	 */
 	DevaptResources.add_cached_declaration = function (arg_resource_json)
@@ -67,7 +67,7 @@ define(['Devapt', 'core/traces', 'core/types', 'core/cache'/*, 'core/classes', '
 		}
 		
 		// GET RESOURCE NAME
-		var resource_name = arg_resource_json['name'];
+		var resource_name = 'devapt.resources.' + arg_resource_json['name'];
 		if ( ! DevaptTypes.is_string(resource_name) || resource_name === '' )
 		{
 			DevaptTraces.trace_error(context, 'bad resource name', DevaptResources.resources_trace);
@@ -75,7 +75,6 @@ define(['Devapt', 'core/traces', 'core/types', 'core/cache'/*, 'core/classes', '
 		}
 		
 		// REGISTER RESOURCE
-		// DevaptResources.resources_by_name[resource_name] = arg_resource_json;
 		DevaptCache.set_into_cache(resource_name, arg_resource_json, 0);
 		
 		
@@ -91,7 +90,7 @@ define(['Devapt', 'core/traces', 'core/types', 'core/cache'/*, 'core/classes', '
 	 * @method						DevaptResources.get_cached_declaration(arg_resource_name)
 	 * @desc						Get a resource declaration from the resources cache
 	 * @param {string}				arg_resource_name	The resource name
-	 * @return {object|null}		A DevaptModel object
+	 * @return {object|null}		A json object
 	 */
 	DevaptResources.get_cached_declaration = function (arg_resource_name)
 	{
@@ -107,7 +106,7 @@ define(['Devapt', 'core/traces', 'core/types', 'core/cache'/*, 'core/classes', '
 		}
 		
 		// REGISTER RESOURCE
-		// var resource_declaration = DevaptResources.resources_by_name[arg_resource_name];
+		var resource_name = 'devapt.resources.' + arg_resource_name;
 		var resource_declaration = DevaptCache.get_from_cache(resource_name, null);
 		
 		
@@ -120,56 +119,87 @@ define(['Devapt', 'core/traces', 'core/types', 'core/cache'/*, 'core/classes', '
 	 * @memberof					DevaptResources
 	 * @public
 	 * @static
-	 * @method						DevaptResources.get(arg_resource_name)
-	 * @desc						Get a resource from the resources repositories
+	 * @method						DevaptResources.get_resource_declaration(arg_resource_name)
+	 * @desc						Get a resource declaration
 	 * @param {string}				arg_resource_name	The resource name
-	 * @return {object}				A DevaptModel object
+	 * @return {object|null}		A json object
 	 */
-	DevaptResources.get = function (arg_resource_name)
+	DevaptResources.get_resource_declaration = function (arg_resource_name)
 	{
-		var context = 'DevaptResources.get(model name)';
+		var context = 'DevaptResources.get_resource_declaration(resoure name)';
 		DevaptTraces.trace_enter(context, '', DevaptResources.resources_trace);
 		
 		
-		// GET RESOURCE FROM CACHE
-		// var model = DevaptResources.resources_by_name[arg_resource_name];
-		var model = DevaptCache.get_from_cache(arg_resource_name, null);
-		
-		// IF RESOURCE IS NOT CACHED, ASK THE RESOURCES PROVIDERS
-		if (! model)
+		// CHECK RESOURCE NAME
+		if ( ! DevaptTypes.is_string(arg_resource_name) || arg_resource_name === '' )
 		{
-			// GET THE MODEL SETTINGS FROM THE SERVER AND CREATE THE MODEL
-			var url			= 'index.php?resourceAction=getModel' + arg_resource_name;
-			var use_cache	= true;
-			var is_async	= false;
-			
-			var model_settings = null;
-			
-			var ok_cb	= function(datas)
-				{
-					model_settings = datas;
-				}
-			var ko_cb	= null;
-			Devapt.load_script(url, is_async, use_cache, ok_cb, ko_cb, 'json');
-			if ( ! DevaptTypes.is_null(model_settings) )
+			DevaptTraces.trace_error(context, 'bad resource name', DevaptResources.resources_trace);
+			return null;
+		}
+		
+		// GET RESOURCE DECLARATION FROM CACHE
+		var resource_declaration = DevaptResources.get_cached_declaration(arg_resource_name);
+		if (resource_declaration)
+		{
+			DevaptTraces.trace_leave(context, 'resource declaration found from cache', DevaptResources.resources_trace);
+			return resource_declaration;
+		}
+		
+		// LOOK UP RESOURCE DECLARATION FROM PROVIDERS
+		for(provider in DevaptResources.resources_providers)
+		{
+			if ( ! DevaptTypes.is_function(provider) )
 			{
-				DevaptResources.create(model_settings);
-			}
-			else
-			{
-				DevaptTraces.trace_error(context, 'model settings not found', DevaptResources.resources_trace);
-				return null;
+				continue;
 			}
 			
-			// CHECK MODEL
-			// model = DevaptResources.resources_by_name[arg_resource_name];
-			model = DevaptCache.get_from_cache(arg_resource_name, null);
-			if (! model)
+			resource_declaration = provider(arg_resource_name);
+			if (resource_declaration)
 			{
-				DevaptTraces.trace_error(context, 'model not found', DevaptResources.resources_trace);
-				return null;
+				DevaptResources.add_cached_declaration(resource_declaration);
+				DevaptTraces.trace_leave(context, 'resource declaration found from provider', DevaptResources.resources_trace);
+				return resource_declaration;
 			}
 		}
+		
+			
+		DevaptTraces.trace_leave(context, 'resource declaration not found', DevaptResources.resources_trace);
+		return null;
+	}
+	
+	
+	/**
+	 * @memberof					DevaptResources
+	 * @public
+	 * @static
+	 * @method						DevaptResources.get_resource_instance(arg_resource_name)
+	 * @desc						Get a resource instance from the resources repositories
+	 * @param {string}				arg_resource_name	The resource name
+	 * @return {object}				An object
+	 */
+	DevaptResources.get_resource_instance = function (arg_resource_name)
+	{
+		var context = 'DevaptResources.get_resource_instance(resource name)';
+		DevaptTraces.trace_enter(context, '', DevaptResources.resources_trace);
+		
+		
+		// GET RESOURCE FROM REPOSITORY
+		var resource_instance = DevaptResources.resources_instanes_by_name[arg_resource_name];
+		if (resource_instance)
+		{
+			DevaptTraces.trace_leave(context, 'resource found', DevaptResources.resources_trace);
+			return resource_instance;
+		}
+		
+		
+		// BUILD RESOURCE INSTANCE FROM RESOURCE DECLARATION
+		var resource_declaration = DevaptCache.get_resource_declaration(arg_resource_name);
+		if (! resource_declaration)
+		{
+			DevaptTraces.trace_leave(context, 'resource not found', DevaptResources.resources_trace);
+			return null;
+		}
+		console.log(resource_declaration);
 		
 		
 		DevaptTraces.trace_leave(context, 'model found', DevaptResources.resources_trace);
