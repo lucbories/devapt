@@ -123,7 +123,7 @@ require.config(
 	}
 );
 
-require(['Devapt', 'backend-foundation5/foundation-init'], function(Devapt, undefined)
+require(['Devapt'], function(Devapt)
 {
 	Devapt.run();
 } );

@@ -175,7 +175,7 @@ define(['Devapt', 'core/traces', 'core/types', 'core/cache'/*, 'core/classes', '
 	 * @method						DevaptResources.get_resource_instance(arg_resource_name)
 	 * @desc						Get a resource instance from the resources repositories
 	 * @param {string}				arg_resource_name	The resource name
-	 * @return {object}				An object
+	 * @return {object|null}		An object
 	 */
 	DevaptResources.get_resource_instance = function (arg_resource_name)
 	{
@@ -192,18 +192,61 @@ define(['Devapt', 'core/traces', 'core/types', 'core/cache'/*, 'core/classes', '
 		}
 		
 		
-		// BUILD RESOURCE INSTANCE FROM RESOURCE DECLARATION
+		// GET RESOURCE DECLARATION
 		var resource_declaration = DevaptCache.get_resource_declaration(arg_resource_name);
 		if (! resource_declaration)
 		{
 			DevaptTraces.trace_leave(context, 'resource not found', DevaptResources.resources_trace);
 			return null;
 		}
-		console.log(resource_declaration);
+		
+		// BUILD RESOURCE INSTANCE FROM RESOURCE DECLARATION
+		var resource = DevaptResources.build_from_declaration(resource_declaration);
+		if (! resource)
+		{
+			DevaptTraces.trace_leave(context, 'resource not build', DevaptResources.resources_trace);
+			return null;
+		}
+		
+		DevaptTraces.trace_leave(context, 'resource found and build', DevaptResources.resources_trace);
+		return resource;
+	}
+	
+	
+	/**
+	 * @memberof					DevaptResources
+	 * @public
+	 * @static
+	 * @method						DevaptResources.build_from_declaration(arg_resource_name)
+	 * @desc						Build a resource instance from the resource declaration
+	 * @param {string}				arg_resource_json	The resource declaration (json object)
+	 * @return {object}				An object
+	 */
+	DevaptResources.build_from_declaration = function (arg_resource_json)
+	{
+		var context = 'DevaptResources.build_from_declaration(resource declaration)';
+		DevaptTraces.trace_enter(context, '', DevaptResources.resources_trace);
 		
 		
-		DevaptTraces.trace_leave(context, 'model found', DevaptResources.resources_trace);
-		return model;
+		// GET DEVAPT CURRENT BACKEND
+		var backend = Devapt.get_current_backend();
+		if (! backend)
+		{
+			DevaptTraces.trace_leave(context, 'backend not found', DevaptResources.resources_trace);
+			return null;
+		}
+		
+		// BUILD RESOURCE FROM BACKEND
+		var resource = backend.build_from_declaration(arg_resource_json);
+		if (! resource)
+		{
+			DevaptTraces.trace_leave(context, 'resource build failure', DevaptResources.resources_trace);
+			return null;
+		}
+		
+		
+		DevaptTraces.trace_leave(context, 'resource build success', DevaptResources.resources_trace);
+		return resource;
 	}
 	
 	
