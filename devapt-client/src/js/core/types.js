@@ -665,12 +665,10 @@ define(['Devapt', 'core/traces'], function(Devapt, DevaptTraces)
 	 * @param {string}		arg_default_value	default value
 	 * @return {string}
 	 */
-	// DevaptTypes.to_string = function(arg_value, arg_default_value)
-	// {
-		// var default_value = DevaptTypes.is_undefined(arg_default_value) ? false : arg_default_value;
-		
-		// return arg_value;
-	// }
+	DevaptTypes.to_string = function(arg_value, arg_default_value)
+	{
+		return ( DevaptTypes.is_string(arg_value) && arg_value !== '' ) ? arg_value : arg_default_value;
+	}
 
 	/**
 	 * @memberof			DevaptTypes
@@ -1204,6 +1202,23 @@ define(['Devapt', 'core/traces'], function(Devapt, DevaptTraces)
 		}
 		return str;
 	}
+	
 
+	/**
+	 * @memberof			DevaptTypes
+	 * @public
+	 * @static
+	 * @method				DevaptTypes.get_value(arg_value, arg_default_value)
+	 * @desc				Get a value or default value if null or undefined
+	 * @param {anything}	arg_value			value to convert
+	 * @param {anything}	arg_default_value	default value
+	 * @return {anything}
+	 */
+	DevaptTypes.get_value = function(arg_value, arg_default_value)
+	{
+		return ( DevaptTypes.is_undefined(arg_value) || DevaptTypes.is_null(arg_value) ) ? arg_default_value : arg_value;
+	}
+	
+	
 	return DevaptTypes;
 } );

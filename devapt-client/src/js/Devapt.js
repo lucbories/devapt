@@ -265,7 +265,7 @@ define('Devapt', ['jquery'], function($)
 	 */
 	Devapt.run = function()
 	{
-		console.log('Devapt.run');
+		console.info('Devapt.run');
 		
 		
 		// INIT APPLICATION

@@ -172,6 +172,37 @@ define(['Devapt', 'core/traces', 'core/types', 'core/cache'/*, 'core/classes', '
 	 * @memberof					DevaptResources
 	 * @public
 	 * @static
+	 * @method						DevaptResources.add_resource_instance(arg_resource_instance)
+	 * @desc						Add a resource instance to the resources repository
+	 * @param {object}				arg_resource_instance	resource declaration (view/model/... object)
+	 * @return {boolean}			success of failure
+	 */
+	DevaptResources.add_resource_instance = function (arg_resource_instance)
+	{
+		var context = 'DevaptResources.add_resource_instance(arg_resource_instance)';
+		DevaptTraces.trace_enter(context, '', DevaptResources.resources_trace);
+		
+		
+		// CHECK RESOURCE INSTANCE
+		if ( ! DevaptTypes.is_object(arg_resource_instance) || ! DevaptTypes.is_string(arg_resource_instance.name) || ! DevaptTypes.is_string(arg_resource_instance.class_name) )
+		{
+			DevaptTraces.trace_leave(context, 'bad resource instance', DevaptResources.resources_trace);
+			return false;
+		}
+		
+		// REGISTER RESOURCE INSTANCE
+		DevaptResources.resources_instanes_by_name[arg_resource_instance.name] = arg_resource_instance;
+		
+		
+		DevaptTraces.trace_leave(context, 'resource instance registered', DevaptResources.resources_trace);
+		return true;
+	}
+	
+	
+	/**
+	 * @memberof					DevaptResources
+	 * @public
+	 * @static
 	 * @method						DevaptResources.get_resource_instance(arg_resource_name)
 	 * @desc						Get a resource instance from the resources repositories
 	 * @param {string}				arg_resource_name	The resource name

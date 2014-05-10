@@ -1,54 +1,62 @@
 /**
- * @file        libapt-object.js
- * @desc        Base class
- * @ingroup     LIBAPT_CORE_JS
- * @date        2013-06-15
- * @version		0.9.x
+ * @file        core/object.js
+ * @desc        Object base class
+ * @ingroup     DEVAPT_CORE
+ * @date        2014-05-10
+ * @version		1.0.x
  * @author      Luc BORIES
  * @copyright	Copyright (C) 2011 Luc BORIES All rights reserved.
  * @license		Apache License Version 2.0, January 2004; see LICENSE.txt or http://www.apache.org/licenses/
  */
 
-
-
-/**
- * @public
- * @class				LibaptObject
- * @desc				Libapt base class
- * @param {string}		arg_name				name of the object
- * @param {boolean}		arg_trace_constructor	enable the trace of the constructors chain
- * @param {object|null}	arg_options				associative array of name/value options
- * @return {nothing}
- */
-function LibaptObject(arg_name, arg_trace_constructor, arg_options)
+define(['Devapt', 'core/traces', 'core/types', 'core/options'], function(Devapt, DevaptTrace, DevaptTypes, DevaptOptions)
 {
-	var self = this;
-	
-	
-	/* --------------------------------------------------------------------------------------------- */
-	// CONSTRUCTOR BEGIN
-	self.trace			= false;
-	self.class_name		= 'LibaptObject';
-	var context			= self.class_name + '(' + arg_name + ')';
-	Libapt.trace_enter(context, 'constructor', arg_trace_constructor);
-	
-	
-	// FIELD ATTRIBUTES
-	self.name				= get_arg(arg_name, 'no name');
-	
-	// INIT OPTIONS VALUES
-	var init_option_result = Libapt.set_options_values(self, arg_options, false);
-	/*if ( ! init_option_result )
+	/**
+	 * @public
+	 * @class				DevaptObject
+	 * @desc				Devapt base class
+	 * @param {string}		arg_name				name of the object
+	 * @param {boolean}		arg_trace_constructor	enable the trace of the constructors chain
+	 * @param {object|null}	arg_options				associative array of name/value options
+	 * @return {nothing}
+	 */
+	function DevaptObject(arg_name, arg_options, arg_trace_constructor)
 	{
-		var msg = 'init options failed';
-		Libapt.log( { context:context, text:msg } );
-		throw(context + ':' + msg);
-	}*/
-	
-	
-	// CONSTRUCTOR END
-	Libapt.trace_leave(context, 'success', arg_trace_constructor);
-	/* --------------------------------------------------------------------------------------------- */
+		var self = this;
+		
+		// INIT
+		self.trace				= false;
+		self.class_name			= 'DevaptObject';
+		self.trace_constructor	= DevaptTypes.to_boolean(arg_trace_constructor, false);
+		
+		
+		/**
+		 * @public
+		 * @memberof			DevaptView
+		 * @desc				Constructor
+		 * @return {nothing}
+		 */
+		self.contructor = function()
+		{
+			// CONSTRUCTOR BEGIN
+			var context = self.class_name + '(' + arg_name + ')';
+			Devapt.trace_enter(context, 'constructor', self.trace_constructor);
+			
+			
+			// FIELD ATTRIBUTES
+			self.name = DevaptTypes.to_string(arg_name, 'no name');
+			
+			// INIT OPTIONS VALUES
+			var init_option_result = DevaptOptions.set_options_values(self, arg_options, false);
+			
+			
+			// CONSTRUCTOR END
+			Devapt.trace_leave(context, 'success', self.trace_constructor);
+		}
+		
+		
+		// CONTRUCT INSTANCE
+		self.contructor();
 	
 	
 	
@@ -62,7 +70,7 @@ function LibaptObject(arg_name, arg_trace_constructor, arg_options)
 	 */
 	this.is_a = function(arg_proto)
 	{
-		return Libapt.is_a(this, arg_proto);
+		return Devapt.is_a(this, arg_proto);
 	}
 	
 	/**
@@ -78,7 +86,7 @@ function LibaptObject(arg_name, arg_trace_constructor, arg_options)
 		var context = 'merge_object(options,replace)';
 		this.enter(context, '');
 		
-		if ( Libapt.is_object(arg_options) )
+		if ( Devapt.is_object(arg_options) )
 		{
 			this.step(context, 'options are a valid object');
 			
@@ -88,10 +96,10 @@ function LibaptObject(arg_name, arg_trace_constructor, arg_options)
 				
 				var option = arg_options[option_key];
 				
-				if ( ! Libapt.is_null(this[option_key]) )
+				if ( ! Devapt.is_null(this[option_key]) )
 				{
 					this.step(context, 'this has an existing option');
-					if ( Libapt.is_null(this[option_key]) )
+					if ( Devapt.is_null(this[option_key]) )
 					{
 						this.step(context, 'update this null option with given option');
 						this[option_key] = option;
@@ -191,10 +199,10 @@ function LibaptObject(arg_name, arg_trace_constructor, arg_options)
 		
 		
 		// CHECK ARGUMENTS
-		self.assertTrue(context, 'callback', Libapt.is_string(arg_method_name) );
-		self.assertTrue(context, 'callback', Libapt.is_callback(arg_callback) );
-		arg_give_arguments		= Libapt.is_boolean(arg_give_arguments) ? arg_give_arguments : true;
-		arg_execute_on_failed	= Libapt.is_boolean(arg_execute_on_failed) ? arg_execute_on_failed : true;
+		self.assertTrue(context, 'callback', Devapt.is_string(arg_method_name) );
+		self.assertTrue(context, 'callback', Devapt.is_callback(arg_callback) );
+		arg_give_arguments		= Devapt.is_boolean(arg_give_arguments) ? arg_give_arguments : true;
+		arg_execute_on_failed	= Devapt.is_boolean(arg_execute_on_failed) ? arg_execute_on_failed : true;
 		
 		// GET ORIGINAL METHOD CALLBACK
 		var proxied = this[arg_method_name];
@@ -252,10 +260,10 @@ function LibaptObject(arg_name, arg_trace_constructor, arg_options)
 		
 		
 		// CHECK ARGUMENTS
-		self.assertTrue(context, 'callback', Libapt.is_string(arg_method_name) );
-		self.assertTrue(context, 'callback', Libapt.is_callback(arg_callback) );
-		arg_give_arguments		= Libapt.is_boolean(arg_give_arguments) ? arg_give_arguments : true;
-		arg_execute_on_failed	= Libapt.is_boolean(arg_execute_on_failed) ? arg_execute_on_failed : true;
+		self.assertTrue(context, 'callback', Devapt.is_string(arg_method_name) );
+		self.assertTrue(context, 'callback', Devapt.is_callback(arg_callback) );
+		arg_give_arguments		= Devapt.is_boolean(arg_give_arguments) ? arg_give_arguments : true;
+		arg_execute_on_failed	= Devapt.is_boolean(arg_execute_on_failed) ? arg_execute_on_failed : true;
 		
 		// GET ORIGINAL METHOD CALLBACK
 		var proxied = this[arg_method_name];
@@ -337,7 +345,7 @@ function LibaptObject(arg_name, arg_trace_constructor, arg_options)
 		}
 		
 		// ARRAY
-		if ( Libapt.is_array(arg_object_to_clone) )
+		if ( Devapt.is_array(arg_object_to_clone) )
 		{
 			var tmp = new Array();
 			for(key in arg_object_to_clone)
@@ -369,11 +377,11 @@ function LibaptObject(arg_name, arg_trace_constructor, arg_options)
 		}
 		else if (self.trace)
 		{
-			Libapt.log( { level:'DEBUG', step:'ENTER', context:self.class_name + '.' + arg_context + '[' + self.name + ']', text:arg_msg } );
-			Libapt.log_indent();
+			Devapt.log( { level:'DEBUG', step:'ENTER', context:self.class_name + '.' + arg_context + '[' + self.name + ']', text:arg_msg } );
+			Devapt.log_indent();
 		}
 		
-		if ( Libapt.is_null(arg_mixin_attr_names) )
+		if ( Devapt.is_null(arg_mixin_attr_names) )
 		{
 			arg_mixin_attr_names = [];
 			for(key in arg_mixin_proto)
@@ -382,7 +390,7 @@ function LibaptObject(arg_name, arg_trace_constructor, arg_options)
 			}
 		}
 		
-		if ( ! Libapt.is_array(arg_mixin_attr_names) )
+		if ( ! Devapt.is_array(arg_mixin_attr_names) )
 		{
 			arg_mixin_attr_names = [arg_mixin_attr_names];
 		}
@@ -391,9 +399,9 @@ function LibaptObject(arg_name, arg_trace_constructor, arg_options)
 		{
 			var attr_name	= arg_mixin_attr_names[attr_name_key];
 			var attr_obj	= arg_mixin_proto[attr_name];
-			if ( Libapt.is_string(attr_name) && ! Libapt.is_null(attr_obj) )
+			if ( Devapt.is_string(attr_name) && ! Devapt.is_null(attr_obj) )
 			{
-				if ( Libapt.is_function(attr_obj) )
+				if ( Devapt.is_function(attr_obj) )
 				{
 					self[attr_name] = attr_obj;
 				}
@@ -413,8 +421,8 @@ function LibaptObject(arg_name, arg_trace_constructor, arg_options)
 		}
 		else if (self.trace)
 		{
-			Libapt.log_unindent();
-			Libapt.log( { level:'DEBUG', step:'LEAVE', context:self.class_name + '.' + arg_context + '[' + self.name + ']', text:arg_msg } );
+			Devapt.log_unindent();
+			Devapt.log( { level:'DEBUG', step:'LEAVE', context:self.class_name + '.' + arg_context + '[' + self.name + ']', text:arg_msg } );
 		}
 		return true;
 	}
@@ -438,11 +446,11 @@ function LibaptObject(arg_name, arg_trace_constructor, arg_options)
 		}
 		else if (self.trace)
 		{
-			Libapt.log( { level:'DEBUG', step:'ENTER', context:self.class_name + '.' + arg_context + '[' + self.name + ']', text:arg_msg } );
-			Libapt.log_indent();
+			Devapt.log( { level:'DEBUG', step:'ENTER', context:self.class_name + '.' + arg_context + '[' + self.name + ']', text:arg_msg } );
+			Devapt.log_indent();
 		}
 		
-		if ( Libapt.is_null(arg_mixin_method_names) )
+		if ( Devapt.is_null(arg_mixin_method_names) )
 		{
 			arg_mixin_method_names = [];
 			for(key in arg_mixin_proto)
@@ -451,7 +459,7 @@ function LibaptObject(arg_name, arg_trace_constructor, arg_options)
 			}
 		}
 		
-		if ( ! Libapt.is_array(arg_mixin_method_names) )
+		if ( ! Devapt.is_array(arg_mixin_method_names) )
 		{
 			arg_mixin_method_names = [arg_mixin_method_names];
 		}
@@ -460,7 +468,7 @@ function LibaptObject(arg_name, arg_trace_constructor, arg_options)
 		{
 			var method_name = arg_mixin_method_names[method_name_key];
 			var method_func = arg_mixin_proto[method_name];
-			if ( Libapt.is_string(method_name) && Libapt.is_function(method_func) )
+			if ( Devapt.is_string(method_name) && Devapt.is_function(method_func) )
 			{
 				self[method_name] = method_func;
 			}
@@ -473,8 +481,8 @@ function LibaptObject(arg_name, arg_trace_constructor, arg_options)
 		}
 		else if (self.trace)
 		{
-			Libapt.log_unindent();
-			Libapt.log( { level:'DEBUG', step:'LEAVE', context:self.class_name + '.' + arg_context + '[' + self.name + ']', text:arg_msg } );
+			Devapt.log_unindent();
+			Devapt.log( { level:'DEBUG', step:'LEAVE', context:self.class_name + '.' + arg_context + '[' + self.name + ']', text:arg_msg } );
 		}
 		return true;
 	}
@@ -482,25 +490,25 @@ function LibaptObject(arg_name, arg_trace_constructor, arg_options)
 	
 	/* --------------------------------------------------------------------------------------------- */
 	// APPEND MIXIN METHODS
-	self.register_mixin(LibaptMixinTrace);
-	self.register_mixin(LibaptMixinAssertion);
-	self.register_mixin(LibaptMixinCallback);
-	self.register_mixin(LibaptMixinEventSender);
-	self.register_mixin(LibaptMixinEventListener);
+	self.register_mixin(DevaptMixinTrace);
+	self.register_mixin(DevaptMixinAssertion);
+	self.register_mixin(DevaptMixinCallback);
+	self.register_mixin(DevaptMixinEventSender);
+	self.register_mixin(DevaptMixinEventListener);
 	/* --------------------------------------------------------------------------------------------- */
 }
 
 
 // INTROSPETION : REGISTER CLASS
-Libapt.register_class(LibaptObject, [], 'Luc BORIES', '2013-08-21', 'The base class.');
+Devapt.register_class(DevaptObject, [], 'Luc BORIES', '2013-08-21', 'The base class.');
 
 
 
 // INTROSPETION : REGISTER OPTIONS
-Libapt.register_str_option(LibaptObject, 'class_name',		null, true, []);
-Libapt.register_str_option(LibaptObject, 'class_type',		null, true, []);
-Libapt.register_str_option(LibaptObject, 'name',			null, true, []);
-Libapt.register_bool_option(LibaptObject, 'trace',			false, true, []);
+Devapt.register_str_option(DevaptObject, 'class_name',		null, true, []);
+Devapt.register_str_option(DevaptObject, 'class_type',		null, true, []);
+Devapt.register_str_option(DevaptObject, 'name',			null, true, []);
+Devapt.register_bool_option(DevaptObject, 'trace',			false, true, []);
 
 
 
@@ -508,16 +516,16 @@ Libapt.register_bool_option(LibaptObject, 'trace',			false, true, []);
 /**
  * @public
  * @static
- * @memberof			LibaptObject
- * @method				LibaptObject.create(arg_settings)
+ * @memberof			DevaptObject
+ * @method				DevaptObject.create(arg_settings)
  * @desc				Create an object from settings
  * @param {object}		arg_settings			attributes to create the object
  * @return {object}		created object
  */
-LibaptObject.create = function(arg_settings)
+DevaptObject.create = function(arg_settings)
 {
-	var context = 'LibaptObject.create(arg_settings)';
-	Libapt.trace_enter(context, '', true);
+	var context = 'DevaptObject.create(arg_settings)';
+	Devapt.trace_enter(context, '', true);
 	
 	// INIT DEFAUTL SETTINGS
 	var default_settings =
@@ -530,10 +538,10 @@ LibaptObject.create = function(arg_settings)
 	var ext_settings = $.extend(default_settings, arg_settings);
 	
 	// CREATE OBJECT
-	var obj = new LibaptObject(ext_settings.name);
+	var obj = new DevaptObject(ext_settings.name);
 	obj.trace = ext_settings.trace;
 	
-	Libapt.trace_leave(context, '', true);
+	Devapt.trace_leave(context, '', true);
 	return obj;
 }
 

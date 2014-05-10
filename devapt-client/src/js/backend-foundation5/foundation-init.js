@@ -12,14 +12,14 @@
 define(['modernizr', 'Devapt', 'foundation.alert', 'foundation.dropdown', 'foundation.tooltip', 'foundation.topbar'],
 function(m, Devapt, undefined)
 {
-	console.log('Loading Foundation 5.0.2 Init');
+	console.info('Loading Foundation 5.0.2 Init');
 	
 	Devapt.use_css('/devapt-client/lib/foundation-5.0.2/css/foundation.min.css');
 	
 	
 	function libapt_foundation_init($, window)
 	{
-		console.log('Loading Foundation 5.0.2 Init libapt_foundation_init');
+		console.info('Init Foundation 5.0.2 features');
 		
 		'use strict';
 		
@@ -52,7 +52,7 @@ function(m, Devapt, undefined)
 	$(document).ready(
 		function()
 		{
-			console.log('Loading Foundation 5.0.2 Init widgets');
+			console.info('Init Foundation 5.0.2 widgets');
 			
 			var $ = Devapt.jQuery();
 			libapt_foundation_init($, window);
