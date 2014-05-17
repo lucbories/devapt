@@ -1,15 +1,15 @@
 /**
  * @file     	Devapt.js
  * @desc     	Devapt static common features: Devapt static class, traces, errors, types, inheritance, modules, resources, utils
- * @ingroup     LIBAPT_MAIN_JS
+ * @ingroup     DEVAPT_CORE
  * @date        2013-05-16
- * @version		0.9.x
+ * @version		1.0.x
  * @author      Luc BORIES
  * @copyright	Copyright (C) 2011 Luc BORIES All rights reserved.
  * @license		Apache License Version 2.0, January 2004; see LICENSE.txt or http://www.apache.org/licenses/
  */
 
-define('Devapt', ['jquery'], function($)
+define('Devapt', ['jquery', 'core/init'], function($, DevaptInit)
 {
 	console.info('Loading Devapt bootstrap');
 	
@@ -219,7 +219,7 @@ define('Devapt', ['jquery'], function($)
 	 */
 	Devapt.use_css = function(arg_css_files)
 	{
-		console.log('Devapt.use_css [' + arg_css_files + ']');
+		console.info('Devapt.use_css [' + arg_css_files + ']');
 		
 		// LOAD MODULE CSS FILES
 		if (arg_css_files)
@@ -263,18 +263,9 @@ define('Devapt', ['jquery'], function($)
 	 * @desc				Run application
 	 * @return {nothing}
 	 */
-	Devapt.run = function()
+/*	Devapt.run = function()
 	{
 		console.info('Devapt.run');
-		
-		
-		// INIT APPLICATION
-		// var app = require('core/application');
-		// if ( ! app )
-		// {
-			// console.error('Devapt.run: init application failed');
-			// return;
-		// }
 		
 		
 		// INIT BACKEND
@@ -294,8 +285,21 @@ define('Devapt', ['jquery'], function($)
 		
 		
 		// INIT DEFAULT VIEW
-		// var default_view = app.get_home_view();
-	}
+		DevaptInit.init();
+		
+		
+		// INIT APPLICATION
+		require(['core/application'], function(app)
+		{
+			if ( ! app )
+			{
+				console.error('Devapt.run: init application failed');
+				return;
+			}
+			
+			// var default_view = app.get_home_view();
+		} );
+	}*/
 	
 	
 	// Bootstrap

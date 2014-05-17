@@ -228,6 +228,24 @@ class Menubar extends AbstractResource
 	}
 	
 	/**
+	 * @brief		Get all menubar items names (depth search)
+	 * @return		array
+	 */
+	public function getMenubarAllItemsNames()
+	{
+		$all_items = array();
+		$items = $this->getMenubarItems();
+		foreach($items as $item)
+		{
+			$all_items[] = $item->getResourceName();
+			$sub_items = $item->getMenuAllItemsNames();
+			$all_items = array_merge($all_items, $sub_items);
+		}
+		
+		return $all_items;
+	}
+	
+	/**
 	 * @brief		Add a menu resource to this menubar
 	 $ @param[in]	arg_menu_resource	menu resource (object)
 	 * @return		nothing

@@ -1,6 +1,6 @@
 /**
  * @file        core/traces.js
- * @desc        Libapt static common features: Libapt static traces operations
+ * @desc        Devapt static common features: Devapt static traces operations
  * @ingroup     DEVAPT_CORE
  * @date        2013-05-16
  * @version		1.0.x
@@ -12,51 +12,59 @@
 define(['Devapt', 'core/types'], function(Devapt, DevaptTypes)
 {
 	/**
-	 * @memberof	DevaptTraces
+	 * @memberof			DevaptTraces
 	 * @public
 	 * @class
-	 * @desc		Devapt trace features container
+	 * @desc				Devapt trace features container
 	 */
 	var DevaptTraces = function() {};
 	
 	/**
-	 * @memberof	Libapt
+	 * @memberof			DevaptTraces
 	 * @public
 	 * @static
-	 * @desc		Log indentation string
+	 * @desc				Flag : throw on error
+	 */
+	DevaptTraces.throw_on_error = false;
+	
+	/**
+	 * @memberof			DevaptTraces
+	 * @public
+	 * @static
+	 * @desc				Log indentation string
 	 */
 	DevaptTraces.log_indent_str = '';
 
 	/**
-	 * @memberof	Libapt
+	 * @memberof			DevaptTraces
 	 * @public
 	 * @static
-	 * @desc		Log indentation index
+	 * @desc				Log indentation index
 	 */
 	DevaptTraces.log_indent_index = 0;
 
 	/**
-	 * @memberof	Libapt
+	 * @memberof			DevaptTraces
 	 * @public
-	 * @desc		Log indentation separator
+	 * @desc				Log indentation separator
 	 * @static
 	 */
 	DevaptTraces.log_indent_sep = '-';
 
 	/**
-	 * @memberof		Libapt
+	 * @memberof			DevaptTraces
 	 * @public
 	 * @static
-	 * @method			DevaptTraces.log(arg_log_obj)
-	 * @desc			Trace a message
-	 * @param {object}	arg_log_obj		log attributes	
-	 * @return {nothing}
+	 * @method				DevaptTraces.format_msg(arg_log_obj)
+	 * @desc				Format a log message
+	 * @param {object}		arg_log_obj		log attributes	
+	 * @return {string}
 	 */
-	DevaptTraces.log = function(arg_log_obj)
+	DevaptTraces.format_msg = function(arg_log_obj)
 	{
 		if ( ! arg_log_obj )
 		{
-			return;
+			return null;
 		}
 		
 		var level	= DevaptTypes.is_string(arg_log_obj.level)	? arg_log_obj.level + ' '		: '';
@@ -65,16 +73,76 @@ define(['Devapt', 'core/types'], function(Devapt, DevaptTypes)
 		var text	= DevaptTypes.is_string(arg_log_obj.text)	? arg_log_obj.text : '';
 		var indent	= DevaptTraces.log_indent_str.rpad(' ', 10);
 		
-		console.log(level + indent + context + step + text);
+		return level + indent + context + step + text;
 	}
 
 	/**
-	 * @memberof	Libapt
+	 * @memberof			DevaptTraces
 	 * @public
 	 * @static
-	 * @method		DevaptTraces.log_indent()
-	 * @desc		Increment the log indentation
-	 * @return		nothing
+	 * @method				DevaptTraces.log(arg_log_obj)
+	 * @desc				Trace a log message
+	 * @param {object}		arg_log_obj		log attributes	
+	 * @return {nothing}
+	 */
+	DevaptTraces.log = function(arg_log_obj)
+	{
+		var msg = DevaptTraces.format_msg(arg_log_obj);
+		console.log(msg);
+	}
+
+	/**
+	 * @memberof			DevaptTraces
+	 * @public
+	 * @static
+	 * @method				DevaptTraces.debug(arg_log_obj)
+	 * @desc				Trace a debug message
+	 * @param {object}		arg_log_obj		log attributes	
+	 * @return {nothing}
+	 */
+	DevaptTraces.debug = function(arg_log_obj)
+	{
+		var msg = DevaptTraces.format_msg(arg_log_obj);
+		console.debug(msg);
+	}
+
+	/**
+	 * @memberof			DevaptTraces
+	 * @public
+	 * @static
+	 * @method				DevaptTraces.warn(arg_log_obj)
+	 * @desc				Trace a warn message
+	 * @param {object}		arg_log_obj		log attributes	
+	 * @return {nothing}
+	 */
+	DevaptTraces.warn = function(arg_log_obj)
+	{
+		var msg = DevaptTraces.format_msg(arg_log_obj);
+		console.warn(msg);
+	}
+
+	/**
+	 * @memberof			DevaptTraces
+	 * @public
+	 * @static
+	 * @method				DevaptTraces.info(arg_log_obj)
+	 * @desc				Trace a info message
+	 * @param {object}		arg_log_obj		log attributes	
+	 * @return {nothing}
+	 */
+	DevaptTraces.info = function(arg_log_obj)
+	{
+		var msg = DevaptTraces.format_msg(arg_log_obj);
+		console.info(msg);
+	}
+
+	/**
+	 * @memberof			DevaptTraces
+	 * @public
+	 * @static
+	 * @method				DevaptTraces.log_indent()
+	 * @desc				Increment the log indentation
+	 * @return				nothing
 	 */
 	DevaptTraces.log_indent = function()
 	{
@@ -83,11 +151,11 @@ define(['Devapt', 'core/types'], function(Devapt, DevaptTypes)
 	}
 
 	/**
-	 * @memberof	Libapt
+	 * @memberof			DevaptTraces
 	 * @public
 	 * @static
-	 * @method		DevaptTraces.log_unindent()
-	 * @desc		Decrement the log indentation
+	 * @method				DevaptTraces.log_unindent()
+	 * @desc				Decrement the log indentation
 	 * @return {nothing}
 	 */
 	DevaptTraces.log_unindent = function()
@@ -97,12 +165,12 @@ define(['Devapt', 'core/types'], function(Devapt, DevaptTypes)
 	}
 
 	/**
-	 * @memberof		Libapt
+	 * @memberof			DevaptTraces
 	 * @public
 	 * @static
-	 * @method			DevaptTraces.error(arg_error_obj)
-	 * @desc			Throw an error
-	 * @param {object}	arg_error_obj		Error attributes
+	 * @method				DevaptTraces.error(arg_error_obj)
+	 * @desc				Throw an error
+	 * @param {object}		arg_error_obj		Error attributes
 	 * @return {nothing}
 	 */
 	DevaptTraces.error = function(arg_error_obj)
@@ -119,17 +187,21 @@ define(['Devapt', 'core/types'], function(Devapt, DevaptTypes)
 		
 		// LOG THE ERROR
 		DevaptTraces.log( { level:'DEBUG', step:'',   context:'',      text:'!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!' } );
-		DevaptTraces.log( { level:'ERROR', step:step, context:context, text: arg_error_obj.text, datas: arg_error_obj } );
+		var msg = DevaptTraces.format_msg( { level:'ERROR', step:step, context:context, text: arg_error_obj.text, datas: arg_error_obj } );
+		console.error(msg);
 		DevaptTraces.log( { level:'DEBUG', step:'',   context:'',      text:'!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!' } );
 		
 		// THROW AN EXCEPTION
-		var error_str = 'ERROR:' + arg_error_obj;
-		throw(error_str);
+		if (DevaptTraces.throw_on_error)
+		{
+			var error_str = 'ERROR:' + arg_error_obj;
+			throw(error_str);
+		}
 	}
 
 
 	/**
-	 * @memberof			Libapt
+	 * @memberof			DevaptTraces
 	 * @public
 	 * @static
 	 * @method				DevaptTraces.trace_enter(arg_context, arg_msg, arg_trace_enabled)
@@ -151,14 +223,14 @@ define(['Devapt', 'core/types'], function(Devapt, DevaptTypes)
 		
 		if (trace_enabled)
 		{
-			DevaptTraces.log( { level:'DEBUG', step:'ENTER', context:arg_context, text:arg_msg } );
+			DevaptTraces.debug( { level:'DEBUG', step:'ENTER', context:arg_context, text:arg_msg } );
 		}
 		DevaptTraces.log_indent();
 	}
 
 
 	/**
-	 * @memberof			Libapt
+	 * @memberof			DevaptTraces
 	 * @public
 	 * @static
 	 * @method				DevaptTraces.trace_separator(arg_trace_enabled)
@@ -176,7 +248,7 @@ define(['Devapt', 'core/types'], function(Devapt, DevaptTypes)
 
 
 	/**
-	 * @memberof			Libapt
+	 * @memberof			DevaptTraces
 	 * @public
 	 * @static
 	 * @method				DevaptTraces.trace_step(arg_context, arg_msg, arg_trace_enabled)
@@ -190,13 +262,13 @@ define(['Devapt', 'core/types'], function(Devapt, DevaptTypes)
 	{
 		if (arg_trace_enabled)
 		{
-			DevaptTraces.log( { level:'DEBUG', step:'', context:arg_context, text:arg_step } );
+			DevaptTraces.debug( { level:'DEBUG', step:'', context:arg_context, text:arg_step } );
 		}
 	}
 
 
 	/**
-	 * @memberof			Libapt
+	 * @memberof			DevaptTraces
 	 * @public
 	 * @static
 	 * @method				DevaptTraces.trace_leave(arg_context, arg_msg, arg_trace_enabled)
@@ -211,13 +283,13 @@ define(['Devapt', 'core/types'], function(Devapt, DevaptTypes)
 		DevaptTraces.log_unindent();
 		if (arg_trace_enabled)
 		{
-			DevaptTraces.log( { level:'DEBUG', step:'LEAVE', context:arg_context, text:arg_msg } );
+			DevaptTraces.debug( { level:'DEBUG', step:'LEAVE', context:arg_context, text:arg_msg } );
 		}
 	}
 
 
 	/**
-	 * @memberof			Libapt
+	 * @memberof			DevaptTraces
 	 * @public
 	 * @static
 	 * @method				DevaptTraces.trace_error(arg_context, arg_msg, arg_trace_enabled)
@@ -235,7 +307,7 @@ define(['Devapt', 'core/types'], function(Devapt, DevaptTypes)
 
 
 	/**
-	 * @memberof			Libapt
+	 * @memberof			DevaptTraces
 	 * @public
 	 * @static
 	 * @method				DevaptTraces.trace_var(arg_context, arg_label, arg_value, arg_trace_enabled)
@@ -251,7 +323,7 @@ define(['Devapt', 'core/types'], function(Devapt, DevaptTypes)
 		if (arg_trace_enabled)
 		{
 			// console.log('DevaptTraces.trace_var:'+arg_trace_enabled);
-			DevaptTraces.log( { level:'DEBUG', step:null, context:arg_context, text:arg_label + '=[' + DevaptTraces.get_value_str(arg_value) + ']' } );
+			DevaptTraces.debug( { level:'DEBUG', step:null, context:arg_context, text:arg_label + '=[' + DevaptTypes.get_value_str(arg_value) + ']' } );
 		}
 	}
 

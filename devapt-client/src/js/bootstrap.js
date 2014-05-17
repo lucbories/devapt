@@ -123,7 +123,7 @@ require.config(
 	}
 );
 
-require(['Devapt'], function(Devapt)
-{
-	Devapt.run();
-} );
+// require(['Devapt'], function(Devapt)
+// {
+	// Devapt.run();
+// } );

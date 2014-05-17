@@ -3,7 +3,7 @@
  * @desc        Devapt static classes features
  * @ingroup     DEVAPT_CORE
  * @date        2013-08-15
- * @version		0.9.x
+ * @version		1.0.x
  * @author      Luc BORIES
  * @copyright	Copyright (C) 2011 Luc BORIES All rights reserved.
  * @license		Apache License Version 2.0, January 2004; see LICENSE.txt or http://www.apache.org/licenses/
@@ -105,7 +105,7 @@ define(['Devapt', 'core/traces', 'core/types'], function(Devapt, DevaptTraces, D
 			}
 		}
 		
-		// console.log( DevaptClasses.get_prototype_name(arg_class_value.prototype) );
+		// console.log( Devapt.get_prototype_name(arg_class_value.prototype) );
 		// console.log('no class name');
 		DevaptTraces.trace_leave(context, 'bad class value', DevaptClasses.classes_trace);
 		return null;
@@ -288,7 +288,7 @@ define(['Devapt', 'core/traces', 'core/types'], function(Devapt, DevaptTraces, D
 		
 		var class_record =
 			{
-				name: DevaptClasses.get_prototype_name(arg_class_proto),
+				name: Devapt.get_prototype_name(arg_class_proto),
 				proto: arg_class_proto,
 				parents_array: arg_class_parents,
 				parents_by_name: {},

@@ -674,6 +674,32 @@ define(['Devapt', 'core/traces'], function(Devapt, DevaptTraces)
 	 * @memberof			DevaptTypes
 	 * @public
 	 * @static
+	 * @method				DevaptTypes.to_list_item(arg_value, arg_list_items, arg_default_value)
+	 * @desc				Test if the given value is part of the values list and return it or default value
+	 * @param {anything}	arg_value			value to convert
+	 * @param {anything}	arg_list_items		all items values
+	 * @param {anything}	arg_default_value	default value
+	 * @return {anything}
+	 */
+	DevaptTypes.to_list_item = function(arg_value, arg_list_items, arg_default_value)
+	{
+		if ( DevaptTypes.is_array(arg_list_items) )
+		{
+			return arg_value.lastIndexOf(arg_value) >= 0 ? arg_value : arg_default_value;
+		}
+		
+		if ( DevaptTypes.is_object(arg_list_items) )
+		{
+			return arg_value in arg_list_items ? arg_value : arg_default_value;
+		}
+		
+		return arg_value === arg_list_items ? arg_value : arg_default_value;
+	}
+
+	/**
+	 * @memberof			DevaptTypes
+	 * @public
+	 * @static
 	 * @method				DevaptTypes.to_boolean(arg_value, arg_default_value)
 	 * @desc				Convert the value to a boolean
 	 * @param {anything}	arg_value			value to convert

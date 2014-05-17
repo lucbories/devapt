@@ -67,6 +67,11 @@ class Application extends AbstractApplication implements ApplicationInterface
 
         $this->request        = new HttpRequest();
         $this->response       = new HttpResponse();
+		
+		// REGISTER ACCESS
+		$get_action = \Devapt\Application\ResourceController::$RESOURCES_ACTION_GET;
+		$access = '*';
+		\Devapt\Security\Authorization::registerRoleAccess('application', $get_action, $access);
     }
 	
 	

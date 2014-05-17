@@ -9,7 +9,9 @@
  * @license		Apache License Version 2.0, January 2004; see LICENSE.txt or http://www.apache.org/licenses/
  */
 
-define(['Devapt', 'core/traces', 'core/types', 'core/cache'/*, 'core/classes', 'core/inheritance'*/], function(Devapt, DevaptTraces, DevaptTypes, DevaptCache/*, DevaptClasses, DevaptInheritance*/)
+define(
+['Devapt', 'core/traces', 'core/types', 'core/cache', 'core/application'],
+function(Devapt, DevaptTraces, DevaptTypes, DevaptCache, DevaptApplication)
 {
 	/**
 	 * @memberof	DevaptResources
@@ -26,6 +28,14 @@ define(['Devapt', 'core/traces', 'core/types', 'core/cache'/*, 'core/classes', '
 	 * @desc		Trace flag
 	 */
 	DevaptResources.resources_trace = true;
+	
+	/**
+	 * @memberof	DevaptResources
+	 * @public
+	 * @static
+	 * @desc		Ajax timeout
+	 */
+	DevaptResources.resources_ajax_timeout = 5000;
 	
 	/**
 	 * @memberof	DevaptResources
@@ -75,7 +85,7 @@ define(['Devapt', 'core/traces', 'core/types', 'core/cache'/*, 'core/classes', '
 		}
 		
 		// REGISTER RESOURCE
-		DevaptCache.set_into_cache(resource_name, arg_resource_json, 0);
+		DevaptCache.set_into_cache(resource_name, arg_resource_json);
 		
 		
 		DevaptTraces.trace_leave(context, 'success', DevaptResources.resources_trace);
@@ -146,8 +156,10 @@ define(['Devapt', 'core/traces', 'core/types', 'core/cache'/*, 'core/classes', '
 		}
 		
 		// LOOK UP RESOURCE DECLARATION FROM PROVIDERS
-		for(provider in DevaptResources.resources_providers)
+		for(provider_name in DevaptResources.resources_providers)
 		{
+			// console.log(provider_name, 'provider_name');
+			var provider = DevaptResources.resources_providers[provider_name];
 			if ( ! DevaptTypes.is_function(provider) )
 			{
 				continue;
@@ -296,13 +308,19 @@ define(['Devapt', 'core/traces', 'core/types', 'core/cache'/*, 'core/classes', '
 		DevaptTraces.trace_enter(context, '', DevaptResources.resources_trace);
 		
 		
+		// GET APP BASE URL
+		var url_base	= DevaptApplication.get_url_base();
+		// var url_base	= window.location.pathname;
+		// var url_base	= DEVAPT_APP_URL_BASE;
+		
 		// SET JSON PROVIDERS
 		var json_provider = function(arg_resource_name)
 		{
 			// INIT REQUEST ARGS
-			var url			= '/resources/' + arg_resource_name + '/get_resource';
+			var url			= url_base + 'resources/' + arg_resource_name + '/get_resource';
 			var use_cache	= true;
-			var is_async	= true;
+			var is_async	= false; // Should always be synchronous for DevaptResources.get_resource_declaration use.
+			var resource_declaration = null;
 			
 			// INIT REQUEST CALL
 			$.ajax(
@@ -312,7 +330,7 @@ define(['Devapt', 'core/traces', 'core/types', 'core/cache'/*, 'core/classes', '
 					type		: 'GET',
 					dataType	: 'json',
 					url			: url,
-					timeout		: LIBAPT_LOAD_SCRIPT_TIMEOUT,
+					timeout		: DevaptResources.resources_ajax_timeout,
 					data		: null,
 					
 					success : function(datas, textStatus, jqXHR)
@@ -320,19 +338,21 @@ define(['Devapt', 'core/traces', 'core/types', 'core/cache'/*, 'core/classes', '
 							if (datas)
 							{
 								// DevaptResources.resources_by_name[arg_resource_name] = datas;
-								DevaptResources.add_cached_declaration(datas);
+								// DevaptResources.add_cached_declaration(datas);
+								resource_declaration = datas;
 							}
 						},
 					
 					error : function(jqXHR, textStatus, errorThrown)
 						{
 							var context = 'DevaptResources.json_provider.ajax_request.error(' + url + ')';
-							console.log(context);
-							console.log(textStatus);
-							console.log(errorThrown);
+							DevaptTraces.trace_error(context, textStatus, true);
+							DevaptTraces.trace_var(context, 'errorThrown', errorThrown, DevaptResources.resources_trace);
 						}
 				}
 			);
+			
+			return resource_declaration;
 		}
 		
 		

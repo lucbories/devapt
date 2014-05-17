@@ -9,7 +9,8 @@
  * @license		Apache License Version 2.0, January 2004; see LICENSE.txt or http://www.apache.org/licenses/
  */
 
-define(['Devapt', 'core/traces', 'core/types', 'core/resources', 'backend-foundation5/foundation-init'], function(Devapt, DevaptTrace, DevaptTypes, DevaptResources, undefined)
+define(['Devapt', 'core/object', 'core/types', 'core/options', 'core/classes', 'core/resources'],
+function(Devapt, DevaptObject, DevaptTypes, DevaptOptions, DevaptClasses, DevaptResources)
 {
 	/**
 	 * @public
@@ -19,12 +20,6 @@ define(['Devapt', 'core/traces', 'core/types', 'core/resources', 'backend-founda
 	 * @param {object}		arg_container_jqo	jQuery object to attach the view to
 	 * @param {object|null}	arg_options			Associative array of options
 	 * @return {nothing}
-	 // * @mixes				DevaptMixinViewLink
-	 // * @mixes				DevaptMixinViewSize
-	 // * @mixes				DevaptMixinViewSelect
-	 // * @mixes				DevaptMixinToolbars
-	 // * @mixes				DevaptMixinViewVisible
-	 // * @mixes				DevaptMixinViewTitlebar
 	 */
 	function DevaptView(arg_name, arg_container_jqo, arg_options)
 	{
@@ -32,10 +27,10 @@ define(['Devapt', 'core/traces', 'core/types', 'core/resources', 'backend-founda
 		
 		// INHERIT
 		self.inheritFrom = DevaptObject;
-		self.inheritFrom(arg_name, false, arg_options);
+		self.inheritFrom(arg_name, arg_options, true);
 		
 		// INIT
-		self.trace				= false;
+		self.trace				= true;
 		self.class_name			= 'DevaptView';
 		self.is_view			= true;
 		
@@ -46,25 +41,29 @@ define(['Devapt', 'core/traces', 'core/types', 'core/resources', 'backend-founda
 		 * @desc				Constructor
 		 * @return {nothing}
 		 */
-		self.contructor = function()
+		self.DevaptView_contructor = function()
 		{
 			// CONSTRUCTOR BEGIN
-			var context				= self.class_name + '(' + arg_name + ')';
+			var context = self.class_name + '(' + arg_name + ')';
 			self.enter(context, 'constructor');
 			
 			
 			// VIEW ATTRIBUTES
-			self.container_jqo		= get_arg_not_null(arg_container_jqo, $('<div>') );
+			self.container_jqo		= DevaptTypes.is_null(arg_container_jqo) ? $('<div>') : arg_container_jqo;
 			self.content_jqo		= null;
 			
 			// INIT OPTIONS
-			var init_option_result = Devapt.set_options_values(self, arg_options, false);
+			var init_option_result = DevaptOptions.set_options_values(self, arg_options, false);
+			if (! init_option_result)
+			{
+				self.error(context + ': init options failure');
+			}
 			
 			// PARENT VIEW ATTRIBUTES
-			if ( ! ( Devapt.is_object(self.parent_view) && self.parent_view.is_view ) )
+			if ( ! ( DevaptTypes.is_object(self.parent_view) && self.parent_view.is_view ) )
 			{
 				self.parent_view	= null;
-				if ( Devapt.is_not_empty_str(self.parent_view_name) )
+				if ( DevaptTypes.is_not_empty_str(self.parent_view_name) )
 				{
 					self.parent_view	= DevaptViews.get(self.parent_view_name);
 				}
@@ -72,37 +71,10 @@ define(['Devapt', 'core/traces', 'core/types', 'core/resources', 'backend-founda
 			self.content_childs_jqo		= [];
 			
 			
-			
-			/* --------------------------------------------------------------------------------------------- */
-			// APPEND MIXIN METHODS
-			
-			// LINKS MIXIN
-			// self.register_mixin(DevaptMixinViewLink);
-			// self.links = get_arg_not_null(self.links, []);
-
-			// self.register_mixin(DevaptMixinViewSize);
-			// self.register_mixin(DevaptMixinViewSelect);
-			// self.register_mixin(DevaptMixinToolbars);
-			
-			// VISIBLE MIXN
-			// self.register_mixin(DevaptMixinViewVisible);
-			// self.set_visible( Devapt.to_boolean(self.is_visible, true) );
-			
-			// TITLEBAR MIXIN
-			// self.register_mixin(DevaptMixinViewTitlebar);
-			// self.mixin_view_titlebar_enabled = Devapt.to_boolean(self.has_title_bar, true);
-			// self.init_title_bar( { label:self.label } );
-			
-			/* --------------------------------------------------------------------------------------------- */
-			
-			
 			// INIT VIEW
-			if ( ! Devapt.is_null(self.container_jqo) )
+			if ( ! DevaptTypes.is_null(self.container_jqo) )
 			{
-				// ATTACH THIS VIEW TO THE JQUERY OBJECT
-				self.container_jqo.data('devapt_view', self);
-				
-				if ( Devapt.is_not_empty_str(self.html_id) )
+				if ( DevaptTypes.is_not_empty_str(self.html_id) )
 				{
 					self.container_jqo.attr('id', self.html_id);
 				}
@@ -119,7 +91,7 @@ define(['Devapt', 'core/traces', 'core/types', 'core/resources', 'backend-founda
 		
 		
 		// CONTRUCT INSTANCE
-		self.contructor();
+		self.DevaptView_contructor();
 		
 		
 		
@@ -149,7 +121,7 @@ define(['Devapt', 'core/traces', 'core/types', 'core/resources', 'backend-founda
 			// ATTACH TO NEW CONTAINER
 			self.container_jqo = arg_jquery_object;
 			self.container_jqo.data('devapt_view', self);
-			if ( Devapt.is_not_empty_str(self.html_id) )
+			if ( DevaptTypes.is_not_empty_str(self.html_id) )
 			{
 				self.container_jqo.attr('id', self.html_id);
 			}
@@ -170,11 +142,10 @@ define(['Devapt', 'core/traces', 'core/types', 'core/resources', 'backend-founda
 		self.render = function()
 		{
 			var self = this;
-			var context = 'draw()';
+			var context = 'render()';
 			self.enter(context, '');
 			
 			self.step(context, 'not implemented in this base class : implement in child classes');
-			// self.draw_title_bar();
 			
 			self.leave(context, 'success');
 			return true;
@@ -260,7 +231,7 @@ define(['Devapt', 'core/traces', 'core/types', 'core/resources', 'backend-founda
 			self.enter(context, '');
 			
 			// ON CHANGE HANDLER
-			if ( ! Devapt.is_null(self.js_on_change) )
+			if ( ! DevaptTypes.is_null(self.js_on_change) )
 			{
 				eval(self.js_on_change);
 			}
@@ -284,7 +255,7 @@ define(['Devapt', 'core/traces', 'core/types', 'core/resources', 'backend-founda
 			self.enter(context, '');
 			
 			// ON CHANGE HANDLER
-			if ( ! Devapt.is_null(self.js_on_refresh) )
+			if ( ! DevaptTypes.is_null(self.js_on_refresh) )
 			{
 				eval(self.js_on_refresh);
 			}
@@ -308,7 +279,7 @@ define(['Devapt', 'core/traces', 'core/types', 'core/resources', 'backend-founda
 			self.enter(context, '');
 			
 			// ON CHANGE HANDLER
-			if ( ! Devapt.is_null(self.js_on_filled) )
+			if ( ! DevaptTypes.is_null(self.js_on_filled) )
 			{
 				eval(self.js_on_filled);
 			}
@@ -332,7 +303,7 @@ define(['Devapt', 'core/traces', 'core/types', 'core/resources', 'backend-founda
 			self.enter(context, '');
 			
 			// ON READY HANDLER
-			if ( ! Devapt.is_null(self.js_on_ready) )
+			if ( ! DevaptTypes.is_null(self.js_on_ready) )
 			{
 				eval(self.js_on_ready);
 			}
@@ -352,17 +323,12 @@ define(['Devapt', 'core/traces', 'core/types', 'core/resources', 'backend-founda
 		self.to_string_self = function()
 		{
 			var self = this;
-			return '';
-			// return self.to_string_value('model.name', self.model.name);
+			return 'base view class';
 		}
 		
 		
-		// REGISTER WROWSER EVENTS
-		$(window).resize( function() { self.adjust_sizes(); } );
-		
-		
 		// ON READY HANDLER
-		if ( Devapt.is_null(arg_options) || arg_options.class_name == 'DevaptView')
+		if ( DevaptTypes.is_null(arg_options) || arg_options.class_name == 'DevaptView')
 		{
 			this.on_ready();
 		}
@@ -370,22 +336,22 @@ define(['Devapt', 'core/traces', 'core/types', 'core/resources', 'backend-founda
 
 
 	// INTROSPETION : REGISTER CLASS
-	Devapt.register_class(DevaptView, ['DevaptObject'], 'Luc BORIES', '2013-08-21', 'All views base class.');
+	DevaptClasses.register_class(DevaptView, ['DevaptObject'], 'Luc BORIES', '2013-08-21', 'All views base class.');
 
 
 	// INTROSPETION : REGISTER OPTIONS
-	// Devapt.register_str_option(DevaptView, 'parent_view_name',		null, false, ['view_parent_view_name']);
-	Devapt.register_str_option(DevaptView, 'html_id',				null, false, ['view_html_id']);
-	Devapt.register_str_option(DevaptView, 'label',					null, false, ['view_label']);
-	Devapt.register_str_option(DevaptView, 'tooltip',				null, false, ['view_tooltip']);
+	// DevaptOptions.register_str_option(DevaptView, 'parent_view_name',		null, false, ['view_parent_view_name']);
+	DevaptOptions.register_str_option(DevaptView, 'html_id',				null, false, ['view_html_id']);
+	DevaptOptions.register_str_option(DevaptView, 'label',					null, false, ['view_label']);
+	DevaptOptions.register_str_option(DevaptView, 'tooltip',				null, false, ['view_tooltip']);
 
-	Devapt.register_bool_option(DevaptView, 'template_enabled',		true, false, ['view_template_enabled']);
-	Devapt.register_str_option(DevaptView, 'template_string',		null, false, ['view_template_string']);
-	Devapt.register_str_option(DevaptView, 'template_file_name',	null, false, ['view_template_file_name']);
-	Devapt.register_str_option(DevaptView, 'template_tags',			null, false, ['view_template_tags']);
-	Devapt.register_str_option(DevaptView, 'template_bindings',		null, false, ['view_template_bindings']);
+	DevaptOptions.register_bool_option(DevaptView, 'template_enabled',		true, false, ['view_template_enabled']);
+	DevaptOptions.register_str_option(DevaptView, 'template_string',		null, false, ['view_template_string']);
+	DevaptOptions.register_str_option(DevaptView, 'template_file_name',		null, false, ['view_template_file_name']);
+	DevaptOptions.register_str_option(DevaptView, 'template_tags',			null, false, ['view_template_tags']);
+	DevaptOptions.register_str_option(DevaptView, 'template_bindings',		null, false, ['view_template_bindings']);
 
-	Devapt.register_option(DevaptView, {
+	DevaptOptions.register_option(DevaptView, {
 			name: 'links',
 			type: 'array',
 			aliases: ['view_links'],
@@ -398,23 +364,23 @@ define(['Devapt', 'core/traces', 'core/types', 'core/resources', 'backend-founda
 		}
 	);
 
-	Devapt.register_bool_option(DevaptView, 'has_title_bar',	true, false, ['view_has_title_bar']);
-	Devapt.register_bool_option(DevaptView, 'has_edit_toolbar',	true, false, ['view_has_edit_toolbar']);
-	Devapt.register_bool_option(DevaptView, 'is_collapsable',	true, false, ['view_is_collapsable']);
-	Devapt.register_bool_option(DevaptView, 'is_resizable',		true, false, ['view_is_resizable']);
-	Devapt.register_bool_option(DevaptView, 'is_visible',		true, false, ['view_is_visible']);
-	Devapt.register_bool_option(DevaptView, 'is_editable',		true, false, ['view_is_editable']);
-	Devapt.register_bool_option(DevaptView, 'is_portlet',		false, false, ['view_is_portlet']);
-	Devapt.register_bool_option(DevaptView, 'has_hscrollbar',	false, false, ['view_has_hscrollbar']);
-	Devapt.register_bool_option(DevaptView, 'has_vscrollbar',	false, false, ['view_has_vscrollbar']);
+	DevaptOptions.register_bool_option(DevaptView, 'has_title_bar',		true, false, ['view_has_title_bar']);
+	DevaptOptions.register_bool_option(DevaptView, 'has_edit_toolbar',	true, false, ['view_has_edit_toolbar']);
+	DevaptOptions.register_bool_option(DevaptView, 'is_collapsable',	true, false, ['view_is_collapsable']);
+	DevaptOptions.register_bool_option(DevaptView, 'is_resizable',		true, false, ['view_is_resizable']);
+	DevaptOptions.register_bool_option(DevaptView, 'is_visible',		true, false, ['view_is_visible']);
+	DevaptOptions.register_bool_option(DevaptView, 'is_editable',		true, false, ['view_is_editable']);
+	DevaptOptions.register_bool_option(DevaptView, 'is_portlet',		false, false, ['view_is_portlet']);
+	DevaptOptions.register_bool_option(DevaptView, 'has_hscrollbar',	false, false, ['view_has_hscrollbar']);
+	DevaptOptions.register_bool_option(DevaptView, 'has_vscrollbar',	false, false, ['view_has_vscrollbar']);
 
-	Devapt.register_str_option(DevaptView, 'css_styles',		null, false, ['view_css_styles']);
-	Devapt.register_str_option(DevaptView, 'css_classes',		null, false, ['view_css_classes']);
+	DevaptOptions.register_str_option(DevaptView, 'css_styles',			null, false, ['view_css_styles']);
+	DevaptOptions.register_str_option(DevaptView, 'css_classes',		null, false, ['view_css_classes']);
 
-	Devapt.register_str_option(DevaptView, 'js_on_ready',		null, false, ['view_js_on_ready']);
-	Devapt.register_str_option(DevaptView, 'js_on_change',		null, false, ['view_js_on_change']);
-	Devapt.register_str_option(DevaptView, 'js_on_filled',		null, false, ['view_js_on_filled']);
-	Devapt.register_str_option(DevaptView, 'js_on_refresh',		null, false, ['view_js_on_refresh']);
+	DevaptOptions.register_str_option(DevaptView, 'js_on_ready',		null, false, ['view_js_on_ready']);
+	DevaptOptions.register_str_option(DevaptView, 'js_on_change',		null, false, ['view_js_on_change']);
+	DevaptOptions.register_str_option(DevaptView, 'js_on_filled',		null, false, ['view_js_on_filled']);
+	DevaptOptions.register_str_option(DevaptView, 'js_on_refresh',		null, false, ['view_js_on_refresh']);
 	
 	
 	return DevaptView;

@@ -60,13 +60,14 @@ define(['Devapt', 'core/traces', 'core/types', 'core/resources', 'backend-founda
 	 * @public
 	 * @static
 	 * @method					DevaptFoundation5Backend.build_from_declaration(arg_resource_json)
-	 * @desc					Build a resource from its json declaration
+	 * @desc					Build a resource from its json declaration (async)
 	 * @param {string}			arg_resource_json	resource json declaration
-	 * @return {object|null}	
+	 * @param {callback}		arg_after_build_cb	callback to execute after resource is build: call(resource)
+	 * @return {nothing}	
 	 */
-	DevaptFoundation5Backend.build_from_declaration = function(arg_resource_json)
+	DevaptFoundation5Backend.build_from_declaration = function(arg_resource_json, arg_after_build_cb)
 	{
-		var context = 'DevaptFoundation5Backend.build_from_declaration(arg_resource_json)';
+		var context = 'DevaptFoundation5Backend.build_from_declaration(arg_resource_json,arg_after_build_cb)';
 		DevaptTrace.trace_enter(context, '', DevaptFoundation5Backend.backend_trace);
 		
 		
@@ -82,9 +83,20 @@ define(['Devapt', 'core/traces', 'core/types', 'core/resources', 'backend-founda
 			case 'model':
 			case 'menubar':
 				{
-					var resource = null;
-					DevaptTrace.trace_leave(context, 'resource type found', DevaptFoundation5Backend.backend_trace);
-					return resource;
+					require(['backend-foundation5/views/menubar'],
+						function(DevaptMenubar) 
+						{
+							var view = new DevaptMenubar(arg_resource_json.name, $('body header'), arg_resource_json);
+							
+							if (arg_after_build_cb)
+							{
+								arg_after_build_cb(view);
+							}
+							
+							DevaptTrace.trace_leave(context, 'menubar resource is build', DevaptFoundation5Backend.backend_trace);
+							return;
+						}
+					);
 				}
 		}
 		

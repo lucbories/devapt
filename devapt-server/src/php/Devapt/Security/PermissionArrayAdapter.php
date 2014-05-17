@@ -113,7 +113,7 @@ class PermissionArrayAdapter implements PermissionAdapterInterface
 			return false;
 		}
 		
-		return Authorization::hasLoginRole($arg_requesting, $role);
+		return $role === '*' ? true : Authorization::hasLoginRole($arg_requesting, $role);
 	}
 	
 	

@@ -30,6 +30,15 @@ define(['Devapt', 'core/traces', 'core/types', 'jStorage'], function(Devapt, Dev
 	
 	
 	/**
+	 * @memberof	DevaptCache
+	 * @public
+	 * @static
+	 * @desc		Default TTL value
+	 */
+	DevaptCache.cache_default_ttl = 5000; // 0 for Production, 5000 for DEV
+	
+	
+	/**
 	 * @memberof			DevaptCache
 	 * @public
 	 * @static
@@ -93,7 +102,7 @@ define(['Devapt', 'core/traces', 'core/types', 'jStorage'], function(Devapt, Dev
 		var context = 'DevaptCache.set_into_cache(key,value,ttl)';
 		DevaptTrace.trace_enter(context, '', DevaptCache.cache_trace);
 		
-		var options = DevaptTypes.is_number(arg_ttl) ? { 'TTL': arg_ttl } : { 'TTL': 0 };
+		var options = DevaptTypes.is_number(arg_ttl) ? { 'TTL': arg_ttl } : { 'TTL': DevaptCache.cache_default_ttl };
 		var result = $.jStorage.set(arg_key, arg_value, options);
 		if (!result)
 		{

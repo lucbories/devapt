@@ -45,8 +45,24 @@ final class JsWrapper
 			$js_buffer .= $js_resource_buffer;
 		}
 		
-		// UPDATE RESPONSE
+		// APPEND APPLICATION.RUN JS CODE
+		$json_app_cfg = \Devapt\Resources\Broker::getResourceJson('application');
+		$content = $arg_response->getContent();
+		$content .= '<script type="text/javascript">';
+		$content .= 'require([\'core/application\'], function(DevaptApplication) {';
+		$content .= '  DevaptApplication.set_config('.$json_app_cfg.');';
+		$content .= '  DevaptApplication.run();';
 		if ( is_string($js_buffer) && $js_buffer !== '')
+		{
+			// $content .= 'var $ = Devapt.jQuery();';
+			$content .= '$(document).ready( function() {'.$js_buffer.'} );';
+		}
+		$content .= '} );';
+		$content .= '</script>';
+		$arg_response->setContent($content);
+		
+		// UPDATE RESPONSE
+/*		if ( is_string($js_buffer) && $js_buffer !== '')
 		{
 			$buffer = '';
 			$buffer .= '<SCRIPT type="text/javascript">';
@@ -60,7 +76,7 @@ final class JsWrapper
 			$content = $arg_response->getContent();
 			$content .= $buffer;
 			$arg_response->setContent($content);
-		}
+		}*/
 	}
 	
 	

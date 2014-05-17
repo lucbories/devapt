@@ -16,7 +16,7 @@
 		
         <!-- JavaScript -->
         <script type="text/javascript" src="{{application.url.base}}../../devapt-client/lib/require-2.1.10/require.min.js"></script>
-        <script type="text/javascript" src="{{application.url.base}}home/public/js/app.js"></script>
+        <script type="text/javascript" src="{{application.url.base}}../../devapt-client/src/js/bootstrap.js"></script>
 		
         <!-- IE Fix for HTML5 Tags -->
         <!--[if lt IE 9]>
@@ -28,19 +28,4 @@
     <body>
         <!-- Header -->
         <header id="header" class="row devapt_page_header">
-            <!-- Logo -->
-            <div class="three mobile-two columns" id="logo">
-                <h1>
-                    <a href="#" title="">
-                        <img src="{{application.url.base}}{{application.layouts.default.logo.url}}" width="173" height="41" alt="{{application.layouts.default.logo.alt}}">
-                    </a>
-                </h1>
-            </div>
-
-            <!-- Menu -->
-            <div class="six mobile-two columns" id="menu">
-                <nav class="top-bar">
-					{{HOME_MENUBAR}}
-                </nav>
-           </div>
         </header>
