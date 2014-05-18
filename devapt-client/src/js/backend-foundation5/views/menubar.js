@@ -343,6 +343,22 @@ function(Devapt, DevaptTrace, DevaptTypes, DevaptOptions, DevaptClasses, DevaptR
 			return true;
 		}
 		
+		/**
+		 * @public
+		 * @memberof			DevaptMenubar
+		 * @desc				Render top menu bar view
+		 * @return {boolean}	true:success,false:failure
+		 */
+		self.render_nav_menubar = function()
+		{
+			var context = 'render_nav_menubar()';
+			self.enter(context, '');
+			
+			
+			
+			self.leave(context, 'success');
+			return true;
+		}
 	}
 	
 	

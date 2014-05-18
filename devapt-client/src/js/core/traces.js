@@ -262,7 +262,7 @@ define(['Devapt', 'core/types'], function(Devapt, DevaptTypes)
 	{
 		if (arg_trace_enabled)
 		{
-			DevaptTraces.debug( { level:'DEBUG', step:'', context:arg_context, text:arg_step } );
+			DevaptTraces.debug( { level:'DEBUG', step:'STEP', context:arg_context, text:arg_step } );
 		}
 	}
 

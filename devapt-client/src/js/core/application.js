@@ -115,43 +115,64 @@ function(Devapt, DevaptTrace, DevaptTypes, DevaptInit)
 		{
 			DevaptTrace.trace_step(context, 'no current backend', DevaptApplication.app_trace);
 			
-			require(['backend-foundation5/backend'], function(foundation5_backend)
+			var backend_name = DevaptApplication.get_value('application.layouts.default.backend.name');
+			if ( ! DevaptTypes.is_not_empty_str(backend_name) )
+			{
+				DevaptTrace.trace_error(context, 'bad default backend name for configuration value [application.layouts.default.backend.name]', true);
+				return;
+			}
+			
+			require([backend_name], function(default_backend)
 			{
 				DevaptTrace.trace_step(context, 'set current backend', DevaptApplication.app_trace);
 				
 				// SET CURRENT BACKEND
-				var result = Devapt.set_current_backend(foundation5_backend);
+				var result = Devapt.set_current_backend(default_backend);
 				if ( ! result)
 				{
-					console.error('Devapt.run: init backend failed');
+					DevaptTrace.trace_error(context, 'init backend failed', true);
 					return;
 				}
 				
-				// GET CURRENT BACKEND
-				var backend = Devapt.get_current_backend();
-				
-				// INIT DEFAULT VIEW
-				DevaptInit.init();
-				
-				// INIT TOP MENUBAR
-				var topmenubar = DevaptApplication.get_topbar_name();
-				var options= {'class_name':'Menubar', 'class_type':'view', 'trace':true, 'name':'menus' , 'menubar_name':topmenubar};
-				backend.build_from_declaration(options, function(view) { view.render(); } );
+				DevaptApplication.render();
 			} );
 		}
 		else
 		{
-			var backend = Devapt.get_current_backend();
-			
-			
-			// INIT DEFAULT VIEW
-			DevaptInit.init();
-			
-			// INIT TOP MENUBAR
-			var topmenubar = DevaptApplication.get_topbar_name();
-			var options= {'class_name':'Menubar', 'class_type':'view', 'trace':true, 'name':'menus' , 'menubar_name':topmenubar};
-			backend.build_from_declaration(options, function(view) { view.render(); } );
+			DevaptApplication.render();
 		}
+		
+		DevaptTrace.trace_leave(context, '', DevaptApplication.app_trace);
+	}
+	
+	
+	/**
+	 * @memberof			DevaptApplication
+	 * @public
+	 * @static
+	 * @method				DevaptApplication.render()
+	 * @desc				Render views
+	 * @return {nothing}
+	 */
+	DevaptApplication.render = function()
+	{
+		var context = 'DevaptApplication.render()';
+		DevaptTrace.trace_enter(context, '', DevaptApplication.app_trace);
+		
+		
+		// GET CURRENT BACKEND
+		var backend = Devapt.get_current_backend();
+		
+		// INIT TOP MENUBAR
+		var topmenubar = DevaptApplication.get_topbar_name();
+		var options= {'class_name':'Menubar', 'class_type':'view', 'trace':true, 'name':'menus' , 'menubar_name':topmenubar};
+		backend.build_from_declaration(options, function(view) { view.render(); } );
+		
+		// INIT DEFAULT VIEW
+		DevaptInit.init();
+		
+		// RENDER PAGE
+		// backend.render_page(view_name);
 		
 		DevaptTrace.trace_leave(context, '', DevaptApplication.app_trace);
 	}
@@ -178,6 +199,11 @@ function(Devapt, DevaptTrace, DevaptTypes, DevaptInit)
 		for(path_node_index in path_array)
 		{
 			var path_node_value = path_array[path_node_index];
+			if ( path_node_index == 0 && path_node_value === 'application' )
+			{
+				continue;
+			}
+			
 			if ( path_node[path_node_value] )
 			{
 				path_node = path_node[path_node_value];

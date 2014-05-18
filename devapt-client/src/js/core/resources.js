@@ -223,7 +223,7 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptCache, DevaptApplication)
 	DevaptResources.get_resource_instance = function (arg_resource_name)
 	{
 		var context = 'DevaptResources.get_resource_instance(resource name)';
-		DevaptTraces.trace_enter(context, '', DevaptResources.resources_trace);
+		DevaptTraces.trace_enter(context, '[' + arg_resource_name + ']', DevaptResources.resources_trace);
 		
 		
 		// GET RESOURCE FROM REPOSITORY
@@ -235,8 +235,30 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptCache, DevaptApplication)
 		}
 		
 		
+		DevaptTraces.trace_leave(context, 'resource object not found', DevaptResources.resources_trace);
+		return null;
+	}
+	
+	
+	/**
+	 * @memberof					DevaptResources
+	 * @public
+	 * @static
+	 * @method						DevaptResources.build_resource_instance(arg_resource_name, callback)
+	 * @desc						Build a resource instance
+	 * @param {string}				arg_resource_name	The resource name
+	 * @param {callback}			arg_after_build_cb	callback to execute after resource is build: call(resource)
+	 * @return {nothing}			
+	 */
+	DevaptResources.build_resource_instance = function (arg_resource_name, arg_after_build_cb)
+	{
+		var context = 'DevaptResources.build_resource_instance(resource name, callback)';
+		DevaptTraces.trace_enter(context, '', DevaptResources.resources_trace);
+		
+		
+		
 		// GET RESOURCE DECLARATION
-		var resource_declaration = DevaptCache.get_resource_declaration(arg_resource_name);
+		var resource_declaration = DevaptResources.get_resource_declaration(arg_resource_name);
 		if (! resource_declaration)
 		{
 			DevaptTraces.trace_leave(context, 'resource not found', DevaptResources.resources_trace);
@@ -244,15 +266,10 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptCache, DevaptApplication)
 		}
 		
 		// BUILD RESOURCE INSTANCE FROM RESOURCE DECLARATION
-		var resource = DevaptResources.build_from_declaration(resource_declaration);
-		if (! resource)
-		{
-			DevaptTraces.trace_leave(context, 'resource not build', DevaptResources.resources_trace);
-			return null;
-		}
+		DevaptResources.build_from_declaration(resource_declaration, arg_after_build_cb);
 		
-		DevaptTraces.trace_leave(context, 'resource found and build', DevaptResources.resources_trace);
-		return resource;
+		
+		DevaptTraces.trace_leave(context, 'async build is started', DevaptResources.resources_trace);
 	}
 	
 	
@@ -263,9 +280,10 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptCache, DevaptApplication)
 	 * @method						DevaptResources.build_from_declaration(arg_resource_name)
 	 * @desc						Build a resource instance from the resource declaration
 	 * @param {string}				arg_resource_json	The resource declaration (json object)
-	 * @return {object}				An object
+	 * @param {callback}			arg_after_build_cb	callback to execute after resource is build: call(resource)
+	 * @return {nothing}			
 	 */
-	DevaptResources.build_from_declaration = function (arg_resource_json)
+	DevaptResources.build_from_declaration = function (arg_resource_json, arg_after_build_cb)
 	{
 		var context = 'DevaptResources.build_from_declaration(resource declaration)';
 		DevaptTraces.trace_enter(context, '', DevaptResources.resources_trace);
@@ -280,16 +298,16 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptCache, DevaptApplication)
 		}
 		
 		// BUILD RESOURCE FROM BACKEND
-		var resource = backend.build_from_declaration(arg_resource_json);
-		if (! resource)
-		{
-			DevaptTraces.trace_leave(context, 'resource build failure', DevaptResources.resources_trace);
-			return null;
-		}
+		backend.build_from_declaration(arg_resource_json, arg_after_build_cb);
+		// if (! resource)
+		// {
+			// DevaptTraces.trace_leave(context, 'resource build failure', DevaptResources.resources_trace);
+			// return null;
+		// }
 		
 		
-		DevaptTraces.trace_leave(context, 'resource build success', DevaptResources.resources_trace);
-		return resource;
+		DevaptTraces.trace_leave(context, 'async build is started', DevaptResources.resources_trace);
+		// return resource;
 	}
 	
 	
