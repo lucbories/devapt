@@ -9,6 +9,7 @@ require.config(
 			'QUnit':		'/devapt-client/lib/qunit-1.13.0/qunit-1.13.0',
 			'runtu':		'/devapt-client/tests/run-tests',
 			'jStorage':		'/devapt-client/lib/jstorage-0.4.3/jstorage',
+			'mustache':		'/devapt-client/lib/mustache/mustache-wrap',
 			
 			'foundation':				'/devapt-client/lib/foundation-5.0.2/js/foundation/foundation',
 			'foundation.abide':			'/devapt-client/lib/foundation-5.0.2/js/foundation/foundation.abide',
@@ -117,9 +118,9 @@ require.config(
 					QUnit.config.autostart = false;
 				}
 			}
-		},
+		}/*,
 		
-		urlArgs: 'bust=' +  (new Date()).getTime()
+		urlArgs: 'bust=' +  (new Date()).getTime()*/
 	}
 );
 

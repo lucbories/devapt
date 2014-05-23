@@ -9,7 +9,9 @@
  * @license		Apache License Version 2.0, January 2004; see LICENSE.txt or http://www.apache.org/licenses/
  */
 
-define(['Devapt', 'core/traces', 'core/types'], function(Devapt, DevaptTrace, DevaptTypes)
+define(
+['Devapt', 'core/traces', 'core/types', 'mustache'],
+function(Devapt, DevaptTrace, DevaptTypes, Mustache)
 {
 	/**
 	 * @memberof	DevaptTemplate
@@ -41,42 +43,46 @@ define(['Devapt', 'core/traces', 'core/types'], function(Devapt, DevaptTrace, De
 			'begin_row':'<div>',
 			
 			'er':'</div>',
-			'end_row':'</div>',
-			
-			'':'',
-			'':'',
-			'':'',
-			'':'',
-			'':'',
+			'end_row':'</div>'
 		};
-	
-	/*
-		var view = {
-		  title: "Joe",
-		  calc: function () {
-			return 2 + 4;
-		  }
-		};
-
-		var output = Mustache.render("{{title}} spends {{calc}}", view);
-	*/
 	
 	/**
 	 * @memberof				DevaptTemplate
 	 * @public
-	 * @method					DevaptTemplate.render()
-	 * @desc					Append a new callback to call on each new event
-	 * @param {function}		arg_callback_function
-	 * @return {nothing}
+	 * @method					DevaptTemplate.render(arg_template_str, arg_template_tags)
+	 * @desc					Render template string
+	 * @param {string}			arg_template_str		text to render
+	 * @param {object}			arg_template_tags		tags for substitution (optional)
+	 * @return {string}			Rendered string
 	 */
 	DevaptTemplate.render = function(arg_template_str, arg_template_tags)
 	{
-		if ( DevaptTypes.is_function(arg_callback_function) )
+		var context = 'DevaptTemplate.render(str,tags)';
+		DevaptTrace.trace_enter(context, '', DevaptTemplate.template_trace);
+		
+		
+		// SWITCH TAGS IF NEEDED
+		var tags = DevaptTemplate.template_tags;
+		if ( DevaptTypes.is_object(arg_template_tags) )
 		{
-			DevaptTemplate.add_event_callbacks.push(arg_callback_function);
+			tags = arg_template_tags;
 		}
+		
+		// RENDER TEMPLATE
+		arg_template_str = arg_template_str.replace(/{#([a-zA-Z0-9_]+)}/gm, '@@@#$1@@@');
+		arg_template_str = arg_template_str.replace(/{\/([a-zA-Z0-9_]+)}/gm, '@@@/$1@@@');
+		arg_template_str = arg_template_str.replace(/{/gm, '{{{');
+		arg_template_str = arg_template_str.replace(/}/gm, '}}}');
+		arg_template_str = arg_template_str.replace(/@@@#([a-zA-Z0-9_]+)@@@/gm, '{{#$1}}');
+		arg_template_str = arg_template_str.replace(/@@@\/([a-zA-Z0-9_]+)@@@/gm, '{{/$1}}');
+		
+		var str = Mustache.render(arg_template_str, tags);
+		
+		
+		DevaptTrace.trace_leave(context, 'success', DevaptTemplate.template_trace);
+		return str;
 	}
-
+	
 	
 	return DevaptTemplate;
 } );

@@ -35,7 +35,7 @@ define(['Devapt', 'core/traces', 'core/types', 'jStorage'], function(Devapt, Dev
 	 * @static
 	 * @desc		Default TTL value
 	 */
-	DevaptCache.cache_default_ttl = 5000; // 0 for Production, 5000 for DEV
+	DevaptCache.cache_default_ttl = 0; // 0 for Production, 5000 for DEV
 	
 	
 	/**

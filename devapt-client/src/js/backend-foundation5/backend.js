@@ -32,6 +32,50 @@ function(Devapt, DevaptTrace, DevaptTypes, DevaptResources, undefined)
 	
 	
 	/**
+	 * @memberof	DevaptFoundation5Backend
+	 * @public
+	 * @static
+	 * @desc		Template standard tags
+	 */
+	DevaptFoundation5Backend.backend_template_std_tags =
+		{
+			'br':'<div class="row">',
+			'begin_row':'<div class="row">',
+			
+			'er':'</div>',
+			'end_row':'</div>',
+			
+			'b1c': '<div class="small-1  medium-1  large-1  columns">',
+			'b2c': '<div class="small-2  medium-2  large-2  columns">',
+			'b3c': '<div class="small-3  medium-3  large-3  columns">',
+			'b4c': '<div class="small-4  medium-4  large-4  columns">',
+			'b5c': '<div class="small-5  medium-5  large-5  columns">',
+			'b6c': '<div class="small-6  medium-6  large-6  columns">',
+			'b7c': '<div class="small-7  medium-7  large-7  columns">',
+			'b8c': '<div class="small-8  medium-8  large-8  columns">',
+			'b9c': '<div class="small-9  medium-9  large-9  columns">',
+			'b10c':'<div class="small-10 medium-10 large-10 columns">',
+			'b11c':'<div class="small-11 medium-11 large-11 columns">',
+			'b12c':'<div class="small-12 medium-12 large-12 columns">',
+			'ec':'</div>',
+		};
+	
+	
+	/**
+	 * @memberof			DevaptFoundation5Backend
+	 * @public
+	 * @static
+	 * @method				DevaptFoundation5Backend.get_infos()
+	 * @desc				Get a record of backend informations (name, version, description)
+	 * @return {object}		Object record
+	 */
+	DevaptFoundation5Backend.get_template_std_tags = function()
+	{
+		return DevaptFoundation5Backend.backend_template_std_tags;
+	}
+	
+	
+	/**
 	 * @memberof			DevaptFoundation5Backend
 	 * @public
 	 * @static
@@ -65,11 +109,12 @@ function(Devapt, DevaptTrace, DevaptTypes, DevaptResources, undefined)
 	 * @desc					Build a resource from its json declaration (async)
 	 * @param {string}			arg_resource_json	resource json declaration
 	 * @param {callback}		arg_after_build_cb	callback to execute after resource is build: call(resource)
+	 * @param {object}			arg_optional_arg	optional argument: jQuery container for views for examples
 	 * @return {nothing}	
 	 */
-	DevaptFoundation5Backend.build_from_declaration = function(arg_resource_json, arg_after_build_cb)
+	DevaptFoundation5Backend.build_from_declaration = function(arg_resource_json, arg_after_build_cb, arg_optional_arg)
 	{
-		var context = 'DevaptFoundation5Backend.build_from_declaration(arg_resource_json,arg_after_build_cb)';
+		var context = 'DevaptFoundation5Backend.build_from_declaration(resource_json,after_build_cb,opt)';
 		DevaptTrace.trace_enter(context, '', DevaptFoundation5Backend.backend_trace);
 		
 		
@@ -79,59 +124,83 @@ function(Devapt, DevaptTrace, DevaptTypes, DevaptResources, undefined)
 			return null;
 		}
 		
-		console.log(arg_resource_json, 'arg_resource_json');
 		
 		switch(arg_resource_json.class_type)
 		{
 			case 'view':
 			{
 				DevaptTrace.trace_step(context, 'resource class_type is view', DevaptFoundation5Backend.backend_trace);
+				
+				var view_requires =  [];
+				
 				switch(arg_resource_json.class_name)
 				{
+					case 'Row':
+					{
+						view_requires = ['backend-foundation5/views/row'];
+						break;
+					}
+					
 					case 'Label':
 					{
-						DevaptTrace.trace_step(context, 'resource class_type is Label', DevaptFoundation5Backend.backend_trace);
-						require(['backend-foundation5/views/label'],
-							function(DevaptLabel) 
-							{
-								var view_name = arg_resource_json.name;
-								var view = new DevaptLabel(view_name, $('#' + view_name + '_id'), arg_resource_json);
-								
-								if (arg_after_build_cb)
-								{
-									DevaptTrace.trace_step(context, 'after resource build callback', DevaptFoundation5Backend.backend_trace);
-									arg_after_build_cb(view);
-								}
-								
-								DevaptTrace.trace_leave(context, 'label resource is build', DevaptFoundation5Backend.backend_trace);
-								return;
-							}
-						);
-						DevaptTrace.trace_leave(context, 'async label resource build', DevaptFoundation5Backend.backend_trace);
-						return;
+						view_requires = ['backend-foundation5/views/label'];
+						break;
+					}
+					
+					case 'Panel':
+					{
+						view_requires = ['backend-foundation5/views/panel'];
+						break;
 					}
 					
 					case 'Menubar':
 					{
-						DevaptTrace.trace_step(context, 'resource class_type is menubar', DevaptFoundation5Backend.backend_trace);
-						require(['backend-foundation5/views/menubar'],
-							function(DevaptMenubar) 
-							{
-								var view = new DevaptMenubar(arg_resource_json.name, $('body header'), arg_resource_json);
-								
-								if (arg_after_build_cb)
-								{
-									arg_after_build_cb(view);
-								}
-								
-								DevaptTrace.trace_leave(context, 'menubar resource is build', DevaptFoundation5Backend.backend_trace);
-								return;
-							}
-						);
-						DevaptTrace.trace_leave(context, 'async menubar resource build', DevaptFoundation5Backend.backend_trace);
-						return;
+						view_requires = ['backend-foundation5/views/menubar'];
+						arg_optional_arg = $('body header'); // TODO
+						break;
+					}
+					
+					case 'BlockGrid':
+					{
+						view_requires = ['backend-foundation5/views/block-grid'];
+						break;
+					}
+					
+					case 'Pagination':
+					{
+						view_requires = ['backend-foundation5/views/pagination'];
+						break;
 					}
 				}
+				
+				// CREATE VIEW
+				if ( DevaptTypes.is_not_empty_array(view_requires) )
+				{
+					DevaptTrace.trace_step(context, 'resource class_type is Label', DevaptFoundation5Backend.backend_trace);
+					
+					var view_name = arg_resource_json.name;
+					
+					require(view_requires,
+						function(ViewClass) 
+						{
+							var container_jqo = arg_optional_arg;
+							var view = new ViewClass(view_name, container_jqo, arg_resource_json);
+							
+							if (arg_after_build_cb)
+							{
+								DevaptTrace.trace_step(context, 'after resource build callback', DevaptFoundation5Backend.backend_trace);
+								arg_after_build_cb(view);
+							}
+							
+							DevaptTrace.trace_leave(context, view_name + ' resource is build', DevaptFoundation5Backend.backend_trace);
+							return;
+						}
+					);
+					
+					DevaptTrace.trace_leave(context, view_name + 'async resource build', DevaptFoundation5Backend.backend_trace);
+					return;
+				}
+				
 				break;
 			}
 			
@@ -240,7 +309,7 @@ function(Devapt, DevaptTrace, DevaptTypes, DevaptResources, undefined)
 				}
 				
 				// RENDER VIEW
-				view.set_container(arg_jqo_node);
+				// view.set_container(arg_jqo_node);
 				var result = view.render();
 				if (! result)
 				{
@@ -262,6 +331,7 @@ function(Devapt, DevaptTrace, DevaptTypes, DevaptResources, undefined)
 				return false;
 			}
 			
+			// view.set_container(arg_jqo_node);
 			render_view_cb(view);
 			DevaptTrace.trace_leave(context, '', DevaptFoundation5Backend.backend_trace);
 			return true;
@@ -282,13 +352,14 @@ function(Devapt, DevaptTrace, DevaptTypes, DevaptResources, undefined)
 		view = DevaptResources.get_resource_instance(arg_view_name_or_object);
 		if ( DevaptTypes.is_object(view) && view.is_view )
 		{
+			// view.set_container(arg_jqo_node);
 			render_view_cb(view);
 			DevaptTrace.trace_leave(context, 'view instance found', DevaptFoundation5Backend.backend_trace);
 			return true;
 		}
 		
 		// BUILD INSTANCE
-		DevaptResources.build_resource_instance(arg_view_name_or_object, render_view_cb);
+		DevaptResources.build_resource_instance(arg_view_name_or_object, render_view_cb, arg_jqo_node);
 		
 		
 		DevaptTrace.trace_leave(context, 'async build and render is started', DevaptFoundation5Backend.backend_trace);

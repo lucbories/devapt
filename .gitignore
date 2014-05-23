@@ -1,3 +1,6 @@
 *.log
 *.session
 *.cache
+vendor
+all_zf2
+composer.phar

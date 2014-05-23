@@ -683,6 +683,10 @@ define(['Devapt', 'core/traces'], function(Devapt, DevaptTraces)
 	 */
 	DevaptTypes.to_list_item = function(arg_value, arg_list_items, arg_default_value)
 	{
+		if (! arg_value)
+		{
+			return arg_default_value;
+		}
 		if ( DevaptTypes.is_array(arg_list_items) )
 		{
 			return arg_value.lastIndexOf(arg_value) >= 0 ? arg_value : arg_default_value;

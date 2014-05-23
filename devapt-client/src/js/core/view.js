@@ -9,8 +9,9 @@
  * @license		Apache License Version 2.0, January 2004; see LICENSE.txt or http://www.apache.org/licenses/
  */
 
-define(['Devapt', 'core/object', 'core/types', 'core/options', 'core/classes', 'core/resources'],
-function(Devapt, DevaptObject, DevaptTypes, DevaptOptions, DevaptClasses, DevaptResources)
+define(
+['Devapt', 'core/object', 'core/types', 'core/options', 'core/classes', 'core/resources', 'core/template'],
+function(Devapt, DevaptObject, DevaptTypes, DevaptOptions, DevaptClasses, DevaptResources, DevaptTemplate)
 {
 	/**
 	 * @public
@@ -27,12 +28,48 @@ function(Devapt, DevaptObject, DevaptTypes, DevaptOptions, DevaptClasses, Devapt
 		
 		// INHERIT
 		self.inheritFrom = DevaptObject;
-		self.inheritFrom(arg_name, arg_options, true);
+		self.inheritFrom(arg_name, arg_options, false);
 		
 		// INIT
-		self.trace				= true;
+		self.trace				= false;
 		self.class_name			= 'DevaptView';
 		self.is_view			= true;
+		
+		
+		
+		/**
+		 * @public
+		 * @memberof			DevaptView
+		 * @desc				Set view container
+		 * @param {object}		arg_jquery_object	JQuery object to attach the view to (object)
+		 * @return {boolean}	true:success,false:failure
+		 */
+		self.set_container = function(arg_jquery_object)
+		{
+			var self = this;
+			var context = 'set_container(jqo)';
+			self.enter(context, '');
+			
+			
+			// SET CONTAINER JQUERY OBJECT
+			self.container_jqo		= DevaptTypes.is_null(arg_jquery_object) ? $('#' + self.name + '_view_id') : arg_jquery_object;
+			
+			// CHECK CONTAINER JQO
+			self.assertNotNull(context, 'self.container_jqo', self.container_jqo);
+			
+			// SET ID
+			if ( DevaptTypes.is_object(self.container_jqo) )
+			{
+				if ( DevaptTypes.is_not_empty_str(self.html_id) )
+				{
+					self.container_jqo.attr('id', self.html_id);
+				}
+			}
+			
+			
+			self.leave(context, 'success');
+			return true;
+		}
 		
 		
 		/**
@@ -47,11 +84,6 @@ function(Devapt, DevaptObject, DevaptTypes, DevaptOptions, DevaptClasses, Devapt
 			var context = self.class_name + '(' + arg_name + ')';
 			self.enter(context, 'constructor');
 			
-			
-			// VIEW ATTRIBUTES
-			self.container_jqo		= DevaptTypes.is_null(arg_container_jqo) ? $('<div>') : arg_container_jqo;
-			self.content_jqo		= null;
-			
 			// INIT OPTIONS
 			var init_option_result = DevaptOptions.set_options_values(self, arg_options, false);
 			if (! init_option_result)
@@ -59,26 +91,8 @@ function(Devapt, DevaptObject, DevaptTypes, DevaptOptions, DevaptClasses, Devapt
 				self.error(context + ': init options failure');
 			}
 			
-			// PARENT VIEW ATTRIBUTES
-			if ( ! ( DevaptTypes.is_object(self.parent_view) && self.parent_view.is_view ) )
-			{
-				self.parent_view	= null;
-				if ( DevaptTypes.is_not_empty_str(self.parent_view_name) )
-				{
-					self.parent_view	= DevaptViews.get(self.parent_view_name);
-				}
-			}
-			self.content_childs_jqo		= [];
-			
-			
-			// INIT VIEW
-			if ( ! DevaptTypes.is_null(self.container_jqo) )
-			{
-				if ( DevaptTypes.is_not_empty_str(self.html_id) )
-				{
-					self.container_jqo.attr('id', self.html_id);
-				}
-			}
+			// VIEW ATTRIBUTES
+			self.assert(context, 'set_container', self.set_container(arg_container_jqo) );
 			
 			
 			// REGISTER THE VIEW TO THE REPOSITORY
@@ -98,37 +112,12 @@ function(Devapt, DevaptObject, DevaptTypes, DevaptOptions, DevaptClasses, Devapt
 		/**
 		 * @public
 		 * @memberof			DevaptView
-		 * @desc				Draw view
-		 * @param {object}		arg_jquery_object	JQuery object to attach the view to (object)
-		 * @return {boolean}	true:success,false:failure
+		 * @desc				Get view id
+		 * @return {string}		HTML tag id
 		 */
-		self.set_container = function(arg_jquery_object)
+		self.get_view_id = function()
 		{
-			var self = this;
-			var context = 'set_container()';
-			self.enter(context, '');
-			
-			
-			// CHECK NEW CONTAINER
-			self.assertNotNull(context, 'arg_jquery_object', arg_jquery_object);
-			
-			// DETACH FROM EXISTING CONTAINER
-			if (self.container_jqo)
-			{
-				self.container_jqo.removeData('devapt_view');
-			}
-			
-			// ATTACH TO NEW CONTAINER
-			self.container_jqo = arg_jquery_object;
-			self.container_jqo.data('devapt_view', self);
-			if ( DevaptTypes.is_not_empty_str(self.html_id) )
-			{
-				self.container_jqo.attr('id', self.html_id);
-			}
-			
-			
-			self.leave(context, 'success');
-			return true;
+			return self.name + '_view_id';
 		}
 		
 		
@@ -143,6 +132,39 @@ function(Devapt, DevaptObject, DevaptTypes, DevaptOptions, DevaptClasses, Devapt
 		{
 			var self = this;
 			var context = 'render()';
+			self.enter(context, '');
+			
+			
+			// RENDER WITH TEMPLATE
+			if ( self.template_enabled )
+			{
+				var result = self.render_template();
+				var result = self.render_self();
+				
+				self.leave(context, 'render with template');
+				return result;
+			}
+			
+			// RENDER WITHOUT TEMPLATE
+			var result = self.render_self();
+			
+			
+			self.leave(context, 'render without template');
+			return result;
+		}
+		
+		
+		
+		/**
+		 * @public
+		 * @memberof			DevaptView
+		 * @desc				Render view content without template
+		 * @return {boolean}	true:success,false:failure
+		 */
+		self.render_self = function()
+		{
+			var self = this;
+			var context = 'render_self()';
 			self.enter(context, '');
 			
 			self.step(context, 'not implemented in this base class : implement in child classes');
@@ -182,17 +204,17 @@ function(Devapt, DevaptObject, DevaptTypes, DevaptOptions, DevaptClasses, Devapt
 		 * @param {object}		arg_bindings		Tags associative array as string key/view object value
 		 * @return {string}		Compiled string
 		 */
-		self.compile_template = function(arg_template_str, arg_tags, arg_bindings)
-		{
-			var self = this;
-			var context = 'compile_template(template,tags,bindings)';
-			self.enter(context, '');
+		// self.compile_template = function(arg_template_str, arg_tags, arg_bindings)
+		// {
+			// var self = this;
+			// var context = 'compile_template(template,tags,bindings)';
+			// self.enter(context, '');
 			
-			self.step(context, 'not yet implemented');
+			// self.step(context, 'not yet implemented');
 			
-			self.leave(context, 'success');
-			return arg_template_str;
-		}
+			// self.leave(context, 'success');
+			// return arg_template_str;
+		// }
 		
 		
 		
@@ -214,6 +236,214 @@ function(Devapt, DevaptObject, DevaptTypes, DevaptOptions, DevaptClasses, Devapt
 			
 			self.leave(context, 'success');
 			return arg_sentance_str;
+		}
+		
+		
+		
+		/**
+		 * @public
+		 * @memberof			DevaptView
+		 * @desc				Render template
+		 * @return {boolean}	true:success,false:failure
+		 */
+		self.render_template = function()
+		{
+			var self = this;
+			var context = 'render_template()';
+			self.enter(context, '');
+			
+			
+			// DEBUG
+			// self.trace = true;
+			
+			
+			// GET CURRENT BACKEND
+			var backend = Devapt.get_current_backend();
+			self.assertNotNull(context, 'backend', backend);
+			
+			// CHECK IF TEMPLATE IS ENABLED
+			if ( ! self.template_enabled )
+			{
+				self.leave(context, 'template isn\'t enabled');
+				return '';
+			}
+			
+			// GET TEMPLATE STRING
+			if ( ! DevaptTypes.is_not_empty_str(self.template_string) )
+			{
+				self.leave(context, 'template string is empty');
+				return '';
+			}
+			
+			// INIT AFTER RENDER CALLBACKS
+			var after_render_cb_array = [];
+			
+			// GET STANDARD TAGS
+			var std_tags_object = backend.get_template_std_tags();
+			
+			// GET VIEW TAGS
+			var view_tags = self.template_tags;
+			var view_tags_object = null;
+			if ( DevaptTypes.is_object(view_tags) )
+			{
+				self.step(context, 'view_tags is object');
+				view_tags_object = view_tags;
+			}
+			else if ( DevaptTypes.is_string(view_tags) )
+			{
+				self.step(context, 'view_tags is string');
+				view_tags = view_tags.split(',');
+				if ( DevaptTypes.is_array(view_tags) )
+				{
+					view_tags_object = {};
+					for(view_tag_index in view_tags)
+					{
+						var view_tag_record = view_tags[view_tag_index].split('=');
+						if ( DevaptTypes.is_array(view_tag_record) && view_tag_record.length === 2 )
+						{
+							var tag_name = view_tag_record[0];
+							var tag_value = view_tag_record[1];
+							view_tags_object[tag_name] = tag_value;
+						}
+					}
+				}
+			}
+			else
+			{
+				self.step(context, 'view_tags is unknow');
+			}
+			
+			
+			// GET VIEW TAGS ARRAYS
+			var view_tags_arrays_1 = self.template_arrays_1;
+			var view_tags_arrays_object = null;
+			if ( DevaptTypes.is_array(view_tags_arrays_1) )
+			{
+				self.step(context, 'loop on view_tags_arrays_1 is an array');
+				view_tags_arrays_object = {};
+				view_tags_arrays_object['array1'] = view_tags_arrays_1;
+			}
+			else
+			{
+				self.step(context, 'view_tags_arrays_1 is unknow');
+			}
+			
+			
+			// GET VIEW BINDINGS
+			var view_bindings = self.template_bindings;
+			var view_bindings_object = null;
+			if ( DevaptTypes.is_object(view_bindings) )
+			{
+				self.step(context, 'view_bindings is object');
+				view_bindings_object = view_bindings;
+			}
+			else if ( DevaptTypes.is_string(view_bindings) )
+			{
+				self.step(context, 'view_bindings is string');
+				view_bindings = view_bindings.split(',');
+				if ( DevaptTypes.is_array(view_bindings) )
+				{
+					self.step(context, 'view_bindings split is array');
+					
+					var view_bindings_object = {};
+					for(view_binding_index in view_bindings)
+					{
+						self.step(context, 'view_binding at index [' + view_binding_index + ']');
+						var view_tag_record = view_bindings[view_binding_index].split('=');
+						if ( DevaptTypes.is_array(view_tag_record) && view_tag_record.length === 2 )
+						{
+							var tag_name = view_tag_record[0];
+							var tag_value = view_tag_record[1];
+							self.value(context, 'tag_name', tag_name);
+							self.value(context, 'tag_value', tag_value);
+							
+							self.step(context, 'view_binding is a view name');
+							view_bindings_object[tag_name] =
+							(
+								function(view_name,backend_object)
+								{
+									var view_tag_id = view_name + '_view_id';
+									return function()
+									{
+										var closure_cb =
+											(
+												function(view_tag_id,view_name,backend_object)
+												{
+													return function()
+													{
+														var tag_jqo = $('#' + view_tag_id);
+														backend_object.render_view(tag_jqo, view_name);
+														
+														// DEBUG
+														// console.log(view_name, 'view_name');
+														// console.log(view_tag_id, 'view_tag_id');
+														// console.log(tag_jqo, 'view_tag_jqo');
+													}
+												}
+											) (view_tag_id,view_name,backend_object);
+										
+										// REGISTER RENDER CALLBACK
+										after_render_cb_array.push(closure_cb);
+										
+										// CREATE VIEW CONTENT TAG
+										return '<div id="' + view_tag_id + '" devapt-type="container"></div>';
+									}
+								}
+							) (tag_value,backend);
+						}
+					}
+				}
+			}
+			else
+			{
+				self.step(context, 'view_bindings is unknow');
+			}
+			
+			
+			// THIS TAG
+			var this_id = self.get_view_id();
+			var this_tag = {
+				'this': function()
+					{
+						// CREATE RENDER CALLBACK
+						var closure_cb =
+							(
+								function(view,content_id)
+								{
+									return function()
+									{
+										view.render_self();
+									}
+								}
+							) (self,this_id);
+						
+						// REGISTER RENDER CALLBACK
+						after_render_cb_array.push(closure_cb);
+						
+						// CREATE VIEW CONTENT TAG
+						return '<div id="' + this_id + '"></div>';
+					}
+				};
+			
+			
+			// MERGE TAGS
+			var $ = Devapt.jQuery();
+			var tags_object = $.extend({}, this_tag, std_tags_object, view_tags_object, view_tags_arrays_object, view_bindings_object);
+			// console.log(tags_object);
+			
+			
+			// RENDER TEMPLATE
+			var str = DevaptTemplate.render(self.template_string, tags_object);
+			self.container_jqo.html(str);
+			for(cb_index in after_render_cb_array)
+			{
+				var cb = after_render_cb_array[cb_index];
+				self.do_callback(cb);
+			}
+			
+			
+			self.leave(context, '');
+			return true;
 		}
 		
 		
@@ -327,6 +557,12 @@ function(Devapt, DevaptObject, DevaptTypes, DevaptOptions, DevaptClasses, Devapt
 		}
 		
 		
+		/* --------------------------------------------------------------------------------------------- */
+		// APPEND MIXIN METHODS
+		// self.register_mixin(DevaptMixinTemplate);
+		/* --------------------------------------------------------------------------------------------- */
+		
+		
 		// ON READY HANDLER
 		if ( DevaptTypes.is_null(arg_options) || arg_options.class_name == 'DevaptView')
 		{
@@ -351,6 +587,60 @@ function(Devapt, DevaptObject, DevaptTypes, DevaptOptions, DevaptClasses, Devapt
 	DevaptOptions.register_str_option(DevaptView, 'template_tags',			null, false, ['view_template_tags']);
 	DevaptOptions.register_str_option(DevaptView, 'template_bindings',		null, false, ['view_template_bindings']);
 
+	/*
+	CHILDS OPTIONS : BROKEN FEATURE
+	DevaptOptions.register_obj_option(DevaptView, 'template_arrays',		null, false, ['view_template_arrays'],
+		{
+			array1: {
+				name: 'array1',
+				type: 'array',
+				aliases: [],
+				default_value: [],
+				array_separator: ',',
+				array_type: 'String',
+				format: '',
+				is_required: false,
+				childs: {}
+			},
+			array2: {
+				name: 'array2',
+				type: 'array',
+				aliases: [],
+				default_value: [],
+				array_separator: ',',
+				array_type: 'String',
+				format: '',
+				is_required: false,
+				childs: {}
+			},
+			array3: {
+				name: 'array3',
+				type: 'array',
+				aliases: [],
+				default_value: [],
+				array_separator: ',',
+				array_type: 'String',
+				format: '',
+				is_required: false,
+				childs: {}
+			}
+		}
+	);*/
+	
+	
+	DevaptOptions.register_option(DevaptView, {
+			name: 'template_arrays_1',
+			type: 'array',
+			aliases: [],
+			default_value: [],
+			array_separator: ',',
+			array_type: 'String',
+			format: '',
+			is_required: false,
+			childs: {}
+		}
+	);
+	
 	DevaptOptions.register_option(DevaptView, {
 			name: 'links',
 			type: 'array',

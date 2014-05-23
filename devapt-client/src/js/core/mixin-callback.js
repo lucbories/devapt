@@ -10,7 +10,9 @@
  * @license		Apache License Version 2.0, January 2004; see LICENSE.txt or http://www.apache.org/licenses/
  */
 
-define( /* [ no depds ], */ function()
+define(
+['core/types'],
+function(DevaptTypes)
 {
 	/**
 	 * @mixin				DevaptMixinCallback
@@ -63,7 +65,7 @@ define( /* [ no depds ], */ function()
 				self.assertNotNull(context, 'cb_method', cb_method);
 				
 				// GET OPERANDS
-				if ( ! Devapt.is_null(arg_operands_array) )
+				if ( ! DevaptTypes.is_null(arg_operands_array) )
 				{
 					for(var opd_index = 0 ; opd_index < arg_operands_array.length ; opd_index++)
 					{

@@ -24,6 +24,11 @@ use Devapt\Application\Application;
 
 final class PageFooterViewRenderer
 {
+	// STATIC ATTIBUTES
+	static public $TRACE_PAGE_FOOTER_VIEW_RENDERER = false;
+	
+	
+	
 	/**
 	 * @brief		Constructor
 	 * @return		nothing
@@ -54,7 +59,7 @@ final class PageFooterViewRenderer
 				return null;
 			}
 			
-			Trace::info("PageFooterViewRenderer::render: page footer success from file");
+			Trace::info("PageFooterViewRenderer::render: page footer success from file", self::$TRACE_PAGE_FOOTER_VIEW_RENDERER);
 			return $buffer;
 		}
 		
@@ -70,7 +75,7 @@ final class PageFooterViewRenderer
 				return null;
 			}
 			
-			Trace::info("PageFooterViewRenderer::render: page footer success from string");
+			Trace::info("PageFooterViewRenderer::render: page footer success from string", self::$TRACE_PAGE_FOOTER_VIEW_RENDERER);
 			return $buffer;
 		}
 		

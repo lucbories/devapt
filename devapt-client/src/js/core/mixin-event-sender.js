@@ -10,7 +10,7 @@
  * @license		Apache License Version 2.0, January 2004; see LICENSE.txt or http://www.apache.org/licenses/
  */
 
-define( /* [ no depds ], */ function()
+define(['core/types', 'core/event', 'core/events'], function(DevaptTypes, DevaptEvent, DevaptEvents)
 {
 	/**
 	 * @mixin				DevaptMixinEventSender
@@ -40,13 +40,13 @@ define( /* [ no depds ], */ function()
 		fire_event : function(arg_event_name_or_obj, arg_operands_or_nothing)
 		{
 			this.push_trace(this.trace, this.mixin_event_sender_trace);
-			var context = 'fire_event(' + Devapt.is_string(arg_event_name_or_obj) ? arg_event_name_or_obj : arg_event_name_or_obj.name + ',callback)';
+			var context = 'fire_event(' + DevaptTypes.is_string(arg_event_name_or_obj) ? arg_event_name_or_obj : arg_event_name_or_obj.name + ',callback)';
 			this.enter(context, '');
 			
 			
 			// GET EVENT
 			var event = arg_event_name_or_obj;
-			if ( Devapt.is_string(arg_event_name_or_obj) )
+			if ( DevaptTypes.is_string(arg_event_name_or_obj) )
 			{
 				event = new DevaptEvent(arg_event_name_or_obj, this, arg_operands_or_nothing);
 			}
@@ -67,7 +67,7 @@ define( /* [ no depds ], */ function()
 			
 			// GET ALL EVENTS CALLBACK
 			var all_events_callbacks = this.events_callbacks['*'];
-			if ( Devapt.is_array(all_events_callbacks) )
+			if ( DevaptTypes.is_array(all_events_callbacks) )
 			{
 				event_callbacks = all_events_callbacks.concat(event_callbacks);
 			}

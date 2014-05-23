@@ -73,25 +73,22 @@ function(Devapt, DevaptTrace, DevaptTypes, DevaptOptions, DevaptClasses, DevaptR
 		 * @desc				Render view
 		 * @return {boolean}	true:success,false:failure
 		 */
-		self.render = function()
+		self.render_self = function()
 		{
 			var self = this;
-			var context = 'render()';
+			var context = 'render_self()';
 			self.enter(context, '');
 			
 			
 			// GET NODES
-			// console.log(self.container_jqo);
 			self.assertNotNull(context, 'container_jqo', self.container_jqo);
-			self.content_jqo = $('<span>');
-			self.container_jqo.prepend(self.content_jqo);
+			var content_jqo = $('<span>');
+			self.container_jqo.append(content_jqo);
 			
-			// GET MENUBAR NAME
-			self.assertNotEmptyString(context, 'self.label_name', self.label_name);
-			
-			// GET MENUBAR RESOURCE
+			// GET VIEW LABEL TEXT
 			self.assertNotEmptyValue(context, 'self.label_text', self.label_text);
-			self.content_jqo.text(self.label_text);
+			content_jqo.text(self.label_text);
+			// self.container_jqo.addClass('row');
 			
 			
 			self.leave(context, 'success');

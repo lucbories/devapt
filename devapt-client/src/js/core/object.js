@@ -32,7 +32,7 @@ function(Devapt, DevaptTrace, DevaptTypes, DevaptOptions, DevaptClasses,
 		var self = this;
 		
 		// INIT
-		self.trace				= true;
+		self.trace				= false;
 		self.class_name			= 'DevaptObject';
 		self.trace_constructor	= DevaptTypes.to_boolean(arg_trace_constructor, false);
 		

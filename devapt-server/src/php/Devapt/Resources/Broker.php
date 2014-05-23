@@ -143,6 +143,54 @@ final class Broker
 		// GET RESOURCE RECORDS
 		$resource_record = Broker::$resources_records_array[$arg_resource_name];
 		
+		// LOAD TEMPLATE FILE INTO TEMPLATE STRING FOR JS VIEWS
+		$TEMPLATE_FILE_KEY = View::$OPTION_TEMPLATE_FILE_NAME;
+		$TEMPLATE_STR_KEY = View::$OPTION_TEMPLATE_STRING;
+		if ( array_key_exists($TEMPLATE_FILE_KEY, $resource_record) )
+		{
+			Trace::step($context, 'resource record has ['.$TEMPLATE_FILE_KEY.']', Broker::$TRACE_BROKER);
+			$file_path_name = $resource_record[$TEMPLATE_FILE_KEY];
+			
+			// SEARCH FILE IN APPLICATION
+			$app_file_path_name = DEVAPT_APP_PRIVATE_ROOT.$file_path_name;
+			Trace::step($context, 'search file in application ['.$app_file_path_name.']', Broker::$TRACE_BROKER);
+			if ( ! file_exists($app_file_path_name) )
+			{
+				// SEARCH FILE IN SHARED MODULES
+				$app_file_path_name = DEVAPT_MODULES_ROOT.$file_path_name;
+				Trace::step($context, 'search file in shared modules ['.$app_file_path_name.']', Broker::$TRACE_BROKER);
+			}
+			
+			// PROCESS FILE
+			if ( file_exists($app_file_path_name) && is_readable($app_file_path_name) )
+			{
+				// HTML TEMPLATE FILE
+				$html_suffix = "html.template";
+				$file_suffix = substr($app_file_path_name, - strlen($html_suffix));
+				if ($file_suffix === $html_suffix)
+				{
+					// OPEN FILE
+					$handle = @fopen($app_file_path_name, "r");
+					if ($handle)
+					{
+						// READ FILE
+						$content = '';
+						while ( ($buffer = fgets($handle, 4096)) !== false)
+						{
+							$content .= $buffer;
+						}
+						if ( feof($handle) )
+						{
+							$resource_record[$TEMPLATE_STR_KEY] = $content;
+						}
+						
+						// CLOSE FILE
+						fclose($handle);
+					}
+				}
+			}
+		}
+		
 		// SANITIZE RECORDS
 		$resource_type = $resource_record['class_type'];
 		switch($resource_type)
@@ -167,7 +215,7 @@ final class Broker
 				
 				if ( is_array($menubar_items) && count($menubar_items) > 0 )
 				{
-					$resource_record['items'] = $menubar_items;
+					$resource_record['items'] = $menubar_object->getMenubarItemsNames();
 					$resource_record['items_resources'] = array();
 					foreach($menubar_items as $menu_resource_name)
 					{

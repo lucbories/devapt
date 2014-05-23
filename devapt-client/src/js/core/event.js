@@ -10,7 +10,9 @@
  * @license		Apache License Version 2.0, January 2004; see LICENSE.txt or http://www.apache.org/licenses/
  */
 
-define(['Devapt', 'core/traces', 'core/types', 'core/events'], function(Devapt, DevaptTraces, DevaptTypes, DevaptEvents)
+define(
+['Devapt', 'core/traces', 'core/types', 'core/events', 'core/object-base'],
+function(Devapt, DevaptTraces, DevaptTypes, DevaptEvents, DevaptObjectBase)
 {
 	/**
 	 * @class				DevaptEvent
@@ -23,6 +25,17 @@ define(['Devapt', 'core/traces', 'core/types', 'core/events'], function(Devapt, 
 	 */
 	function DevaptEvent(arg_event_name, arg_event_target_object, arg_event_operands)
 	{
+		var self = this;
+		
+		// INHERIT
+		self.inheritFrom = DevaptObjectBase;
+		self.inheritFrom(arg_event_name);
+		
+		// INIT
+		self.trace				= false;
+		self.class_name			= 'DevaptEvent';
+		
+		
 		/**
 		 * @memberof			DevaptEvent
 		 * @public
@@ -35,26 +48,20 @@ define(['Devapt', 'core/traces', 'core/types', 'core/events'], function(Devapt, 
 		 */
 		this.DevaptEvent_constructor = function(arg_event_name, arg_event_target_object, arg_event_operands)
 		{
-			// INHERIT
-			this.inheritFrom = DevaptObject;
-			this.inheritFrom(arg_event_name, null, false);
-			
 			// CONSTRUCTOR BEGIN
-			this.trace				= false;
-			this.class_name			= 'DevaptEvent';
-			var context				= this.class_name + '(' + arg_event_name + ')';
-			this.enter(context, 'constructor');
+			var context				= self.class_name + '(' + arg_event_name + ')';
+			self.enter(context, 'constructor');
 			
 			
 			// EVENT ATTRIBUTES
-			this.target_object		= arg_event_target_object;
-			this.operands_array		= get_arg(arg_event_operands, []);
+			self.target_object		= arg_event_target_object;
+			self.operands_array		= DevaptTypes.is_array(arg_event_operands) ? arg_event_operands : [];
 			var now = new Date();
-			this.fired_ts			= now.toLocaleDateString() + ' ' + now.toLocaleTimeString();
+			self.fired_ts			= now.toLocaleDateString() + ' ' + now.toLocaleTimeString();
 			
 			
 			// CONSTRUCTOR END
-			this.leave(context, 'success');
+			self.leave(context, 'success');
 		}
 		
 		// CALL CONSTRUCTOR
@@ -153,6 +160,16 @@ define(['Devapt', 'core/traces', 'core/types', 'core/events'], function(Devapt, 
 				this.to_string_value('fired_ts', DevaptTypes.is_null(fired_ts) ? 'no fired' : this.fired_ts)
 				;
 		}
+		
+		
+		/* --------------------------------------------------------------------------------------------- */
+		// APPEND MIXIN METHODS
+		// self.register_mixin(DevaptMixinTrace);
+		// self.register_mixin(DevaptMixinAssertion);
+		// self.register_mixin(DevaptMixinCallback);
+		// self.register_mixin(DevaptMixinEventSender);
+		// self.register_mixin(DevaptMixinEventListener);
+		/* --------------------------------------------------------------------------------------------- */
 	}
 
 	

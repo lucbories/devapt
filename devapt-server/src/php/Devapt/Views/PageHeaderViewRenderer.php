@@ -24,6 +24,11 @@ use Devapt\Application\Application;
 
 final class PageHeaderViewRenderer
 {
+	// STATIC ATTRIBUTES
+	static public $TRACE_PAGE_HEADER_VIEW_RENDERER		= false;
+	
+	
+	
 	/**
 	 * @brief		Constructor
 	 * @return		nothing
@@ -54,7 +59,7 @@ final class PageHeaderViewRenderer
 				return null;
 			}
 			
-			Trace::info("PageHeaderViewRenderer::render: page header success from file");
+			Trace::info("PageHeaderViewRenderer::render: page header success from file", self::$TRACE_PAGE_HEADER_VIEW_RENDERER);
 			return $buffer;
 		}
 		
@@ -70,7 +75,7 @@ final class PageHeaderViewRenderer
 				return null;
 			}
 			
-			Trace::info("PageHeaderViewRenderer::render: page header success from string");
+			Trace::info("PageHeaderViewRenderer::render: page header success from string", self::$TRACE_PAGE_HEADER_VIEW_RENDERER);
 			return $buffer;
 		}
 		

@@ -757,6 +757,7 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptClasses, DevaptInheritance)
 								{
 									DevaptTraces.trace_step(context, 'option has no childs: get values object', trace_step);
 									var values = DevaptTypes.to_object(arg_option_value, option.defaut_value, ',', '=');
+									DevaptTraces.trace_var(context, 'values', values, trace_step);
 									
 									if ( target_object[option_name] === undefined )
 									{
@@ -807,16 +808,23 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptClasses, DevaptInheritance)
 											}
 										}
 									}
+									// if ()
+									// {
+									// }
+									
+									// TODO ?????
 									
 									// LOOP ON CHILD OPTIONS
 									DevaptTraces.trace_step(context, 'loop on childs', trace_step);
 									target_object[option_name] = {};
 									for(child_key in option.childs)
 									{
+										DevaptTraces.trace_var(context, 'loop child_key', loop_option.name, DevaptOptions.options_set_trace);
+										
 										var loop_option = option.childs[child_key];
 										DevaptTraces.trace_var(context, 'loop_option.name', loop_option.name, DevaptOptions.options_set_trace);
 										
-										var loop_value	= attributes_values[child_key];
+										var loop_value	= loop_option[child_key];
 										DevaptTraces.trace_var(context, 'loop_value', loop_value, DevaptOptions.options_set_trace);
 										
 										DevaptTraces.trace_step(context, arg_option_name + '.childs[' + child_key + ']=' + loop_value, trace_step);
