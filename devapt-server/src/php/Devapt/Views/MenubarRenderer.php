@@ -82,6 +82,8 @@ final class MenubarRenderer
 		}
 		
 		
+		$arg_response->setStatusCode($arg_response::STATUS_CODE_200);
+		return true;
 		// GET RENDERED BUFFER
 		$buffer = '';
 		// $buffer .= "Menubar:";
@@ -202,9 +204,9 @@ final class MenubarRenderer
 					$buffer .= '</h1>';
 				$buffer .= '</li>';
 				
-				$buffer .= '<li class="name">';
-					$buffer .= '<a href="#"></a>';
-				$buffer .= '</li>';
+				// $buffer .= '<li class="name">';
+					// $buffer .= '<a href="#"></a>';
+				// $buffer .= '</li>';
 			$buffer .= '</ul>';
 			
 			$buffer .= '<section class="top-bar-section">';

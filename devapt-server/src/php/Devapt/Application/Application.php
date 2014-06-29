@@ -67,6 +67,11 @@ class Application extends AbstractApplication implements ApplicationInterface
 
         $this->request        = new HttpRequest();
         $this->response       = new HttpResponse();
+		
+		// REGISTER ACCESS
+		$get_action = \Devapt\Application\ResourceController::$RESOURCES_ACTION_GET;
+		$access = '*';
+		\Devapt\Security\Authorization::registerRoleAccess('application', $get_action, $access);
     }
 	
 	
@@ -209,11 +214,23 @@ class Application extends AbstractApplication implements ApplicationInterface
 		}
 		$request = $this->getRequest();
 		$response = $this->getResponse();
-		Dispatcher::dispatch($request, $response);
+		$result = Dispatcher::dispatch($request, $response);
+		
+		if (! $result)
+		{
+			// TODO
+		}
 		
 		if (self::$DEBUG_RUNNING)
 		{
-			Debug::dump('Application: stops running');
+			if (! $result)
+			{
+				Debug::dump('Application: stops running with request failure');
+			}
+			else
+			{
+				Debug::dump('Application: stops running with request success');
+			}
 		}
 	}
 }

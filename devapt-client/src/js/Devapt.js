@@ -1,24 +1,25 @@
 /**
- * @file        Devapt.js
- * @desc        Devapt static common features: Devapt static class, traces, errors, types, inheritance, modules, resources, utils
- * @ingroup     LIBAPT_MAIN_JS
+ * @file     	Devapt.js
+ * @desc     	Devapt static common features: Devapt static class, traces, errors, types, inheritance, modules, resources, utils
+ * @ingroup     DEVAPT_CORE
  * @date        2013-05-16
- * @version		0.9.x
+ * @version		1.0.x
  * @author      Luc BORIES
  * @copyright	Copyright (C) 2011 Luc BORIES All rights reserved.
  * @license		Apache License Version 2.0, January 2004; see LICENSE.txt or http://www.apache.org/licenses/
  */
 
-define('Devapt', ['jquery'], function($)
+define('Devapt', ['jquery', 'core/init'], function($, DevaptInit)
 {
 	console.info('Loading Devapt bootstrap');
-
+	
+	
 	/**
-	 * @ingroup     LIBAPT_MAIN_JS
+	 * @ingroup    			LIBAPT_MAIN_JS
 	 * @public
 	 * @static
-	 * @class		Devapt
-	 * @desc		Provide common features : types test, modules repository, classes inheritance
+	 * @class				Devapt
+	 * @desc				Provide common features : types test, modules repository, classes inheritance
 	 */
 	var Devapt = function()
 	{
@@ -26,18 +27,165 @@ define('Devapt', ['jquery'], function($)
 	
 	
 	/**
-	 * @ingroup     LIBAPT_MAIN_JS
+	 * @memberof			Devapt
 	 * @public
 	 * @static
-	 * @class		Devapt
-	 * @desc		Provide jQuery object
+	 * @desc				Trace flag
+	 */
+	Devapt.trace = true;
+	
+	
+	
+	/**
+	 * @memberof     		Devapt
+	 * @public
+	 * @static
+	 * @method				Devapt
+	 * @desc				Provide jQuery object
+	 * @return {object}		jQuery object
 	 */
 	Devapt.jQuery = function()
 	{
 		return $;
 	}
 	
-	// var $ = jQuery;
+	
+	
+	// -------------------------------------------------- BACKEND ---------------------------------------------------------
+	
+	/**
+	 * @memberof			Devapt
+	 * @public
+	 * @static
+	 * @desc				current backend
+	 */
+	Devapt.current_backend = null;
+	
+	
+	/**
+	 * @memberof  			Devapt
+	 * @public
+	 * @static
+	 * @method				Devapt.get_current_backend()
+	 * @desc				Get the current backend
+	 * @return {object}		A backend object
+	 */
+	Devapt.get_current_backend = function()
+	{
+		return Devapt.current_backend;
+	}
+	
+	
+	/**
+	 * @memberof  			Devapt
+	 * @public
+	 * @static
+	 * @method				Devapt.has_current_backend()
+	 * @desc				Test if a current backend exists
+	 * @return {boolean}	Has a backend ?
+	 */
+	Devapt.has_current_backend = function()
+	{
+		return Devapt.current_backend !== null;
+	}
+	
+	
+	/**
+	 * @memberof  			Devapt
+	 * @public
+	 * @static
+	 * @method				Devapt.set_current_backend(arg_current_backend)
+	 * @desc				set the current backend
+	 * @param {object}		arg_current_backend		backend object
+	 * @return {boolean}	success or failure
+	 */
+	Devapt.set_current_backend = function(arg_current_backend)
+	{
+		if ( Devapt.is_valid_backend(arg_current_backend) )
+		{
+			Devapt.current_backend = arg_current_backend;
+			return true;
+		}
+		
+		console.error('Devapt.set_current_backend : bad backend object');
+		return false;
+	}
+	
+	
+	/**
+	 * @memberof  			Devapt
+	 * @public
+	 * @static
+	 * @method				Devapt.is_valid_backend(arg_backend)
+	 * @desc				Test if the given backend is valid
+	 * @param {object}		arg_backend		backend object
+	 * @return {boolean}	success or failure
+	 */
+	Devapt.is_valid_backend = function(arg_backend)
+	{
+		if ( ! arg_backend.get_infos )
+		{
+			console.log('Devapt.is_valid_backend: no "get_infos" function');
+			return false;
+		}
+		
+		if ( ! arg_backend.build_from_declaration )
+		{
+			console.log('Devapt.is_valid_backend: no "build_from_declaration" function');
+			return false;
+		}
+		
+		if ( ! arg_backend.render_page )
+		{
+			console.log('Devapt.is_valid_backend: no "render_page" function');
+			return false;
+		}
+		
+		if ( ! arg_backend.render_view )
+		{
+			console.log('Devapt.is_valid_backend: no "render_view" function');
+			return false;
+		}
+		
+		if ( ! arg_backend.render_login )
+		{
+			console.log('Devapt.is_valid_backend: no "render_login" function');
+			return false;
+		}
+		
+		if ( ! arg_backend.render_logout )
+		{
+			console.log('Devapt.is_valid_backend: no "render_logout" function');
+			return false;
+		}
+		
+		if ( ! arg_backend.render_error )
+		{
+			console.log('Devapt.is_valid_backend: no "render_error" function');
+			return false;
+		}
+		
+		return true;
+	}
+	
+	
+	
+	/**
+	 * @memberof  			Devapt
+	 * @public
+	 * @static
+	 * @method				Devapt.get_current_backend
+	 * @desc				Get the current backend
+	 * @return {object}		A backend object
+	 */
+	Devapt.get_current_backend = function()
+	{
+		return Devapt.current_backend;
+	}
+	
+	
+	
+	// -------------------------------------------------- UTILS ---------------------------------------------------------
 	
 	/**
 	 * @memberof			Devapt
@@ -71,7 +219,7 @@ define('Devapt', ['jquery'], function($)
 	 */
 	Devapt.use_css = function(arg_css_files)
 	{
-		console.log('Devapt.use_css [' + arg_css_files + ']');
+		console.info('Devapt.use_css [' + arg_css_files + ']');
 		
 		// LOAD MODULE CSS FILES
 		if (arg_css_files)
@@ -104,6 +252,9 @@ define('Devapt', ['jquery'], function($)
 	}
 	
 	
+	
+	// -------------------------------------------------- MAIN RUN ---------------------------------------------------------
+	
 	/**
 	 * @memberof			Devapt
 	 * @public
@@ -112,11 +263,43 @@ define('Devapt', ['jquery'], function($)
 	 * @desc				Run application
 	 * @return {nothing}
 	 */
-	Devapt.run = function()
+/*	Devapt.run = function()
 	{
-		console.log('Devapt.run');
-		// init GUI Backend, cache, event
-	}
+		console.info('Devapt.run');
+		
+		
+		// INIT BACKEND
+		if ( ! Devapt.has_current_backend() )
+		{
+			require(['backend-foundation5/backend'], function(foundation5_backend)
+			{
+				var result = Devapt.set_current_backend(foundation5_backend);
+				if ( ! result)
+				{
+					console.error('Devapt.run: init backend failed');
+					return;
+				}
+			} );
+		}
+		var backend = Devapt.get_current_backend();
+		
+		
+		// INIT DEFAULT VIEW
+		DevaptInit.init();
+		
+		
+		// INIT APPLICATION
+		require(['core/application'], function(app)
+		{
+			if ( ! app )
+			{
+				console.error('Devapt.run: init application failed');
+				return;
+			}
+			
+			// var default_view = app.get_home_view();
+		} );
+	}*/
 	
 	
 	// Bootstrap

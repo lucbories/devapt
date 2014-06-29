@@ -78,7 +78,11 @@ class ViewController extends AbstractController
 		}
 		
 		// RENDER JS
-		JsWrapper::initJsResources($arg_response);
+		JsWrapper::initJsViewsResources($arg_response);
+		if ($arg_action_name === 'html_page')
+		{
+			JsWrapper::initJsPageResources($arg_response);
+		}
 		
 		// PAGE FOOTER
 		if ($arg_action_name === 'html_page')

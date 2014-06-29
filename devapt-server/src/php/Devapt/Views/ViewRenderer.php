@@ -145,7 +145,8 @@ final class ViewRenderer
 				
 				// UPDATE RESPONSE
 				$content = $arg_response->getContent();
-				$content .= '<div id="'.$arg_id.'">'.$str_result.'</div>';
+				// $content .= '<div id="'.$arg_id.'">'.$str_result.'</div>';
+				$content .= $str_result;
 				$arg_response->setContent($content);
 				
 				$arg_response->setStatusCode($arg_response::STATUS_CODE_200);

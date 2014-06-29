@@ -1,3 +1,4 @@
 *.log
 *.session
 *.cache
+db_connexions.ini

@@ -36,7 +36,7 @@ final class JsWrapper
 	
 	
 	
-	static public function initJsResources($arg_response)
+	static public function initJsViewsResources($arg_response)
 	{
 		// BUILD JS BUFFER
 		$js_buffer = '';
@@ -45,22 +45,40 @@ final class JsWrapper
 			$js_buffer .= $js_resource_buffer;
 		}
 		
-		// UPDATE RESPONSE
+		// APPEND APPLICATION.RUN JS CODE
 		if ( is_string($js_buffer) && $js_buffer !== '')
 		{
-			$buffer = '';
-			$buffer .= '<SCRIPT type="text/javascript">';
-			$buffer .= 'console.info(\'Devapt.main define\');';
-			$buffer .= 'define(\'main\', [\'Devapt\', \'core/resources\'], function(Devapt, DevaptResources) {';
-			$buffer .= 'console.info(\'Devapt.main\');';
-			$buffer .= 'var $ = Devapt.jQuery();';
-			$buffer .= '$(document).ready( function() {'.$js_buffer.'} );';
-			$buffer .= '} );  var main = require([\'main\']);  </SCRIPT>';
-			
 			$content = $arg_response->getContent();
-			$content .= $buffer;
+			$content .= '
+				<script type="text/javascript">
+							';
+			$content .= $js_buffer;
+			$content .= '
+					);
+				</script>
+				';
 			$arg_response->setContent($content);
 		}
+	}
+	
+	
+	static public function initJsPageResources($arg_response)
+	{
+		// APPEND APPLICATION.RUN JS CODE
+		$json_app_cfg = \Devapt\Resources\Broker::getResourceJson('application');
+		$content = $arg_response->getContent();
+		$content .= '
+			<script type="text/javascript">
+				require([\'core/application\'],
+					function(DevaptApplication)
+					{
+						DevaptApplication.set_config( '.$json_app_cfg.' );
+						DevaptApplication.run();
+					}
+				);
+			</script>
+			';
+		$arg_response->setContent($content);
 	}
 	
 	
@@ -85,7 +103,7 @@ final class JsWrapper
 		$resource_json_str = ResourcesBroker::getResourceJson($resource_name);
 		
 		// SAVE BUFFER
-		$this->js_resources_buffers[] = 'DevaptResources.add_cached_declaration('.$resource_json_str.');';
+		$this->js_resources_buffers[] = 'require([\'core/resources\'], function (DevaptResources) { DevaptResources.add_cached_declaration('.$resource_json_str.'); } );';
 		
 		Trace::info('JsWrapper: Render model JS resource success ['.$resource_name.']');
 		return true;
@@ -113,8 +131,32 @@ final class JsWrapper
 		$resource_json_str = ResourcesBroker::getResourceJson($resource_name);
 		
 		// SAVE BUFFER
-		$js_code = 'DevaptResources.add_cached_declaration('.$resource_json_str.');';
-		$js_code .= 'DevaptViews.render(\''.$resource_name.'\',\''.$arg_view_tag_id.'\');';
+		$js_code = '';
+/*		$js_code .= 'require([\'core/init\'], function(DevaptInit) { DevaptInit.after_resource(\''.$arg_view_tag_id.'\', function() {';
+		$js_code .= ' require([\'Devapt\', \'core/resources\'], function (Devapt, DevaptResources) {';
+		$js_code .= '  DevaptResources.add_cached_declaration('.$resource_json_str.');';
+		$js_code .= '  Devapt.get_current_backend().render_view($(\'#'.$arg_view_tag_id.'\'),\''.$resource_name.'\');';
+		$js_code .= ' } );';
+		$js_code .= ' } );';
+		$js_code .= ' } );';*/
+		$js_code .= '
+			require([\'core/init\'],
+				function(DevaptInit)
+				{
+					DevaptInit.after_resource(\''.$arg_view_tag_id.'\',
+						function() {
+							require([\'Devapt\', \'core/resources\'],
+								function (Devapt, DevaptResources)
+								{
+									DevaptResources.add_cached_declaration( '.$resource_json_str.' );
+									Devapt.get_current_backend().render_view($(\'#'.$arg_view_tag_id.'\'),\''.$resource_name.'\');
+								}
+							);
+						}
+					);
+				}
+			);
+			';
 		self::$js_resources_buffers[] = $js_code;
 		
 		Trace::info('JsWrapper: Render view JS resource success ['.$resource_name.']');

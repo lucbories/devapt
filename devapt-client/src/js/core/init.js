@@ -9,7 +9,7 @@
  * @license		Apache License Version 2.0, January 2004; see LICENSE.txt or http://www.apache.org/licenses/
  */
 
-define(['Devapt'], function(Devapt)
+define( /* [ no depds ], */ function()
 {
 	/**
 	 * @memberof	DevaptInit

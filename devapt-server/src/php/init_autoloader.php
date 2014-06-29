@@ -17,11 +17,15 @@
  */
 
 $DEVAPT_ZF2_ROOT = DEVAPT_SERVER_EXTERNAL_ROOT.'php/ZendFramework-2.2.5/library';
+$DEVAPT_VENDOR_ROOT = DEVAPT_SERVER_EXTERNAL_ROOT;
 $DEVAPT_SERVER_ROOT = DEVAPT_SERVER_FRAMEWORK_ROOT.'/src/php';
+
+
 
 // DEBUG
 if (DEVAPT_DEBUG === 'TRUE')
 {
+	// DEVAPT_ZF2_ROOT EXISTS ?
 	if ( file_exists($DEVAPT_ZF2_ROOT) )
 	{
 		echo "exists: $DEVAPT_ZF2_ROOT<br>";
@@ -30,7 +34,18 @@ if (DEVAPT_DEBUG === 'TRUE')
 	{
 		echo "not exists: $DEVAPT_ZF2_ROOT<br>";
 	}
-
+	
+	// DEVAPT_VENDOR_ROOT EXISTS ?
+	if ( file_exists($DEVAPT_VENDOR_ROOT) )
+	{
+		echo "exists: $DEVAPT_VENDOR_ROOT<br>";
+	}
+	else
+	{
+		echo "not exists: $DEVAPT_VENDOR_ROOT<br>";
+	}
+	
+	// DEVAPT_SERVER_ROOT EXISTS ?
 	if ( file_exists($DEVAPT_SERVER_ROOT) )
 	{
 		echo "exists: $DEVAPT_SERVER_ROOT<br>";
@@ -41,15 +56,23 @@ if (DEVAPT_DEBUG === 'TRUE')
 	}
 }
 
-// Composer autoloading
-if ( file_exists('vendor/autoload.php') )
+
+
+// COMPOSER AUTOLOADING
+if ( file_exists($DEVAPT_VENDOR_ROOT.'vendor/autoload.php') )
 {
-    $loader = include 'vendor/autoload.php';
+    $loader = include $DEVAPT_VENDOR_ROOT.'vendor/autoload.php';
 }
+
+
 
 // INIT ZF2 PATH
 $zf2Path = false;
 if ( is_dir('vendor/ZF2/library') )
+{
+    $zf2Path = 'vendor/ZF2/library';
+}
+elseif ( is_dir('vendor/ZF2/library') )
 {
     $zf2Path = 'vendor/ZF2/library';
 }
@@ -70,7 +93,7 @@ elseif ( is_dir($DEVAPT_ZF2_ROOT) )
 
 if ( isset($loader) )
 {
-	// DEFINE ZEND LOADER
+	// DEFINE ZEND FRAMEWORK LOADER
 	if ($zf2Path)
 	{
 		$loader->add('Zend', $zf2Path);

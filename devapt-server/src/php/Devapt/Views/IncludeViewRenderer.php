@@ -16,8 +16,10 @@
 
 namespace Devapt\Views;
 
-// DEBUG
+
+// DEVAPT IMPORTS
 use Devapt\Core\Trace;
+use Devapt\Application\Application;
 
 final class IncludeViewRenderer
 {
@@ -79,29 +81,8 @@ final class IncludeViewRenderer
 		}
 		
 		// SEARCH INCLUDE FILE
-		if ( ! file_exists($file_path_name) )
-		{
-			$app_file_path_name = DEVAPT_APP_PRIVATE_ROOT.$file_path_name;
-			
-			if ( ! file_exists($app_file_path_name) )
-			{
-				$modules_file_path_name = DEVAPT_MODULES_ROOT.$file_path_name;
-				
-				if ( ! file_exists($modules_file_path_name) )
-				{
-					Trace::warning("IncludeViewRenderer::render: file path name [$file_path_name] not found in application [$app_file_path_name] and modules [$modules_file_path_name]");
-					return null;
-				}
-				else
-				{
-					$file_path_name = $modules_file_path_name;
-				}
-			}
-			else
-			{
-				$file_path_name = $app_file_path_name;
-			}
-		}
+		$file_path_name = Application::getInstance()->searchResourceFile($file_path_name);
+		
 		if ( ! file_exists($file_path_name) )
 		{
 			Trace::warning("IncludeViewRenderer::render: file path name [$file_path_name] not found");
@@ -160,7 +141,7 @@ final class IncludeViewRenderer
 			return $content;
 		}
 		
-		Trace::warning("IncludeViewRenderer::render: bad view configuration for resource [$arg_view_resource]");
+		Trace::warning("IncludeViewRenderer::render: bad view configuration for resource for file [$file_path_name]");
 		return null;
 	}
 }

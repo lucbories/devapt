@@ -38,6 +38,13 @@ use Devapt\Resources\Broker as ResourcesBroker;
 
 abstract class AbstractApplication
 {
+	// STATIC ATTRIBUTES
+	
+	/// @brief TRACE FLAG
+	static protected $TRACE_APP = false;
+	
+	
+	
    /**
      * Constructor
      */
@@ -328,7 +335,7 @@ abstract class AbstractApplication
      */
     public function initModules()
 	{
-		if ( ! $this->initModulesCollection('application.modules', DEVAPT_APP_PRIVATE_ROOT) )
+		if ( ! $this->initModulesCollection('application.modules', DEVAPT_APP_MODULES_ROOT) )
 		{
 			Trace::error('Application: Init application.modules failed.');
 			return false;
@@ -426,6 +433,7 @@ abstract class AbstractApplication
 
     /**
      * Init the application dispatcher
+	 * 
      * @return boolean
      */
     public function initDispatcher()
@@ -452,5 +460,54 @@ abstract class AbstractApplication
 		}
 		
 		return true;
+	}
+	
+	
+	
+    /**
+     * Find a resource file
+     *
+	 * @param[in] arg_file_path_name	file path name
+     * @return nothing
+     */
+    public function searchResourceFile($arg_file_path_name)
+	{
+		$context = 'Application.searchResourceFile(file)';
+		Trace::enter($context, 'search file in app modules ['.$arg_file_path_name.']', self::$TRACE_APP);
+		
+		
+		// INIT RESOURCE FILE
+		$resource_file_path_name = $arg_file_path_name;
+		
+		
+		// GIVEN FILE EXISTS
+		if ( file_exists($resource_file_path_name) )
+		{
+			return $resource_file_path_name;
+		}
+		
+		// SEARCH FILE IN APP PRIVATE FILES
+		$resource_file_path_name = DEVAPT_APP_PRIVATE_ROOT.$arg_file_path_name;
+		if ( file_exists($resource_file_path_name) )
+		{
+			return Trace::leaveok($context, 'file found in app private files ['.$resource_file_path_name.']', $resource_file_path_name, self::$TRACE_APP);
+		}
+		
+		// SEARCH FILE IN APP MODULES
+		$resource_file_path_name = DEVAPT_APP_MODULES_ROOT.$arg_file_path_name;
+		if ( file_exists($resource_file_path_name) )
+		{
+			return Trace::leaveok($context, 'file found in app modules ['.$resource_file_path_name.']', $resource_file_path_name, self::$TRACE_APP);
+		}
+		
+		// SEARCH FILE IN SHARED MODULES
+		$resource_file_path_name = DEVAPT_MODULES_ROOT.$arg_file_path_name;
+		if ( file_exists($resource_file_path_name) )
+		{
+			return Trace::leaveok($context, 'file found in shared modules ['.$resource_file_path_name.']', $resource_file_path_name, self::$TRACE_APP);
+		}
+		
+		
+		return Trace::leaveko($context, 'file not found ['.$arg_file_path_name.']', null, self::$TRACE_APP);
 	}
 }

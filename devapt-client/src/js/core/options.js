@@ -9,7 +9,8 @@
  * @license		Apache License Version 2.0, January 2004; see LICENSE.txt or http://www.apache.org/licenses/
  */
 
-define(['Devapt', 'core/traces', 'core/types', 'core/classes', 'core/inheritance'], function(Devapt, DevaptTraces, DevaptTypes, DevaptClasses, DevaptInheritance)
+define(['Devapt', 'core/traces', 'core/types', 'core/classes', 'core/inheritance'],
+function(Devapt, DevaptTraces, DevaptTypes, DevaptClasses, DevaptInheritance)
 {
 	/**
 	 * @memberof	DevaptOptions
@@ -54,6 +55,14 @@ define(['Devapt', 'core/traces', 'core/types', 'core/classes', 'core/inheritance
 	 */
 	DevaptOptions.options = {};
 
+	/**
+	 * @memberof	DevaptOptions
+	 * @public
+	 * @static
+	 * @desc		Required options counters
+	 */
+	DevaptOptions.options_required = {};
+
 
 	/**
 	 * @memberof	DevaptOptions
@@ -82,9 +91,9 @@ define(['Devapt', 'core/traces', 'core/types', 'core/classes', 'core/inheritance
 			is_required: true,
 			childs: {} // child options if it is an object
 		};
-
-
-
+	
+	
+	
 	/**
 	 * @memberof			DevaptOptions
 	 * @public
@@ -129,6 +138,13 @@ define(['Devapt', 'core/traces', 'core/types', 'core/classes', 'core/inheritance
 		// REGISTER OPTION
 		arg_option_obj['class_name'] = class_name;
 		class_options[arg_option_obj.name] = arg_option_obj;
+		var is_required_count = arg_option_obj['is_required'] ? 1 : 0;
+		// console.warn(is_required_count, class_name + '.is_required_count');
+		if ( ! DevaptOptions.options_required[class_name] )
+		{
+			DevaptOptions.options_required[class_name] = 0;
+		}
+		DevaptOptions.options_required[class_name] += is_required_count;
 		
 		
 		DevaptTraces.trace_leave(context, 'success', DevaptOptions.options_register_trace);
@@ -438,6 +454,7 @@ define(['Devapt', 'core/traces', 'core/types', 'core/classes', 'core/inheritance
 		var context = 'DevaptOptions.get_option(obj,option,inherited,class stack)';
 		DevaptTraces.trace_enter(context, '', DevaptOptions.options_get_trace);
 		
+		
 		DevaptTraces.trace_var(context, 'arg_class_names_stack', arg_class_names_stack ? arg_class_names_stack : 'empty', DevaptOptions.options_get_trace);
 		
 		// CHECK ARGS
@@ -513,6 +530,7 @@ define(['Devapt', 'core/traces', 'core/types', 'core/classes', 'core/inheritance
 		DevaptTraces.trace_var(context, 'class_name', class_name, DevaptOptions.options_get_trace);
 		DevaptTraces.trace_var(context, 'arg_option_name', arg_option_name, DevaptOptions.options_get_trace);
 		// DevaptTraces.trace_separator(true);
+		
 		
 		DevaptTraces.trace_leave(context, 'not found', DevaptOptions.options_get_trace);
 		return null;
@@ -739,6 +757,7 @@ define(['Devapt', 'core/traces', 'core/types', 'core/classes', 'core/inheritance
 								{
 									DevaptTraces.trace_step(context, 'option has no childs: get values object', trace_step);
 									var values = DevaptTypes.to_object(arg_option_value, option.defaut_value, ',', '=');
+									DevaptTraces.trace_var(context, 'values', values, trace_step);
 									
 									if ( target_object[option_name] === undefined )
 									{
@@ -789,16 +808,23 @@ define(['Devapt', 'core/traces', 'core/types', 'core/classes', 'core/inheritance
 											}
 										}
 									}
+									// if ()
+									// {
+									// }
+									
+									// TODO ?????
 									
 									// LOOP ON CHILD OPTIONS
 									DevaptTraces.trace_step(context, 'loop on childs', trace_step);
 									target_object[option_name] = {};
 									for(child_key in option.childs)
 									{
+										DevaptTraces.trace_var(context, 'loop child_key', loop_option.name, DevaptOptions.options_set_trace);
+										
 										var loop_option = option.childs[child_key];
 										DevaptTraces.trace_var(context, 'loop_option.name', loop_option.name, DevaptOptions.options_set_trace);
 										
-										var loop_value	= attributes_values[child_key];
+										var loop_value	= loop_option[child_key];
 										DevaptTraces.trace_var(context, 'loop_value', loop_value, DevaptOptions.options_set_trace);
 										
 										DevaptTraces.trace_step(context, arg_option_name + '.childs[' + child_key + ']=' + loop_value, trace_step);
@@ -846,6 +872,7 @@ define(['Devapt', 'core/traces', 'core/types', 'core/classes', 'core/inheritance
 		var context = 'DevaptOptions.set_options_values(obj,opt)';
 		DevaptTraces.trace_enter(context, '', DevaptOptions.options_set_trace);
 		
+		
 		// CHECK ARGS
 		if ( ! DevaptTypes.is_object(arg_class_instance) )
 		{
@@ -854,6 +881,14 @@ define(['Devapt', 'core/traces', 'core/types', 'core/classes', 'core/inheritance
 		}
 		if ( DevaptTypes.is_null(arg_options_obj) )
 		{
+			var class_name = arg_class_instance.class_name;
+			var required_options_count = DevaptOptions.options_required[class_name];
+			if (required_options_count > 0)
+			{
+				DevaptTraces.trace_error(context, 'no given options but [' + required_options_count + '] required options are expected', DevaptOptions.options_set_trace);
+				return false;
+			}
+			
 			DevaptTraces.trace_leave(context, 'no options', DevaptOptions.options_set_trace);
 			return true;
 		}
@@ -974,6 +1009,6 @@ define(['Devapt', 'core/traces', 'core/types', 'core/classes', 'core/inheritance
 		DevaptTraces.trace_leave(context, 'success', DevaptOptions.options_set_trace);
 		return true;
 	}
-
+	
 	return DevaptOptions;
 });

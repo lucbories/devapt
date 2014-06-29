@@ -44,7 +44,7 @@ sql_is_expression             = 0
 
 OR
 
-application.models.MODEL_CALENDARS_REF_ACTIVITIES.driver=MYSQL/MYSQLI/PDO_MYSQL/MySqlModel/MySqlIModel (alias: class_name)
+application.models.MODEL_CALENDARS_REF_ACTIVITIES.driver=mysqli/pdo_mysql/inifile/csvfile (alias: class_name)
 application.models.MODEL_CALENDARS_REF_ACTIVITIES.connexion=cx_demo_db
 application.models.MODEL_CALENDARS_REF_ACTIVITIES.role_read=ROLE_AUTH_USERS_READ
 application.models.MODEL_CALENDARS_REF_ACTIVITIES.role_create=ROLE_AUTH_USERS_CREATE
@@ -84,17 +84,25 @@ format=
  */
 namespace Devapt\Resources;
 
-use Zend\Db\Adapter\Adapter as DbAdapter;
+// ZEND IMPORTS
+// use Zend\Db\Adapter\Adapter as DbAdapter;
 
+// DEVAPT IMPORTS
 use \Devapt\Core\Trace;
 use \Devapt\Security\DbConnexions;
-use \Devapt\Models\SqlQuery;
+use \Devapt\Models\Sql\SqlEngine;
 
 class Model extends AbstractResource
 {
+	// STATIC ATTRIBUTES
+	
+	/// @brief	TRACE FLAG
+	static public $MODEL_TRACE		= true;
+	
+	
 	// ALL MODEL ATTRIBUTES
 	
-	/// @brief	Model driver name (string) (should be in 'PdoMysql', 'Mysqli'...)
+	/// @brief	Model driver name (string) (see self::$MODEL_DRIVERS_LIST)
 	protected $model_driver			= null;
 	
 	/// @brief	Model access role for read (string) (should be a valid role name)
@@ -121,8 +129,8 @@ class Model extends AbstractResource
 	/// @brief	Model fields records (array)
 	protected $model_fields			= null;
 	
-	/// @brief	Model Db adapter (object)
-	protected $db_adapter			= null;
+	/// @brief	Model data engine (object)
+	protected $data_engine			= null;
 	
 	
 	
@@ -133,6 +141,18 @@ class Model extends AbstractResource
 	
 	/// @brief	Model driver name (strings array)
 	static public $MODEL_DRIVER_ALIAS		= array('class_name');
+	
+	/// @brief	Model drivers list (strings array)
+	static public $MODEL_DRIVERS_LIST		= array('mysqli','pdo_mysql','inifile','csvfile');
+	
+	/// @brief	Model SQL drivers list (strings array)
+	static public $MODEL_SQL_DRIVERS_LIST		= array('mysqli','pdo_mysql');
+	
+	/// @brief	Model NOSQL drivers list (strings array)
+	static public $MODEL_NOSQL_DRIVERS_LIST		= array('mongodb');
+	
+	/// @brief	Model File drivers list (strings array)
+	static public $MODEL_FILE_DRIVERS_LIST		= array('inifile','csvfile');
 	
 	
 	/// @brief	Model access role for read (string) (should be a valid role name)
@@ -148,31 +168,38 @@ class Model extends AbstractResource
 	static public $MODEL_ACCESS_ROLE_DELETE	= 'role_delete';
 	
 	
+	/// @brief	Model file path name (string) (should be a valid file path name)
+	static public $MODEL_FILE				= 'file';
+	
+	/// @brief	Model file path name aliases (strings array)
+	static public $MODEL_FILE_ALIAS			= array('file_path');
+	
+	
 	/// @brief	Model CRUD main table name (string) (should be a valid table name)
 	static public $MODEL_CRUD_TABLE			= 'crud_table';
 	
-	/// @brief	Model CRUD main table name (strings array)
+	/// @brief	Model CRUD main table name aliases (strings array)
 	static public $MODEL_CRUD_TABLE_ALIAS	= array('table');
 	
 	
 	/// @brief	Model connexion name (string) (should be a valid connexion resource name)
 	static public $MODEL_CONNEXION			= 'connexion';
 	
-	/// @brief	Model connexion name alias (strings array)
+	/// @brief	Model connexion name aliases (strings array)
 	static public $MODEL_CONNEXION_ALIAS	= array('connexion_name');
 	
 	
 	/// @brief	Model joins records (array)
 	static public $MODEL_JOINS			= 'joins';
 	
-	/// @brief	Model joins records alias (strings array)
+	/// @brief	Model joins records aliases (strings array)
 	static public $MODEL_JOINS_ALIAS	= array('model_joins');
 	
 	
 	/// @brief	Model fields records (array)
 	static public $MODEL_FIELDS			= 'fields';
 	
-	/// @brief	Model fields records alias (strings array)
+	/// @brief	Model fields records aliases (strings array)
 	static public $MODEL_FIELDS_ALIAS	= array('model_fields');
 	
 	
@@ -207,6 +234,13 @@ class Model extends AbstractResource
 		
 		// SET MODEL RESOURCE ATTRIBUTES
 		$this->setModelDriverName		( $this->getValueFromRecord($arg_resource_record, self::$MODEL_DRIVER,		self::$MODEL_DRIVER_ALIAS,		null, null) );
+		
+		
+		// SET FILE PATH NAME
+		$this->setModelFilePathName		( $this->getValueFromRecord($arg_resource_record, self::$MODEL_FILE,		self::$MODEL_FILE_ALIAS,		null, null) );
+		
+		
+		// SET SQL CRUD TABLE
 		$this->setModelCrudTableName	( $this->getValueFromRecord($arg_resource_record, self::$MODEL_CRUD_TABLE,	self::$MODEL_CRUD_TABLE_ALIAS,	null, null) );
 		$this->setModelConnexionName	( $this->getValueFromRecord($arg_resource_record, self::$MODEL_CONNEXION,	self::$MODEL_CONNEXION_ALIAS,	null, null) );
 		
@@ -321,7 +355,55 @@ class Model extends AbstractResource
 	 */
 	public function setModelDriverName($arg_driver_name)
 	{
-		$this->model_driver = $arg_driver_name;
+		$this->model_driver = strtolower($arg_driver_name);
+	}
+	
+	/**
+	 * @brief		Test if the model driver works with a SQL database
+	 * @return		boolean
+	 */
+	public function isSqlModel()
+	{
+		return in_array($this->getModelDriverName(), self::$MODEL_SQL_DRIVERS_LIST);
+	}
+	
+	/**
+	 * @brief		Test if the model driver works with a NOSQL database
+	 * @return		boolean
+	 */
+	public function isNoSqlModel()
+	{
+		return in_array($this->getModelDriverName(), self::$MODEL_NOSQL_DRIVERS_LIST);
+	}
+	
+	/**
+	 * @brief		Test if the model driver works with a file
+	 * @return		boolean
+	 */
+	public function isFileModel()
+	{
+		return in_array($this->getModelDriverName(), self::$MODEL_FILE_DRIVERS_LIST);
+	}
+	
+	
+	
+	/**
+	 * @brief		Get model file path name
+	 * @return		string
+	 */
+	public function getModelFilePathName()
+	{
+		return $this->model_file;
+	}
+	
+	/**
+	 * @brief		Set model driver name
+	 * @param[in]	arg_file_path_name	 file path name
+	 * @return		nothing
+	 */
+	public function setModelFilePathName($arg_file_path_name)
+	{
+		$this->model_file = $arg_file_path_name;
 	}
 	
 	
@@ -391,11 +473,20 @@ class Model extends AbstractResource
 	
 	/**
 	 * @brief		Get model fields records
-	 * @return		array
+	 * @return		array of records
 	 */
 	public function getModelFieldsRecords()
 	{
 		return $this->model_fields;
+	}
+	
+	/**
+	 * @brief		Get model fields names
+	 * @return		array of strings
+	 */
+	public function getModelFieldsNames()
+	{
+		return array_keys($this->model_fields);
 	}
 	
 	/**
@@ -405,14 +496,23 @@ class Model extends AbstractResource
 	 */
 	public function setModelFieldsRecords($arg_fields_array)
 	{
+		$context = 'Model.setModelFieldsRecords(fields)';
+		Trace::enter($context, '', self::$MODEL_TRACE);
+		
+		
 		// CHECK ARGS
 		if ( ! is_array($arg_fields_array) )
 		{
+			Trace::leave($context, 'bad fields array', self::$MODEL_TRACE);
 			return;
 		}
 		
-		// GET CONNEXION DB
-		$default_db = DbConnexions::getConnexionDatabase($this->model_connexion);
+		
+		// INIT
+		$is_sql = $this->isSqlModel();
+		$is_file = $this->isFileModel();
+		$sql_default_db = $is_sql ? DbConnexions::getConnexionDatabase($this->model_connexion) : null;
+		
 		
 		// LOOP ON FIELDS
 		foreach($arg_fields_array as $field_name => $field_record)
@@ -508,59 +608,60 @@ class Model extends AbstractResource
 			// SET FOREIGN LINK FLAG
 			$field_record['has_foreign_link'] = $this->getFieldHasForeignLink($field_record);
 			
-			// FILL NAM
+			// FILL NAME
 			if ( ! array_key_exists('name', $field_record) || $field_record['name'] !== $field_name )
 			{
 				$field_record['name'] = $field_name;
 			}
 			
 			// FILL DB
-			if ( ! array_key_exists('sql_db', $field_record) )
+			if ( $is_sql && ! array_key_exists('sql_db', $field_record) )
 			{
-				$field_record['sql_db'] = $default_db;
+				$field_record['sql_db'] = $sql_default_db;
 			}
 			
 			// FILL TABLE
-			if ( ! array_key_exists('sql_table', $field_record) )
+			if ( $is_sql && ! array_key_exists('sql_table', $field_record) )
 			{
 				$field_record['sql_table'] = $this->getModelCrudTableName();
 			}
 			
 			// FILL COLUMN
-			if ( ! array_key_exists('sql_column', $field_record) )
+			if ( $is_sql && ! array_key_exists('sql_column', $field_record) )
 			{
 				$field_record['sql_column'] = $field_record['name'];
 			}
 			
 			// FILL COLUMN ALIAS
-			if ( ! array_key_exists('sql_alias', $field_record) )
+			if ( $is_sql && ! array_key_exists('sql_alias', $field_record) )
 			{
 				$field_record['sql_alias'] = $field_record['sql_column'];
 			}
 			
 			// FILL FOREIGN DB
-			if ( $field_record['has_foreign_link'] && ! array_key_exists('sql_foreign_db', $field_record) )
+			if ( $is_sql && $field_record['has_foreign_link'] && ! array_key_exists('sql_foreign_db', $field_record) )
 			{
 				$field_record['sql_foreign_db'] = $field_record['sql_db'];
 			}
 			
 			// FILL FOREIGN TABLE ALIAS
-			if ( array_key_exists('sql_foreign_table', $field_record) )
+			if ( $is_sql && array_key_exists('sql_foreign_table', $field_record) )
 			{
 				$field_record['sql_foreign_table_alias'] = $field_record['sql_foreign_table'].'_'.$field_name;
 			}
 			
 			// FILL IS EXPRESSION
-			if ( ! array_key_exists('sql_is_expression', $field_record) )
+			if ( $is_sql && ! array_key_exists('sql_is_expression', $field_record) )
 			{
 				$field_record['sql_is_expression'] = false;
 			}
 			
 			// FILL IS PRIMARY KEY
-			if ( ! array_key_exists('sql_is_primary_key', $field_record) )
+			if ( $is_sql && ! array_key_exists('sql_is_primary_key', $field_record) )
 			{
 				$field_record['sql_is_primary_key'] = false;
 			}
+			
 			
 			// REGISTER FIELD RECORD
 			$this->model_fields[$field_name] = $field_record;
@@ -641,77 +742,184 @@ class Model extends AbstractResource
 	
 	
 	/**
-	 * @brief		Init DB adapter
+	 * @brief		Init data engine
 	 * @return		boolean
 	 */
-	public function initDbAdapter()
+	public function initDataEngine()
 	{
-		if ( ! is_null($this->db_adapter) )
+		if ( $this->isSqlModel() )
 		{
+			$this->data_engine = new \Devapt\Models\Sql\SqlEngine($this);
 			return true;
 		}
 		
-		switch( $this->getModelDriverName() )
-		{
-			case 'PDO_MYSQL':
-			case 'MYSQL':
-			case 'MYSQLI':
-			{
-				// CHECK CONNEXION
-				if ( ! DbConnexions::hasConnexion($this->model_connexion) )
-				{
-					return false;
-				}
-				
-				// GET CONNEXION ARRAY
-				$arg_options = array();
-				$arg_options['driver']		= DbConnexions::getConnexionDriver( $this->getModelConnexionName() );
-				$arg_options['hostname']	= DbConnexions::getConnexionHostname( $this->getModelConnexionName() );
-				$arg_options['port']		= DbConnexions::getConnexionPort( $this->getModelConnexionName() );
-				$arg_options['database']	= DbConnexions::getConnexionDatabase( $this->getModelConnexionName() );
-				$arg_options['username']	= DbConnexions::getConnexionUser( $this->getModelConnexionName() );
-				$arg_options['password']	= DbConnexions::getConnexionPassword( $this->getModelConnexionName() );
-				$arg_options['charset']		= DbConnexions::getConnexionCharset( $this->getModelConnexionName(), '');
-				
-				// INIT DB ADAPTER
-				$this->db_adapter = new DbAdapter($arg_options);
-				
-				return true;
-			}
-		}
+		// if ( $this->isNoSqlModel() )
+		// {
+			// $this->data_engine = new NoSql\NoSqlEngine($this);
+			// return true;
+		// }
+		
+		// if ( $this->isFileModel() )
+		// {
+			// $this->data_engine = new File\FileEngine($this);
+			// return true;
+		// }
 		
 		return false;
 	}
 	
 	
 	/**
-	 * @brief		Read datas
-	 * @param[in]	arg_id				id (integer|string)
-	 * @param[in]	arg_request			request (object)
-	 * @return		array
+	 * @brief		Get data engine
+	 * @return		object			data engine object or null if failed
 	 */
-	public function read($arg_id, $arg_request)
+	public function getDataEngine()
+	{
+		if ( ! is_object($this->data_engine) )
+		{
+			if ( ! $this->initDataEngine() )
+			{
+				Trace::warning('Model.getDataEngine: engine init failure');
+				return null;
+			}
+		}
+		
+		return $this->data_engine;
+	}
+	
+	
+	/**
+	 * @brief		Read datas
+	 * @param[in]	arg_query		query (object)
+	 * @return		array			model result as array('status'=>'error', 'count'=>'0', 'error'=>'bad action', 'records':[]);
+	 */
+	public function read($arg_query)
 	{
 		// CHECK ARGS
-		if ( ! is_object($arg_request) )
+		if ( ! is_object($arg_query) )
 		{
-			Trace::warning('Model.read: bad request');
+			Trace::warning('Model.read: bad query object');
 			return null;
 		}
 		
-		// INIT DB ADAPTER
-		if ( ! $this->initDbAdapter() )
+		
+		// INIT MODEL RESULT
+		$model_result = array('status'=>'error', 'count'=>'0', 'error'=>'engine failed', 'records'=>array());
+		
+		
+		// READ DATAS
+		$records = $this->getDataEngine()->read($arg_query);
+		if ( is_array($records) )
 		{
+			$model_result['count']		= count($records);
+			$model_result['records']	= $records;
+			$model_result['status']		= 'ok';
+			$model_result['error']		= '';
+		}
+		
+		
+		return $model_result;
+	}
+	
+	
+	/**
+	 * @brief		Create datas
+	 * @param[in]	arg_query		query (object)
+	 * @return		array			model result as array('status'=>'error', 'count'=>'0', 'error'=>'bad action', 'records':[]);
+	 */
+	public function create($arg_query)
+	{
+		// CHECK ARGS
+		if ( ! is_object($arg_query) )
+		{
+			Trace::warning('Model.create: bad query object');
 			return null;
 		}
 		
-		$query = SqlQuery::buildFromRequest($this, $arg_request, $arg_id);
 		
-		if ( is_null($query) )
+		// INIT MODEL RESULT
+		$model_result = array('status'=>'error', 'count'=>'0', 'error'=>'engine failed', 'records'=>array());
+		
+		
+		// READ DATAS
+		$count = $this->getDataEngine()->create($arg_query);
+		if ( is_numeric($count) && $count > 0 )
 		{
+			$model_result['count']		= $count;
+			$model_result['records']	= [];
+			$model_result['status']		= 'ok';
+			$model_result['error']		= '';
+		}
+		
+		
+		return $model_result;
+	}
+	
+	
+	/**
+	 * @brief		Update datas
+	 * @param[in]	arg_query		query (object)
+	 * @return		array			model result as array('status'=>'error', 'count'=>'0', 'error'=>'bad action', 'records':[]);
+	 */
+	public function update($arg_query)
+	{
+		// CHECK ARGS
+		if ( ! is_object($arg_query) )
+		{
+			Trace::warning('Model.update: bad query object');
 			return null;
 		}
 		
-		return $query->read($this->db_adapter);
+		
+		// INIT MODEL RESULT
+		$model_result = array('status'=>'error', 'count'=>'0', 'error'=>'engine failed', 'records'=>array());
+		
+		
+		// READ DATAS
+		$count = $this->getDataEngine()->update($arg_query);
+		if ( is_numeric($count) && $count > 0 )
+		{
+			$model_result['count']		= $count;
+			$model_result['records']	= [];
+			$model_result['status']		= 'ok';
+			$model_result['error']		= '';
+		}
+		
+		
+		return $model_result;
+	}
+	
+	
+	/**
+	 * @brief		Delete datas
+	 * @param[in]	arg_query		query (object)
+	 * @return		array			model result as array('status'=>'error', 'count'=>'0', 'error'=>'bad action', 'records':[]);
+	 */
+	public function delete($arg_query)
+	{
+		// CHECK ARGS
+		if ( ! is_object($arg_query) )
+		{
+			Trace::warning('Model.delete: bad query object');
+			return null;
+		}
+		
+		
+		// INIT MODEL RESULT
+		$model_result = array('status'=>'error', 'count'=>'0', 'error'=>'engine failed', 'records'=>array());
+		
+		
+		// READ DATAS
+		$count = $this->getDataEngine()->delete($arg_query);
+		if ( is_numeric($count) && $count > 0 )
+		{
+			$model_result['count']		= $count;
+			$model_result['records']	= [];
+			$model_result['status']		= 'ok';
+			$model_result['error']		= '';
+		}
+		
+		
+		return $model_result;
 	}
 }

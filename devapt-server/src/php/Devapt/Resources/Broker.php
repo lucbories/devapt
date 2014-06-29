@@ -16,16 +16,26 @@
 
 namespace Devapt\Resources;
 
-use Zend\Config\Reader\Ini AS IniReader;
+// ZEND IMPORTS
 use Zend\Debug\Debug;
-use Devapt\Core\Trace;
-
+use Zend\Config\Reader\Ini AS IniReader;
 use Zend\Json\Json as JsonFormatter;
+
+// DEVAPT IMPORTS
+use Devapt\Core\Trace;
+use Devapt\Application\Application;
+
 
 final class Broker
 {
 	// STATIC ATTRIBUTES
-	static public $TRACE_BROKER					= true;
+	
+	/// @brief TRACE FLAG
+	static public $TRACE_BROKER					= false;
+	
+	/// @brief NOT FOUND FLAG
+	static public $RESOURCE_NOT_FOUND			= 'resource not found';
+	
 	
 	static private $resources_objects_array		= array();
 	static private $resources_records_array		= array();
@@ -120,15 +130,69 @@ final class Broker
 		$context = 'Broker::getResourceJson('.$arg_resource_name. ')';
 		Trace::enter($context, '', Broker::$TRACE_BROKER);
 		
+		if ($arg_resource_name === 'application' )
+		{
+			$resource_record = \Devapt\Application\Application::getInstance()->getConfig()->getAttributesCollection('application');
+			$resource_record['connexions'] = "no access";
+			$resource_record['security']['autologin'] = "no access";
+			
+			// FORMAT JSON STRING
+			$jsonOptions = null;
+			$json_str = JsonFormatter::encode($resource_record, null, $jsonOptions);
+			
+			return Trace::leaveok($context, 'application.*', $json_str, Broker::$TRACE_BROKER);
+		}
+		
 		// A RESOURCE OBJECT IS CACHED
 		if ( ! Broker::hasResourceObject($arg_resource_name) )
 		{
 			Trace::warning("Resources\Broker.getResourceJson: resource not found [$arg_resource_name]");
-			return null;
+			
+			return Trace::leaveok($context, 'resource not found', self::$RESOURCE_NOT_FOUND, Broker::$TRACE_BROKER);
 		}
 		
 		// GET RESOURCE RECORDS
 		$resource_record = Broker::$resources_records_array[$arg_resource_name];
+		
+		// LOAD TEMPLATE FILE INTO TEMPLATE STRING FOR JS VIEWS
+		$TEMPLATE_FILE_KEY = View::$OPTION_TEMPLATE_FILE_NAME;
+		$TEMPLATE_STR_KEY = View::$OPTION_TEMPLATE_STRING;
+		if ( array_key_exists($TEMPLATE_FILE_KEY, $resource_record) )
+		{
+			Trace::step($context, 'resource record has ['.$TEMPLATE_FILE_KEY.']', Broker::$TRACE_BROKER);
+			$file_path_name = $resource_record[$TEMPLATE_FILE_KEY];
+			
+			$app_file_path_name = Application::getInstance()->searchResourceFile($file_path_name);
+			
+			// PROCESS FILE
+			if ( file_exists($app_file_path_name) && is_readable($app_file_path_name) )
+			{
+				// HTML TEMPLATE FILE
+				$html_suffix = "html.template";
+				$file_suffix = substr($app_file_path_name, - strlen($html_suffix));
+				if ($file_suffix === $html_suffix)
+				{
+					// OPEN FILE
+					$handle = @fopen($app_file_path_name, "r");
+					if ($handle)
+					{
+						// READ FILE
+						$content = '';
+						while ( ($buffer = fgets($handle, 4096)) !== false)
+						{
+							$content .= $buffer;
+						}
+						if ( feof($handle) )
+						{
+							$resource_record[$TEMPLATE_STR_KEY] = $content;
+						}
+						
+						// CLOSE FILE
+						fclose($handle);
+					}
+				}
+			}
+		}
 		
 		// SANITIZE RECORDS
 		$resource_type = $resource_record['class_type'];
@@ -136,10 +200,50 @@ final class Broker
 		{
 			// case 'view': // TODO
 			// case 'model':
-			// case 'menu':
+			
+			case 'menubar':
+			{
+				$menubar_object = Broker::getResourceObject($arg_resource_name);
+				if ( ! is_object($menubar_object) )
+				{
+					Trace::warning("Resources\Broker.getResourceJson: resource object not found [$arg_resource_name]");
+					return null;
+				}
+				$menubar_items = $menubar_object->getMenubarAllItemsNames();
+				
+				if ( is_string($menubar_items) )
+				{
+					$menubar_items = explode(',', $menubar_items);
+				}
+				
+				if ( is_array($menubar_items) && count($menubar_items) > 0 )
+				{
+					$resource_record['items'] = $menubar_object->getMenubarItemsNames();
+					$resource_record['items_resources'] = array();
+					foreach($menubar_items as $menu_resource_name)
+					{
+						if ( ! Broker::hasResourceObject($menu_resource_name) )
+						{
+							Trace::warning("Resources\Broker.getResourceJson: resource not found [$menu_resource_name] for menu bar items [$arg_resource_name]");
+							return null;
+						}
+						$resource_record['items_resources'][$menu_resource_name] = Broker::$resources_records_array[$menu_resource_name];
+						// TODO ADD SUB MENUS
+					}
+				}
+				else
+				{
+					Trace::warning("Resources\Broker.getResourceJson: requested menubar resource has no items [$arg_resource_name]");
+				}
+				// Debug::dump($resource_record['items_resources']);
+				break;
+			}
+			
 			case 'connexion':
+			{
 				Trace::warning("Resources\Broker.getResourceJson: requested resource is a connexion [$arg_resource_name]");
 				return null;
+			}
 		}
 		
 		// FORMAT JSON STRING
@@ -159,8 +263,14 @@ final class Broker
 	static public function searchResource($arg_resource_name)
 	{
 		$context = 'Broker::searchResource('.$arg_resource_name.')';
-		
 		Trace::enter($context, '', Broker::$TRACE_BROKER);
+		
+		
+		// APPLICATION
+		if ($arg_resource_name === 'application')
+		{
+			return Trace::leaveok($context, 'resource "application"', true, Broker::$TRACE_BROKER);
+		}
 		
 		// Debug::dump( Broker::$resources_files_array );
 		foreach(Broker::$resources_files_array as $file_path_name)
@@ -218,7 +328,7 @@ final class Broker
 		
 		if ( is_null($arg_file_path_name) || ! file_exists($arg_file_path_name) || ! is_readable($arg_file_path_name) )
 		{
-			Debug::dump("Resources\Broker.addSearchFile: bad file path name [$arg_file_path_name]");
+			// Debug::dump("Resources\Broker.addSearchFile: bad file path name [$arg_file_path_name]");
 			return Trace::leaveko($context, 'bad file path name', false, Broker::$TRACE_BROKER);
 		}
 		
@@ -243,14 +353,14 @@ final class Broker
 		// CHECK FILE PATH NAME
 		if ( is_null($arg_file_path_name) || ! file_exists($arg_file_path_name) || ! is_readable($arg_file_path_name) )
 		{
-			Debug::dump("Resources\Broker.loadResourcesFile: bad file path name [$arg_file_path_name]");
+			// Debug::dump("Resources\Broker.loadResourcesFile: bad file path name [$arg_file_path_name]");
 			return Trace::leaveko($context, 'bad file path name', false, Broker::$TRACE_BROKER);
 		}
 		
 		// CHECK IF LOADED
 		if ( array_key_exists($arg_file_path_name, Broker::$loaded_files ) )
 		{
-			Debug::dump("Resources\Broker.loadResourcesFile: file already loaded [$arg_file_path_name]");
+			// Debug::dump("Resources\Broker.loadResourcesFile: file already loaded [$arg_file_path_name]");
 			return Trace::leaveok($context, '', true, Broker::$TRACE_BROKER);
 		}
 		
@@ -258,7 +368,7 @@ final class Broker
 		$file_parts = explode('.', $arg_file_path_name);
 		if ( ! is_array($file_parts) || count($file_parts) < 2)
 		{
-			Debug::dump("Resources\Broker.loadResourcesFile: bad file type for [$arg_file_path_name]");
+			// Debug::dump("Resources\Broker.loadResourcesFile: bad file type for [$arg_file_path_name]");
 			return Trace::leaveko($context, 'bad file path name', false, Broker::$TRACE_BROKER);
 		}
 		$file_extension = array_pop($file_parts);
@@ -269,7 +379,7 @@ final class Broker
 			case 'ini': return Trace::leaveok($context, '', Broker::loadResourcesIniFile($arg_file_path_name), Broker::$TRACE_BROKER);
 		}
 		
-		Debug::dump("Resources\Broker.loadResourcesFile: bad file extension for [$arg_file_path_name]");
+		// Debug::dump("Resources\Broker.loadResourcesFile: bad file extension for [$arg_file_path_name]");
 		return Trace::leaveko($context, 'bad file extension', false, Broker::$TRACE_BROKER);
 	}
 	
@@ -288,7 +398,7 @@ final class Broker
 		// CHECK FILE PATH NAME
 		if ( is_null($arg_file_path_name) || ! file_exists($arg_file_path_name) || ! is_readable($arg_file_path_name) )
 		{
-			Debug::dump("Resources\Broker.loadResourcesIniFile: bad file path name [$arg_file_path_name]");
+			// Debug::dump("Resources\Broker.loadResourcesIniFile: bad file path name [$arg_file_path_name]");
 			return Trace::leaveko($context, 'bad file path name', false, Broker::$TRACE_BROKER);
 		}
 		
@@ -301,7 +411,7 @@ final class Broker
 		
 		if ( ! self::loadResourcesRecords($records_array) )
 		{
-			Debug::dump("Resources\Broker.loadResourcesIniFile: bad file content [$arg_file_path_name]");
+			// Debug::dump("Resources\Broker.loadResourcesIniFile: bad file content [$arg_file_path_name]");
 			return Trace::leaveko($context, 'bad file content', false, Broker::$TRACE_BROKER);
 		}
 		
@@ -324,7 +434,7 @@ final class Broker
 		// CHECK ARRAY
 		if ( ! is_array($arg_records) || count($arg_records) === 0 )
 		{
-			Debug::dump("Resources\Broker.loadResourcesRecords: bad records array");
+			// Debug::dump("Resources\Broker.loadResourcesRecords: bad records array");
 			return false;
 		}
 		
@@ -334,11 +444,11 @@ final class Broker
 		$application_resources_collection = array();
 		if ( is_array($arg_records) && array_key_exists('application', $arg_records) )
 		{
-			Trace::debug('Broker::loadResourcesIniFile: an application collection exists');
+			Trace::step($context, 'an application collection exists', Broker::$TRACE_BROKER);
 			$app_resources = $arg_records['application'];
 			foreach($app_resources as $resource_collection_name => $resource_collection_record)
 			{
-				Trace::debug('Broker::loadResourcesIniFile: a collection exists [' . $resource_collection_name . ']');
+				Trace::step($context, 'a collection exists [' . $resource_collection_name . ']', Broker::$TRACE_BROKER);
 				$application_resources_collection[$resource_collection_name] = $resource_collection_record;
 			}
 			unset($arg_records['application']);
@@ -358,7 +468,7 @@ final class Broker
 				{
 					foreach($collection as $resource_name => $resource_record)
 					{
-						Trace::debug('Resources\Broker.loadResourcesIniFile: add collection item resource_name['.$resource_name.']');
+						Trace::step($context, 'add collection item resource_name['.$resource_name.']', Broker::$TRACE_BROKER);
 						$resource_record['name'] = $resource_name;
 						$resource_record['class_type'] = $resource_type;
 						$checked_record = Broker::getCheckedResourceRecord($resource_record);
@@ -389,8 +499,7 @@ final class Broker
 		}
 		
 		
-		
-		return true;
+		return Trace::leaveok($context, '', true, Broker::$TRACE_BROKER);
 	}
 	
 	
@@ -443,7 +552,7 @@ final class Broker
 		// CHECK ARGS
 		if ( ! is_array($arg_resource_record) )
 		{
-			Debug::dump('Resources\Broker.getCheckedResourceRecord: bad resource record');
+			Trace::warning('Resources\Broker.getCheckedResourceRecord: bad resource record');
 			return null;
 		}
 		
@@ -502,7 +611,7 @@ final class Broker
 		// CHECK ARGS
 		if ( ! is_array($arg_resource_record) )
 		{
-			Debug::dump('Resources\Broker.buildResourceObjectFromRecord: bad resource record');
+			Trace::warning('Resources\Broker.buildResourceObjectFromRecord: bad resource record');
 			return null;
 		}
 		
@@ -523,7 +632,7 @@ final class Broker
 				{
 					if ( ! array_key_exists($attribute_name, $arg_resource_record) )
 					{
-						Debug::dump('Resources\Broker.buildResourceObjectFromRecord: required attributes failed for type:'.$type);
+						Trace::warning('Resources\Broker.buildResourceObjectFromRecord: required attributes failed for type:'.$type);
 						return null;
 					}
 				}
@@ -542,7 +651,7 @@ final class Broker
 				{
 					if ( ! array_key_exists($attribute_name, $arg_resource_record) )
 					{
-						Debug::dump('Resources\Broker.buildResourceObjectFromRecord: required attributes failed for type:'.$type);
+						Trace::warning('Resources\Broker.buildResourceObjectFromRecord: required attributes failed for type:'.$type);
 						return null;
 					}
 				}
@@ -561,7 +670,7 @@ final class Broker
 				{
 					if ( ! array_key_exists($attribute_name, $arg_resource_record) )
 					{
-						Debug::dump('Resources\Broker.buildResourceObjectFromRecord: required attributes failed for type:'.$type);
+						Trace::warning('Resources\Broker.buildResourceObjectFromRecord: required attributes failed for type:'.$type);
 						return null;
 					}
 				}
@@ -580,7 +689,7 @@ final class Broker
 				{
 					if ( ! array_key_exists($attribute_name, $arg_resource_record) )
 					{
-						Debug::dump('Resources\Broker.buildResourceObjectFromRecord: required attributes failed for type:'.$type);
+						Trace::warning('Resources\Broker.buildResourceObjectFromRecord: required attributes failed for type:'.$type);
 						return null;
 					}
 				}

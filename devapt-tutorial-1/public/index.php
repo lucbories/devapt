@@ -29,6 +29,7 @@ define('DEVAPT_WWW_ROOT',				dirname(__FILE__).'/../../');
 define('DEVAPT_APP_ROOT',				dirname(__FILE__).'/../');
 define('DEVAPT_APP_PUBLIC_ROOT',		DEVAPT_APP_ROOT.'public/');
 define('DEVAPT_APP_PRIVATE_ROOT',		DEVAPT_APP_ROOT.'private/');
+define('DEVAPT_APP_MODULES_ROOT',		DEVAPT_APP_ROOT.'modules/');
 
 define('DEVAPT_CLIENT_ROOT',			DEVAPT_APP_ROOT.'../devapt-client/');
 
@@ -44,6 +45,7 @@ if (DEVAPT_DEBUG === 'TRUE')
 	echo 'DEVAPT_APP_ROOT='.DEVAPT_APP_ROOT.'<br>';
 	echo 'DEVAPT_APP_PUBLIC_ROOT='.DEVAPT_APP_PUBLIC_ROOT.'<br>';
 	echo 'DEVAPT_APP_PRIVATE_ROOT='.DEVAPT_APP_PRIVATE_ROOT.'<br>';
+	echo 'DEVAPT_APP_MODULES_ROOT='.DEVAPT_APP_MODULES_ROOT.'<br>';
 
 	echo 'DEVAPT_CLIENT_ROOT='.DEVAPT_CLIENT_ROOT.'<br>';
 	echo 'DEVAPT_SERVER_ROOT='.DEVAPT_SERVER_ROOT.'<br>';

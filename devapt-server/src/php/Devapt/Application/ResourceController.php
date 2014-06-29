@@ -42,10 +42,31 @@ class ResourceController extends AbstractController
 	
 	public function doGetAction($arg_resource_name, $arg_action_name, $arg_id, $arg_request, $arg_response)
 	{
+		// FORMAT RESPONSE
+		$charset			= 'utf-8';
+		$contentType		= 'application/json';
+		$contentType		.= '; charset=' . $charset;
+		$multibyteCharsets	= array(); // ???
+		$headers = $arg_response->getHeaders();
+		$headers->addHeaderLine('content-type', $contentType);
+		if ( in_array(strtoupper($charset), $multibyteCharsets) )
+		{
+			$headers->addHeaderLine('content-transfer-encoding', 'BINARY');
+		}
+		
+		
 		// CHECK ACTION NAME
 		if ( ! is_string($arg_action_name) )
 		{
 			Trace::warning("ResourceController: Controller has no action name for resource [$arg_resource_name]");
+			
+			// UPDATE RESPONSE
+			$arg_response->setContent('Bad action name');
+			$arg_response->setStatusCode($arg_response::STATUS_CODE_400);
+			
+			// SEND JSON RESPONSE
+			$arg_response->send();
+			
 			return false;
 		}
 		
@@ -53,6 +74,14 @@ class ResourceController extends AbstractController
 		if ( ! $this->authorization_is_cheched && ! $this->checkAuthorization($arg_resource_name, $arg_action_name) )
 		{
 			Trace::warning("ResourceController: Controller authorization failed for action [$arg_action_name] on resource [$arg_resource_name]");
+			
+			// UPDATE RESPONSE
+			$arg_response->setContent('No access');
+			$arg_response->setStatusCode($arg_response::STATUS_CODE_401);
+			
+			// SEND JSON RESPONSE
+			$arg_response->send();
+			
 			return false;
 		}
 		
@@ -60,27 +89,40 @@ class ResourceController extends AbstractController
 		$resource_json_str = ResourcesBroker::getResourceJson($arg_resource_name);
 		if ( is_null($resource_json_str) )
 		{
-			Trace::warning('ResourceController: Resource not found ['.$arg_resource_name.']');
+			Trace::warning('ResourceController: Resource broker error ['.$arg_resource_name.']');
+			
+			// UPDATE RESPONSE
+			$arg_response->setContent('Broker error');
+			$arg_response->setStatusCode($arg_response::STATUS_CODE_500);
+			
+			// SEND JSON RESPONSE
+			$arg_response->send();
+			
 			return false;
 		}
 		
-		// FORMAT RESPONSE
-		$charset			= 'utf-8';
-		$contentType		= 'application/json';
-		$contentType		.= '; charset=' . $charset;
-		$multibyteCharsets	= array(); // ???
-		
-		$arg_response->setContent($resource_json_str);
-		$headers = $arg_response->getHeaders();
-		$headers->addHeaderLine('content-type', $contentType);
-		
-		if ( in_array(strtoupper($charset), $multibyteCharsets) )
+		// RESOURCE IS NOT FOUND
+		if ($resource_json_str === ResourcesBroker::$RESOURCE_NOT_FOUND)
 		{
-			$headers->addHeaderLine('content-transfer-encoding', 'BINARY');
+			Trace::warning('ResourceController: Resource not found ['.$arg_resource_name.']');
+			
+			// UPDATE RESPONSE
+			$arg_response->setContent('Not found');
+			$arg_response->setStatusCode($arg_response::STATUS_CODE_404);
+			
+			// SEND JSON RESPONSE
+			$arg_response->send();
+			
+			return true;
 		}
+		
+		// UPDATE RESPONSE
+		$arg_response->setContent($resource_json_str);
+		$arg_response->setStatusCode($arg_response::STATUS_CODE_200);
 		
 		// SEND JSON RESPONSE
 		$arg_response->send();
+		
 		
 		Trace::info('ResourceController: get action success ['.$arg_resource_name.']');
 		return true;

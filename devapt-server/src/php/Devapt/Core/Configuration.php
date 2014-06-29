@@ -39,6 +39,16 @@ class Configuration
 	
 	
     /**
+     * Get configuration array
+     * @return		attributes array
+     */
+    // public function getArray()
+	// {
+		// return $this->config_array;
+	// }
+	
+	
+    /**
      * Get a configuration attributes collection
      * @param[in]	arg_key					attribute key
      * @return		attributes array|null

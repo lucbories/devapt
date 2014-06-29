@@ -275,12 +275,33 @@ class Menu extends AbstractResource
 	}
 	
 	/**
-	 * @brief		Get menubar items names
+	 * @brief		Get menuitems names
 	 * @return		array
 	 */
 	public function getMenuItemsNames()
 	{
 		return $this->menu_items_names;
+	}
+	
+	/**
+	 * @brief		Get all menu items names (depth search)
+	 * @return		array
+	 */
+	public function getMenuAllItemsNames()
+	{
+		$all_items = array();
+		$items = $this->getMenuItems();
+		if ( is_array($items) )
+		{
+			foreach($items as $item)
+			{
+				$all_items[] = $item->getResourceName();
+				$sub_items = $item->getMenuAllItemsNames();
+				$all_items = array_merge($all_items, $sub_items);
+			}
+		}
+		
+		return $all_items;
 	}
 	
 	

@@ -16,18 +16,19 @@
 
 namespace Devapt\Views;
 
-// DEBUG
+// DEVAPT IMPORTS
 use Devapt\Core\Trace;
-
-// APPLICATION
 use Devapt\Application\Application;
-
-// SECURITY
 // use Devapt\Security\Authentication;
 use Devapt\Security\Authorization;
 
 final class TemplateViewRenderer
 {
+	// STATIC ATTRIBUTES
+	static public $TRACE_TEMPLATE_VIEW_RENDERER		= false;
+	
+	
+	
 	/**
 	 * @brief		Constructor
 	 * @return		nothing
@@ -96,7 +97,7 @@ final class TemplateViewRenderer
 		$result = preg_match_all('/\{\{[a-z\.\_\-0-9A-Z]+\}\}/', $buffer, $tags, PREG_PATTERN_ORDER, 0);
 		if ( $result === 0 )
 		{
-			Trace::info("TemplateViewRenderer::render_string: template render success (no tags)");
+			Trace::info("TemplateViewRenderer::render_string: template render success (no tags)", self::$TRACE_TEMPLATE_VIEW_RENDERER);
 			return $buffer;
 		}
 		if ( $result === FALSE )
@@ -130,7 +131,7 @@ final class TemplateViewRenderer
 		// REPLACE TAGS
 		$buffer = str_replace($tags, $replaces, $buffer);
 		
-		Trace::info("TemplateViewRenderer::render_string: template render success with [$result] tags");
+		Trace::info("TemplateViewRenderer::render_string: template render success with [$result] tags", self::$TRACE_TEMPLATE_VIEW_RENDERER);
 		return $buffer;
 	}
 	
@@ -157,7 +158,7 @@ final class TemplateViewRenderer
 			$resource_object = \Devapt\Resources\Broker::getResourceObject($arg_tag_label);
 			$resource_type = $resource_object->getResourceType();
 			$resource_name = $resource_object->getResourceName();
-			Trace::debug('TemplateViewRenderer::render_string: get resource ['.$resource_name.'] of type ['.$resource_type.']');
+			Trace::debug('TemplateViewRenderer::render_string: get resource ['.$resource_name.'] of type ['.$resource_type.']', self::$TRACE_TEMPLATE_VIEW_RENDERER);
 			
 			// CHECK ACCESS
 			if ( Authorization::isEnabled() )
@@ -238,30 +239,8 @@ final class TemplateViewRenderer
 		
 		
 		// SEARCH THE FILE IN APPLICATION AND MODULES
-		$file_path_name = $arg_file_path_name;
-		if ( ! file_exists($file_path_name) )
-		{
-			$app_file_path_name = DEVAPT_APP_PRIVATE_ROOT.$file_path_name;
-			
-			if ( ! file_exists($app_file_path_name) )
-			{
-				$modules_file_path_name = DEVAPT_MODULES_ROOT.$file_path_name;
-				
-				if ( ! file_exists($modules_file_path_name) )
-				{
-					Trace::warning("TemplateViewRenderer::render_file: file path name [$file_path_name] not found in application [$app_file_path_name] and modules [$modules_file_path_name]");
-					return null;
-				}
-				else
-				{
-					$file_path_name = $modules_file_path_name;
-				}
-			}
-			else
-			{
-				$file_path_name = $app_file_path_name;
-			}
-		}
+		$file_path_name = Application::getInstance()->searchResourceFile($arg_file_path_name);
+		
 		
 		
 		// CHECK FILE
@@ -286,7 +265,7 @@ final class TemplateViewRenderer
 			require $file_path_name;
 			$buffer = ob_get_clean();
 			
-			Trace::info("TemplateViewRenderer::render_file: PHP file template success [$file_path_name]");
+			Trace::info("TemplateViewRenderer::render_file: PHP file template success [$file_path_name]", self::$TRACE_TEMPLATE_VIEW_RENDERER);
 			return self::render_string($buffer, $arg_response);
 		}
 		
@@ -319,7 +298,7 @@ final class TemplateViewRenderer
 			// CLOSE FILE
 			fclose($handle);
 			
-			Trace::info("TemplateViewRenderer::render_file: HTML file template success [$file_path_name]");
+			Trace::info("TemplateViewRenderer::render_file: HTML file template success [$file_path_name]", self::$TRACE_TEMPLATE_VIEW_RENDERER);
 			return self::render_string($content, $arg_response);
 		}
 		

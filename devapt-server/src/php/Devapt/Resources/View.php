@@ -327,6 +327,10 @@ class View extends AbstractResource
 	 */
 	public function getTemplateIsEnabled()
 	{
+		// if ( is_bool($this->template_view_is_enabled) && ! $this->template_view_is_enabled )
+		// {
+			// return 'false';
+		// }
 		return $this->template_view_is_enabled;
 	}
 	
@@ -337,7 +341,11 @@ class View extends AbstractResource
 	 */
 	public function setTemplateIsEnabled($arg_template_is_enabled)
 	{
-		return $this->template_view_is_enabled = $arg_template_is_enabled;
+		$this->template_view_is_enabled = $arg_template_is_enabled;
+		// if ($this->template_view_is_enabled === '')
+		// {
+			// $this->template_view_is_enabled = false;
+		// }
 	}
 	
 	
@@ -367,7 +375,7 @@ class View extends AbstractResource
 	 * @brief		Get template file name
 	 * @return		string
 	 */
-	public function GetTemplateFileName()
+	public function getTemplateFileName()
 	{
 		return $this->template_view_file_name;
 	}
