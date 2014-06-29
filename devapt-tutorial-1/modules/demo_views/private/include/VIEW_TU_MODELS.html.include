@@ -1,0 +1,121 @@
+<!-- <script>
+	require(['core/introspect/traces', 'core/introspect/options'],
+		function (DevaptTraces, DevaptOptions) 
+		{
+			DevaptTraces.trace_step('my context', 'my step', true);
+			DevaptOptions.register_bool_option(DevaptOptions, 'option1', false, false, null);
+			console.log(DevaptOptions.options_types);
+			console.log(DevaptOptions.options);
+		}
+	);
+</script> -->
+
+
+<div class="row">
+	<div class="twelve columns">
+		<center><h4>Models JSON Controller Tests Unit</h4></center>
+	</div>
+</div>
+
+
+<div class="row">
+	<div class="twelve columns">
+		<a target='_blank' href='http://localhost/devapt-tutorial-1/public/models/MODEL_AUTH_USERS/read/'>
+			Read all MODELS_AUTH_USERS
+		</a>
+		<br>
+		<br>
+		<div class="panel">
+			[{"id_user":"4","login":"demo","lastname":"DEMO USER","firstname":"DemoUser","email":"demouser@libapt.com","password":"6c5ac7b4d3bd3311f033f971196cfa75"},{"id_user":"5","login":"test1","lastname":"TEST 1 J. SMITHS","firstname":"John","email":"test1@demo.com","password":"418d89a45edadb8ce4da17e07f72536c"},{"id_user":"6","login":"test2","lastname":"TEST 2 NAME","firstname":"test 2","email":"demo2@test2.org","password":"4ff9018a647ae315a7e6601a818b4940"},{"id_user":"7","login":"test3","lastname":"TEST 3","firstname":"Jimmy","email":"test3@tata.com","password":"9992295627e7e7162bdf77f14734acf8"},{"id_user":"8","login":"test4","lastname":"TEST 4","firstname":"Will","email":"test4@toto.com","password":"e041148b5e3b8cbdbe1efc51151a407a"},{"id_user":"10","login":"test5","lastname":"TEST 5","firstname":"Tim","email":"test5@toto.com","password":"d49e2308dbb6284b689caa4079cd4b67"},{"id_user":"19","login":"test6","lastname":"TEST 6","firstname":"jimmy","email":"test6@groenland.com","password":"5362fb6caf0cd8e1fe2aa48eb6f9e269"},{"id_user":"21","login":"test7","lastname":"TEST 7","firstname":"Bill","email":"bill@helo.fr","password":"23dd3b9744724cf94c3a43d468957d29"},{"id_user":"23","login":"test11","lastname":"TEST 11","firstname":"bill 11","email":"test11@demo.com","password":"469f91babc1a0a5f5e484e31024285d1"},{"id_user":"24","login":"test9","lastname":"TEST 9","firstname":"Joe","email":"test9@toto.com","password":"b8c0235346ce7c7c57c009bdf7bc7ddf"},{"id_user":"25","login":"demo2","lastname":"DEMO ! 2 USER","firstname":"Demo2User","email":"demo2user@libapt.com","password":"7285c5e724b4e878d2aa6a421d12b850"},{"id_user":"26","login":"test22","lastname":"T22","firstname":"t22","email":"t22@test.com","password":"bfd468ca6f28bbb79e28da7e0cab9318"},{"id_user":"27","login":"demo3","lastname":"DEMO 3 USER","firstname":"Demo3User","email":"demo3user@libapt.com","password":"b8fd90e6923d8914c75dc8285173e9a4"}]
+		</div>
+		<hr>
+	</div>
+</div>
+
+
+<div class="row">
+	<div class="twelve columns">
+		<a target='_blank' href='http://localhost/devapt-tutorial-1/public/models/MODEL_AUTH_USERS/read/?query_action=select&query_fields=id_user,firstname,login&query_filters=field=firstname,op=equals,modifier=,var1=Joe,type=String'>
+			Read MODELS_AUTH_USERS with filters: firstname is 'Joe'
+		</a>
+		<hr>
+	</div>
+</div>
+
+
+<div class="row">
+	<div class="twelve columns">
+		<a target='_blank' href='http://localhost/devapt-tutorial-1/public/models/MODEL_AUTH_USERS/read/?query_action=select&query_fields=id_user,firstname,login&query_filters=field=firstname,op=equals,modifier=lower,var1=joe,type=String'>
+			Read MODELS_AUTH_USERS with filters: LOWER(firstname) is 'joe'
+		</a>
+		<hr>
+	</div>
+</div>
+
+
+<div class="row">
+	<div class="twelve columns">
+		<a target='_blank' href='http://localhost/devapt-tutorial-1/public/models/MODEL_AUTH_USERS/read/?query_action=select&query_fields=id_user,firstname,login&query_filters=field=firstname,op=equals,modifier=upper,var1=JOE,type=String'>
+			Read MODELS_AUTH_USERS with UPPER(firstname) is 'JOE'
+		</a>
+		<hr>
+	</div>
+</div>
+
+
+<div class="row">
+	<div class="twelve columns">
+		<a target='_blank' href='http://localhost/devapt-tutorial-1/public/models/MODEL_AUTH_USERS/read/?query_action=select&query_fields=id_user,firstname,login&query_filters=field=login,op=in,modifier=lower,var1=demo,var2=test1,type=String'>
+			Read MODELS_AUTH_USERS with filters: LOWER(login) is in ('demo', 'test1')
+		</a>
+		<hr>
+	</div>
+</div>
+
+
+<div class="row">
+	<div class="twelve columns">
+		<a target='_blank' href='http://localhost/devapt-tutorial-1/public/models/MODEL_AUTH_USERS/read/?query_action=select&query_fields=id_user,firstname,login&query_filters=field=login,op=notequals,modifier=upper,var1=DEMO,type=String'>
+			Read MODELS_AUTH_USERS with UPPER(login) is not 'DEMO'
+		</a>
+		<hr>
+	</div>
+</div>
+
+
+<div class="row">
+	<div class="twelve columns">
+		<a target='_blank' href='http://localhost/devapt-tutorial-1/public/models/MODEL_AUTH_USERS/read/?query_action=select&query_fields=id_user,firstname,login&query_filters=field=firstname,op=equals,modifier=,var1=Joe,type=String|group=(,join=and,field=login,op=begins_with,modifier=,var1=test,type=String|group=),join=or,field=email,op=ends_with,modifier=,var1=.fr,type=String'>
+			Read MODELS_AUTH_USERS with filters: firstname is 'Joe' AND (login begins with 'test' or email ends with '.fr')
+		</a>
+		<hr>
+	</div>
+</div>
+
+
+<div class="row">
+	<div class="twelve columns">
+		<a target='_blank' href='http://localhost/devapt-tutorial-1/public/models/MODEL_AUTH_USERS/read/?query_action=select&query_fields=id_user,firstname,login&query_filters=field=firstname,op=equals,modifier=,var1=Joe,type=String'>
+			Read MODELS_AUTH_USERS with filters: firstname is 'Joe'
+		</a>
+		<hr>
+	</div>
+</div>
+
+
+<div class="row">
+	<hr>
+</div>
+
+
+<div class="row">
+	<div class="twelve columns">
+		<a target='_blank' href='http://localhost/devapt-tutorial-1/public/models/MODEL_AUTH_USERS/create/?query_action=insert&query_fields=login,firstname,lastname,email&query_values=tu_test1,Firstname1,LASTNAME1,tu_test1@tests.tu'>
+			Create MODELS_AUTH_USERS with values 'tu_test1,Firstname1,LASTNAME1,tu_test1@tests.tu'
+		</a>
+		<hr>
+		<a target='_blank' href='http://localhost/devapt-tutorial-1/public/models/MODEL_AUTH_USERS/create/?query_action=insert&query_fields=login,firstname,lastname,email&query_values=tu_test2,Firstname2,LASTNAME2,tu_test2@tests.tu'>
+			Create MODELS_AUTH_USERS with values 'tu_test2,Firstname2,LASTNAME2,tu_test2@tests.tu'
+		</a>
+	</div>
+</div>

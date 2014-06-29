@@ -1,0 +1,7 @@
+<script>
+	require(['runtu']);
+</script>
+
+
+<div id="qunit"></div>
+
