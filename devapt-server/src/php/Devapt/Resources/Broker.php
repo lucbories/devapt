@@ -29,6 +29,7 @@ use Devapt\Application\Application;
 final class Broker
 {
 	// STATIC ATTRIBUTES
+<<<<<<< HEAD
 	
 	/// @brief TRACE FLAG
 	static public $TRACE_BROKER					= false;
@@ -36,6 +37,9 @@ final class Broker
 	/// @brief NOT FOUND FLAG
 	static public $RESOURCE_NOT_FOUND			= 'resource not found';
 	
+=======
+	static public $TRACE_BROKER					= false;
+>>>>>>> 003915988556101b7eb945709ab685be9ddf8729
 	
 	static private $resources_objects_array		= array();
 	static private $resources_records_array		= array();
@@ -162,7 +166,19 @@ final class Broker
 			Trace::step($context, 'resource record has ['.$TEMPLATE_FILE_KEY.']', Broker::$TRACE_BROKER);
 			$file_path_name = $resource_record[$TEMPLATE_FILE_KEY];
 			
+<<<<<<< HEAD
 			$app_file_path_name = Application::getInstance()->searchResourceFile($file_path_name);
+=======
+			// SEARCH FILE IN APPLICATION
+			$app_file_path_name = DEVAPT_APP_PRIVATE_ROOT.$file_path_name;
+			Trace::step($context, 'search file in application ['.$app_file_path_name.']', Broker::$TRACE_BROKER);
+			if ( ! file_exists($app_file_path_name) )
+			{
+				// SEARCH FILE IN SHARED MODULES
+				$app_file_path_name = DEVAPT_MODULES_ROOT.$file_path_name;
+				Trace::step($context, 'search file in shared modules ['.$app_file_path_name.']', Broker::$TRACE_BROKER);
+			}
+>>>>>>> 003915988556101b7eb945709ab685be9ddf8729
 			
 			// PROCESS FILE
 			if ( file_exists($app_file_path_name) && is_readable($app_file_path_name) )

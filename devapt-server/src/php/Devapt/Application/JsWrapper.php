@@ -46,8 +46,46 @@ final class JsWrapper
 		}
 		
 		// APPEND APPLICATION.RUN JS CODE
+<<<<<<< HEAD
 		if ( is_string($js_buffer) && $js_buffer !== '')
 		{
+=======
+		$json_app_cfg = \Devapt\Resources\Broker::getResourceJson('application');
+		$content = $arg_response->getContent();
+		$content .= '
+			<script type="text/javascript">
+				require([\'core/application\'],
+					function(DevaptApplication)
+					{
+						DevaptApplication.set_config( '.$json_app_cfg.' );
+						DevaptApplication.run();
+						';
+		if ( is_string($js_buffer) && $js_buffer !== '')
+		{
+			// $content .= 'var $ = Devapt.jQuery();';
+			// $content .= '$(document).ready( function() {'.$js_buffer.'} );';
+			$content .= $js_buffer;
+		}
+		$content .= '
+					}
+				);
+			</script>
+			';
+		$arg_response->setContent($content);
+		
+		// UPDATE RESPONSE
+/*		if ( is_string($js_buffer) && $js_buffer !== '')
+		{
+			$buffer = '';
+			$buffer .= '<SCRIPT type="text/javascript">';
+			$buffer .= 'console.info(\'Devapt.main define\');';
+			$buffer .= 'define(\'main\', [\'Devapt\', \'core/resources\'], function(Devapt, DevaptResources) {';
+			$buffer .= 'console.info(\'Devapt.main\');';
+			$buffer .= 'var $ = Devapt.jQuery();';
+			$buffer .= '$(document).ready( function() {'.$js_buffer.'} );';
+			$buffer .= '} );  var main = require([\'main\']);  </SCRIPT>';
+			
+>>>>>>> 003915988556101b7eb945709ab685be9ddf8729
 			$content = $arg_response->getContent();
 			$content .= '
 				<script type="text/javascript">
@@ -58,7 +96,7 @@ final class JsWrapper
 				</script>
 				';
 			$arg_response->setContent($content);
-		}
+		}*/
 	}
 	
 	

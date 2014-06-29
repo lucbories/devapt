@@ -162,11 +162,23 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptCache, DevaptApplication)
 		}
 		
 		
+<<<<<<< HEAD
 		// CHECK PROVIDERS
 		if ( ! DevaptTypes.is_not_empty_array(DevaptResources.resources_providers) )
 		{
 			// REJECT DEFERRED
 			master_deferred.reject();
+=======
+		// LOOK UP RESOURCE DECLARATION FROM PROVIDERS
+		for(provider_name in DevaptResources.resources_providers)
+		{
+			// console.log(provider_name, 'provider_name');
+			var provider = DevaptResources.resources_providers[provider_name];
+			if ( ! DevaptTypes.is_function(provider) )
+			{
+				continue;
+			}
+>>>>>>> 003915988556101b7eb945709ab685be9ddf8729
 			
 			DevaptTraces.trace_leave(context, 'no resources provider', DevaptResources.resources_trace);
 			return promise;
@@ -274,15 +286,51 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptCache, DevaptApplication)
 	 * @memberof					DevaptResources
 	 * @public
 	 * @static
+	 * @method						DevaptResources.add_resource_instance(arg_resource_instance)
+	 * @desc						Add a resource instance to the resources repository
+	 * @param {object}				arg_resource_instance	resource declaration (view/model/... object)
+	 * @return {boolean}			success of failure
+	 */
+	DevaptResources.add_resource_instance = function (arg_resource_instance)
+	{
+		var context = 'DevaptResources.add_resource_instance(arg_resource_instance)';
+		DevaptTraces.trace_enter(context, '', DevaptResources.resources_trace);
+		
+		
+		// CHECK RESOURCE INSTANCE
+		if ( ! DevaptTypes.is_object(arg_resource_instance) || ! DevaptTypes.is_string(arg_resource_instance.name) || ! DevaptTypes.is_string(arg_resource_instance.class_name) )
+		{
+			DevaptTraces.trace_leave(context, 'bad resource instance', DevaptResources.resources_trace);
+			return false;
+		}
+		
+		// REGISTER RESOURCE INSTANCE
+		DevaptResources.resources_instanes_by_name[arg_resource_instance.name] = arg_resource_instance;
+		
+		
+		DevaptTraces.trace_leave(context, 'resource instance registered', DevaptResources.resources_trace);
+		return true;
+	}
+	
+	
+	/**
+	 * @memberof					DevaptResources
+	 * @public
+	 * @static
 	 * @method						DevaptResources.get_resource_instance(arg_resource_name)
 	 * @desc						Get a resource instance from the resources repositories
 	 * @param {string}				arg_resource_name	The resource name
+<<<<<<< HEAD
 	 * @return {object}				A promise of a resource object
+=======
+	 * @return {object|null}		An object
+>>>>>>> 003915988556101b7eb945709ab685be9ddf8729
 	 */
 	DevaptResources.get_resource_instance = function (arg_resource_name)
 	{
 		var context = 'DevaptResources.get_resource_instance(resource name)';
 		DevaptTraces.trace_enter(context, '[' + arg_resource_name + ']', DevaptResources.resources_trace);
+<<<<<<< HEAD
 		
 		
 		// CHECK RESOURCE NAME
@@ -300,6 +348,8 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptCache, DevaptApplication)
 			DevaptTraces.trace_leave(context, 'failure: promise is rejected: arg is not a string', DevaptResources.resources_trace);
 			return master_deferred.promise();
 		}
+=======
+>>>>>>> 003915988556101b7eb945709ab685be9ddf8729
 		
 		
 		// GET RESOURCE FROM REPOSITORY
@@ -320,6 +370,7 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptCache, DevaptApplication)
 		}
 		
 		
+<<<<<<< HEAD
 		// GET RESOURCE DECLARATION AND BUILD RESOURCE
 		var promise = DevaptResources.get_resource_declaration(arg_resource_name);
 		promise = promise.then(
@@ -338,10 +389,18 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptCache, DevaptApplication)
 	
 	
 	
+=======
+		DevaptTraces.trace_leave(context, 'resource object not found', DevaptResources.resources_trace);
+		return null;
+	}
+	
+	
+>>>>>>> 003915988556101b7eb945709ab685be9ddf8729
 	/**
 	 * @memberof					DevaptResources
 	 * @public
 	 * @static
+<<<<<<< HEAD
 	 * @method						DevaptResources.build_from_declaration(arg_resource_name)
 	 * @desc						Build a resource instance from the resource declaration
 	 * @param {string}				arg_resource_json	The resource declaration (json object)
@@ -356,6 +415,25 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptCache, DevaptApplication)
 		// GET DEVAPT CURRENT BACKEND
 		var backend = Devapt.get_current_backend();
 		if (! backend)
+=======
+	 * @method						DevaptResources.build_resource_instance(arg_resource_name, callback)
+	 * @desc						Build a resource instance
+	 * @param {string}				arg_resource_name	The resource name
+	 * @param {callback}			arg_after_build_cb	callback to execute after resource is build: call(resource)
+	 * @param {object}				arg_optional_arg	optional argument: jQuery container for views for examples
+	 * @return {nothing}			
+	 */
+	DevaptResources.build_resource_instance = function (arg_resource_name, arg_after_build_cb, arg_optional_arg)
+	{
+		var context = 'DevaptResources.build_resource_instance(resource name, callback)';
+		DevaptTraces.trace_enter(context, '', DevaptResources.resources_trace);
+		
+		
+		
+		// GET RESOURCE DECLARATION
+		var resource_declaration = DevaptResources.get_resource_declaration(arg_resource_name);
+		if (! resource_declaration)
+>>>>>>> 003915988556101b7eb945709ab685be9ddf8729
 		{
 			// CREATE MAIN DEFERRED OBJECT
 			var master_deferred = $.Deferred();
@@ -369,6 +447,7 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptCache, DevaptApplication)
 			DevaptTraces.trace_leave(context, 'promise is rejected: backend not found', DevaptResources.resources_trace);
 			return promise;
 		}
+<<<<<<< HEAD
 		
 		
 		// GET MAIN PROMISE
@@ -377,6 +456,53 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptCache, DevaptApplication)
 		
 		DevaptTraces.trace_leave(context, 'async build is started', DevaptResources.resources_trace);
 		return promise;
+=======
+		
+		// BUILD RESOURCE INSTANCE FROM RESOURCE DECLARATION
+		DevaptResources.build_from_declaration(resource_declaration, arg_after_build_cb, arg_optional_arg);
+		
+		
+		DevaptTraces.trace_leave(context, 'async build is started', DevaptResources.resources_trace);
+	}
+	
+	
+	/**
+	 * @memberof					DevaptResources
+	 * @public
+	 * @static
+	 * @method						DevaptResources.build_from_declaration(arg_resource_name)
+	 * @desc						Build a resource instance from the resource declaration
+	 * @param {string}				arg_resource_json	The resource declaration (json object)
+	 * @param {callback}			arg_after_build_cb	callback to execute after resource is build: call(resource)
+	 * @param {object}				arg_optional_arg	optional argument: jQuery container for views for examples
+	 * @return {nothing}			
+	 */
+	DevaptResources.build_from_declaration = function (arg_resource_json, arg_after_build_cb, arg_optional_arg)
+	{
+		var context = 'DevaptResources.build_from_declaration(resource declaration)';
+		DevaptTraces.trace_enter(context, '', DevaptResources.resources_trace);
+		
+		
+		// GET DEVAPT CURRENT BACKEND
+		var backend = Devapt.get_current_backend();
+		if (! backend)
+		{
+			DevaptTraces.trace_leave(context, 'backend not found', DevaptResources.resources_trace);
+			return null;
+		}
+		
+		// BUILD RESOURCE FROM BACKEND
+		backend.build_from_declaration(arg_resource_json, arg_after_build_cb, arg_optional_arg);
+		// if (! resource)
+		// {
+			// DevaptTraces.trace_leave(context, 'resource build failure', DevaptResources.resources_trace);
+			// return null;
+		// }
+		
+		
+		DevaptTraces.trace_leave(context, 'async build is started', DevaptResources.resources_trace);
+		// return resource;
+>>>>>>> 003915988556101b7eb945709ab685be9ddf8729
 	}
 	
 	
@@ -401,6 +527,7 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptCache, DevaptApplication)
 		// var url_base	= window.location.pathname;
 		// var url_base	= DEVAPT_APP_URL_BASE;
 		
+<<<<<<< HEAD
 		// SET CACHE PROVIDER
 		var cache_provider = function(arg_resource_name)
 			{
@@ -411,6 +538,27 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptCache, DevaptApplication)
 				if (resource_declaration)
 				{
 					DevaptTraces.trace_leave(context + '.cache provider', 'resource declaration found from cache', DevaptResources.resources_trace);
+=======
+		// SET JSON PROVIDERS
+		var json_provider = function(arg_resource_name)
+		{
+			// INIT REQUEST ARGS
+			var url			= url_base + 'resources/' + arg_resource_name + '/get_resource';
+			var use_cache	= true;
+			var is_async	= false; // Should always be synchronous for DevaptResources.get_resource_declaration use.
+			var resource_declaration = null;
+			
+			// INIT REQUEST CALL
+			$.ajax(
+				{
+					async		: is_async,
+					cache		: use_cache,
+					type		: 'GET',
+					dataType	: 'json',
+					url			: url,
+					timeout		: DevaptResources.resources_ajax_timeout,
+					data		: null,
+>>>>>>> 003915988556101b7eb945709ab685be9ddf8729
 					
 					var defer = $.Deferred();
 					defer.resolve(resource_declaration);
@@ -454,6 +602,7 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptCache, DevaptApplication)
 						
 						error : function(jqXHR, textStatus, errorThrown)
 							{
+<<<<<<< HEAD
 								DevaptTraces.trace_leave(context + '.json provider', 'failure', DevaptResources.resources_trace);
 								var context = 'DevaptResources.json_provider.ajax_request.error(' + url + ')';
 								DevaptTraces.trace_error(context, textStatus, true);
@@ -466,6 +615,25 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptCache, DevaptApplication)
 				DevaptTraces.trace_leave(context + '.json provider', 'async request', DevaptResources.resources_trace);
 				return promise;
 			};
+=======
+								// DevaptResources.resources_by_name[arg_resource_name] = datas;
+								// DevaptResources.add_cached_declaration(datas);
+								resource_declaration = datas;
+							}
+						},
+					
+					error : function(jqXHR, textStatus, errorThrown)
+						{
+							var context = 'DevaptResources.json_provider.ajax_request.error(' + url + ')';
+							DevaptTraces.trace_error(context, textStatus, true);
+							DevaptTraces.trace_var(context, 'errorThrown', errorThrown, DevaptResources.resources_trace);
+						}
+				}
+			);
+			
+			return resource_declaration;
+		}
+>>>>>>> 003915988556101b7eb945709ab685be9ddf8729
 		
 		
 		// REGISTER JSON PROVIDERS

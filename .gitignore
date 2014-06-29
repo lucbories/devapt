@@ -1,4 +1,10 @@
 *.log
 *.session
 *.cache
+<<<<<<< HEAD
 db_connexions.ini
+=======
+vendor
+all_zf2
+composer.phar
+>>>>>>> 003915988556101b7eb945709ab685be9ddf8729

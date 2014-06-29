@@ -16,8 +16,13 @@
  * most users, however, feel free to configure autoloading however you'd like.
  */
 
+<<<<<<< HEAD
 $DEVAPT_ZF2_ROOT = DEVAPT_SERVER_EXTERNAL_ROOT.'php/ZendFramework-2.2.5/library';
 $DEVAPT_VENDOR_ROOT = DEVAPT_SERVER_EXTERNAL_ROOT;
+=======
+// $DEVAPT_ZF2_ROOT = DEVAPT_SERVER_EXTERNAL_ROOT.'php/ZendFramework-2.2.5/library';
+$DEVAPT_ZF2_ROOT = DEVAPT_SERVER_EXTERNAL_ROOT;
+>>>>>>> 003915988556101b7eb945709ab685be9ddf8729
 $DEVAPT_SERVER_ROOT = DEVAPT_SERVER_FRAMEWORK_ROOT.'/src/php';
 
 
@@ -56,17 +61,29 @@ if (DEVAPT_DEBUG === 'TRUE')
 	}
 }
 
+<<<<<<< HEAD
 
 
 // COMPOSER AUTOLOADING
 if ( file_exists($DEVAPT_VENDOR_ROOT.'vendor/autoload.php') )
 {
     $loader = include $DEVAPT_VENDOR_ROOT.'vendor/autoload.php';
+=======
+// Composer autoloading
+if ( file_exists(DEVAPT_SERVER_EXTERNAL_ROOT.'vendor/autoload.php') )
+{
+    $loader = include $DEVAPT_ZF2_ROOT.'vendor/autoload.php';
+}
+else
+{
+	echo 'File not found : '.$DEVAPT_ZF2_ROOT.'vendor/autoload.php<br>';
+>>>>>>> 003915988556101b7eb945709ab685be9ddf8729
 }
 
 
 
 // INIT ZF2 PATH
+
 $zf2Path = false;
 if ( is_dir('vendor/ZF2/library') )
 {
@@ -119,10 +136,10 @@ else
 			)
 		);
 	}
-	// $loader = Zend\Loader\AutoloaderFactory::getRegisteredAutoloader('Zend\Loader\StandardAutoloader');
+	$loader = Zend\Loader\AutoloaderFactory::getRegisteredAutoloader('Zend\Loader\StandardAutoloader');
 	
 	// DEFINE DEVAPT LOADER
-	// $loader->add('Devapt', $DEVAPT_SERVER_ROOT);
+	$loader->add('Devapt', $DEVAPT_SERVER_ROOT);
 }
 
 if ( ! class_exists('Zend\Loader\AutoloaderFactory') )
