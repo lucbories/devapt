@@ -67,7 +67,7 @@ final class SqlFilterOperatorBuilder
 		Trace::step($context, $arg_modifier_name, self::$TRACE_FILTEROP_BUILDER);
 		
 		/*
-		static public $FILTERS_MODIFIERS = array(
+		Query::$FILTERS_MODIFIERS = array(
 			"nothing",
 			// STRING OPERATORS
 			"upper", "lower", "ltrim", "rtrim", "aes_encrypt", "aes_decrypt", "md5",
@@ -78,7 +78,7 @@ final class SqlFilterOperatorBuilder
 			// TIME
 			"time", "hour", "minute", "second"
 			);
-		$FILTERS_TYPES = array("String", "Integer", "Float", "Date", "Time", "DateTime", "Boolean");
+		Query::$FILTERS_TYPES = array("String", "Integer", "Float", "Date", "Time", "DateTime", "Boolean");
 		*/
 		
 		switch( strtolower($arg_modifier_name) )

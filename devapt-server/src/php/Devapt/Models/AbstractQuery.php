@@ -240,18 +240,19 @@ abstract class AbstractQuery
 	/**
 	 * @brief		Set query fields objects
 	 * @param[in]	arg_fields_names	query fields names (array of field records)
+	 * @param[in]	arg_fields_records	query fields records
 	 * @return		boolean
 	 */
-	public function setFieldsWithNames($arg_fields_names)
+	public function setFieldsWithNames($arg_fields_names, $arg_fields_records)
 	{
 		$context = 'AbstractQuery.setFieldsWithNames(fields names)';
 		Trace::enter($context, '', self::$TRACE_ABSTRACT_QUERY);
 		
-		if ( is_array($arg_fields_names) && is_object($this->model) )
+		if ( is_array($arg_fields_names) && is_array($arg_fields_records) )
 		{
 			$this->query_fields = array();
-			$field_records = $this->model->getModelFieldsRecords();
-			foreach($field_records as $field_name => $field_record)
+			// $field_records = $this->model->getModelFieldsRecords();
+			foreach($arg_fields_records as $field_name => $field_record)
 			{
 				if ( in_array($field_name, $arg_fields_names) )
 				{
@@ -278,18 +279,19 @@ abstract class AbstractQuery
 	/**
 	 * @brief		Set query one field record by name
 	 * @param[in]	arg_field_name	field name (string)
+	 * @param[in]	arg_fields_records	query fields records
 	 * @return		boolean
 	 */
-	public function setOneFieldName($arg_field_name)
+	public function setOneFieldName($arg_field_name, $arg_fields_records)
 	{
 		$context = 'AbstractQuery.setOneFieldName(field name)';
 		Trace::enter($context, '', self::$TRACE_ABSTRACT_QUERY);
 		
-		if ( is_string($arg_field_name) && strlen($arg_field_name) > 0 && is_object($this->model) )
+		if ( is_string($arg_field_name) && strlen($arg_field_name) > 0 /*&& is_object($this->model)*/ )
 		{
 			$this->query_one_field = null;
-			$field_records = $this->model->getModelFieldsRecords();
-			foreach($field_records as $field_name => $field_record)
+			// $field_records = $this->model->getModelFieldsRecords();
+			foreach($arg_fields_records as $field_name => $field_record)
 			{
 				if ($field_name === $arg_field_name)
 				{

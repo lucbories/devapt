@@ -153,7 +153,18 @@ final class QueryBuilderV1
 		if ( is_array($orders_by) )
 		{
 			Trace::step($context, 'set orders', self::$TRACE_QUERY_BUILDER);
-			$query->setOrders($orders_by);
+			
+			$orders_records = array();
+			foreach($orders_by as $order_str)
+			{
+				$order_record = explode('=', $order_str);
+				if ( is_array($order_record) && count($order_record) === 2 )
+				{
+					$orders_records[] = $order_record;
+				}
+			}
+			
+			$query->setOrders($orders_records);
 		}
 		
 		
@@ -171,7 +182,18 @@ final class QueryBuilderV1
 		if ( is_array($filters) )
 		{
 			Trace::step($context, 'set filters', self::$TRACE_QUERY_BUILDER);
-			$query->setFilters($filters);
+			
+			$filters_records = array();
+			foreach($filters as $filter_str)
+			{
+				$filter_record = explode(',', $filter_str);
+				if ( is_array($filter_record) && count($filter_record) === 2 )
+				{
+					$orders_records[] = $filter_record;
+				}
+			}
+			
+			$query->setFilters($filters_records);
 		}
 		
 		
