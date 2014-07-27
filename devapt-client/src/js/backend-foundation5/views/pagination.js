@@ -10,7 +10,7 @@
  */
 
 define(
-['Devapt', 'core/traces', 'core/types', 'core/options', 'core/classes', 'core/view', 'backend-foundation5/foundation-init'],
+['Devapt', 'core/traces', 'core/types', 'core/options', 'core/classes', 'views/view', 'backend-foundation5/foundation-init'],
 function(Devapt, DevaptTrace, DevaptTypes, DevaptOptions, DevaptClasses, DevaptView, undefined)
 {
 	/**
@@ -18,17 +18,17 @@ function(Devapt, DevaptTrace, DevaptTypes, DevaptOptions, DevaptClasses, DevaptV
 	 * @class				DevaptPagination
 	 * @desc				Pagination view class
 	 * @param {string}		arg_name			View name (string)
-	 * @param {object}		arg_container_jqo	jQuery object to attach the view to
+	 * @param {object}		arg_parent_jqo	jQuery object to attach the view to
 	 * @param {object|null}	arg_options			Associative array of options
 	 * @return {nothing}
 	 */
-	function DevaptPagination(arg_name, arg_container_jqo, arg_options)
+	function DevaptPagination(arg_name, arg_parent_jqo, arg_options)
 	{
 		var self = this;
 		
 		// INHERIT
 		self.inheritFrom = DevaptView;
-		self.inheritFrom(arg_name, arg_container_jqo, arg_options);
+		self.inheritFrom(arg_name, arg_parent_jqo, arg_options);
 		
 		// INIT
 		self.trace				= false;
@@ -94,8 +94,8 @@ function(Devapt, DevaptTrace, DevaptTypes, DevaptOptions, DevaptClasses, DevaptV
 			}
 			
 			// GET ARROW TAGS
-			var prev_arrow_jqo = $('li.arrow:first', self.container_jqo);
-			var next_arrow_jqo = $('li.arrow:last', self.container_jqo);
+			var prev_arrow_jqo = $('li.arrow:first', self.parent_jqo);
+			var next_arrow_jqo = $('li.arrow:last', self.parent_jqo);
 			
 			// UPDATE ARROWS
 			if (self.pagination_current_page == self.pagination_first_page)
@@ -155,14 +155,14 @@ function(Devapt, DevaptTrace, DevaptTypes, DevaptOptions, DevaptClasses, DevaptV
 			
 			
 			// GET PREVIOUS INDEX TAGS
-			var prev_li_jqo = $('[devapt-pagination-index=' + self.pagination_current_page + ']', self.container_jqo)
+			var prev_li_jqo = $('[devapt-pagination-index=' + self.pagination_current_page + ']', self.parent_jqo)
 			prev_li_jqo.removeClass('current');
 			
 			// SET NEW CURRENT INDEX
 			self.pagination_current_page = arg_current_page;
 			
 			// GET INDEX TAG
-			var li_jqo = $('[devapt-pagination-index=' + arg_current_page + ']', self.container_jqo);
+			var li_jqo = $('[devapt-pagination-index=' + arg_current_page + ']', self.parent_jqo);
 			// console.log(li_jqo);
 			
 			// UPDATE CURRENT PAGE TAG
@@ -424,7 +424,7 @@ function(Devapt, DevaptTrace, DevaptTypes, DevaptOptions, DevaptClasses, DevaptV
 			// self.enter(context, '');
 			
 			
-			var li_jqo = $('li:eq(' + arg_item_index + ')', self.container_jqo)
+			var li_jqo = $('li:eq(' + arg_item_index + ')', self.parent_jqo)
 			li_jqo.removeClass('current');
 			
 			var a_jqo = $('a', li_jqo);
@@ -534,8 +534,8 @@ function(Devapt, DevaptTrace, DevaptTypes, DevaptOptions, DevaptClasses, DevaptV
 			
 			
 			// CHECK CONTAINER
-			self.assertNotNull(context, 'container_jqo', self.container_jqo);
-			// console.log(self.container_jqo);
+			self.assertNotNull(context, 'parent_jqo', self.parent_jqo);
+			// console.log(self.parent_jqo);
 			
 			
 			// GET ATTRIBUTES
@@ -552,7 +552,7 @@ function(Devapt, DevaptTrace, DevaptTypes, DevaptOptions, DevaptClasses, DevaptV
 			
 			// CREATE MAIN NODE
 			var div_jqo = $('<div>');
-			self.container_jqo.append(div_jqo);
+			self.parent_jqo.append(div_jqo);
 			div_jqo.addClass('pagination-centered');
 			var ul_jqo = $('<ul>');
 			ul_jqo.addClass('pagination');

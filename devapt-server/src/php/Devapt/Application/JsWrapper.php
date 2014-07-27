@@ -54,7 +54,6 @@ final class JsWrapper
 							';
 			$content .= $js_buffer;
 			$content .= '
-					);
 				</script>
 				';
 			$arg_response->setContent($content);

@@ -23,6 +23,9 @@
 
 namespace Devapt\Models;
 
+// ZEND IMPORTS
+use Zend\Json\Json as JsonFormatter;
+
 // DEVAPT IMPORTS
 use Devapt\Core\Trace;
 
@@ -93,6 +96,7 @@ class Query extends AbstractQuery
 	{
 		$context = 'Query::getRequestValue(request,name,default)';
 		
+		
 		// CHECK ARGS
 		if ( ! is_string($arg_name) )
 		{
@@ -122,6 +126,7 @@ class Query extends AbstractQuery
 			Trace::step($context, 'get POST value for ['.$arg_name.']', self::$TRACE_QUERY);
 			return $value;
 		}
+		
 		
 		Trace::step($context, 'get default value for ['.$arg_name.']', self::$TRACE_QUERY);
 		return $arg_default;
@@ -171,6 +176,60 @@ class Query extends AbstractQuery
 	
 	
 	/**
+	 * @brief		Get a request array value from a JSON string(static)
+	 * @param[in]	arg_request		request (object)
+	 * @param[in]	arg_name		value name (string)
+	 * @param[in]	arg_default		value default (anything)
+	 * @return		anything
+	 */
+	static public function getRequestJsonArrayValue($arg_request, $arg_name, $arg_default)
+	{
+		$context = 'Query::getRequestJsonArrayValue(request,name,sep,default)';
+		Trace::enter($context, '', self::$TRACE_QUERY);
+		
+		
+		// GET STRING VALUE
+		$values_str = self::getRequestValue($arg_request, $arg_name, $arg_default);
+		
+		// TEST IF IT IS DEFAULT VALUE
+		if ($values_str === $arg_default)
+		{
+			// PAYLOAD 'CONTENT' VALUE
+			$values_str = $arg_request->getContent();
+			Trace::value($context, 'request content value for ['.$arg_name.']', $values_str, self::$TRACE_QUERY);
+			
+			if ( ! is_string($values_str) || $values_str === '')
+			{
+				return Trace::leaveok($context, 'get default value for ['.$arg_name.']', $arg_default, self::$TRACE_QUERY);
+			}
+		}
+		
+		// CHECK STRING VALUE
+		if ( ! is_string($values_str) || $values_str === '' )
+		{
+			Trace::warning('Query.getRequestArrayValue: bad value string');
+			return Trace::leaveko($context, 'bad value for ['.$arg_name.']', null, self::$TRACE_QUERY);
+		}
+		
+		// CREATE ARRAY FROM JSON STRING
+		$values = JsonFormatter::decode($values_str, JsonFormatter::TYPE_ARRAY);
+		Trace::value($context, 'values for ['.$arg_name.']', $values, self::$TRACE_QUERY);
+		if ( ! is_array($values) )
+		{
+			return Trace::leaveko($context, 'JSON decode result is not an array', null, self::$TRACE_QUERY);
+		}
+		if ( array_key_exists($arg_name, $values) )
+		{
+			$values = $values[$arg_name];
+		}
+		
+		
+		return Trace::leaveok($context, 'get value for ['.$arg_name.']', $values, self::$TRACE_QUERY);
+	}
+	
+	
+	
+	/**
 	 * @brief		Build the query from a request (static)
 	 * @param[in]	arg_action		action name: create/read/update/delete
 	 * @param[in]	arg_model		model (object)
@@ -214,6 +273,7 @@ class Query extends AbstractQuery
 			case '2':
 			{
 				Trace::step($context, 'build V2 query', self::$TRACE_QUERY);
+				$query = QueryBuilderV2::buildFromRequest($arg_action, $arg_model, $arg_request, $arg_id);
 				break;
 			}
 		}

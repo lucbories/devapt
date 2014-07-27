@@ -10,7 +10,7 @@
  */
 
 define(
-['Devapt', 'core/traces', 'core/types', 'core/options', 'core/classes', 'core/resources', 'core/view', 'core/application', 'backend-foundation5/foundation-init'],
+['Devapt', 'core/traces', 'core/types', 'core/options', 'core/classes', 'core/resources', 'views/view', 'core/application', 'backend-foundation5/foundation-init'],
 function(Devapt, DevaptTrace, DevaptTypes, DevaptOptions, DevaptClasses, DevaptResources, DevaptView, DevaptApplication, undefined)
 {
 	/**
@@ -18,17 +18,17 @@ function(Devapt, DevaptTrace, DevaptTypes, DevaptOptions, DevaptClasses, DevaptR
 	 * @class				DevaptRemote
 	 * @desc				Remote view view class
 	 * @param {string}		arg_name			View name (string)
-	 * @param {object}		arg_container_jqo	jQuery object to attach the view to
+	 * @param {object}		arg_parent_jqo		jQuery object to attach the view to
 	 * @param {object|null}	arg_options			Associative array of options
 	 * @return {nothing}
 	 */
-	function DevaptRemote(arg_name, arg_container_jqo, arg_options)
+	function DevaptRemote(arg_name, arg_parent_jqo, arg_options)
 	{
 		var self = this;
 		
 		// INHERIT
 		self.inheritFrom = DevaptView;
-		self.inheritFrom(arg_name, arg_container_jqo, arg_options);
+		self.inheritFrom(arg_name, arg_parent_jqo, arg_options);
 		
 		// INIT
 		self.trace				= false;
@@ -83,7 +83,7 @@ function(Devapt, DevaptTrace, DevaptTypes, DevaptOptions, DevaptClasses, DevaptR
 			
 			// CHECK CONTAINER NODE
 			self.assertNotNull(context, 'arg_deferred', arg_deferred);
-			self.assertNotNull(context, 'container_jqo', self.container_jqo);
+			self.assertNotNull(context, 'parent_jqo', self.parent_jqo);
 			
 			// GET AND RENDER VIEW CONTENT
 			var promise = arg_deferred.then(
@@ -95,7 +95,7 @@ function(Devapt, DevaptTrace, DevaptTypes, DevaptOptions, DevaptClasses, DevaptR
 			.then(
 				function(arg_html)
 				{
-					self.container_jqo.html(arg_html);
+					self.parent_jqo.html(arg_html);
 				}
 			);
 			

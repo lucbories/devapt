@@ -10,7 +10,7 @@
  */
 
 define(
-['Devapt', 'core/traces', 'core/types', 'core/options', 'core/classes', 'core/resources', 'core/view', 'core/application', 'core/nav-history', 'backend-foundation5/foundation-init'],
+['Devapt', 'core/traces', 'core/types', 'core/options', 'core/classes', 'core/resources', 'views/view', 'core/application', 'core/nav-history', 'backend-foundation5/foundation-init'],
 function(Devapt, DevaptTrace, DevaptTypes, DevaptOptions, DevaptClasses, DevaptResources, DevaptView, DevaptApplication, DevaptNavHistory, undefined)
 {
 	/**
@@ -18,23 +18,23 @@ function(Devapt, DevaptTrace, DevaptTypes, DevaptOptions, DevaptClasses, DevaptR
 	 * @class				DevaptMenubar
 	 * @desc				Menubar view class
 	 * @param {string}		arg_name			View name (string)
-	 * @param {object}		arg_container_jqo	jQuery object to attach the view to
+	 * @param {object}		arg_parent_jqo	jQuery object to attach the view to
 	 * @param {object|null}	arg_options			Associative array of options
 	 * @return {nothing}
 	 */
-	function DevaptMenubar(arg_name, arg_container_jqo, arg_options)
+	function DevaptMenubar(arg_name, arg_parent_jqo, arg_options)
 	{
 		var self = this;
-		self.trace				= false;
 		
 		// INHERIT
 		self.inheritFrom = DevaptView;
-		self.inheritFrom(arg_name, arg_container_jqo, arg_options);
+		self.inheritFrom(arg_name, arg_parent_jqo, arg_options);
 		
 		// INIT
-		// self.trace				= false;
+		self.trace				= false;
 		self.class_name			= 'DevaptMenubar';
 		self.is_view			= true;
+		self.nav_jqo			= null;
 		
 		
 		/**
@@ -80,7 +80,7 @@ function(Devapt, DevaptTrace, DevaptTypes, DevaptOptions, DevaptClasses, DevaptR
 			var self = this;
 			var context = 'render_self(deferred)';
 			self.enter(context, '');
-		
+			
 			
 			// GET MAIN PROMISE
 			var promise = arg_deferred.promise();
@@ -99,11 +99,14 @@ function(Devapt, DevaptTrace, DevaptTypes, DevaptOptions, DevaptClasses, DevaptR
 						return DevaptResources.get_resource_declaration(self.menubar_name);
 					}
 				);
+				
+				self.step(context, 'resolve(null)');
 				arg_deferred.resolve(null);
 			}
 			else
 			{
 				// MENUBAR DECLARATION IS AN OBJECT
+				self.step(context, 'resolve(declaration)');
 				arg_deferred.resolve(self.menubar_declaration);
 			}
 			
@@ -115,12 +118,16 @@ function(Devapt, DevaptTrace, DevaptTypes, DevaptOptions, DevaptClasses, DevaptR
 					self.enter(context, 'render_cb');
 					self.value(context, 'promise_result', promise_result);
 					
+					// CREATE REFERRED OBJECT
+					var deferred = $.Deferred();
 					
 					// GET NODES
-					self.assertNotNull(context, 'container_jqo', self.container_jqo);
-					self.content_jqo = $('<nav>');
-					self.container_jqo.prepend(self.content_jqo);
-					
+					self.assertNotNull(context, 'parent_jqo', self.parent_jqo);
+					self.content_jqo = $('<div>');
+					self.nav_jqo = $('<nav>');
+					self.content_jqo.append(self.nav_jqo);
+					self.parent_jqo.prepend(self.content_jqo);
+					console.log(self.content_jqo, 'self.content_jqo');
 					
 					// GET MENUBAR NAME
 					self.assertNotEmptyString(context, 'self.menubar_name', self.menubar_name);
@@ -160,7 +167,7 @@ function(Devapt, DevaptTrace, DevaptTypes, DevaptOptions, DevaptClasses, DevaptR
 							if ( ! self.render_top_menubar() )
 							{
 								// REJECT AND GET PROMISE
-								arg_deferred.reject();
+								deferred.reject();
 								
 								self.error(context, 'render top menubar failure');
 								self.leave(context, 'failure: promise is rejected');
@@ -174,17 +181,13 @@ function(Devapt, DevaptTrace, DevaptTypes, DevaptOptions, DevaptClasses, DevaptR
 					
 					
 					// RESOLVE AND GET PROMISE
-					// arg_deferred.resolve();
+					deferred.resolve();
 					
 					
 					self.leave(context, 'success: promise is resolved');
-					return promise;
+					return deferred.promise();
 				}
 			);
-			
-			
-			// RESOLVE PROMISE
-			// arg_deferred.resolve();
 			
 			
 			self.leave(context, 'success: render promise is async');
@@ -242,8 +245,8 @@ function(Devapt, DevaptTrace, DevaptTypes, DevaptOptions, DevaptClasses, DevaptR
 			
 			// CREATE NAV TAG
 			self.content_jqo.attr('id', self.name + '_id');
-			self.content_jqo.addClass('top-bar');
-			self.content_jqo.attr('data-topbar', '');
+			self.nav_jqo.addClass('top-bar');
+			self.nav_jqo.attr('data-topbar', '');
 			
 			
 			// OPTION: FIXED
@@ -255,25 +258,19 @@ function(Devapt, DevaptTrace, DevaptTypes, DevaptOptions, DevaptClasses, DevaptR
 			// OPTION: ONGRID
 			if ( DevaptTypes.to_boolean( self.menubar_declaration['ongrid'] ) )
 			{
-				if ( self.container_jqo.tagName === 'DIV' )
-				{
-					self.content_jqo.addClass('contain-to-grid');
-				}
+				self.content_jqo.addClass('contain-to-grid');
 			}
 			
 			// OPTION: ONGRID
 			if ( DevaptTypes.to_boolean( self.menubar_declaration['float'] ) )
 			{
-				if ( self.container_jqo.tagName === 'DIV' )
-				{
-					self.content_jqo.addClass('sticky');
-				}
+				self.content_jqo.addClass('sticky');
 			}
 			
 			// OPTION: CLICKABLE
 			if ( DevaptTypes.to_boolean( self.menubar_declaration['clickable'] ) )
 			{
-				self.content_jqo.attr('data-options', 'is_hover: false');
+				self.nav_jqo.attr('data-options', 'is_hover: false');
 			}
 			
 			
@@ -282,7 +279,7 @@ function(Devapt, DevaptTrace, DevaptTypes, DevaptOptions, DevaptClasses, DevaptR
 			
 			// CREATE MENUS
 			var section_jqo = $('<section class="top-bar-section">');
-			self.content_jqo.append(section_jqo);
+			self.nav_jqo.append(section_jqo);
 			
 			var right_jqo = $('<ul class="right">');
 			section_jqo.append(right_jqo);
@@ -335,10 +332,10 @@ function(Devapt, DevaptTrace, DevaptTypes, DevaptOptions, DevaptClasses, DevaptR
 			// CREATE TITLE TAG
 			var title_jqo = $('<ul>');
 			title_jqo.addClass('title-area');
-			self.content_jqo.append(title_jqo);
+			self.nav_jqo.append(title_jqo);
 			
 			// TITLE NAME
-			var title = 'Sample';
+			var title = DevaptApplication.get_title();
 			
 			var title_name_jqo = $('<li>');
 			title_name_jqo.addClass('name');
@@ -639,7 +636,7 @@ function(Devapt, DevaptTrace, DevaptTypes, DevaptOptions, DevaptClasses, DevaptR
 	// INTROSPETION : REGISTER OPTIONS
 	DevaptOptions.register_str_option(DevaptMenubar, 'menubar_name',			null, true, []);
 	DevaptOptions.register_obj_option(DevaptMenubar, 'menubar_declaration',		null, false, []);
-	DevaptOptions.register_str_option(DevaptMenubar, 'menubar_format',			null, false, []);
+	DevaptOptions.register_str_option(DevaptMenubar, 'menubar_format',			null, false, []); // top, nav
 	
 	
 	// TESTS

@@ -129,6 +129,9 @@ class Model extends AbstractResource
 	/// @brief	Model fields records (array)
 	protected $model_fields			= null;
 	
+	/// @brief	Model primary key field (array)
+	protected $model_pk_field		= null;
+	
 	/// @brief	Model data engine (object)
 	protected $data_engine			= null;
 	
@@ -490,6 +493,24 @@ class Model extends AbstractResource
 	}
 	
 	/**
+	 * @brief		Get model primary key field record
+	 * @return		array
+	 */
+	public function getModelPKFieldRecord()
+	{
+		return $this->model_pk_field;
+	}
+	
+	/**
+	 * @brief		Get model primary key field name
+	 * @return		string
+	 */
+	public function getModelPKFieldName()
+	{
+		return is_array($this->model_pk_field) && array_key_exists('name', $this->model_pk_field) ? $this->model_pk_field['name'] : null;
+	}
+	
+	/**
 	 * @brief		Set model fields records
 	 * @param[in]	arg_fields_array		fields records (array)
 	 * @return		nothing
@@ -665,6 +686,18 @@ class Model extends AbstractResource
 			
 			// REGISTER FIELD RECORD
 			$this->model_fields[$field_name] = $field_record;
+			
+			// REGISTER PRIMARY KEY FIELD FOR MODEL
+			if ( $field_record['sql_is_primary_key'] )
+			{
+				// $field_db = $field_record['sql_cdb'];
+				$field_table = $field_record['sql_table'];
+				$crud_table = $field_record['sql_column'];
+				if ( ( is_string($this->model_crud_table) && $this->model_crud_table === $field_table ) || ( ! is_string($this->model_crud_table) ) )
+				{
+					$this->model_pk_field = $field_record;
+				}
+			}
 		}
 	}
 	

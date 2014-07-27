@@ -445,6 +445,13 @@ abstract class AbstractApplication
 			return false;
 		}
 		
+		// REGISTER REST MODELS CONTROLLER
+		if ( ! Dispatcher::registerController('rest', new RestModelController() ) )
+		{
+			Debug::dump('Application: RestModels controller registration failed.');
+			return false;
+		}
+		
 		// REGISTER VIEWS CONTROLLER
 		if ( ! Dispatcher::registerController('views', new ViewController() ) )
 		{

@@ -188,19 +188,11 @@ abstract class AbstractQuery
 			return Trace::leaveok($context, '', true, self::$TRACE_ABSTRACT_QUERY);
 		}
 		
+		Trace::value($context, 'arg_type_name', $arg_type_name, self::$TRACE_ABSTRACT_QUERY);
 		return Trace::leaveko($context, 'bad type', false, self::$TRACE_ABSTRACT_QUERY);
 	}
 	
 	
-	
-	/**
-	 * @brief		Get query fields objects
-	 * @return		array		array of fields records
-	 */
-	public function getFields()
-	{
-		return $this->query_fields;
-	}
 	
 	/**
 	 * @brief		Get query fields names
@@ -208,63 +200,24 @@ abstract class AbstractQuery
 	 */
 	public function getFieldsNames()
 	{
-		/*$fields_names = array();
-		foreach($this->query_fields as $field_record)
-		{
-			$fields_names[] = $field_record['name'];
-		}
-		return $fields_names;
-		*/
+		// return array_keys( $this->query_fields );
 		return $this->query_fields;
 	}
 	
 	/**
-	 * @brief		Set query fields objects
-	 * @param[in]	arg_fields_records		query fields (array of field records)
+	 * @brief		Set query fields names
+	 * @param[in]	arg_fields_names		query fields names (array of string)
 	 * @return		boolean
 	 */
-	public function setFields($arg_fields_records)
+	public function setFieldsNames($arg_fields_names)
 	{
-		$context = 'AbstractQuery.setFields(fields records)';
+		$context = 'AbstractQuery.setFieldsNames(fields names)';
 		Trace::enter($context, '', self::$TRACE_ABSTRACT_QUERY);
 		
-		if ( is_array($arg_fields_records) )
-		{
-			$this->query_fields = $arg_fields_records;
-			return Trace::leaveok($context, '', true, self::$TRACE_ABSTRACT_QUERY);
-		}
+		$this->query_fields = $arg_fields_names;
 		
-		return Trace::leaveko($context, 'fields argument is not an array', false, self::$TRACE_ABSTRACT_QUERY);
+		return Trace::leaveok($context, 'fields argument is not an array', false, self::$TRACE_ABSTRACT_QUERY);
 	}
-	
-	/**
-	 * @brief		Set query fields objects
-	 * @param[in]	arg_fields_names	query fields names (array of field records)
-	 * @param[in]	arg_fields_records	query fields records
-	 * @return		boolean
-	 */
-	public function setFieldsWithNames($arg_fields_names, $arg_fields_records)
-	{
-		$context = 'AbstractQuery.setFieldsWithNames(fields names)';
-		Trace::enter($context, '', self::$TRACE_ABSTRACT_QUERY);
-		
-		if ( is_array($arg_fields_names) && is_array($arg_fields_records) )
-		{
-			$this->query_fields = array();
-			// $field_records = $this->model->getModelFieldsRecords();
-			foreach($arg_fields_records as $field_name => $field_record)
-			{
-				if ( in_array($field_name, $arg_fields_names) )
-				{
-					$this->query_fields[$field_name] = $field_record;
-				}
-			}
-			return Trace::leaveok($context, '', true, self::$TRACE_ABSTRACT_QUERY);
-		}
-		
-		return Trace::leaveko($context, 'fields argument is not an array or model is null', false, self::$TRACE_ABSTRACT_QUERY);
-	}
-	
 	
 	
 	/**
@@ -377,7 +330,7 @@ abstract class AbstractQuery
 		{
 			Trace::value($context, 'query_fields', $this->query_fields, self::$TRACE_ABSTRACT_QUERY);
 			Trace::value($context, 'query_values', $this->query_values, self::$TRACE_ABSTRACT_QUERY);
-			return Trace::leaveko($context, 'bad values count', null, self::$TRACE_ABSTRACT_QUERY);
+			return Trace::leaveko($context, 'bad values count ('.count($this->query_values).')', null, self::$TRACE_ABSTRACT_QUERY);
 		}
 		
 		$assoc_values = array();
@@ -403,20 +356,82 @@ abstract class AbstractQuery
 		Trace::enter($context, '', self::$TRACE_ABSTRACT_QUERY);
 		
 		// REPLACE PREDEFINED VALUES
-		if ( is_array($arg_values) )
+		if (  ! is_array($arg_values) )
 		{
-			$this->query_values = $arg_values;
-			if ( ! $this->checkAssocValues() )
-			{
-				$this->query_values = null;
-				
-				return Trace::leaveko($context, 'check assoc values failed', false, self::$TRACE_ABSTRACT_QUERY);
-			}
-			
-			return Trace::leaveok($context, '', true, self::$TRACE_ABSTRACT_QUERY);
+			$this->query_values = null;
+			return Trace::leaveko($context, 'values argument is not an array', false, self::$TRACE_ABSTRACT_QUERY);
 		}
 		
-		return Trace::leaveko($context, 'values argument is not an array', false, self::$TRACE_ABSTRACT_QUERY);
+		
+		// SET VALUES
+		$this->query_values = $arg_values;
+		
+		
+		// CHECK VALUES AND FIELDS ARRAYS
+		if ( ! is_array($this->query_fields) )
+		{
+			return Trace::leaveko($context, 'query_fields is not an array', false, self::$TRACE_ABSTRACT_QUERY);
+		}
+		
+		Trace::value($context, "query_fields", $this->query_fields, self::$TRACE_ABSTRACT_QUERY);
+		Trace::value($context, "query_values", $this->query_values, self::$TRACE_ABSTRACT_QUERY);
+		
+		
+		// GET ARRAYS SIZE
+		$query_values_count = count($this->query_values);
+		$query_fields_count = count($this->query_fields);
+		Trace::value($context, "query_values_count", $query_values_count, self::$TRACE_ABSTRACT_QUERY);
+		Trace::value($context, "query_fields_count", $query_fields_count, self::$TRACE_ABSTRACT_QUERY);
+		
+		
+		// CHECK VALUES COUNT
+		if ($query_values_count === 0)
+		{
+			$this->query_values = null;
+			return Trace::leaveok($context, "no values to check", true, self::$TRACE_ABSTRACT_QUERY);
+		}
+		if ($query_values_count > $query_fields_count)
+		{
+			$this->query_values = null;
+			return Trace::leaveko($context, "too many values: [$query_values_count] values for [$query_fields_count] fields", false, self::$TRACE_ABSTRACT_QUERY);
+		}
+		
+		
+		// TEST IF THE ARRAY IS INDEXED BY INTEGERS
+		$is_indexed_values_array = ! Types::isAssoc($this->query_values);
+		Trace::value($context, "is_indexed_values_array", $is_indexed_values_array, self::$TRACE_ABSTRACT_QUERY);
+		
+		
+		// CONVERT INDEXED VALUES ARRAY TO ASSOCIATIVE ARRAY
+		$check_keys_done = false;
+		if ($is_indexed_values_array)
+		{
+			Trace::step($context, "query_values is an indexed array: convert to assoc array", self::$TRACE_ABSTRACT_QUERY);
+			
+			$tmp_values = array();
+			for($values_index = 0 ; $values_index < $query_values_count ; $values_index++)
+			{
+				$loop_field = $this->query_fields[$values_index];
+				$loop_value = $this->query_values[$values_index];
+				$loop_key = $loop_field['name'];
+				$tmp_values[$loop_key] = $loop_value;
+			}
+			
+			$this->query_values = $tmp_values;
+			$check_keys_done = true;
+		}
+		
+		
+		// CHECK ASSOCIATIVE ARRAY OF VALUES
+		if ( ! $this->checkAssocValues() )
+		{
+			$this->query_values = null;
+			
+			return Trace::leaveko($context, 'check assoc values failed', false, self::$TRACE_ABSTRACT_QUERY);
+		}
+		
+		
+		return Trace::leaveok($context, 'success', true, self::$TRACE_ABSTRACT_QUERY);
 	}
 	
 	
@@ -635,11 +650,11 @@ abstract class AbstractQuery
 		// CHECK VALUES AND FIELDS ARRAYS
 		if ( ! is_array($this->query_fields) )
 		{
-			return Trace::leaveok($context, 'query_fields is not an array', true, self::$TRACE_ABSTRACT_QUERY);
+			return Trace::leaveko($context, 'query_fields is not an array', false, self::$TRACE_ABSTRACT_QUERY);
 		}
 		if ( ! is_array($this->query_values) )
 		{
-			return Trace::leaveok($context, 'query_values is not an array', true, self::$TRACE_ABSTRACT_QUERY);
+			return Trace::leaveko($context, 'query_values is not an array', false, self::$TRACE_ABSTRACT_QUERY);
 		}
 		
 		Trace::value($context, "query_fields", $this->query_fields, self::$TRACE_ABSTRACT_QUERY);
@@ -648,46 +663,36 @@ abstract class AbstractQuery
 		
 		// GET ARRAYS SIZE
 		$query_values_count = count($this->query_values);
-		// $query_values_keys  = array_keys($this->query_values);
 		$query_fields_count = count($this->query_fields);
-		// Trace::value($context, "query_values_keys", $query_values_keys, self::$TRACE_ABSTRACT_QUERY);
 		Trace::value($context, "query_values_count", $query_values_count, self::$TRACE_ABSTRACT_QUERY);
 		Trace::value($context, "query_fields_count", $query_fields_count, self::$TRACE_ABSTRACT_QUERY);
 		
 		
-		// TEST IF THE ARRAY IS INDEXED BY INTEGERS
-		// $last_index			= $query_values_count - 1;
-		// $first_key			= $query_values_keys[0];
-		// $last_key			= $query_values_keys[$last_index];
-		// Trace::value($context, "last_index",					$last_index, self::$TRACE_ABSTRACT_QUERY);
-		// Trace::value($context, "first_key",						$first_key, self::$TRACE_ABSTRACT_QUERY);
-		// Trace::value($context, "last_key",						$last_key, self::$TRACE_ABSTRACT_QUERY);
-		// Trace::value($context, "first_key == 0",				($first_key == "0")?'OK':'KO', self::$TRACE_ABSTRACT_QUERY);
-		// Trace::value($context, "last_key == last_index", 		($last_key == "$last_index")?'OK':'KO', self::$TRACE_ABSTRACT_QUERY);
+		// CHECK VALUES COUNT
+		if ($query_values_count === 0)
+		{
+			return Trace::leaveko($context, "no values to check", false, self::$TRACE_ABSTRACT_QUERY);
+		}
+		if ($query_values_count > $query_fields_count)
+		{
+			return Trace::leaveko($context, "too many values: [$query_values_count] values for [$query_fields_count] fields", false, self::$TRACE_ABSTRACT_QUERY);
+		}
 		
-		// $is_indexed_values_array = $first_key == "0" && $last_key == "$last_index";
-		$is_indexed_values_array = Types::isAssoc($this->query_values);
+		
+		// TEST IF THE ARRAY IS INDEXED BY INTEGERS
+		$is_indexed_values_array = ! Types::isAssoc($this->query_values);
 		Trace::value($context, "is_indexed_values_array", $is_indexed_values_array, self::$TRACE_ABSTRACT_QUERY);
 		
 		
-		// CHECK VALUES COUNT
-		if ($query_values_count == 0 && $query_fields_count == 0)
-		{
-			return Trace::leaveok($context, "no values to check", true, self::$TRACE_ABSTRACT_QUERY);
-		}
-		if ($query_values_count == 0 && $query_fields_count != 0)
-		{
-			return Trace::leaveko($context, "bad values count ($query_values_count) for fields count ($query_fields_count)", false, self::$TRACE_ABSTRACT_QUERY);
-		}
-		
-		
-		// REMOVE UNUSED PASSWORD VALUES (OLDHASH, NEW, CONFIRM) AND LEAVE NEWHASH
-		// INDEXED VALUES ARRAY
+		// CONVERT INDEXED VALUES ARRAY TO ASSOCIATIVE ARRAY
 		if ($is_indexed_values_array)
 		{
-			Trace::step($context, "query_values is an indexed array", self::$TRACE_ABSTRACT_QUERY);
-			
-			Trace::value($context, "this->query_values before remove unused", $this->query_values, self::$TRACE_ABSTRACT_QUERY);
+			return Trace::leaveko($context, "not an associative array", false, self::$TRACE_ABSTRACT_QUERY);
+		}
+		
+		
+		// TODO REMOVE UNUSED PASSWORD VALUES (OLDHASH, NEW, CONFIRM) AND LEAVE NEWHASH
+		/*	Trace::value($context, "this->query_values before remove unused", $this->query_values, self::$TRACE_ABSTRACT_QUERY);
 			
 			$tmp_values = $this->query_values;
 			$value_index = 0;
@@ -715,63 +720,9 @@ abstract class AbstractQuery
 			}
 			
 			Trace::value($context, "this->query_values after remove unused", $this->query_values, self::$TRACE_ABSTRACT_QUERY);
-		}
-		// ASSOCIATIVE VALUES ARRAY
-		else
-		{
-			// TODO class_geenric_query checkAssocValues : REMOVE UNUSED PASSWORD VALUES for ASSOCIATIVE ARRAY
-			Trace::value($context, "this->query_values remove unused", $this->query_values, self::$TRACE_ABSTRACT_QUERY);
-			
-			// foreach($this->query_fields as $field)
-			// {
-				// if ($field['type'] == TYPE::$TYPE_PASSWORD)
-				// {
-					// $field_name = $field['name'];
-					// unset($this->query_values[$field_name."_oldhash"]);
-					// unset($this->query_values[$field_name."_new"]);
-					// unset($this->query_values[$field_name."_confirm"]);
-				// }
-			// }
-			
-			$query_values_count = count($this->query_values);
-			$query_values_keys  = array_keys($this->query_values);
-			Trace::value($context, "this->query_values remove unused", $this->query_values, self::$TRACE_ABSTRACT_QUERY);
-		}
+		*/
 		
-		
-		// CHECK VALUES COUNT
-		$have_same_count = ($query_values_count > 0 && $query_values_count == $query_fields_count);
-		if ($have_same_count)
-		{
-			// MAKE AN ASSOCIATIVE ARRAY FROM AN INDEXED ARRAY
-			if ( $is_indexed_values_array )
-			{
-				$tmp_values = $this->query_values;
-				$tmp_index  = 0;
-				$this->query_values = array();
-				
-				foreach($this->query_fields as $field)
-				{
-					$this->query_values[$field->getName()] = $tmp_values[$tmp_index];
-					$tmp_index += 1;
-				}
-				
-				Trace::value($context, "query_values assoc", $this->query_values, self::$TRACE_ABSTRACT_QUERY);
-				
-				return Trace::leaveok($context, "success", true, self::$TRACE_ABSTRACT_QUERY);
-			}
-			
-			// ASSOCIATIVE VALUES ARRAY : NOTHING TO DO
-			return Trace::leaveok($context, "nothing to do for an associative array", true, self::$TRACE_ABSTRACT_QUERY);
-		}
-		
-		// RESET INPUT VALUES
-		$this->query_values = null;
-		
-		// ALWAYS TRACE THE PROBLEM
-		// Trace::addAlertMsg($context, "bad values count ($query_values_count) for fields count ($query_fields_count)", true);
-		
-		return Trace::leaveko($context, "bad values count ($query_values_count) for fields count ($query_fields_count)", false, self::$TRACE_ABSTRACT_QUERY);
+		return Trace::leaveok($context, "success", true, self::$TRACE_ABSTRACT_QUERY);
 	}
 	
 	

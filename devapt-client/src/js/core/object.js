@@ -378,6 +378,7 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptOptions, DevaptClasses,
 			var context = 'register_mixin(proto,attributes names)';
 			
 			
+			// TRACE ENTER
 			if (self.trace && self.enter)
 			{
 				self.enter(context, '');
@@ -389,6 +390,8 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptOptions, DevaptClasses,
 				DevaptTraces.log_indent();
 			}
 			
+			
+			// FILL ATTRIBUTES NAMES 
 			if ( DevaptTypes.is_null(arg_mixin_attr_names) )
 			{
 				arg_mixin_attr_names = [];
@@ -397,15 +400,21 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptOptions, DevaptClasses,
 					arg_mixin_attr_names.push(key);
 				}
 			}
-			
 			if ( ! DevaptTypes.is_array(arg_mixin_attr_names) )
 			{
 				arg_mixin_attr_names = [arg_mixin_attr_names];
 			}
 			
+			
+			// LOOP ON ATTRIBUTES TO REGISTER MIXIN
 			for(attr_name_key in arg_mixin_attr_names)
 			{
 				var attr_name	= arg_mixin_attr_names[attr_name_key];
+				// if (attr_name === 'mixin_init')
+				// {
+					// continue;
+				// }
+				
 				var attr_obj	= arg_mixin_proto[attr_name];
 				if ( DevaptTypes.is_string(attr_name) && ! DevaptTypes.is_null(attr_obj) )
 				{
@@ -423,6 +432,15 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptOptions, DevaptClasses,
 			}
 			
 			
+			// INIT MIXIN
+			if ( DevaptTypes.is_function(self.mixin_init) )
+			{
+				self.mixin_init();
+				delete self.mixin_init;
+			}
+			
+			
+			// TRACE LEAVE
 			if (self.trace && self.leave)
 			{
 				self.leave(context, 'success');
@@ -438,7 +456,7 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptOptions, DevaptClasses,
 		
 		/**
 		 * @public
-		 * @method					register_mixin(arg_mixin_proto, arg_mixin_method_names)
+		 * @method					register_mixin_method(arg_mixin_proto, arg_mixin_method_names)
 		 * @desc					Enhance an existing object with methods of an other object (mixin)
 		 * @param {object}			arg_mixin_proto				Mixin object
 		 * @param {array}			arg_mixin_method_names		Attributes names to mix
@@ -552,6 +570,13 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptOptions, DevaptClasses,
 		DevaptTraces.trace_leave(context, '', true);
 		return obj;
 	}
+	
+	
+	// STATIC MESSAGE
+	DevaptObject.msg_default_empty_implementation = 'default empty implementation';
+	DevaptObject.msg_success = 'success';
+	DevaptObject.msg_failure = 'failure';
+	DevaptObject.msg_success_promise = 'success: returns promise';
 	
 	
 	return DevaptObject;

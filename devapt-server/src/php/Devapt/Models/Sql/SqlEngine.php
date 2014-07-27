@@ -33,13 +33,6 @@ use Devapt\Resources\Model;
 use Zend\Debug\Debug;
 use Zend\Db\Adapter\Adapter as DbAdapter;
 use Zend\Db\Sql\Sql;
-// use Zend\Db\Sql\Select;
-// use Zend\Db\Sql\Create;
-// use Zend\Db\Sql\Update;
-// use Zend\Db\Sql\Delete;
-// use Zend\Db\Sql\Where;
-// use Zend\Db\Sql\Predicate\Expression as Expr;
-// use Zend\Db\Sql\Predicate\PredicateSet;
 use Zend\Db\ResultSet\ResultSet;
 
 use \Devapt\Security\DbConnexions;
@@ -176,55 +169,6 @@ class SqlEngine
 		$context = 'SqlEngine.read(query)';
 		Trace::enter($context, '', self::$TRACE_ENGINE);
 		
-		/*
-		// CHECK INIT
-		if ( ! $this->init() )
-		{
-			return Trace::leaveko($context, 'init failure', null, self::$TRACE_ENGINE);
-		}
-		
-		
-		// CHECK QUERY
-		if ( ! is_object($arg_query) )
-		{
-			return Trace::leaveko($context, 'bad query object', null, self::$TRACE_ENGINE);
-		}
-		
-		
-		// CREATE ZF2 SQL OBJECT
-		$sql = new Sql( $this->getDbAdapter() );
-		
-		
-		// BUILD SQL
-		$select = SqlBuilderV1::compileSelect($this, $arg_query, $sql);
-		if ( ! is_object($select) )
-		{
-			return Trace::leaveko($context, 'sql compilation failed', null, self::$TRACE_ENGINE);
-		}
-		
-		
-		// TRACE SQL
-		if (self::$TRACE_ENGINE)
-		{
-			Trace::value($context, 'sql', $select->getSqlString( $this->getDbAdapter()->getPlatform() ), self::$TRACE_ENGINE);
-		}
-		
-		
-		// EXECUTE SQL
-		$statement = $sql->prepareStatementForSqlObject($select);
-		$query_results = $statement->execute();
-		
-		
-		// GET RESULTS
-		$result_set = new ResultSet();
-		$result_set->initialize($query_results);
-		
-		$count = $result_set->count();
-		Trace::value($context, 'count', $count, self::$TRACE_ENGINE);
-		
-		$results = $result_set->toArray();
-		Trace::value($context, 'results', $results, self::$TRACE_ENGINE);
-		*/
 		$results = $this->do_crud($arg_query, 'read');
 		
 		return Trace::leaveok($context, '', $results, self::$TRACE_ENGINE);
@@ -341,6 +285,34 @@ class SqlEngine
 				$sql_action = SqlBuilderV1::compileDelete($this, $arg_query, $sql);
 				break;
 			}
+			
+			
+			case 'read-2':
+			{
+				Trace::step($context, $arg_action.' for query version '.$query_version, self::$TRACE_ENGINE);
+				$sql_action = SqlBuilderV1::compileSelect($this, $arg_query, $sql);
+				break;
+			}
+			case 'create-2':
+			{
+				Trace::step($context, $arg_action.' for query version '.$query_version, self::$TRACE_ENGINE);
+				$sql_action = SqlBuilderV1::compileInsert($this, $arg_query, $sql);
+				break;
+			}
+			case 'update-2':
+			{
+				Trace::step($context, $arg_action.' for query version '.$query_version, self::$TRACE_ENGINE);
+				$sql_action = SqlBuilderV1::compileUpdate($this, $arg_query, $sql);
+				break;
+			}
+			case 'delete-2':
+			{
+				Trace::step($context, $arg_action.' for query version '.$query_version, self::$TRACE_ENGINE);
+				$sql_action = SqlBuilderV1::compileDelete($this, $arg_query, $sql);
+				break;
+			}
+			
+			
 			default:
 			{
 				Trace::step($context, 'action not found ['.$arg_action.'] for query version '.$query_version, self::$TRACE_ENGINE);

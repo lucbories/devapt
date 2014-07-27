@@ -3,15 +3,18 @@ MODEL QUERY FORMAT DOCUMENTATION
 =============================
 
 Project: Devapt (www.devapt.org)
+
 Source: https://github.com/lucbories/DevApt
+
 Module: documentation - client/server model query interface
 
 
 CONTEXT
 -------
 
-_ This documentation apply to the browser to server communication. _
-_ Query datas are transmitted into a GET or PORT HTTP request. _
+*This documentation apply to the browser to server communication.*
+
+*Query datas are transmitted into a GET or POST HTTP request.*
 
 To determine which version is used for a query, this attribute is used:
 * query_api
@@ -125,18 +128,20 @@ QUERY VERSION 2
   * values: one JSON object string
 
 JSON object string format:
-{
+`{
 	action: '...',
 	crud_db: '...',
 	crud_table: '...',
 	fields: [],
+	one_field: '...',
 	values: {},
+	values_count: ...,
 	filters: [],
 	orders: [],
 	groups: [],
 	slice: { offset:'...', length:'...' },
 	joins: [],
-}
+}`
 
 with attributes definition:
 
@@ -159,7 +164,12 @@ with attributes definition:
   * default value: []
   * value type: ordered field names (string) list as a JSON array
   * values: fields names
-	
+
+ * one_field
+  * default value: ''
+  * value type: string
+  * values: field name for unary operation 
+  
  * values
   * default value: {}
   * value type:  an associative array of field name / field value
@@ -167,57 +177,67 @@ with attributes definition:
       * to build a filter on fields
       * or to insert fields values
       * or to update fields values
+
+ * values_count
+  * default value : 0
+  * value type: integer
+  * values: 'values' records count
+
+ * orders
+  * default value: []
+  * value type: a JSON array of orders objects
+  * values: each order object is as
+		`{
+			field: field name (string),
+			mode: 'ASC' or 'DESC' (string)
+		}`
+
+ * groups
+  * default value: []
+  * value type: a JSON array of string
+  * values: each group string is a field name
+
+ * slice
+  * default value: null
+  * value type: slice object
+  * values: { offset:'...', length:'...' }
 	
+ * joins
+  * default value: []
+  * value type: a JSON array of joins objects
+  * values: each join object is as
+		`{
+			mode: string in 'inner', 'straight join', 'left outer', 'right outer', 'natural left outer', 'natural right outer' 
+			source: { db: '...', table: '...', column: '...' },
+			target: { db: '...', table: '...', column: '...' }
+		}`
+  
  * filters
   * default value: []
-  * value type: ordered list of filter object as a JSON array of objects
-  * values: each filter object is as { operator: }
-	  * 
-      * example 1: field=brand_name,type=String,modifier=upper,op=equals,var1=ADJ
-      * example 2: field=brand_name,type=String,modifier=,op=in,var1='value1,value2,value3'
-      * filter type: "String", "Integer", "Float", "Date", "Time", "DateTime", "Boolean"
-      * filter operator:
-      * ANY TYPE:  "equals", "notequals", "isnull", "isnotnull",
-      * STRING: "bw", "begins_with", "begins with", "contains", "ew", "ends_with", "ends with", "min length", "max length", "length between", "in",
-      * NUMBER: "gt", "ge", "lt", "le", "between"
-      * filter modifier:
-      * empty or "nothing"
-      * STRING: "upper", "lower", "ltrim", "rtrim", "aes_encrypt", "aes_decrypt", "md5",
-      * NUMBER: "abs", "floor",
-      * DATE: "date", "day", "week", "month", "year", "day of week", "day of month", "day of year", "last day of month", "quarter",
-      * TIME:  "time", "hour", "minute", "second"
-	field=field name,type=field type,modifier=modifier operator name (optional),op=filtering operator name,var1=operand 1 value,var2=operand 2 value
- * query_orders
-  * default value: ''
-  * value type: strings list with ',' separator
-  * values: each group string is a field name / order mode association : field name=DESC or field name=ASC
+  * value type: a JSON array of filters objects
+  * values: each filter object is as
+		`{
+			predicate: 'AND' / 'OR'
+			expression: expression object
+		}`
+
+ * expression object:
+		`{
+			operator: an operator name
+			operands: an array of expression
+		}`
+		or
+		{
+			value: expression value
+			type: value type name
+		}
 	
- * query_groups
-  * default value: ''
-  * value type: strings list with ',' separator
-  * values: each group string is a field name
-	
- * query_slice_begin
-  * default value: ''
-  * value type: integer
-  * values: any positive value
-	
- * query_slice_end
-  * default value: ''
-  * value type: integer
-  * values: any positive value
-	
- * query_slice_offset
-  * default value: ''
-  * value type: integer
-  * values: any positive value
-	
- * query_slice_length
-  * default value: ''
-  * value type: integer
-  * values: any positive value
-	
- * query_joins
-  * default value: ''
-  * value type: strings list with '|' separator
-  * values: 
+ * value types: "String", "Integer", "Float", "Date", "Time", "DateTime", "Boolean"
+ 
+ * operators:
+  * ANY TYPE: "equals", "notequals", "isnull", "isnotnull",
+  * STRING: "bw", "begins_with", "begins with", "contains", "ew", "ends_with", "ends with", "min length", "max length", "length between", "in"
+			"upper", "lower", "ltrim", "rtrim", "aes_encrypt", "aes_decrypt", "md5"
+  * NUMBER: "gt", "ge", "lt", "le", "between", "abs", "floor"
+  * DATE: "date", "day", "week", "month", "year", "day of week", "day of month", "day of year", "last day of month", "quarter",
+  * TIME:  "time", "hour", "minute", "second"

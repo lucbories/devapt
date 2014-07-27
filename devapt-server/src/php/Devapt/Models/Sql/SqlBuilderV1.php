@@ -99,7 +99,8 @@ final class SqlBuilderV1
 		$groups = array();
 		$orders = array();
 		
-		$query_fields = $arg_query->getFields();
+		// $query_fields = $arg_query->getFields();
+		$query_fields_names = $arg_query->getFieldsNames();
 		
 		
 		// JOINS
@@ -198,7 +199,7 @@ final class SqlBuilderV1
 			Trace::step($context, 'query is not of type one field', self::$TRACE_BUILDER);
 			
 			// LOOP ON MODEL FIELDS
-			foreach($query_fields as $field_name)
+			foreach($query_fields_names as $field_name)
 			{
 				// GET FIELD RECORD
 				if ( ! array_key_exists($field_name, $fields_records) )
@@ -389,7 +390,7 @@ final class SqlBuilderV1
 	
 	
 	/**
-	 * @brief		Compile SQL select
+	 * @brief		Compile SQL insert
 	 * @param[in]	arg_sql_engine		SQL engine (object)
 	 * @param[in]	arg_query			query (object)
 	 * @param[in]	arg_zf2_sql			ZF2 SQL (object)
@@ -410,7 +411,7 @@ final class SqlBuilderV1
 		}
 		
 		
-		// INIT SELECT
+		// INIT INSERT
 		$model			= $arg_sql_engine->getModel();
 		$default_db		= DbConnexions::getConnexionDatabase($model->getModelConnexionName());
 		$default_table	= $model->getModelCrudTableName();
@@ -422,7 +423,6 @@ final class SqlBuilderV1
 		$groups = array();
 		$orders = array();
 		
-		$query_fields = $arg_query->getFields();
 		$query_fields_names = $arg_query->getFieldsNames();
 		$query_values = $arg_query->getOperandsAssocValues();
 		
@@ -430,30 +430,143 @@ final class SqlBuilderV1
 		// CREATE ZF2 SQL OBJECT
 		$insert = $arg_zf2_sql->insert(/*$default_db.'.'.*/$default_table)->columns($query_fields_names);
 		
-		// if ( Types::isAssoc($query_values) )
-		// {
-			Trace::step($context, 'values array is assoc', self::$TRACE_BUILDER);
-			$insert->values($query_values, $insert::VALUES_SET);
-		// }
-		// else
-		// {
-			// Trace::step($context, 'values array is indexed', self::$TRACE_BUILDER);
-			// $value_index = 0;
-			// foreach($query_fields as $field_name => $field)
-			// {
-				// $field_value = $query_values[$value_index];
-				
-				// Trace::value($context, "value_index", $value_index == 0 ? "0" : $value_index, self::$TRACE_BUILDER);
-				// Trace::value($context, "field.name", $field_name, self::$TRACE_BUILDER);
-				// Trace::value($context, "field value", $field_value, self::$TRACE_BUILDER);
-				
-				// $insert->values(array($field_name => $field_value), $insert::VALUES_MERGE);
-				// ++$value_index;
-			// }
-		// }
+		
+		// CHECK AND SET RECORD VALUES
+		if ( ! is_array($query_values) && ! Types::isAssoc($query_values) )
+		{
+			return Trace::leaveko($context, 'bad query values for insert operation', false, self::$TRACE_BUILDER);
+		}
+		$insert->values($query_values, $insert::VALUES_SET); // REPLACE EXISTING VALUES
 		
 		
 		return Trace::leaveok($context, 'success', $insert, self::$TRACE_BUILDER);
+	}
+	
+	
+	
+	
+	
+	/**
+	 * @brief		Compile SQL update
+	 * @param[in]	arg_sql_engine		SQL engine (object)
+	 * @param[in]	arg_query			query (object)
+	 * @param[in]	arg_zf2_sql			ZF2 SQL (object)
+	 * @return		Expression
+	 */
+	static public function compileUpdate($arg_sql_engine, $arg_query, $arg_zf2_sql)
+	{
+		$context = 'SqlBuilderV1.compileUpdate(engine,query,sql)';
+		Trace::enter($context, '', self::$TRACE_BUILDER);
+		
+		
+		// CHECK QUERY TYPE
+		$update_types = array(Query::$TYPE_REPLACE, Query::$TYPE_UPDATE);
+		$query_type = $arg_query->getType();
+		if ( ! in_array($query_type, $update_types) )
+		{
+			return Trace::leaveko($context, 'bad query type ['.$query_type.'] for update operation', false, self::$TRACE_BUILDER);
+		}
+		
+		
+		// INIT SQL
+		$model			= $arg_sql_engine->getModel();
+		$default_db		= DbConnexions::getConnexionDatabase($model->getModelConnexionName());
+		$default_table	= $model->getModelCrudTableName();
+		$fields_records = $model->getModelFieldsRecords();
+		
+		$columns = array();
+		$froms = array($default_table => $default_table);
+		$where = new Where();
+		$groups = array();
+		$orders = array();
+		
+		// $query_fields = $arg_query->getFields();
+		$query_fields_names = $arg_query->getFieldsNames();
+		$query_values = $arg_query->getOperandsValues();
+		Trace::value($context, 'query_values', $query_values, self::$TRACE_BUILDER);
+		if ( ! is_array($query_values) )
+		{
+			return Trace::leaveko($context, 'bad query_values', null, self::$TRACE_BUILDER);
+		}
+		
+		
+		// CREATE ZF2 SQL OBJECT
+		$update = $arg_zf2_sql->update(/*$default_db.'.'.*/$default_table);
+		
+		
+		// GET PRIMARY KEY FIELD NAME
+		$pk_name = $model->getModelPKFieldName();
+		if ( ! is_string($pk_name) || $pk_name === '' )
+		{
+			return Trace::leaveko($context, 'bad pk field name', null, self::$TRACE_BUILDER);
+		}
+		
+		// GET PRIMARY KEY FIELD VALUE
+		$pk_value = array_key_exists($pk_name, $query_values) ? $query_values[$pk_name] : null;
+		if ( is_null($pk_value) )
+		{
+			return Trace::leaveko($context, 'bad pk field value', null, self::$TRACE_BUILDER);
+		}
+		
+		// SET PRIMARY KEY FIELD FILTER
+		$where->equalTo($pk_name, $pk_value);
+		$update->where($where);
+		
+		
+		// REMOVE PK VALUE FROM RECORD
+		unset($query_values[$pk_name]);
+		
+		// SET RECORD VALUES
+		$update->set($query_values, $update::VALUES_SET); // REPLACE EXISTING VALUES
+		
+		
+		// TODO WHERE
+/*		Trace::step($context, 'has filters ?', self::$TRACE_BUILDER);
+		$query_filters = $arg_query->getFilters();
+		//	 filter option example:
+		//		model_filters= "field=brand_name,type=String,modifier=upper,op=equals,var1=\"ADJ\""
+		if ( is_array($query_filters) )
+		{
+			Trace::step($context, 'query has ['.count($query_filters).'] filters', self::$TRACE_BUILDER);
+			
+			$build_filters_records = array();
+			$tree_root = new FilterNode(null, null, new PredicateSet( array() ) );
+			$current_node = &$tree_root;
+			foreach($query_filters AS $key => $filter_record)
+			{
+				Trace::step($context, 'loop on filter ?', self::$TRACE_BUILDER);
+				
+				// CHECK FILTER RECORD STRING
+				if ( is_string($filter_record) )
+				{
+					Trace::step($context, 'explode filter', self::$TRACE_BUILDER);
+					$filter_record = explode(',', $filter_record);
+				}
+				
+				// BUILD FILTER NODE
+				$current_node = SqlFiltersBuilder::buildFilterNode($arg_zf2_sql, $current_node, $fields_records, $filter_record);
+				if ( ! is_object($current_node) )
+				{
+					return Trace::leaveko($context, 'bad filter node', null, self::$TRACE_BUILDER);
+				}
+			}
+			
+			
+			
+			// SET WHERE
+			Trace::step($context, 'has filters tree root ?', self::$TRACE_BUILDER);
+			if ( is_object($tree_root) && $tree_root instanceof FilterNode )
+			{
+				Trace::step($context, 'update where with filters tree root', self::$TRACE_BUILDER);
+				$where->addPredicate($tree_root->getPredicate(), $tree_root->getCombination());
+				// Debug::dump($tree_root->getPredicate());
+				$update->where($where);
+			}
+		}*/
+		
+		
+		
+		return Trace::leaveok($context, 'success', $update, self::$TRACE_BUILDER);
 	}
 }
 

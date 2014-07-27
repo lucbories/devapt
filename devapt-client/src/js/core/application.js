@@ -289,6 +289,111 @@ function(Devapt, DevaptTrace, DevaptTypes, DevaptInit, DevaptNavHistory)
 	 * @memberof			DevaptApplication
 	 * @public
 	 * @static
+	 * @method				DevaptApplication.get_title()
+	 * @desc				Get application configuration "application.title"
+	 * @return {string}		Application topbar name
+	 */
+	DevaptApplication.get_title = function()
+	{
+		var context = 'DevaptApplication.get_title()';
+		DevaptTrace.trace_enter(context, '', DevaptApplication.app_trace);
+		
+		var value = DevaptApplication.get_value('title', null);
+		DevaptTrace.trace_var(context, 'title', value, DevaptApplication.app_trace);
+		
+		DevaptTrace.trace_leave(context, '', DevaptApplication.app_trace);
+		return value;
+	}
+	
+	
+	/**
+	 * @memberof			DevaptApplication
+	 * @public
+	 * @static
+	 * @method				DevaptApplication.get_name()
+	 * @desc				Get application configuration "application.name"
+	 * @return {string}		Application topbar name
+	 */
+	DevaptApplication.get_name = function()
+	{
+		var context = 'DevaptApplication.get_name()';
+		DevaptTrace.trace_enter(context, '', DevaptApplication.app_trace);
+		
+		var value = DevaptApplication.get_value('name', null);
+		DevaptTrace.trace_var(context, 'name', value, DevaptApplication.app_trace);
+		
+		DevaptTrace.trace_leave(context, '', DevaptApplication.app_trace);
+		return value;
+	}
+	
+	
+	/**
+	 * @memberof			DevaptApplication
+	 * @public
+	 * @static
+	 * @method				DevaptApplication.get_short_label()
+	 * @desc				Get application configuration "application.short_label"
+	 * @return {string}		Application topbar name
+	 */
+	DevaptApplication.get_short_label = function()
+	{
+		var context = 'DevaptApplication.get_short_label()';
+		DevaptTrace.trace_enter(context, '', DevaptApplication.app_trace);
+		
+		var value = DevaptApplication.get_value('short_label', null);
+		DevaptTrace.trace_var(context, 'short_label', value, DevaptApplication.app_trace);
+		
+		DevaptTrace.trace_leave(context, '', DevaptApplication.app_trace);
+		return value;
+	}
+	
+	
+	/**
+	 * @memberof			DevaptApplication
+	 * @public
+	 * @static
+	 * @method				DevaptApplication.get_long_label()
+	 * @desc				Get application configuration "application.long_label"
+	 * @return {string}		Application topbar name
+	 */
+	DevaptApplication.get_long_label = function()
+	{
+		var context = 'DevaptApplication.get_long_label()';
+		DevaptTrace.trace_enter(context, '', DevaptApplication.app_trace);
+		
+		var value = DevaptApplication.get_value('long_label', null);
+		DevaptTrace.trace_var(context, 'long_label', value, DevaptApplication.app_trace);
+		
+		DevaptTrace.trace_leave(context, '', DevaptApplication.app_trace);
+		return value;
+	}
+	
+	
+	/**
+	 * @memberof			DevaptApplication
+	 * @public
+	 * @static
+	 * @method				DevaptApplication.get_version()
+	 * @desc				Get application configuration "application.version"
+	 * @return {string}		Application topbar name
+	 */
+	DevaptApplication.get_version = function()
+	{
+		var context = 'DevaptApplication.get_version()';
+		DevaptTrace.trace_enter(context, '', DevaptApplication.app_trace);
+		
+		var value = DevaptApplication.get_value('version', null);
+		DevaptTrace.trace_var(context, 'version', value, DevaptApplication.app_trace);
+		
+		DevaptTrace.trace_leave(context, '', DevaptApplication.app_trace);
+		return value;
+	}
+	
+	
+	/**
+	 * @memberof			DevaptApplication
+	 * @public
+	 * @static
 	 * @method				DevaptApplication.get_home_view_url()
 	 * @desc				Get application configuration home url "application.url.home"
 	 * @return {string}		Application base url

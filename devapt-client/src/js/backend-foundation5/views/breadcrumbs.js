@@ -10,7 +10,7 @@
  */
 
 define(
-['Devapt', 'core/traces', 'core/types', 'core/options', 'core/classes', 'core/resources', 'core/view', 'core/application', 'core/nav-history', 'backend-foundation5/foundation-init'],
+['Devapt', 'core/traces', 'core/types', 'core/options', 'core/classes', 'core/resources', 'views/view', 'core/application', 'core/nav-history', 'backend-foundation5/foundation-init'],
 function(Devapt, DevaptTrace, DevaptTypes, DevaptOptions, DevaptClasses, DevaptResources, DevaptView, DevaptApplication, DevaptNavHistory, undefined)
 {
 	/**
@@ -18,20 +18,20 @@ function(Devapt, DevaptTrace, DevaptTypes, DevaptOptions, DevaptClasses, DevaptR
 	 * @class				DevaptBreadcrumbs
 	 * @desc				Breadcrumbs view class
 	 * @param {string}		arg_name			View name (string)
-	 * @param {object}		arg_container_jqo	jQuery object to attach the view to
+	 * @param {object}		arg_parent_jqo	jQuery object to attach the view to
 	 * @param {object|null}	arg_options			Associative array of options
 	 * @return {nothing}
 	 */
-	function DevaptBreadcrumbs(arg_name, arg_container_jqo, arg_options)
+	function DevaptBreadcrumbs(arg_name, arg_parent_jqo, arg_options)
 	{
 		var self = this;
 		
 		// INHERIT
 		self.inheritFrom = DevaptView;
-		self.inheritFrom(arg_name, arg_container_jqo, arg_options);
+		self.inheritFrom(arg_name, arg_parent_jqo, arg_options);
 		
 		// INIT
-		self.trace				= true;
+		self.trace				= false;
 		self.class_name			= 'DevaptBreadcrumbs';
 		self.is_view			= true;
 		self.history_labels		={};
@@ -86,12 +86,12 @@ function(Devapt, DevaptTrace, DevaptTypes, DevaptOptions, DevaptClasses, DevaptR
 			self.assertNotNull(context, 'arg_deferred', arg_deferred);
 			
 			// GET NODES
-			self.assertNotNull(context, 'container_jqo', self.container_jqo);
+			self.assertNotNull(context, 'parent_jqo', self.parent_jqo);
 			
 			// RENDER
 			self.content_jqo = $('<ul>');
 			self.content_jqo.addClass('breadcrumbs');
-			self.container_jqo.append(self.content_jqo);
+			self.parent_jqo.append(self.content_jqo);
 			
 			
 			// LOOP ON NAV HISTORY
@@ -144,7 +144,7 @@ function(Devapt, DevaptTrace, DevaptTypes, DevaptOptions, DevaptClasses, DevaptR
 			
 			
 			// self.value(context, '', arg_state);
-			console.log(arg_state);
+			// console.log(arg_state);
 			
 			var li_jqo = $('<li>');
 			self.content_jqo.append(li_jqo);

@@ -5,3 +5,8 @@ vendor
 all_zf2
 composer.phar
 db_connexions.ini
+hello
+devapt-tutorial-2
+unused_*
+todo_*
+extjs-5*

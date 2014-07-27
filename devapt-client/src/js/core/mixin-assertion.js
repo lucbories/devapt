@@ -151,6 +151,22 @@ define( ['core/types'], function(DevaptTypes)
 		/**
 		 * @memberof			DevaptMixinAssertion
 		 * @public
+		 * @method				assertFunction(arg_context, arg_name, arg_value)
+		 * @desc				Assert that value is a function
+		 * @param {string}		arg_context			assertion context
+		 * @param {string}		arg_name			assertion value name
+		 * @param {string}		arg_value			assertion value to test
+		 * @return {nothing}	(throw exception if assertion failed)
+		 */
+		assertFunction: function(arg_context, arg_name, arg_value)
+		{
+			this.assert(arg_context, arg_name, DevaptTypes.is_function(arg_value), 'Assert Function', arg_value);
+		},
+		
+		
+		/**
+		 * @memberof			DevaptMixinAssertion
+		 * @public
 		 * @method				assertArray(arg_context, arg_name, arg_value)
 		 * @desc				Assert that value is an array
 		 * @param {string}		arg_context			assertion context

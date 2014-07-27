@@ -161,6 +161,12 @@ function(Devapt, DevaptTraces, DevaptTypes, undefined)
 		// SWITCH CLASS NAME
 		switch(arg_class_name)
 		{
+			case 'View':
+			{
+				view_requires = ['views/view'];
+				break;
+			}
+			
 			case 'IncludeView':
 			case 'TemplateView':
 			{
@@ -170,7 +176,7 @@ function(Devapt, DevaptTraces, DevaptTypes, undefined)
 			
 			case 'Row':
 			{
-				view_requires = ['backend-foundation5/views/row'];
+				view_requires = ['backend-foundation5/containers/row'];
 				break;
 			}
 			
@@ -188,7 +194,7 @@ function(Devapt, DevaptTraces, DevaptTypes, undefined)
 			
 			case 'List':
 			{
-				view_requires = ['backend-foundation5/views/list'];
+				view_requires = ['backend-foundation5/containers/list'];
 				break;
 			}
 			
@@ -210,9 +216,15 @@ function(Devapt, DevaptTraces, DevaptTypes, undefined)
 				break;
 			}
 			
-			case 'BlockGrid':
+			case 'HBox':
 			{
-				view_requires = ['backend-foundation5/views/block-grid'];
+				view_requires = ['backend-foundation5/containers/hbox'];
+				break;
+			}
+			
+			case 'VBox':
+			{
+				view_requires = ['backend-foundation5/containers/vbox'];
 				break;
 			}
 			

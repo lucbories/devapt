@@ -23,9 +23,6 @@ use Zend\Json\Json as JsonFormatter;
 use Devapt\Core\Trace;
 use Devapt\Resources\Broker as ResourcesBroker;
 use Devapt\Resources\Model as ModelResource;
-// use Devapt\Models\ModelRenderer;
-// use Devapt\Models\PageHeaderModelRenderer;
-// use Devapt\Models\PageFooterModelRenderer;
 
 
 class ModelController extends AbstractController
@@ -67,6 +64,136 @@ class ModelController extends AbstractController
 	public function doGetAction($arg_resource_name, $arg_action_name, $arg_id, $arg_request, $arg_response)
 	{
 		$context = 'ModelController.doGetAction: ';
+		
+		
+		// CHECK ACTION NAME
+		if ( ! $this->has_action_attribute )
+		{
+			$arg_action_name = self::$ACTION_READ;
+		}
+		
+		// DO MODEL ACTION
+		$result = $this->doModelAction($arg_resource_name, $arg_action_name, $arg_id, $arg_request, $arg_response);
+		if (! $result)
+		{
+			Trace::warning($context."Controller GET action processing failure for resource [$arg_resource_name]");
+			return false;
+		}
+		
+		
+		Trace::info('ModelController: Process GET model action success');
+		return true;
+	}
+	
+	
+	/**
+	 * @brief		Process a PUT HTTP request
+	 * @param[in]	arg_resource_name	resource name (string)
+	 * @param[in]	arg_action_name		action name (string)
+	 * @param[in]	arg_id				record id (string) (optional)
+	 * @param[in]	arg_request			HTTP request (object)
+	 * @param[in]	arg_response		HTTP response (object)
+	 * @return		boolean
+	 */
+	public function doPutAction($arg_resource_name, $arg_action_name, $arg_id, $arg_request, $arg_response)
+	{
+		$context = 'ModelController.doGPutAction: ';
+		
+		
+		// CHECK ACTION NAME
+		$arg_action_name = self::$ACTION_CREATE;
+		
+		// DO MODEL ACTION
+		$result = $this->doModelAction($arg_resource_name, $arg_action_name, $arg_id, $arg_request, $arg_response);
+		if (! $result)
+		{
+			Trace::warning($context."Controller PUT action processing failure for resource [$arg_resource_name]");
+			return false;
+		}
+		
+		
+		Trace::info('ModelController: Process PUT model action success');
+		return true;
+	}
+	
+	
+	/**
+	 * @brief		Process a POST HTTP request
+	 * @param[in]	arg_resource_name	resource name (string)
+	 * @param[in]	arg_action_name		action name (string)
+	 * @param[in]	arg_id				record id (string) (optional)
+	 * @param[in]	arg_request			HTTP request (object)
+	 * @param[in]	arg_response		HTTP response (object)
+	 * @return		boolean
+	 */
+	public function doPostAction($arg_resource_name, $arg_action_name, $arg_id, $arg_request, $arg_response)
+	{
+		$context = 'ModelController.doPostAction: ';
+		
+		
+		// CHECK ACTION NAME
+		if ( ! $this->has_action_attribute )
+		{
+			$arg_action_name = self::$ACTION_UPDATE;
+		}
+		
+		// DO MODEL ACTION
+		$result = $this->doModelAction($arg_resource_name, $arg_action_name, $arg_id, $arg_request, $arg_response);
+		if (! $result)
+		{
+			Trace::warning($context."Controller POST action processing failure for resource [$arg_resource_name]");
+			return false;
+		}
+		
+		
+		Trace::info('ModelController: Process POST model action success');
+		return true;
+	}
+	
+	
+	/**
+	 * @brief		Process a DELETE HTTP request
+	 * @param[in]	arg_resource_name	resource name (string)
+	 * @param[in]	arg_action_name		action name (string)
+	 * @param[in]	arg_id				record id (string) (optional)
+	 * @param[in]	arg_request			HTTP request (object)
+	 * @param[in]	arg_response		HTTP response (object)
+	 * @return		boolean
+	 */
+	public function doDeleteAction($arg_resource_name, $arg_action_name, $arg_id, $arg_request, $arg_response)
+	{
+		$context = 'ModelController.doDeleteAction: ';
+		
+		
+		// CHECK ACTION NAME
+		$arg_action_name = self::$ACTION_DELETE;
+		
+		// DO MODEL ACTION
+		$result = $this->doModelAction($arg_resource_name, $arg_action_name, $arg_id, $arg_request, $arg_response);
+		if (! $result)
+		{
+			Trace::warning($context."Controller DELETE action processing failure for resource [$arg_resource_name]");
+			return false;
+		}
+		
+		
+		Trace::info('ModelController: Process DELETE model action success');
+		return true;
+	}
+	
+	
+	/**
+	 * @brief		Process a HTTP request
+	 * @param[in]	arg_resource_name	resource name (string)
+	 * @param[in]	arg_action_name		action name (string)
+	 * @param[in]	arg_id				record id (string) (optional)
+	 * @param[in]	arg_request			HTTP request (object)
+	 * @param[in]	arg_response		HTTP response (object)
+	 * @return		boolean
+	 */
+	public function doModelAction($arg_resource_name, $arg_action_name, $arg_id, $arg_request, $arg_response)
+	{
+		$context = 'ModelController.doModelAction: ';
 		
 		// CHECK ACTION NAME
 		if ( ! is_string($arg_action_name) )
@@ -129,15 +256,24 @@ class ModelController extends AbstractController
 		}
 		
 		
+		// IS JSONP ?
+		$jsonp_callback = $arg_request->getQuery('callback', null);
+		$is_jsonp = is_string($jsonp_callback) ? true : false;
+		
+		
 		// SET RESPONSE CONTENT
 		$jsonOptions = null;
 		$result_string = JsonFormatter::encode($model_result, null, $jsonOptions);
+		if ($is_jsonp)
+		{
+			$result_string = $jsonp_callback.'('.$result_string.');';
+		}
 		$arg_response->setContent($result_string);
 		
 		
 		// SET RESPONSE HEADER
 		$charset		= 'utf-8'; // TODO: configure charset
-		$contentType	= 'application/json';
+		$contentType	= $is_jsonp ? 'application/javascript' : 'application/json';
 		$contentType	.= '; charset=' . $charset;
 		$headers = $arg_response->getHeaders();
 		$headers->addHeaderLine('content-type', $contentType);
@@ -152,7 +288,7 @@ class ModelController extends AbstractController
 		$arg_response->send();
 		
 		
-		Trace::info('ModelController: Render model success ['.$arg_resource_name.']');
+		Trace::info('ModelController: Process model action success ['.$arg_resource_name.']');
 		return true;
 	}
 }

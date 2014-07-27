@@ -10,25 +10,25 @@
  */
 
 define(
-['Devapt', 'core/traces', 'core/types', 'core/options', 'core/classes', 'core/view', 'backend-foundation5/foundation-init'],
-function(Devapt, DevaptTrace, DevaptTypes, DevaptOptions, DevaptClasses, DevaptView, undefined)
+['Devapt', 'core/traces', 'core/types', 'core/options', 'core/classes', 'views/container', 'backend-foundation5/foundation-init'],
+function(Devapt, DevaptTrace, DevaptTypes, DevaptOptions, DevaptClasses, DevaptContainer, undefined)
 {
 	/**
 	 * @public
 	 * @class				DevaptRow
 	 * @desc				Row view class
 	 * @param {string}		arg_name			View name (string)
-	 * @param {object}		arg_container_jqo	jQuery object to attach the view to
+	 * @param {object}		arg_parent_jqo		jQuery object to attach the view to
 	 * @param {object|null}	arg_options			Associative array of options
 	 * @return {nothing}
 	 */
-	function DevaptRow(arg_name, arg_container_jqo, arg_options)
+	function DevaptRow(arg_name, arg_parent_jqo, arg_options)
 	{
 		var self = this;
 		
 		// INHERIT
-		self.inheritFrom = DevaptView;
-		self.inheritFrom(arg_name, arg_container_jqo, arg_options);
+		self.inheritFrom = DevaptContainer;
+		self.inheritFrom(arg_name, arg_parent_jqo, arg_options);
 		
 		// INIT
 		self.trace				= false;
@@ -74,47 +74,47 @@ function(Devapt, DevaptTrace, DevaptTypes, DevaptOptions, DevaptClasses, DevaptV
 		 * @param {object}		arg_jquery_object	JQuery object to attach the view to (object)
 		 * @return {boolean}	true:success,false:failure
 		 */
-		self.set_container = function(arg_jquery_object)
+	/*	self.set_parent = function(arg_jquery_object)
 		{
 			var self = this;
-			var context = 'set_container(jqo)';
+			var context = 'set_parent(jqo)';
 			self.enter(context, '');
 			
 			
 			// SET CONTAINER JQUERY OBJECT
-			self.container_jqo = DevaptTypes.is_null(arg_jquery_object) ? $('#' + self.name + '_view_id') : arg_jquery_object;
+			self.parent_jqo = DevaptTypes.is_null(arg_jquery_object) ? $('#' + self.name + '_view_id') : arg_jquery_object;
 			if (self.trace)
 			{
 				console.log(arg_jquery_object, 'arg_jquery_object');
-				console.log(self.container_jqo, 'container_jqo');
+				console.log(self.parent_jqo, 'parent_jqo');
 			}
 			
 			// CHECK CONTAINER JQO
-			self.assertNotNull(context, 'self.container_jqo', self.container_jqo);
+			self.assertNotNull(context, 'self.parent_jqo', self.parent_jqo);
 			
 			// SET ID
-			if ( DevaptTypes.is_object(self.container_jqo) )
+			if ( DevaptTypes.is_object(self.parent_jqo) )
 			{
-				if ( self.container_jqo.attr('id') === 'page_content_id' )
+				if ( self.parent_jqo.attr('id') === 'page_content_id' )
 				{
 					var jqo =$('<div>');
-					self.container_jqo.append(jqo);
-					self.container_jqo = jqo;
+					self.parent_jqo.append(jqo);
+					self.parent_jqo = jqo;
 				}
 				
 				if ( DevaptTypes.is_not_empty_str(self.html_id) )
 				{
-					self.container_jqo.attr('id', self.html_id);
+					self.parent_jqo.attr('id', self.html_id);
 				}
 			}
 			
 			
-			self.container_jqo.addClass('row');
+			self.parent_jqo.addClass('row');
 			
 			
 			self.leave(context, 'success');
 			return true;
-		}
+		}*/
 		
 		
 		
@@ -125,7 +125,7 @@ function(Devapt, DevaptTrace, DevaptTypes, DevaptOptions, DevaptClasses, DevaptV
 		 * @param {object}		arg_deferred	deferred object
 		 * @return {object}		deferred promise object
 		 */
-		self.render_self = function(arg_deferred)
+		/*self.render_self = function(arg_deferred)
 		{
 			var self = this;
 			var context = 'render_self(deferred)';
@@ -133,20 +133,20 @@ function(Devapt, DevaptTrace, DevaptTypes, DevaptOptions, DevaptClasses, DevaptV
 			
 			
 			// GET NODES
-			self.assertNotNull(context, 'container_jqo', self.container_jqo);
-			// console.log(self.container_jqo);
+			self.assertNotNull(context, 'parent_jqo', self.parent_jqo);
+			// console.log(self.parent_jqo);
 			
 			// CHECK CONTAINER TAG
-			if ( self.container_jqo.tagName !== 'DIV' )
+			if ( self.parent_jqo.tagName !== 'DIV' )
 			{
-				var old_jqo = self.container_jqo;
+				var old_jqo = self.parent_jqo;
 				// var parent_jqo = old_jqo.parent();
-				self.container_jqo = $('<div>');
-				self.container_jqo.attr('id', self.get_view_id() );
-				old_jqo.replaceWith(self.container_jqo);
+				self.parent_jqo = $('<div>');
+				self.parent_jqo.attr('id', self.get_view_id() );
+				old_jqo.replaceWith(self.parent_jqo);
 			}
 			
-			self.container_jqo.addClass('row');
+			self.parent_jqo.addClass('row');
 			
 			// RESOLVE AND GET PROMISE
 			arg_deferred.resolve();
@@ -155,12 +155,58 @@ function(Devapt, DevaptTrace, DevaptTypes, DevaptOptions, DevaptClasses, DevaptV
 			
 			self.leave(context, 'success: promise is resolved');
 			return promise;
+		}*/
+		
+		
+		
+		/**
+		 * @public
+		 * @memberof			DevaptList
+		 * @desc				Begin the render of the container
+		 * @return {nothing}
+		 */
+		self.render_begin = function()
+		{
+			var self = this;
+			var context = 'render_begin()';
+			self.enter(context, '');
+			
+			
+			self.content_jqo = $('<div>');
+			self.content_jqo.addClass('row');
+			self.content_jqo.addClass('devapt_row');
+			self.parent_jqo.append(self.content_jqo);
+			
+			
+			self.leave(context, 'success');
+		}
+		
+		
+		/**
+		 * @public
+		 * @memberof			DevaptList
+		 * @desc				Render an empty item node
+		 * @return {object}		jQuery object node
+		 */
+		self.render_item_node = function()
+		{
+			var self = this;
+			var context = 'render_item_node()';
+			self.enter(context, '');
+			
+			
+			var node_jqo = $('<div>');
+			node_jqo.addClass('small-1 medium-2 large-2 columns'); // TODO
+			
+			
+			self.leave(context, 'success');
+			return node_jqo;
 		}
 	}
 	
 	
 	// INTROSPETION : REGISTER CLASS
-	DevaptClasses.register_class(DevaptRow, ['DevaptView'], 'Luc BORIES', '2013-08-21', 'Simple view class to display a text.');
+	DevaptClasses.register_class(DevaptRow, ['DevaptContainer'], 'Luc BORIES', '2013-08-21', 'Simple view class to display a text.');
 	
 	
 	// INTROSPETION : REGISTER OPTIONS

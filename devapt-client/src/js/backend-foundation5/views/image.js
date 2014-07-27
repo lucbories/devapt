@@ -10,7 +10,7 @@
  */
 
 define(
-['Devapt', 'core/traces', 'core/types', 'core/options', 'core/classes', 'core/resources', 'core/view', 'core/application', 'backend-foundation5/foundation-init'],
+['Devapt', 'core/traces', 'core/types', 'core/options', 'core/classes', 'core/resources', 'views/view', 'core/application', 'backend-foundation5/foundation-init'],
 function(Devapt, DevaptTrace, DevaptTypes, DevaptOptions, DevaptClasses, DevaptResources, DevaptView, DevaptApplication, undefined)
 {
 	/**
@@ -18,17 +18,17 @@ function(Devapt, DevaptTrace, DevaptTypes, DevaptOptions, DevaptClasses, DevaptR
 	 * @class				DevaptImage
 	 * @desc				Image view class
 	 * @param {string}		arg_name			View name (string)
-	 * @param {object}		arg_container_jqo	jQuery object to attach the view to
+	 * @param {object}		arg_parent_jqo	jQuery object to attach the view to
 	 * @param {object|null}	arg_options			Associative array of options
 	 * @return {nothing}
 	 */
-	function DevaptImage(arg_name, arg_container_jqo, arg_options)
+	function DevaptImage(arg_name, arg_parent_jqo, arg_options)
 	{
 		var self = this;
 		
 		// INHERIT
 		self.inheritFrom = DevaptView;
-		self.inheritFrom(arg_name, arg_container_jqo, arg_options);
+		self.inheritFrom(arg_name, arg_parent_jqo, arg_options);
 		
 		// INIT
 		self.trace				= false;
@@ -85,9 +85,9 @@ function(Devapt, DevaptTrace, DevaptTypes, DevaptOptions, DevaptClasses, DevaptR
 			self.assertNotNull(context, 'arg_deferred', arg_deferred);
 			
 			// GET NODES
-			self.assertNotNull(context, 'container_jqo', self.container_jqo);
+			self.assertNotNull(context, 'parent_jqo', self.parent_jqo);
 			self.content_jqo = $('<img>');
-			self.container_jqo.append(self.content_jqo);
+			self.parent_jqo.append(self.content_jqo);
 			
 			// GET VIEW URL
 			var url = null;

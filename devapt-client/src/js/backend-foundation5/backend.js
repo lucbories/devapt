@@ -292,7 +292,7 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptResources, DevaptFoundation5Fa
 						
 						if ( ! DevaptTypes.is_null(node_jqo) )
 						{
-							view.set_container(node_jqo);
+							view.set_parent(node_jqo);
 						}
 						
 						var render_promise = view.render();
