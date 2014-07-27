@@ -36,6 +36,7 @@ function(Devapt, DevaptView, DevaptTypes, DevaptOptions, DevaptClasses)
 		self.is_view			= true;
 		self.is_container		= true;
 		self.items_objects		= [];
+		self.has_divider		= true;
 		
 		
 		/**
@@ -58,6 +59,37 @@ function(Devapt, DevaptView, DevaptTypes, DevaptOptions, DevaptClasses)
 				self.error(context + ': init options failure');
 			}
 			
+			// PREPARE OPTIONS
+			if ( self.items && self.items_options && self.items_options.length >= self.items.length)
+			{
+				self.step(context, 'register items options');
+				
+				var index = 0;
+				for(index = 0 ; index < self.items_options.length ; index++)
+				{
+					var item_options = self.items_options[index];
+					
+					if ( DevaptTypes.is_object(item_options) )
+					{
+						continue;
+					}
+					
+					if ( DevaptTypes.is_string(item_options) )
+					{
+						// console.log(item_options, 'item_options str');
+						var item_options_array = item_options.split('=');
+						if ( item_options_array.length === 2 )
+						{
+							var item_options_obj = {};
+							item_options_obj[ item_options_array[0] ] = item_options_array[1];
+							self.items_options[index] = item_options_obj;
+							continue;
+						}
+					}
+					
+					self.items_options[index] = { value: item_options };
+				}
+			}
 			
 			// CONSTRUCTOR END
 			self.leave(context, self.msg_success);
@@ -108,13 +140,41 @@ function(Devapt, DevaptView, DevaptTypes, DevaptOptions, DevaptClasses)
 		/**
 		 * @public
 		 * @memberof			DevaptContainer
-		 * @desc				Render an empty item node
-		 * @return {object}		jQuery object node
+		 * @desc				Get the item options at given index
+		 * @param {integer} 	arg_item_index		item index
+		 * @param {object} 		arg_item_defaults	item default options
+		 * @return {object}		options map
 		 */
-		self.render_item_node = function()
+		self.get_item_options = function(arg_item_index, arg_item_defaults)
 		{
 			var self = this;
-			var context = 'render_item_node()';
+			var context = 'get_item_options(index)';
+			self.enter(context, '');
+			
+			
+			var options = arg_item_defaults;
+			if ( self.items_options && self.items_options[arg_item_index] )
+			{
+				options = self.items_options[arg_item_index];
+			}
+			
+			
+			self.leave(context, self.msq_success);
+			return options;
+		}
+		
+		
+		/**
+		 * @public
+		 * @memberof			DevaptContainer
+		 * @desc				Render an empty item node
+		 * @param {integer} 	arg_item_index		item index
+		 * @return {object}		jQuery object node
+		 */
+		self.render_item_node = function(arg_item_index)
+		{
+			var self = this;
+			var context = 'render_item_node(index)';
 			self.enter(context, '');
 			
 			// NOT IMPLEMENTED HERE
@@ -283,13 +343,18 @@ function(Devapt, DevaptView, DevaptTypes, DevaptOptions, DevaptClasses)
 			
 			
 			// CREATE EMPTY ITEMNODE
-			var node_jqo = self.render_item_node();
+			var node_jqo = self.render_item_node(arg_item_index);
 			
 			// FILL ITEM NODE
 			switch(arg_item_type)
 			{
 				case 'divider':
 				{
+					if ( ! self.has_divider )
+					{
+						self.leave(context, 'bad divider item');
+						return false;
+					}
 					self.assertFunction(context, 'self.render_item_divider', self.render_item_divider);
 					node_jqo = self.render_item_divider(arg_deferred, node_jqo, arg_item_content);
 					break;
@@ -327,16 +392,40 @@ function(Devapt, DevaptView, DevaptTypes, DevaptOptions, DevaptClasses)
 			}
 			
 			// APPEND ITEM NODE
-			self.content_jqo.append(node_jqo);
 			var record = {
 				index: arg_item_index,
 				type: arg_item_type,
 				position: false,
+				is_active: false,
 				width: false,
 				heigth: false,
 				node: node_jqo
 			};
+			self.append_item_node(node_jqo, record);
 			self.items_objects.push(record);
+			
+			
+			self.leave(context, 'success');
+			return true;
+		}
+		
+		
+		/**
+		 * @public
+		 * @memberof			DevaptContainer
+		 * @desc				Append an item to the view
+		 * @param {object}		arg_item_jqo		item jQuery object
+		 * @param {object}		arg_item_record		item record
+		 * @return {nothing}
+		 */
+		self.append_item_node = function(arg_item_jqo, arg_item_record)
+		{
+			var self = this;
+			var context = 'render_self(deferred)';
+			self.enter(context, '');
+			
+			
+			self.content_jqo.append(arg_item_jqo);
 			
 			
 			self.leave(context, 'success');
@@ -373,13 +462,20 @@ function(Devapt, DevaptView, DevaptTypes, DevaptOptions, DevaptClasses)
 			// console.log(self, 'container');
 			var index = 0;
 			var type = self.items_type.toLocaleLowerCase();
+			var types = (DevaptTypes.is_array(self.items_types) && self.items_types.length === self.items.length) ? self.items_types : null
 			for(content_key in self.items)
 			{
+				if (types)
+				{
+					type = self.items_types[content_key];
+				}
+				
 				var item = self.items[content_key];
 				if (item === 'divider')
 				{
 					type = 'divider';
 				}
+				
 				if ( ! self.render_item(arg_deferred, item, index, type) )
 				{
 					self.step(context, 'deferred.reject()');
@@ -438,10 +534,37 @@ function(Devapt, DevaptView, DevaptTypes, DevaptOptions, DevaptClasses)
 
 	// INTROSPETION : REGISTER OPTIONS
 	DevaptOptions.register_str_option(DevaptContainer, 'layout',		'none', false, ['view_layout']);
-	DevaptOptions.register_str_option(DevaptContainer, 'items_type',	'view', false, ['view_items_type']); // view / html / callback / object
+	DevaptOptions.register_str_option(DevaptContainer, 'items_source',	'inline', false, ['view_items_source']); // inline / model name
+	DevaptOptions.register_str_option(DevaptContainer, 'items_type',	'view', false, ['view_items_type']); // view / html / callback / object (json)
 	
 	DevaptOptions.register_option(DevaptContainer, {
 			name: 'items',
+			type: 'array',
+			aliases: [],
+			default_value: [],
+			array_separator: ',',
+			array_type: 'String',
+			format: '',
+			is_required: false,
+			childs: {}
+		}
+	);
+	
+	DevaptOptions.register_option(DevaptContainer, {
+			name: 'items_options',
+			type: 'array',
+			aliases: [],
+			default_value: [],
+			array_separator: ',',
+			array_type: 'String',
+			format: '',
+			is_required: false,
+			childs: {}
+		}
+	);
+	
+	DevaptOptions.register_option(DevaptContainer, {
+			name: 'items_types',
 			type: 'array',
 			aliases: [],
 			default_value: [],

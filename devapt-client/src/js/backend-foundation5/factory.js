@@ -198,6 +198,24 @@ function(Devapt, DevaptTraces, DevaptTypes, undefined)
 				break;
 			}
 			
+			case 'Tabs':
+			{
+				view_requires = ['backend-foundation5/containers/tabs'];
+				break;
+			}
+			
+			case 'Accordion':
+			{
+				view_requires = ['backend-foundation5/containers/accordion'];
+				break;
+			}
+			
+			case 'Table':
+			{
+				view_requires = ['backend-foundation5/containers/table'];
+				break;
+			}
+			
 			case 'Breadcrumbs':
 			{
 				view_requires = ['backend-foundation5/views/breadcrumbs'];

@@ -99,106 +99,21 @@ function(Devapt, DevaptTypes, DevaptOptions, DevaptClasses, DevaptContainer, und
 		
 		/**
 		 * @public
-		 * @memberof			DevaptHBox
-		 * @desc				End the render of the container
-		 * @return {nothing}
-		 */
-		self.render_end = function()
-		{
-			var self = this;
-			var context = 'render_end()';
-			self.enter(context, '');
-			
-			
-			
-			self.leave(context, 'success');
-		}
-		
-		
-		/**
-		 * @public
 		 * @memberof			DevaptList
 		 * @desc				Render an empty item node
+		 * @param {integer} 	arg_item_index		item index
 		 * @return {object}		jQuery object node
 		 */
-		self.render_item_node = function()
+		self.render_item_node = function(arg_item_index)
 		{
 			var self = this;
-			var context = 'render_item_node()';
+			var context = 'render_item_node(index)';
 			self.enter(context, '');
 			
 			var li_jqo = $('<li>');
 			
 			self.leave(context, 'success');
 			return li_jqo;
-		}
-		
-		
-		/**
-		 * @public
-		 * @memberof			DevaptList
-		 * @desc				Render an divider item content
-		 * @param {object}		arg_deferred		deferred object
-		 * @param {object}		arg_item_jqo		
-		 * @param {string}		arg_item_content
-		 * @return {object}		jQuery object node
-		 */
-		self.render_item_divider = function(arg_deferred, arg_item_jqo, arg_item_content)
-		{
-			var self = this;
-			var context = 'render_item_divider(deferred,jqo,content)';
-			self.enter(context, '');
-			
-			
-			
-			self.leave(context, self.msg_success);
-			return arg_item_jqo;
-		}
-		
-		
-		/**
-		 * @public
-		 * @memberof			DevaptList
-		 * @desc				Render an item HTML content
-		 * @param {object}		arg_deferred		deferred object
-		 * @param {object}		arg_item_jqo		
-		 * @param {string}		arg_item_content
-		 * @return {object}		jQuery object node
-		 */
-		self.render_item_html = function(arg_deferred, arg_item_jqo, arg_item_content)
-		{
-			var self = this;
-			var context = 'render_item_html(deferred,jqo,content)';
-			self.enter(context, '');
-			
-			arg_item_jqo.html(arg_item_content);
-			
-			self.leave(context, self.msg_success);
-			return arg_item_jqo;
-		}
-		
-		
-		/**
-		 * @public
-		 * @memberof			DevaptList
-		 * @desc				Render an item TEXT content
-		 * @param {object}		arg_deferred		deferred object
-		 * @param {object}		arg_item_jqo		
-		 * @param {string}		arg_item_content
-		 * @return {object}		jQuery object node
-		 */
-		self.render_item_text = function(arg_deferred, arg_item_jqo, arg_item_content)
-		{
-			var self = this;
-			var context = 'render_item_text(deferred,jqo,content)';
-			self.enter(context, '');
-			
-			var span_jqo = $('<span>');
-			span_jqo.html(arg_item_content);
-			arg_item_jqo.append(span_jqo);
-			
-			self.leave(context, self.msg_success);
-			return arg_item_jqo;
 		}
 	}
 	

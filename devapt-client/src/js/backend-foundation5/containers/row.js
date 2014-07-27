@@ -69,98 +69,6 @@ function(Devapt, DevaptTrace, DevaptTypes, DevaptOptions, DevaptClasses, DevaptC
 		
 		/**
 		 * @public
-		 * @memberof			DevaptRow
-		 * @desc				Set view container
-		 * @param {object}		arg_jquery_object	JQuery object to attach the view to (object)
-		 * @return {boolean}	true:success,false:failure
-		 */
-	/*	self.set_parent = function(arg_jquery_object)
-		{
-			var self = this;
-			var context = 'set_parent(jqo)';
-			self.enter(context, '');
-			
-			
-			// SET CONTAINER JQUERY OBJECT
-			self.parent_jqo = DevaptTypes.is_null(arg_jquery_object) ? $('#' + self.name + '_view_id') : arg_jquery_object;
-			if (self.trace)
-			{
-				console.log(arg_jquery_object, 'arg_jquery_object');
-				console.log(self.parent_jqo, 'parent_jqo');
-			}
-			
-			// CHECK CONTAINER JQO
-			self.assertNotNull(context, 'self.parent_jqo', self.parent_jqo);
-			
-			// SET ID
-			if ( DevaptTypes.is_object(self.parent_jqo) )
-			{
-				if ( self.parent_jqo.attr('id') === 'page_content_id' )
-				{
-					var jqo =$('<div>');
-					self.parent_jqo.append(jqo);
-					self.parent_jqo = jqo;
-				}
-				
-				if ( DevaptTypes.is_not_empty_str(self.html_id) )
-				{
-					self.parent_jqo.attr('id', self.html_id);
-				}
-			}
-			
-			
-			self.parent_jqo.addClass('row');
-			
-			
-			self.leave(context, 'success');
-			return true;
-		}*/
-		
-		
-		
-		/**
-		 * @public
-		 * @memberof			DevaptRow
-		 * @desc				Render view
-		 * @param {object}		arg_deferred	deferred object
-		 * @return {object}		deferred promise object
-		 */
-		/*self.render_self = function(arg_deferred)
-		{
-			var self = this;
-			var context = 'render_self(deferred)';
-			self.enter(context, '');
-			
-			
-			// GET NODES
-			self.assertNotNull(context, 'parent_jqo', self.parent_jqo);
-			// console.log(self.parent_jqo);
-			
-			// CHECK CONTAINER TAG
-			if ( self.parent_jqo.tagName !== 'DIV' )
-			{
-				var old_jqo = self.parent_jqo;
-				// var parent_jqo = old_jqo.parent();
-				self.parent_jqo = $('<div>');
-				self.parent_jqo.attr('id', self.get_view_id() );
-				old_jqo.replaceWith(self.parent_jqo);
-			}
-			
-			self.parent_jqo.addClass('row');
-			
-			// RESOLVE AND GET PROMISE
-			arg_deferred.resolve();
-			var promise = arg_deferred.promise();
-			
-			
-			self.leave(context, 'success: promise is resolved');
-			return promise;
-		}*/
-		
-		
-		
-		/**
-		 * @public
 		 * @memberof			DevaptList
 		 * @desc				Begin the render of the container
 		 * @return {nothing}
@@ -186,17 +94,25 @@ function(Devapt, DevaptTrace, DevaptTypes, DevaptOptions, DevaptClasses, DevaptC
 		 * @public
 		 * @memberof			DevaptList
 		 * @desc				Render an empty item node
+		 * @param {integer} 	arg_item_index		item index
 		 * @return {object}		jQuery object node
 		 */
-		self.render_item_node = function()
+		self.render_item_node = function(arg_item_index)
 		{
 			var self = this;
-			var context = 'render_item_node()';
+			var context = 'render_item_node(index)';
 			self.enter(context, '');
 			
 			
 			var node_jqo = $('<div>');
-			node_jqo.addClass('small-1 medium-2 large-2 columns'); // TODO
+			var item_options = self.get_item_options(arg_item_index, { columns:1, small_columns:1, medium_columns:1, large_columns:1, centered:false });
+			
+			var item_columns = DevaptTypes.is_integer(item_options.columns) ? item_options.columns : 1;
+			var item_small_columns = DevaptTypes.is_integer(item_options.small_columns) ? item_options.small_columns : item_columns;
+			var item_medium_columns = DevaptTypes.is_integer(item_options.medium_columns) ? item_options.medium_columns : item_columns;
+			var item_large_columns = DevaptTypes.is_integer(item_options.large_columns) ? item_options.large_columns : item_columns;
+			
+			node_jqo.addClass('small-' + item_small_columns + ' medium-' + item_medium_columns + ' large-' + item_large_columns + ' columns');
 			
 			
 			self.leave(context, 'success');
@@ -206,11 +122,11 @@ function(Devapt, DevaptTrace, DevaptTypes, DevaptOptions, DevaptClasses, DevaptC
 	
 	
 	// INTROSPETION : REGISTER CLASS
-	DevaptClasses.register_class(DevaptRow, ['DevaptContainer'], 'Luc BORIES', '2013-08-21', 'Simple view class to display a text.');
+	DevaptClasses.register_class(DevaptRow, ['DevaptContainer'], 'Luc BORIES', '2014-07-26', 'View container class to display a row of columns (max=12).');
 	
 	
 	// INTROSPETION : REGISTER OPTIONS
-	// DevaptOptions.register_str_option(DevaptRow, 'panel_text',			null, true, []);
+	
 	
 	
 	return DevaptRow;

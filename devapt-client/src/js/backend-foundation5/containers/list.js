@@ -93,18 +93,19 @@ function(Devapt, DevaptTypes, DevaptOptions, DevaptClasses, DevaptContainer, und
 		 * @public
 		 * @memberof			DevaptList
 		 * @desc				Render an empty item node
+		 * @param {integer} 	arg_item_index		item index
 		 * @return {object}		jQuery object node
 		 */
-		self.render_item_node = function()
+		self.render_item_node = function(arg_item_index)
 		{
 			var self = this;
-			var context = 'render_item_node()';
+			var context = 'render_item_node(index)';
 			self.enter(context, '');
 			
-			var li_jqo = $('<li>');
+			var node_jqo = $('<li>');
 			
 			self.leave(context, 'success');
-			return li_jqo;
+			return node_jqo;
 		}
 		
 		
