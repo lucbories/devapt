@@ -96,6 +96,22 @@ function(Devapt, DevaptTypes, DevaptOptions, DevaptClasses, DevaptContainer, und
 			self.table_footer_jqo = $('<tfoot>');
 			self.content_jqo.append(self.table_footer_jqo);
 			
+			// HEADERS
+			if ( DevaptTypes.is_array(self.items_labels) )
+			{
+				var tr_jqo = $('<tr>');
+				self.table_header_jqo.append(tr_jqo);
+				
+				var col_index = 0;
+				for(;col_index < self.items_labels.length ; ++col_index)
+				{
+					var th_jqo = $('<th>');
+					var col_label = self.items_labels[col_index];
+					th_jqo.html(col_label);
+					tr_jqo.append(th_jqo);
+				}
+			}
+			
 			
 			self.leave(context, 'success');
 		}
@@ -134,7 +150,6 @@ function(Devapt, DevaptTypes, DevaptOptions, DevaptClasses, DevaptContainer, und
 			
 			
 			var node_jqo = $('<tr>');
-			// TODO
 			
 			
 			self.leave(context, 'success');
@@ -144,73 +159,44 @@ function(Devapt, DevaptTypes, DevaptOptions, DevaptClasses, DevaptContainer, und
 		
 		/**
 		 * @public
-		 * @memberof			DevaptTable
-		 * @desc				Render an item TEXT content
+		 * @memberof			DevaptContainer
+		 * @desc				Render an item RECORD content
 		 * @param {object}		arg_deferred		deferred object
 		 * @param {object}		arg_item_jqo		
-		 * @param {string}		arg_item_content
+		 * @param {array}		arg_item_record
 		 * @return {object}		jQuery object node
 		 */
-		self.render_item_text = function(arg_deferred, arg_item_jqo, arg_item_content)
+		self.render_item_record = function(arg_deferred, arg_item_jqo, arg_item_record)
 		{
 			var self = this;
-			var context = 'render_item_text(deferred,jqo,content)';
+			var context = 'render_item_record(deferred,jqo,content)';
 			self.enter(context, '');
 			
-			var p_jqo = $('<p>');
-			p_jqo.html(arg_item_content);
-			arg_item_jqo.append(p_jqo);
+			
+			// CHECK RECORD
+			var record = arg_item_record;
+			self.assertNotNull(context, 'record', record);
+			self.value(context, 'record', record);
+			
+			// ASSERT NODE
+			var tr_jqo = arg_item_jqo;
+			self.assertNotNull(context, 'tr_jqo', tr_jqo);
+			
+			
+			// LOOP ON FIELDS
+			for(field_index in self.items_records_fields_names)
+			{
+				var field_name = self.items_records_fields_names[field_index];
+				var field_value = record[field_name];
+				var field_jqo = $('<td>');
+				field_jqo.html(field_value);
+				tr_jqo.append(field_jqo);
+			}
+			
 			
 			self.leave(context, self.msg_success);
 			return arg_item_jqo;
 		}
-		
-		
-		/**
-		 * @public
-		 * @memberof			DevaptContainer
-		 * @desc				Append an item to the view
-		 * @param {object}		arg_item_jqo		item jQuery object
-		 * @param {object}		arg_item_record		item record
-		 * @return {nothing}
-		 */
-	/*	self.append_item_node = function(arg_item_jqo, arg_item_record)
-		{
-			var self = this;
-			var context = 'render_self(deferred)';
-			self.enter(context, '');
-			
-			
-			// GET ITEM OPTIONS
-			var item_options = self.get_item_options(arg_item_record.index, { label:'tab ' + arg_item_record.index, active:false });
-			
-			
-			// TABS CONTENT
-			self.table_body_jqo.append(arg_item_jqo);
-			
-			
-			// TABS MENU
-			var li_jqo = $('<dd>');
-			li_jqo.addClass('tab-title');
-			self.table_header_jqo.append(li_jqo);
-			
-			var a_jqo = $('<a href="#">');
-			var item_content_id = '#' + self.name + '_content_' + arg_item_record.index + '_id';
-			var item_label = item_options.label;
-			if (item_options.active)
-			{
-				li_jqo.addClass('active');
-				arg_item_jqo.addClass('active');
-			}
-			
-			a_jqo.html(item_label);
-			a_jqo.attr('href', item_content_id);
-			li_jqo.append(a_jqo);
-			
-			
-			self.leave(context, 'success');
-			return true;
-		}*/
 	}
 	
 	
@@ -219,7 +205,7 @@ function(Devapt, DevaptTypes, DevaptOptions, DevaptClasses, DevaptContainer, und
 	
 	
 	// INTROSPETION : REGISTER OPTIONS
-	DevaptOptions.register_bool_option(DevaptTable, 'is_vertical',	false, false, []);
+	// DevaptOptions.register_bool_option(DevaptTable, 'is_vertical',	false, false, []);
 	
 	
 	return DevaptTable;

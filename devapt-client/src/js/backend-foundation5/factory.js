@@ -31,6 +31,15 @@ function(Devapt, DevaptTraces, DevaptTypes, undefined)
 	DevaptFoundation5Factory.factory_trace = false;
 	
 	
+	/**
+	 * @memberof	DevaptFoundation5Factory
+	 * @public
+	 * @static
+	 * @desc		Backend path
+	 */
+	DevaptFoundation5Factory.factory_backend_path = 'backend-foundation5';
+	
+	
 	
 	/**
 	 * @memberof				DevaptFoundation5Factory
@@ -161,6 +170,8 @@ function(Devapt, DevaptTraces, DevaptTypes, undefined)
 		// SWITCH CLASS NAME
 		switch(arg_class_name)
 		{
+			// CORE CLASSES
+			
 			case 'View':
 			{
 				view_requires = ['views/view'];
@@ -170,87 +181,130 @@ function(Devapt, DevaptTraces, DevaptTypes, undefined)
 			case 'IncludeView':
 			case 'TemplateView':
 			{
-				view_requires = ['backend-foundation5/views/remote'];
+				view_requires = [DevaptFoundation5Factory.factory_backend_path + '/views/remote'];
 				break;
 			}
 			
-			case 'Row':
-			{
-				view_requires = ['backend-foundation5/containers/row'];
-				break;
-			}
+			
+			// BACKEND VIEW CLASSES
 			
 			case 'Label':
 			{
-				view_requires = ['backend-foundation5/views/label'];
+				view_requires = [DevaptFoundation5Factory.factory_backend_path + '/views/label'];
+				break;
+			}
+			
+			case 'Button':
+			{
+				view_requires = [DevaptFoundation5Factory.factory_backend_path + '/views/button'];
+				break;
+			}
+			
+			case 'ButtonGroup':
+			{
+				view_requires = [DevaptFoundation5Factory.factory_backend_path + '/views/button-group'];
+				break;
+			}
+			
+			case 'ButtonBar':
+			{
+				view_requires = [DevaptFoundation5Factory.factory_backend_path + '/views/button-bar'];
 				break;
 			}
 			
 			case 'Image':
 			{
-				view_requires = ['backend-foundation5/views/image'];
-				break;
-			}
-			
-			case 'List':
-			{
-				view_requires = ['backend-foundation5/containers/list'];
-				break;
-			}
-			
-			case 'Tabs':
-			{
-				view_requires = ['backend-foundation5/containers/tabs'];
-				break;
-			}
-			
-			case 'Accordion':
-			{
-				view_requires = ['backend-foundation5/containers/accordion'];
-				break;
-			}
-			
-			case 'Table':
-			{
-				view_requires = ['backend-foundation5/containers/table'];
+				view_requires = [DevaptFoundation5Factory.factory_backend_path + '/views/image'];
 				break;
 			}
 			
 			case 'Breadcrumbs':
 			{
-				view_requires = ['backend-foundation5/views/breadcrumbs'];
+				view_requires = [DevaptFoundation5Factory.factory_backend_path + '/views/breadcrumbs'];
 				break;
 			}
 			
 			case 'Panel':
 			{
-				view_requires = ['backend-foundation5/views/panel'];
+				view_requires = [DevaptFoundation5Factory.factory_backend_path + '/views/panel'];
 				break;
 			}
 			
 			case 'Menubar':
 			{
-				view_requires = ['backend-foundation5/views/menubar'];
-				break;
-			}
-			
-			case 'HBox':
-			{
-				view_requires = ['backend-foundation5/containers/hbox'];
-				break;
-			}
-			
-			case 'VBox':
-			{
-				view_requires = ['backend-foundation5/containers/vbox'];
+				view_requires = [DevaptFoundation5Factory.factory_backend_path + '/views/menubar'];
 				break;
 			}
 			
 			case 'Pagination':
 			{
-				view_requires = ['backend-foundation5/views/pagination'];
+				view_requires = [DevaptFoundation5Factory.factory_backend_path + '/views/pagination'];
 				break;
 			}
+			
+			
+			// BACKEND CONTAINER CLASSES
+			
+			case 'Row':
+			{
+				view_requires = [DevaptFoundation5Factory.factory_backend_path + '/containers/row'];
+				break;
+			}
+			
+			case 'List':
+			{
+				view_requires = [DevaptFoundation5Factory.factory_backend_path + '/containers/list'];
+				break;
+			}
+			
+			case 'Dropdown':
+			{
+				view_requires = [DevaptFoundation5Factory.factory_backend_path + '/containers/dropdown'];
+				break;
+			}
+			
+			case 'Tabs':
+			{
+				view_requires = [DevaptFoundation5Factory.factory_backend_path + '/containers/tabs'];
+				break;
+			}
+			
+			case 'Accordion':
+			{
+				view_requires = [DevaptFoundation5Factory.factory_backend_path + '/containers/accordion'];
+				break;
+			}
+			
+			case 'Table':
+			{
+				view_requires = [DevaptFoundation5Factory.factory_backend_path + '/containers/table'];
+				break;
+			}
+			
+			case 'HBox':
+			{
+				view_requires = [DevaptFoundation5Factory.factory_backend_path + '/containers/hbox'];
+				break;
+			}
+			
+			case 'VBox':
+			{
+				view_requires = [DevaptFoundation5Factory.factory_backend_path + '/containers/vbox'];
+				break;
+			}
+			
+			case 'PGrid':
+			{
+				view_requires = [DevaptFoundation5Factory.factory_backend_path + '/containers/pgrid'];
+				break;
+			}
+			
+			case 'RCGrid':
+			{
+				view_requires = [DevaptFoundation5Factory.factory_backend_path + '/containers/rcgrid'];
+				break;
+			}
+			
 			
 			default:
 			{

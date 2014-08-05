@@ -1,6 +1,8 @@
 /**
  * @file        backend-foundation5/views/row.js
  * @desc        Foundation 5 row class
+ *				API:
+ *					EVENTS:
  * @ingroup     DEVAPT_FOUNDATION5
  * @date        2014-05-09
  * @version		1.0.x
@@ -105,12 +107,12 @@ function(Devapt, DevaptTrace, DevaptTypes, DevaptOptions, DevaptClasses, DevaptC
 			
 			
 			var node_jqo = $('<div>');
-			var item_options = self.get_item_options(arg_item_index, { columns:1, small_columns:1, medium_columns:1, large_columns:1, centered:false });
+			var item_options = self.get_item_options(arg_item_index, { columns:1, small_columns:null, medium_columns:null, large_columns:null, centered:false });
 			
-			var item_columns = DevaptTypes.is_integer(item_options.columns) ? item_options.columns : 1;
-			var item_small_columns = DevaptTypes.is_integer(item_options.small_columns) ? item_options.small_columns : item_columns;
-			var item_medium_columns = DevaptTypes.is_integer(item_options.medium_columns) ? item_options.medium_columns : item_columns;
-			var item_large_columns = DevaptTypes.is_integer(item_options.large_columns) ? item_options.large_columns : item_columns;
+			var item_columns		= DevaptTypes.to_integer(item_options.columns, 1);
+			var item_small_columns	= DevaptTypes.to_integer(item_options.small_columns, item_columns);
+			var item_medium_columns	= DevaptTypes.to_integer(item_options.medium_columns, item_columns);
+			var item_large_columns	= DevaptTypes.to_integer(item_options.large_columns, item_columns);
 			
 			node_jqo.addClass('small-' + item_small_columns + ' medium-' + item_medium_columns + ' large-' + item_large_columns + ' columns');
 			

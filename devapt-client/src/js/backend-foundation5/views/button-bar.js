@@ -1,8 +1,8 @@
 /**
- * @file        backend-foundation5/views/label.js
- * @desc        Foundation 5 label class
+ * @file        backend-foundation5/views/button-bar.js
+ * @desc        Foundation 5 button bar class
  * @ingroup     DEVAPT_FOUNDATION5
- * @date        2014-05-09
+ * @date        2014-08-05
  * @version		1.0.x
  * @author      Luc BORIES
  * @copyright	Copyright (C) 2011 Luc BORIES All rights reserved.
@@ -15,14 +15,14 @@ function(Devapt, DevaptTrace, DevaptTypes, DevaptOptions, DevaptClasses, DevaptR
 {
 	/**
 	 * @public
-	 * @class				DevaptLabel
-	 * @desc				Label view class
+	 * @class				DevaptButtonBar
+	 * @desc				Button bar view class
 	 * @param {string}		arg_name			View name (string)
 	 * @param {object}		arg_parent_jqo	jQuery object to attach the view to
 	 * @param {object|null}	arg_options			Associative array of options
 	 * @return {nothing}
 	 */
-	function DevaptLabel(arg_name, arg_parent_jqo, arg_options)
+	function DevaptButtonBar(arg_name, arg_parent_jqo, arg_options)
 	{
 		var self = this;
 		
@@ -32,17 +32,17 @@ function(Devapt, DevaptTrace, DevaptTypes, DevaptOptions, DevaptClasses, DevaptR
 		
 		// INIT
 		self.trace				= false;
-		self.class_name			= 'DevaptLabel';
+		self.class_name			= 'DevaptButtonBar';
 		self.is_view			= true;
 		
 		
 		/**
 		 * @public
-		 * @memberof			DevaptLabel
+		 * @memberof			DevaptButtonBar
 		 * @desc				Constructor
 		 * @return {nothing}
 		 */
-		self.DevaptLabel_contructor = function()
+		self.DevaptButtonBar_contructor = function()
 		{
 			// CONSTRUCTOR BEGIN
 			var context = self.class_name + '(' + arg_name + ')';
@@ -63,13 +63,13 @@ function(Devapt, DevaptTrace, DevaptTypes, DevaptOptions, DevaptClasses, DevaptR
 		
 		
 		// CONTRUCT INSTANCE
-		self.DevaptLabel_contructor();
+		self.DevaptButtonBar_contructor();
 		
 		
 		
 		/**
 		 * @public
-		 * @memberof			DevaptLabel
+		 * @memberof			DevaptButtonBar
 		 * @desc				Render view
 		 * @param {object}		arg_deferred	deferred object
 		 * @return {object}		deferred promise object
@@ -86,12 +86,23 @@ function(Devapt, DevaptTrace, DevaptTypes, DevaptOptions, DevaptClasses, DevaptR
 			
 			// GET NODES
 			self.assertNotNull(context, 'parent_jqo', self.parent_jqo);
-			self.content_jqo = $('<span>');
+			self.content_jqo = $('<div>');
 			self.parent_jqo.append(self.content_jqo);
+			self.content_jqo.addClass('button-bar');
 			
-			// GET VIEW LABEL TEXT
-			self.assertNotEmptyValue(context, 'self.label', self.label);
-			self.content_jqo.text(self.label);
+			// GET CURRENT BACKEND
+			var backend = Devapt.get_current_backend();
+			self.assertNotNull(context, 'backend', backend);
+			
+			// LOOP ON BUTTON GROUPS VIEWS
+			self.assertNotEmptyArray(context, 'self.buttons', self.button_groups);
+			for(group_key in self.button_groups)
+			{
+				var group_view = self.button_groups[group_key];
+				
+				// RENDER VIEW
+				arg_deferred.then( backend.render_view(self.content_jqo, group_view) );
+			}
 			
 			// RESOLVE AND GET PROMISE
 			arg_deferred.resolve();
@@ -105,11 +116,23 @@ function(Devapt, DevaptTrace, DevaptTypes, DevaptOptions, DevaptClasses, DevaptR
 	
 	
 	// INTROSPETION : REGISTER CLASS
-	DevaptClasses.register_class(DevaptLabel, ['DevaptView'], 'Luc BORIES', '2013-08-21', 'Simple view class to display a text.');
+	DevaptClasses.register_class(DevaptButtonBar, ['DevaptView'], 'Luc BORIES', '2014-08-05', 'A button bar view classt.');
 	
 	
 	// INTROSPETION : REGISTER OPTIONS
+	DevaptOptions.register_option(DevaptButtonBar, {
+			name: 'button_groups',
+			type: 'array',
+			aliases: ['view_buttons'],
+			default_value: [],
+			array_separator: ',',
+			array_type: 'String',
+			format: '',
+			is_required: true,
+			childs: {}
+		}
+	);
 	
 	
-	return DevaptLabel;
+	return DevaptButtonBar;
 } );

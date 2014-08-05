@@ -1,5 +1,5 @@
-// $foundation_version = '5.3.1';
-$foundation_version = '5.0.2';
+foundation_version = '5.3.1';
+// foundation_version = '5.0.2';
 
 require.config(
 	{
@@ -12,9 +12,9 @@ require.config(
 			/*'jquery':		'/devapt-client/lib/jquery-1.10.2/jquery-1.10.2.min',*/
 			
 			// IE >= 9
-			'jquery':		'/devapt-client/lib/foundation-' + $foundation_version + '/js/vendor/jquery',
-			'modernizr':	'/devapt-client/lib/foundation-' + $foundation_version + '/js/vendor/modernizr',
-			'foundation':	'/devapt-client/lib/foundation-' + $foundation_version + '/js/foundation.min',
+			'jquery':		'/devapt-client/lib/foundation-' + foundation_version + '/js/vendor/jquery',
+			'modernizr':	'/devapt-client/lib/foundation-' + foundation_version + '/js/vendor/modernizr',
+			'foundation':	'/devapt-client/lib/foundation-' + foundation_version + '/js/foundation.min',
 			
 			// ALL
 			'QUnit':		'/devapt-client/lib/qunit-1.13.0/qunit-1.13.0',
@@ -22,23 +22,23 @@ require.config(
 			'jStorage':		'/devapt-client/lib/jstorage-0.4.3/jstorage',
 			'mustache':		'/devapt-client/lib/mustache/mustache-wrap',
 			
-			'foundation-min':				'/devapt-client/lib/foundation-' + $foundation_version + '/js/foundation.min',
-			'foundation':				'/devapt-client/lib/foundation-' + $foundation_version + '/js/foundation/foundation',
-			'foundation.abide':			'/devapt-client/lib/foundation-' + $foundation_version + '/js/foundation/foundation.abide',
-			'foundation.accordion':		'/devapt-client/lib/foundation-' + $foundation_version + '/js/foundation/foundation.accordion',
-			'foundation.alert':			'/devapt-client/lib/foundation-' + $foundation_version + '/js/foundation/foundation.alert',
-			'foundation.clearing':		'/devapt-client/lib/foundation-' + $foundation_version + '/js/foundation/foundation.clearing',
-			'foundation.dropdown':		'/devapt-client/lib/foundation-' + $foundation_version + '/js/foundation/foundation.dropdown',
-			'foundation.interchange':	'/devapt-client/lib/foundation-' + $foundation_version + '/js/foundation/foundation.interchange',
-			'foundation.joyride':		'/devapt-client/lib/foundation-' + $foundation_version + '/js/foundation/foundation.joyride',
-			'foundation.magellan':		'/devapt-client/lib/foundation-' + $foundation_version + '/js/foundation/foundation.magellan',
-			'foundation.offcanvas':		'/devapt-client/lib/foundation-' + $foundation_version + '/js/foundation/foundation.offcanvas',
-			'foundation.orbit':			'/devapt-client/lib/foundation-' + $foundation_version + '/js/foundation/foundation.orbit',
-			'foundation.reveal':		'/devapt-client/lib/foundation-' + $foundation_version + '/js/foundation/foundation.reveal',
-			'foundation.tab':			'/devapt-client/lib/foundation-' + $foundation_version + '/js/foundation/foundation.tab',
-			'foundation.topbar':		'/devapt-client/lib/foundation-' + $foundation_version + '/js/foundation/foundation.topbar',
-			'foundation.tooltip':		'/devapt-client/lib/foundation-' + $foundation_version + '/js/foundation/foundation.tooltip',
-			'foundation.topbar':		'/devapt-client/lib/foundation-' + $foundation_version + '/js/foundation/foundation.topbar'
+			'foundation-min':			'/devapt-client/lib/foundation-' + foundation_version + '/js/foundation.min',
+			'foundation':				'/devapt-client/lib/foundation-' + foundation_version + '/js/foundation/foundation',
+			'foundation.abide':			'/devapt-client/lib/foundation-' + foundation_version + '/js/foundation/foundation.abide',
+			'foundation.accordion':		'/devapt-client/lib/foundation-' + foundation_version + '/js/foundation/foundation.accordion',
+			'foundation.alert':			'/devapt-client/lib/foundation-' + foundation_version + '/js/foundation/foundation.alert',
+			'foundation.clearing':		'/devapt-client/lib/foundation-' + foundation_version + '/js/foundation/foundation.clearing',
+			'foundation.dropdown':		'/devapt-client/lib/foundation-' + foundation_version + '/js/foundation/foundation.dropdown',
+			'foundation.interchange':	'/devapt-client/lib/foundation-' + foundation_version + '/js/foundation/foundation.interchange',
+			'foundation.joyride':		'/devapt-client/lib/foundation-' + foundation_version + '/js/foundation/foundation.joyride',
+			'foundation.magellan':		'/devapt-client/lib/foundation-' + foundation_version + '/js/foundation/foundation.magellan',
+			'foundation.offcanvas':		'/devapt-client/lib/foundation-' + foundation_version + '/js/foundation/foundation.offcanvas',
+			'foundation.orbit':			'/devapt-client/lib/foundation-' + foundation_version + '/js/foundation/foundation.orbit',
+			'foundation.reveal':		'/devapt-client/lib/foundation-' + foundation_version + '/js/foundation/foundation.reveal',
+			'foundation.tab':			'/devapt-client/lib/foundation-' + foundation_version + '/js/foundation/foundation.tab',
+			'foundation.topbar':		'/devapt-client/lib/foundation-' + foundation_version + '/js/foundation/foundation.topbar',
+			'foundation.tooltip':		'/devapt-client/lib/foundation-' + foundation_version + '/js/foundation/foundation.tooltip',
+			'foundation.topbar':		'/devapt-client/lib/foundation-' + foundation_version + '/js/foundation/foundation.topbar'
 		},
 		
 		// map:

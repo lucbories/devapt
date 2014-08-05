@@ -66,7 +66,7 @@ function(Devapt, DevaptTypes, DevaptOptions)
 			
 			
 			// CSS PARENT STYLES
-			if ( DevaptTypes.is_string(self.parent_css_styles) )
+			if ( DevaptTypes.is_not_empty_str(self.parent_css_styles) )
 			{
 				// GET TARGET NODE
 				var target_jqo = self.parent_jqo;
@@ -81,7 +81,7 @@ function(Devapt, DevaptTypes, DevaptOptions)
 			
 			
 			// CSS PARENT CLASSES
-			if ( DevaptTypes.is_string(self.parent_css_classes) )
+			if ( DevaptTypes.is_not_empty_str(self.parent_css_classes) )
 			{
 				// GET TARGET NODE
 				var target_jqo = self.parent_jqo;
@@ -113,7 +113,7 @@ function(Devapt, DevaptTypes, DevaptOptions)
 			
 			
 			// CSS CONTENT STYLES
-			if ( DevaptTypes.is_string(self.css_styles) )
+			if ( DevaptTypes.is_not_empty_str(self.css_styles) )
 			{
 				// APPEND NODE STYLES
 				self.value(context, 'set css_styles', self.css_styles);
@@ -124,7 +124,7 @@ function(Devapt, DevaptTypes, DevaptOptions)
 			
 			
 			// CSS CONTENT CLASSES
-			if ( DevaptTypes.is_string(self.css_classes) )
+			if ( DevaptTypes.is_not_empty_str(self.css_classes) )
 			{
 				// APPEND OR REMOVE NODE CLASSES
 				var classes = self.css_classes.split(',');
@@ -139,7 +139,7 @@ function(Devapt, DevaptTypes, DevaptOptions)
 								target_jqo.removeClass(css_class);
 								return;
 							}
-							self.value(context, 'add css_class', self.css_class);
+							self.value(context, 'add css_class', css_class);
 							target_jqo.addClass(css_class);
 						}
 					}
@@ -148,7 +148,7 @@ function(Devapt, DevaptTypes, DevaptOptions)
 			
 			
 			// CSS CONTENT WIDTH
-			if ( DevaptTypes.is_string(self.width) )
+			if ( DevaptTypes.is_not_empty_str(self.width) )
 			{
 				self.value(context, 'set width', self.width);
 				target_jqo.css('width', self.width);
@@ -156,7 +156,7 @@ function(Devapt, DevaptTypes, DevaptOptions)
 			
 			
 			// CSS CONTENT WIDTH MIN
-			if ( DevaptTypes.is_string(self.width_min) )
+			if ( DevaptTypes.is_not_empty_str(self.width_min) )
 			{
 				self.value(context, 'set width_min', self.width_min);
 				target_jqo.css('min-width', self.width_min);
@@ -164,7 +164,7 @@ function(Devapt, DevaptTypes, DevaptOptions)
 			
 			
 			// CSS CONTENT WIDTH MAX
-			if ( DevaptTypes.is_string(self.width_max) )
+			if ( DevaptTypes.is_not_empty_str(self.width_max) )
 			{
 				self.value(context, 'set width_max', self.width_max);
 				target_jqo.css('max-width', self.width_max);
@@ -172,7 +172,7 @@ function(Devapt, DevaptTypes, DevaptOptions)
 			
 			
 			// CSS CONTENT HEIGHT
-			if ( DevaptTypes.is_string(self.height) )
+			if ( DevaptTypes.is_not_empty_str(self.height) )
 			{
 				self.value(context, 'set height', self.height);
 				target_jqo.css('height', self.height);
@@ -180,7 +180,7 @@ function(Devapt, DevaptTypes, DevaptOptions)
 			
 			
 			// CSS CONTENT HEIGHT MIN
-			if ( DevaptTypes.is_string(self.height_min) )
+			if ( DevaptTypes.is_not_empty_str(self.height_min) )
 			{
 				self.value(context, 'set height_min', self.height_min);
 				target_jqo.css('min-height', self.height_min);
@@ -188,7 +188,7 @@ function(Devapt, DevaptTypes, DevaptOptions)
 			
 			
 			// CSS CONTENT HEIGHT MAX
-			if ( DevaptTypes.is_string(self.height_max) )
+			if ( DevaptTypes.is_not_empty_str(self.height_max) )
 			{
 				self.value(context, 'set height_max', self.height_max);
 				target_jqo.css('max-height', self.height_max);
@@ -196,7 +196,7 @@ function(Devapt, DevaptTypes, DevaptOptions)
 			
 			
 			// CSS CONTENT PADDING
-			if ( DevaptTypes.is_string(self.css_padding) )
+			if ( DevaptTypes.is_not_empty_str(self.css_padding) )
 			{
 				self.value(context, 'set css_padding', self.css_padding);
 				target_jqo.css('padding', self.css_padding);
@@ -204,10 +204,21 @@ function(Devapt, DevaptTypes, DevaptOptions)
 			
 			
 			// CSS CONTENT MARGIN
-			if ( DevaptTypes.is_string(self.css_margin) )
+			if ( DevaptTypes.is_not_empty_str(self.css_margin) )
 			{
 				self.value(context, 'set css_margin', self.css_margin);
 				target_jqo.css('margin', self.css_margin);
+			}
+			
+			
+			// TOOLTIP
+			if ( DevaptTypes.is_not_empty_str(self.toolip) )
+			{
+				// APPEND NODE STYLES
+				self.value(context, 'set toolip', self.tooltip);
+				target_jqo.attr('title', self.tooltip);
+				target_jqo.attr('data-tooltip');
+				target_jqo.addClass('has-tip');
 			}
 			
 			

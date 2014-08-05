@@ -1,8 +1,10 @@
 /**
- * @file        backend-foundation5/views/label.js
- * @desc        Foundation 5 label class
+ * @file        backend-foundation5/views/button.js
+ * @desc        Foundation 5 button class
+ *				API:
+ *					EVENTS:
  * @ingroup     DEVAPT_FOUNDATION5
- * @date        2014-05-09
+ * @date        2014-08-05
  * @version		1.0.x
  * @author      Luc BORIES
  * @copyright	Copyright (C) 2011 Luc BORIES All rights reserved.
@@ -15,14 +17,14 @@ function(Devapt, DevaptTrace, DevaptTypes, DevaptOptions, DevaptClasses, DevaptR
 {
 	/**
 	 * @public
-	 * @class				DevaptLabel
-	 * @desc				Label view class
+	 * @class				DevaptButton
+	 * @desc				Button view class
 	 * @param {string}		arg_name			View name (string)
-	 * @param {object}		arg_parent_jqo	jQuery object to attach the view to
+	 * @param {object}		arg_parent_jqo		jQuery object to attach the view to
 	 * @param {object|null}	arg_options			Associative array of options
 	 * @return {nothing}
 	 */
-	function DevaptLabel(arg_name, arg_parent_jqo, arg_options)
+	function DevaptButton(arg_name, arg_parent_jqo, arg_options)
 	{
 		var self = this;
 		
@@ -32,17 +34,17 @@ function(Devapt, DevaptTrace, DevaptTypes, DevaptOptions, DevaptClasses, DevaptR
 		
 		// INIT
 		self.trace				= false;
-		self.class_name			= 'DevaptLabel';
+		self.class_name			= 'DevaptButton';
 		self.is_view			= true;
 		
 		
 		/**
 		 * @public
-		 * @memberof			DevaptLabel
+		 * @memberof			DevaptButton
 		 * @desc				Constructor
 		 * @return {nothing}
 		 */
-		self.DevaptLabel_contructor = function()
+		self.DevaptButton_contructor = function()
 		{
 			// CONSTRUCTOR BEGIN
 			var context = self.class_name + '(' + arg_name + ')';
@@ -63,13 +65,13 @@ function(Devapt, DevaptTrace, DevaptTypes, DevaptOptions, DevaptClasses, DevaptR
 		
 		
 		// CONTRUCT INSTANCE
-		self.DevaptLabel_contructor();
+		self.DevaptButton_contructor();
 		
 		
 		
 		/**
 		 * @public
-		 * @memberof			DevaptLabel
+		 * @memberof			DevaptButton
 		 * @desc				Render view
 		 * @param {object}		arg_deferred	deferred object
 		 * @return {object}		deferred promise object
@@ -86,12 +88,22 @@ function(Devapt, DevaptTrace, DevaptTypes, DevaptOptions, DevaptClasses, DevaptR
 			
 			// GET NODES
 			self.assertNotNull(context, 'parent_jqo', self.parent_jqo);
-			self.content_jqo = $('<span>');
+			self.content_jqo = $('<a>');
 			self.parent_jqo.append(self.content_jqo);
+			self.content_jqo.attr('href', '#');
 			
-			// GET VIEW LABEL TEXT
+			// GET VIEW LABEL
 			self.assertNotEmptyValue(context, 'self.label', self.label);
-			self.content_jqo.text(self.label);
+			self.content_jqo.html(self.label);
+			self.content_jqo.addClass('button');
+			
+			// HANDLE CLICK
+			self.content_jqo.click(
+				function()
+				{
+					self.fire_event('devapt.button.clicked', []);
+				}
+			);
 			
 			// RESOLVE AND GET PROMISE
 			arg_deferred.resolve();
@@ -105,11 +117,11 @@ function(Devapt, DevaptTrace, DevaptTypes, DevaptOptions, DevaptClasses, DevaptR
 	
 	
 	// INTROSPETION : REGISTER CLASS
-	DevaptClasses.register_class(DevaptLabel, ['DevaptView'], 'Luc BORIES', '2013-08-21', 'Simple view class to display a text.');
+	DevaptClasses.register_class(DevaptButton, ['DevaptView'], 'Luc BORIES', '2014-08-05', 'Button view class to display a text.');
 	
 	
 	// INTROSPETION : REGISTER OPTIONS
 	
 	
-	return DevaptLabel;
+	return DevaptButton;
 } );

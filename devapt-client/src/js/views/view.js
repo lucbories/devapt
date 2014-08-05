@@ -73,6 +73,9 @@ function(Devapt, DevaptObject, DevaptTypes, DevaptOptions, DevaptClasses, Devapt
 				}
 			}
 			
+			// SEND EVENT
+			self.fire_event('devapt.view.parent.changed');
+			
 			
 			self.leave(context, 'success');
 			return true;
@@ -142,8 +145,22 @@ function(Devapt, DevaptObject, DevaptTypes, DevaptOptions, DevaptClasses, Devapt
 			self.enter(context, '');
 			
 			
+			// SEND EVENT
+			self.fire_event('devapt.view.render.begin');
+			
+			
 			// CREATE REFERRED OBJECT
 			var deferred = $.Deferred();
+			
+			
+			// RENDER END CALLBACK
+			var render_end_cb = function() {
+				self.applyCssOptions(deferred);
+				
+				// SEND EVENT
+				self.fire_event('devapt.view.render.end');
+			};
+			
 			
 			// RENDER WITH TEMPLATE
 			if ( self.template_enabled && DevaptTypes.is_function(self.render_template) )
@@ -153,7 +170,7 @@ function(Devapt, DevaptObject, DevaptTypes, DevaptOptions, DevaptClasses, Devapt
 				// APPLY CSS OPTIONS
 				if ( DevaptTypes.is_function(self.applyCssOptions) )
 				{
-					promise.done( function() { self.applyCssOptions(deferred) } );
+					promise.done(render_end_cb);
 				}
 				
 				self.leave(context, 'render with template');
@@ -166,7 +183,7 @@ function(Devapt, DevaptObject, DevaptTypes, DevaptOptions, DevaptClasses, Devapt
 			// APPLY CSS OPTIONS
 			if ( DevaptTypes.is_function(self.applyCssOptions) )
 			{
-				promise.done( function() { self.applyCssOptions(deferred) } );
+				promise.done(render_end_cb);
 			}
 			
 			
@@ -216,7 +233,13 @@ function(Devapt, DevaptObject, DevaptTypes, DevaptOptions, DevaptClasses, Devapt
 			var context = 'edit_settings()';
 			self.enter(context, '');
 			
+			
 			self.step(context, 'not implemented in this base class : implement in child classes');
+			
+			
+			// SEND EVENT
+			self.fire_event('devapt.view.settings.changed');
+			
 			
 			self.leave(context, 'success');
 			return true;
@@ -242,44 +265,6 @@ function(Devapt, DevaptObject, DevaptTypes, DevaptOptions, DevaptClasses, Devapt
 			
 			self.leave(context, 'success');
 			return arg_sentance_str;
-		}
-		
-		
-		
-		/**
-		 * @public
-		 * @memberof			DevaptView
-		 * @desc				Event handler : execute at the beginning of the render operations
-		 * @param {object}		arg_deferred	deferred object
-		 * @return {nothing}
-		 */
-		self.on_render_begin = function(arg_deferred)
-		{
-			var self = this;
-			var context = 'on_render_begin(deferred)';
-			self.enter(context, '');
-			
-			self.leave(context, '');
-			return promise;
-		}
-		
-		
-		
-		/**
-		 * @public
-		 * @memberof			DevaptView
-		 * @desc				Event handler : execute at the end of the render operations
-		 * @param {object}		arg_deferred	deferred object
-		 * @return {nothing}
-		 */
-		self.on_render_end = function(arg_deferred)
-		{
-			var self = this;
-			var context = 'on_render_end(deferred)';
-			self.enter(context, '');
-			
-			self.leave(context, '');
-			return promise;
 		}
 		
 		
@@ -400,6 +385,10 @@ function(Devapt, DevaptObject, DevaptTypes, DevaptOptions, DevaptClasses, Devapt
 		delete self.register_options;
 		/* --------------------------------------------------------------------------------------------- */
 		
+		
+		
+		// SEND EVENT
+		self.fire_event('devapt.view.ready');
 		
 		// ON READY HANDLER
 		if ( DevaptTypes.is_null(arg_options) || arg_options.class_name === 'DevaptView')

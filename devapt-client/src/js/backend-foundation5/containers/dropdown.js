@@ -1,8 +1,8 @@
 /**
- * @file        backend-foundation5/containers/tabs.js
- * @desc        Foundation 5 list class
+ * @file        backend-foundation5/containers/dropdown.js
+ * @desc        Foundation 5 dropdown class
  * @ingroup     DEVAPT_FOUNDATION5
- * @date        2014-07-27
+ * @date        2014-08-05
  * @version		1.0.x
  * @author      Luc BORIES
  * @copyright	Copyright (C) 2011 Luc BORIES All rights reserved.
@@ -15,14 +15,14 @@ function(Devapt, DevaptTypes, DevaptOptions, DevaptClasses, DevaptContainer, und
 {
 	/**
 	 * @public
-	 * @class				DevaptTabs
-	 * @desc				Tabs panel view class
+	 * @class				DevaptDropdown
+	 * @desc				Dropdown view class
 	 * @param {string}		arg_name			View name (string)
 	 * @param {object}		arg_parent_jqo		jQuery object to attach the view to
 	 * @param {object|null}	arg_options			Associative array of options
 	 * @return {nothing}
 	 */
-	function DevaptTabs(arg_name, arg_parent_jqo, arg_options)
+	function DevaptDropdown(arg_name, arg_parent_jqo, arg_options)
 	{
 		var self = this;
 		
@@ -31,22 +31,18 @@ function(Devapt, DevaptTypes, DevaptOptions, DevaptClasses, DevaptContainer, und
 		self.inheritFrom(arg_name, arg_parent_jqo, arg_options);
 		
 		// INIT
-		self.trace				= true;
-		self.class_name			= 'DevaptTabs';
+		self.trace				= false;
+		self.class_name			= 'DevaptDropdown';
 		self.is_view			= true;
-		
-		self.tabs_jqo			= null;
-		self.tabs_content_jqo	= null;
-		self.has_divider		= false;
 		
 		
 		/**
 		 * @public
-		 * @memberof			DevaptTabs
+		 * @memberof			DevaptDropdown
 		 * @desc				Constructor
 		 * @return {nothing}
 		 */
-		self.DevaptTabs_contructor = function()
+		self.DevaptDropdown_contructor = function()
 		{
 			// CONSTRUCTOR BEGIN
 			var context = 'contructor(' + arg_name + ')';
@@ -67,13 +63,13 @@ function(Devapt, DevaptTypes, DevaptOptions, DevaptClasses, DevaptContainer, und
 		
 		
 		// CONTRUCT INSTANCE
-		self.DevaptTabs_contructor();
+		self.DevaptDropdown_contructor();
 		
 		
 		
 		/**
 		 * @public
-		 * @memberof			DevaptTabs
+		 * @memberof			DevaptDropdown
 		 * @desc				Begin the render of the container
 		 * @return {nothing}
 		 */
@@ -87,22 +83,22 @@ function(Devapt, DevaptTypes, DevaptOptions, DevaptClasses, DevaptContainer, und
 			self.content_jqo = $('<div>');
 			self.parent_jqo.append(self.content_jqo);
 			
-			self.tabs_jqo = $('<dl>');
-			self.tabs_jqo.addClass('tabs');
-			self.tabs_jqo.attr('data-tab', '');
+			var ul_id = self.name + '_dropdown_ul_id';
+			var direction = self.direction ? self.direction : 'bottom';
 			
-			self.tabs_content_jqo = $('<div>');
-			self.tabs_content_jqo.addClass('tabs-content');
+			self.a_jqo = $('<a>');
+			self.content_jqo.append(self.a_jqo);
+			self.a_jqo.attr('href', '#');
+			self.a_jqo.html(self.label);
+			self.a_jqo.attr('data-dropdown', ul_id);
+			self.a_jqo.attr('data-options', 'align:' + direction);
+			self.a_jqo.addClass('button dropdown');
 			
-			self.content_jqo.append(self.tabs_jqo);
-			self.content_jqo.append(self.tabs_content_jqo);
-			self.content_jqo.append( $('<div class="clearfix">') );
-			
-			if (self.is_vertical)
-			{
-				self.tabs_jqo.addClass('vertical');
-				self.tabs_content_jqo.addClass('vertical');
-			}
+			self.ul_jqo = $('<ul>');
+			self.content_jqo.append(self.ul_jqo);
+			self.ul_jqo.attr('id', ul_id);
+			self.ul_jqo.attr('data-dropdown-content', '');
+			self.ul_jqo.addClass('f-dropdown');
 			
 			
 			self.leave(context, 'success');
@@ -125,21 +121,6 @@ function(Devapt, DevaptTypes, DevaptOptions, DevaptClasses, DevaptContainer, und
 			// INIT FOUNDATION
 			self.content_jqo.foundation();
 			
-			// HANDLE EVENT
-			self.tabs_jqo.on('toggled', 
-				function (event, tabs)
-				{
-					// SEND EVENT
-					self.fire_event('devapt.tabs.changed', [event, tabs]);
-				}
-			);
-			
-			// ENABLE ACTIVE TAB
-			if ( ! $('.content.active', self.content_jqo) )
-			{
-				$('.content', self.content_jqo)[0].addClass('active');
-			}
-			
 			
 			self.leave(context, self.msg_success);
 		}
@@ -147,7 +128,7 @@ function(Devapt, DevaptTypes, DevaptOptions, DevaptClasses, DevaptContainer, und
 		
 		/**
 		 * @public
-		 * @memberof			DevaptTabs
+		 * @memberof			DevaptDropdown
 		 * @desc				Render an empty item node
 		 * @param {integer} 	arg_item_index		item index
 		 * @return {object}		jQuery object node
@@ -158,9 +139,7 @@ function(Devapt, DevaptTypes, DevaptOptions, DevaptClasses, DevaptContainer, und
 			var context = 'render_item_node(index)';
 			self.enter(context, '');
 			
-			var node_jqo = $('<div>');
-			node_jqo.addClass('content');
-			node_jqo.attr('id', self.name + '_content_' + arg_item_index + '_id');
+			var node_jqo = $('<li>');
 			
 			self.leave(context, 'success');
 			return node_jqo;
@@ -169,7 +148,28 @@ function(Devapt, DevaptTypes, DevaptOptions, DevaptClasses, DevaptContainer, und
 		
 		/**
 		 * @public
-		 * @memberof			DevaptTabs
+		 * @memberof			DevaptDropdown
+		 * @desc				Render an divider item content
+		 * @param {object}		arg_deferred		deferred object
+		 * @param {object}		arg_item_jqo		
+		 * @param {string}		arg_item_content
+		 * @return {object}		jQuery object node
+		 */
+		self.render_item_divider = function(arg_deferred, arg_item_jqo, arg_item_content)
+		{
+			var self = this;
+			var context = 'render_item_divider(deferred,jqo,content)';
+			self.enter(context, '');
+			
+			
+			self.leave(context, self.msg_success);
+			return arg_item_jqo;
+		}
+		
+		
+		/**
+		 * @public
+		 * @memberof			DevaptDropdown
 		 * @desc				Render an item TEXT content
 		 * @param {object}		arg_deferred		deferred object
 		 * @param {object}		arg_item_jqo		
@@ -182,9 +182,9 @@ function(Devapt, DevaptTypes, DevaptOptions, DevaptClasses, DevaptContainer, und
 			var context = 'render_item_text(deferred,jqo,content)';
 			self.enter(context, '');
 			
-			var p_jqo = $('<p>');
-			p_jqo.html(arg_item_content);
-			arg_item_jqo.append(p_jqo);
+			var a_jqo = $('<a href="#">');
+			a_jqo.html(arg_item_content);
+			arg_item_jqo.append(a_jqo);
 			
 			self.leave(context, self.msg_success);
 			return arg_item_jqo;
@@ -193,7 +193,7 @@ function(Devapt, DevaptTypes, DevaptOptions, DevaptClasses, DevaptContainer, und
 		
 		/**
 		 * @public
-		 * @memberof			DevaptContainer
+		 * @memberof			DevaptDropdown
 		 * @desc				Append an item to the view
 		 * @param {object}		arg_item_jqo		item jQuery object
 		 * @param {object}		arg_item_record		item record
@@ -202,50 +202,37 @@ function(Devapt, DevaptTypes, DevaptOptions, DevaptClasses, DevaptContainer, und
 		self.append_item_node = function(arg_item_jqo, arg_item_record)
 		{
 			var self = this;
-			var context = 'render_self(deferred)';
+			var context = 'append_item_node(item node, record)';
 			self.enter(context, '');
 			
 			
-			// GET ITEM OPTIONS
-			var item_options = self.get_item_options(arg_item_record.index, { label:'tab ' + arg_item_record.index, active:false });
+			self.ul_jqo.append(arg_item_jqo);
 			
 			
-			// TABS CONTENT
-			self.tabs_content_jqo.append(arg_item_jqo);
+			// HANDLE CLICK
+			arg_item_jqo.click(
+				function()
+				{
+					self.fire_event('devapt.dropdown.item.clicked', [arg_item_jqo]);
+					console.log(arg_item_jqo, 'dropdown item fired');
+					self.ul_jqo.toggle('open');
+				}
+			);
 			
 			
-			// TABS MENU
-			var li_jqo = $('<dd>');
-			li_jqo.addClass('tab-title');
-			self.tabs_jqo.append(li_jqo);
-			
-			var a_jqo = $('<a href="#">');
-			var item_content_id = '#' + self.name + '_content_' + arg_item_record.index + '_id';
-			var item_label = item_options.label;
-			if (item_options.active)
-			{
-				li_jqo.addClass('active');
-				arg_item_jqo.addClass('active');
-			}
-			
-			a_jqo.html(item_label);
-			a_jqo.attr('href', item_content_id);
-			li_jqo.append(a_jqo);
-			
-			
-			self.leave(context, 'success');
+			self.leave(context, self.msg_success);
 			return true;
 		}
 	}
 	
 	
 	// INTROSPETION : REGISTER CLASS
-	DevaptClasses.register_class(DevaptTabs, ['DevaptContainer'], 'Luc BORIES', '2014-07-27', 'Tabs panel view class, horizontally (default), vertically (is_vertical:true).');
+	DevaptClasses.register_class(DevaptDropdown, ['DevaptContainer'], 'Luc BORIES', '2014-05-09', 'Simple view class to display a list of items.');
 	
 	
 	// INTROSPETION : REGISTER OPTIONS
-	DevaptOptions.register_bool_option(DevaptTabs, 'is_vertical',	false, false, []);
+	DevaptOptions.register_str_option(DevaptDropdown, 'direction',		'bottom', false, ['view_direction']); // down, top, left, rigth
 	
 	
-	return DevaptTabs;
+	return DevaptDropdown;
 } );

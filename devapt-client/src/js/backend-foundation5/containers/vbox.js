@@ -1,6 +1,6 @@
 /**
  * @file        backend-foundation5/containers/vbox.js
- * @desc        Foundation 5 list class
+ * @desc        Foundation 5 VBox class
  * @ingroup     DEVAPT_FOUNDATION5
  * @date        2014-06-28
  * @version		1.0.x
@@ -16,7 +16,7 @@ function(Devapt, DevaptTypes, DevaptOptions, DevaptClasses, DevaptContainer, und
 	/**
 	 * @public
 	 * @class				DevaptVBox
-	 * @desc				List view class
+	 * @desc				Vertical Box view class
 	 * @param {string}		arg_name			View name (string)
 	 * @param {object}		arg_parent_jqo		jQuery object to attach the view to
 	 * @param {object|null}	arg_options			Associative array of options

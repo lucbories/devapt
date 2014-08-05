@@ -1,6 +1,21 @@
 /**
  * @file        backend-foundation5/backend.js
  * @desc        Foundation 5 Devapt backend
+ * 				API:
+ * 					DevaptFoundation5Backend.backend_trace: boolean
+ * 	
+ * 					DevaptFoundation5Backend.backend_template_std_tags: object (a map)
+ * 					DevaptFoundation5Backend.get_template_std_tags() returns object (a map)
+ * 	
+ * 					DevaptFoundation5Backend.get_infos() returns object (a map)
+ * 					DevaptFoundation5Backend.build_from_declaration(arg_resource_json)
+ * 	
+ * 					DevaptFoundation5Backend.render_page(arg_view_name_or_object) returns object (a promise)
+ * 					DevaptFoundation5Backend.render_view(arg_jqo_node, arg_view_name_or_object) returns object (a promise)
+ * 					DevaptFoundation5Backend.render_login() returns object (a promise)
+ * 					DevaptFoundation5Backend.render_logout() returns object (a promise)
+ * 					DevaptFoundation5Backend.render_error(arg_error_code) returns object (a promise)
+ * 	
  * @ingroup     DEVAPT_FOUNDATION5
  * @date        2014-05-09
  * @version		1.0.x

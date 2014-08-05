@@ -13,24 +13,22 @@
 define(['modernizr', 'Devapt', 'core/application', 'foundation-min'],
 function(m, Devapt, DevaptApplication, undefined)
 {
-	$version = '5.0.2';
-	// $version = '5.3.1';
-	
-	console.info('Loading Foundation ' + $version + ' Init');
+	console.info('Loading Foundation ' + foundation_version + ' Init');
 	
 	var url_base	= DevaptApplication.get_url_base();
-	Devapt.use_css(url_base + '../../devapt-client/lib/foundation-' + $version + '/css/foundation.min.css');
+	Devapt.use_css(url_base + '../../devapt-client/lib/foundation-' + foundation_version + '/css/foundation.css');
 	Devapt.use_css(url_base + '../modules/home/public/css/app.css');
 	
 	function libapt_foundation_init($, window)
 	{
-		console.info('Init Foundation ' + $version + ' features');
+		console.info('Init Foundation ' + foundation_version + ' features');
 		
 		'use strict';
 		
 		var $doc = $(document);
 		Modernizr = window.Modernizr;
 		
+		Foundation.global.namespace = false;
 		$doc.foundation();
 		
 		// Hide address bar on mobile devices
@@ -57,7 +55,7 @@ function(m, Devapt, DevaptApplication, undefined)
 	$(document).ready(
 		function()
 		{
-			console.info('Init Foundation ' + $version + ' widgets');
+			console.info('Init Foundation ' + foundation_version + ' widgets');
 			
 			var $ = Devapt.jQuery();
 			libapt_foundation_init($, window);

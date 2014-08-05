@@ -1,5 +1,5 @@
 /**
- * @file        backend-foundation5/containers/tabs.js
+ * @file        backend-foundation5/containers/accordion.js
  * @desc        Foundation 5 list class
  * @ingroup     DEVAPT_FOUNDATION5
  * @date        2014-07-27
@@ -15,14 +15,14 @@ function(Devapt, DevaptTypes, DevaptOptions, DevaptClasses, DevaptContainer, und
 {
 	/**
 	 * @public
-	 * @class				DevaptTabs
-	 * @desc				Tabs panel view class
+	 * @class				DevaptAccordion
+	 * @desc				Accordion panel view class
 	 * @param {string}		arg_name			View name (string)
 	 * @param {object}		arg_parent_jqo		jQuery object to attach the view to
 	 * @param {object|null}	arg_options			Associative array of options
 	 * @return {nothing}
 	 */
-	function DevaptTabs(arg_name, arg_parent_jqo, arg_options)
+	function DevaptAccordion(arg_name, arg_parent_jqo, arg_options)
 	{
 		var self = this;
 		
@@ -32,21 +32,20 @@ function(Devapt, DevaptTypes, DevaptOptions, DevaptClasses, DevaptContainer, und
 		
 		// INIT
 		self.trace				= true;
-		self.class_name			= 'DevaptTabs';
+		self.class_name			= 'DevaptAccordion';
 		self.is_view			= true;
 		
 		self.tabs_jqo			= null;
 		self.tabs_content_jqo	= null;
-		self.has_divider		= false;
 		
 		
 		/**
 		 * @public
-		 * @memberof			DevaptTabs
+		 * @memberof			DevaptAccordion
 		 * @desc				Constructor
 		 * @return {nothing}
 		 */
-		self.DevaptTabs_contructor = function()
+		self.DevaptAccordion_contructor = function()
 		{
 			// CONSTRUCTOR BEGIN
 			var context = 'contructor(' + arg_name + ')';
@@ -67,13 +66,13 @@ function(Devapt, DevaptTypes, DevaptOptions, DevaptClasses, DevaptContainer, und
 		
 		
 		// CONTRUCT INSTANCE
-		self.DevaptTabs_contructor();
+		self.DevaptAccordion_contructor();
 		
 		
 		
 		/**
 		 * @public
-		 * @memberof			DevaptTabs
+		 * @memberof			DevaptAccordion
 		 * @desc				Begin the render of the container
 		 * @return {nothing}
 		 */
@@ -84,25 +83,10 @@ function(Devapt, DevaptTypes, DevaptOptions, DevaptClasses, DevaptContainer, und
 			self.enter(context, '');
 			
 			
-			self.content_jqo = $('<div>');
+			self.content_jqo = $('<dl>');
 			self.parent_jqo.append(self.content_jqo);
-			
-			self.tabs_jqo = $('<dl>');
-			self.tabs_jqo.addClass('tabs');
-			self.tabs_jqo.attr('data-tab', '');
-			
-			self.tabs_content_jqo = $('<div>');
-			self.tabs_content_jqo.addClass('tabs-content');
-			
-			self.content_jqo.append(self.tabs_jqo);
-			self.content_jqo.append(self.tabs_content_jqo);
-			self.content_jqo.append( $('<div class="clearfix">') );
-			
-			if (self.is_vertical)
-			{
-				self.tabs_jqo.addClass('vertical');
-				self.tabs_content_jqo.addClass('vertical');
-			}
+			self.content_jqo.addClass('accordion');
+			self.content_jqo.attr('data-accordion', '');
 			
 			
 			self.leave(context, 'success');
@@ -123,19 +107,23 @@ function(Devapt, DevaptTypes, DevaptOptions, DevaptClasses, DevaptContainer, und
 			
 			
 			// INIT FOUNDATION
-			self.content_jqo.foundation();
+			self.content_jqo.parent().foundation();
 			
 			// HANDLE EVENT
-			self.tabs_jqo.on('toggled', 
-				function (event, tabs)
-				{
-					// SEND EVENT
-					self.fire_event('devapt.tabs.changed', [event, tabs]);
-				}
-			);
+			if ( DevaptTypes.is_function(self.on_accordion_changed) )
+			{
+				// self.content_jqo.on('toggled', [self, self.on_accordion_changed] );
+				self.content_jqo.on('toggled',
+					function(event, accordion)
+					{
+						// SEND EVENT
+						self.fire_event('devapt.accordion.changed', [event, accordion]);
+					}
+				);
+			}
 			
-			// ENABLE ACTIVE TAB
-			if ( ! $('.content.active', self.content_jqo) )
+			// ENABLE ACTIVE CONTENT
+			if ( ! $('.content.active', self.content_jqo) && $('.content', self.content_jqo) )
 			{
 				$('.content', self.content_jqo)[0].addClass('active');
 			}
@@ -147,7 +135,7 @@ function(Devapt, DevaptTypes, DevaptOptions, DevaptClasses, DevaptContainer, und
 		
 		/**
 		 * @public
-		 * @memberof			DevaptTabs
+		 * @memberof			DevaptAccordion
 		 * @desc				Render an empty item node
 		 * @param {integer} 	arg_item_index		item index
 		 * @return {object}		jQuery object node
@@ -158,9 +146,12 @@ function(Devapt, DevaptTypes, DevaptOptions, DevaptClasses, DevaptContainer, und
 			var context = 'render_item_node(index)';
 			self.enter(context, '');
 			
+			
+			var id = self.name + '_content_' + arg_item_index + '_id';
 			var node_jqo = $('<div>');
 			node_jqo.addClass('content');
-			node_jqo.attr('id', self.name + '_content_' + arg_item_index + '_id');
+			node_jqo.attr('id', id);
+			
 			
 			self.leave(context, 'success');
 			return node_jqo;
@@ -169,7 +160,7 @@ function(Devapt, DevaptTypes, DevaptOptions, DevaptClasses, DevaptContainer, und
 		
 		/**
 		 * @public
-		 * @memberof			DevaptTabs
+		 * @memberof			DevaptAccordion
 		 * @desc				Render an item TEXT content
 		 * @param {object}		arg_deferred		deferred object
 		 * @param {object}		arg_item_jqo		
@@ -207,30 +198,26 @@ function(Devapt, DevaptTypes, DevaptOptions, DevaptClasses, DevaptContainer, und
 			
 			
 			// GET ITEM OPTIONS
-			var item_options = self.get_item_options(arg_item_record.index, { label:'tab ' + arg_item_record.index, active:false });
+			var item_options = self.get_item_options(arg_item_record.index, { label:'accordion ' + arg_item_record.index, active:false });
 			
-			
-			// TABS CONTENT
-			self.tabs_content_jqo.append(arg_item_jqo);
-			
-			
-			// TABS MENU
-			var li_jqo = $('<dd>');
-			li_jqo.addClass('tab-title');
-			self.tabs_jqo.append(li_jqo);
-			
-			var a_jqo = $('<a href="#">');
-			var item_content_id = '#' + self.name + '_content_' + arg_item_record.index + '_id';
+			// ACCORDION CONTENT
+			var id = self.name + '_content_' + arg_item_record.index + '_id';
 			var item_label = item_options.label;
+			
+			var node_jqo = $('<dd>');
+			node_jqo.addClass('accordion-navigation');
 			if (item_options.active)
 			{
-				li_jqo.addClass('active');
 				arg_item_jqo.addClass('active');
 			}
 			
+			var a_jqo = $('<a>');
+			a_jqo.attr('href', '#' + id);
 			a_jqo.html(item_label);
-			a_jqo.attr('href', item_content_id);
-			li_jqo.append(a_jqo);
+			node_jqo.append(a_jqo);
+			
+			node_jqo.append(arg_item_jqo);
+			self.content_jqo.append(node_jqo);
 			
 			
 			self.leave(context, 'success');
@@ -240,12 +227,11 @@ function(Devapt, DevaptTypes, DevaptOptions, DevaptClasses, DevaptContainer, und
 	
 	
 	// INTROSPETION : REGISTER CLASS
-	DevaptClasses.register_class(DevaptTabs, ['DevaptContainer'], 'Luc BORIES', '2014-07-27', 'Tabs panel view class, horizontally (default), vertically (is_vertical:true).');
+	DevaptClasses.register_class(DevaptAccordion, ['DevaptContainer'], 'Luc BORIES', '2014-07-27', 'Tabs panel view class, horizontally (default), vertically (is_vertical:true).');
 	
 	
 	// INTROSPETION : REGISTER OPTIONS
-	DevaptOptions.register_bool_option(DevaptTabs, 'is_vertical',	false, false, []);
 	
 	
-	return DevaptTabs;
+	return DevaptAccordion;
 } );
