@@ -12,8 +12,8 @@ require.config(
 			/*'jquery':		'/devapt-client/lib/jquery-1.10.2/jquery-1.10.2.min',*/
 			
 			// IE >= 9
-			'jquery':		'/devapt-client/lib/foundation-' + foundation_version + '/js/vendor/jquery',
-			'modernizr':	'/devapt-client/lib/foundation-' + foundation_version + '/js/vendor/modernizr',
+			'jquery':		'/devapt-client/lib/foundation-' + foundation_version + '/js/lib/jquery',
+			'modernizr':	'/devapt-client/lib/foundation-' + foundation_version + '/js/lib/modernizr',
 			'foundation':	'/devapt-client/lib/foundation-' + foundation_version + '/js/foundation.min',
 			
 			// ALL
