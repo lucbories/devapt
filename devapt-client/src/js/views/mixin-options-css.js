@@ -211,6 +211,79 @@ function(Devapt, DevaptTypes, DevaptOptions)
 			}
 			
 			
+			// DISPLAY
+			var display_class = null;
+			
+			// DISPLAY ONLY ON SMALL
+			if (self.display_on_small && ! self.display_on_medium && ! self.display_on_large)
+			{
+				display_class = 'show-for-small-only';
+			}
+			
+			// DISPLAY ONLY ON MEDIUM
+			if (! self.display_on_small && self.display_on_medium && ! self.display_on_large)
+			{
+				display_class = 'show-for-medium-only';
+			}
+			
+			// DISPLAY ONLY ON LARGE
+			if (! self.display_on_small && ! self.display_on_medium && self.display_on_large)
+			{
+				display_class = 'hide-for-small-only show-for-large-up';
+			}
+			
+			// DISPLAY ON SMALL AND MEDIUM AND LARGE
+			if (self.display_on_small && self.display_on_medium && self.display_on_large)
+			{
+				display_class = null;
+			}
+			
+			// DISPLAY ON SMALL AND MEDIUM
+			if (self.display_on_small && ! self.display_on_medium && ! self.display_on_large)
+			{
+				display_class = 'show-for-medium-only show-for-medium-only hide-for-large-up';
+			}
+			
+			// DISPLAY ON MEDIUM AND LARGE
+			if (! self.display_on_small && self.display_on_medium && self.display_on_large)
+			{
+				display_class = 'hide-for-small-only show-for-medium-up';
+			}
+			
+			self.value(context, 'display on classes', display_class);
+			if (display_class)
+			{
+				target_jqo.addClass(display_class);
+			}
+			
+			// DISPLAY ON LANDSCAPE
+			if (self.display_on_landscape)
+			{
+				display_class = 'show-for-landscape';
+				target_jqo.addClass(display_class);
+			}
+			
+			// DISPLAY ON PORTRAIT
+			if (self.display_on_portrait)
+			{
+				display_class = 'show-for-portrait';
+				target_jqo.addClass(display_class);
+			}
+			
+			// DISPLAY ON TOUCH
+			if (self.display_on_touch)
+			{
+				display_class = 'show-for-touch';
+				target_jqo.addClass(display_class);
+			}
+			else
+			{
+				display_class = 'hide-for-touch';
+				target_jqo.addClass(display_class);
+			}
+			
+			
+			
 			// TOOLTIP
 			if ( DevaptTypes.is_not_empty_str(self.toolip) )
 			{
@@ -256,6 +329,13 @@ function(Devapt, DevaptTypes, DevaptOptions)
 		DevaptOptions.register_str_option(arg_prototype, 'parent_css_classes',	null, false, ['view_parent_css_classes']);
 		DevaptOptions.register_str_option(arg_prototype, 'css_margin',			null, false, ['view_margin']);
 		DevaptOptions.register_str_option(arg_prototype, 'css_padding',			null, false, ['view_padding']);
+		
+		DevaptOptions.register_bool_option(arg_prototype, 'display_on_small',		true, false, ['view_display_on_small']);
+		DevaptOptions.register_bool_option(arg_prototype, 'display_on_medium',		true, false, ['view_display_on_medium']);
+		DevaptOptions.register_bool_option(arg_prototype, 'display_on_large',		true, false, ['view_display_on_large']);
+		DevaptOptions.register_bool_option(arg_prototype, 'display_on_landscape',	true, false, ['view_display_on_landscape']);
+		DevaptOptions.register_bool_option(arg_prototype, 'display_on_portrait',	true, false, ['view_display_on_portrait']);
+		DevaptOptions.register_bool_option(arg_prototype, 'display_on_touch',		true, false, ['view_display_on_touch']);
 	};
 	
 	

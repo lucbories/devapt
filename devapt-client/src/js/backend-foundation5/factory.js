@@ -257,6 +257,13 @@ function(Devapt, DevaptTraces, DevaptTypes, undefined)
 				break;
 			}
 			
+			case 'NavMenu':
+			{
+				view_requires = [DevaptFoundation5Factory.factory_backend_path + '/containers/navmenu'];
+				break;
+			}
+			
+			
 			case 'Dropdown':
 			{
 				view_requires = [DevaptFoundation5Factory.factory_backend_path + '/containers/dropdown'];
