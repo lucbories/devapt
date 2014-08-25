@@ -40,7 +40,7 @@ define(['core/types', 'core/event', 'core/events'], function(DevaptTypes, Devapt
 		fire_event : function(arg_event_name_or_obj, arg_operands_or_nothing)
 		{
 			this.push_trace(this.trace, this.mixin_event_sender_trace);
-			var context = 'fire_event(' + DevaptTypes.is_string(arg_event_name_or_obj) ? arg_event_name_or_obj : arg_event_name_or_obj.name + ',callback)';
+			var context = 'fire_event(' + (DevaptTypes.is_string(arg_event_name_or_obj) ? arg_event_name_or_obj : arg_event_name_or_obj.name) + ',callback)';
 			this.enter(context, '');
 			
 			

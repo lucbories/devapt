@@ -28,10 +28,10 @@ final class QueryBuilderV1
 	static public $OPTION_ACTION		= "query_action";
 	
 	/// @brief OPTION NAME: QUERY CRUD DB
-	static public $OPTION_CRUD_DB			= "crud_db";
+	static public $OPTION_CRUD_DB		= "crud_db";
 	
 	/// @brief OPTION NAME: QUERY CRUD TABLE
-	static public $OPTION_CRUD_TABLE		= "crud_table";
+	static public $OPTION_CRUD_TABLE	= "crud_table";
 	
 	/// @brief		Option : one model field name (string)
 	static public $OPTION_ONE_FIELD		= "query_one_field";
@@ -55,7 +55,7 @@ final class QueryBuilderV1
 	static public $OPTION_SLICE_BEGIN	= "query_slice_begin";
 	
 	/// @brief		Option : model slice end (integer)
-	static public $OPTION_SLICE_END	= "query_slice_end";
+	static public $OPTION_SLICE_END		= "query_slice_end";
 	
 	/// @brief		Option : model slice offset (integer)
 	static public $OPTION_SLICE_OFFSET	= "query_slice_offset";
@@ -64,7 +64,7 @@ final class QueryBuilderV1
 	static public $OPTION_SLICE_LENGTH	= "query_slice_length";
 	
 	/// @brief		Option : model joins (string)
-	static public $OPTION_JOINS		= "query_joins";
+	static public $OPTION_JOINS			= "query_joins";
 	
 	
 	
@@ -110,7 +110,7 @@ final class QueryBuilderV1
 		switch($arg_action)
 		{
 			case 'create':
-				$default_sql_action = Query::$TYPE_CREATE;
+				$default_sql_action = Query::$TYPE_INSERT;
 				break;
 			case 'update':
 				$default_sql_action = Query::$TYPE_UPDATE;
@@ -127,13 +127,17 @@ final class QueryBuilderV1
 		
 		
 		// GET FIELDS
-		$fields = Query::getRequestArrayValue($arg_request, self::$OPTION_FIELDS, ',', null);
-		if ( ! is_array($fields) )
+		$fields_names = Query::getRequestArrayValue($arg_request, self::$OPTION_FIELDS, ',', null);
+		if ( ! is_array($fields_names) )
 		{
 			Trace::step($context, 'set default fields: all model fields', self::$TRACE_QUERY_BUILDER);
-			$fields = array_keys($arg_model->getModelFieldsRecords());
+			$fields = $arg_model->getModelFieldsRecords();
+			$query->setFields($fields);
 		}
-		$query->setFieldsNames($fields);
+		else
+		{
+			$query->setFieldsNames($fields_names, $arg_model);
+		}
 		
 		
 		// GET ONE FIELD
@@ -200,9 +204,9 @@ final class QueryBuilderV1
 			foreach($filters as $filter_str)
 			{
 				$filter_record = explode(',', $filter_str);
-				if ( is_array($filter_record) && count($filter_record) === 2 )
+				if ( is_array($filter_record) && count($filter_record) >= 2 )
 				{
-					$orders_records[] = $filter_record;
+					$filters_records[] = $filter_record;
 				}
 			}
 			
@@ -242,7 +246,7 @@ final class QueryBuilderV1
 		if ( is_string($crud_db) )
 		{
 			Trace::step($context, 'set crud db', self::$TRACE_QUERY_BUILDER);
-			$this->setCustom('crud_db', $crud_db);
+			$query->setCustom('crud_db', $crud_db);
 		}
 		
 		
@@ -251,7 +255,7 @@ final class QueryBuilderV1
 		if ( is_string($crud_db) )
 		{
 			Trace::step($context, 'set crud table', self::$TRACE_QUERY_BUILDER);
-			$this->setCustom('crud_table', $crud_table);
+			$query->setCustom('crud_table', $crud_table);
 		}
 		
 		
@@ -295,23 +299,65 @@ final class QueryBuilderV1
 		{
 			$type = Query::$TYPE_SELECT;
 		}
-		$this->setType($type);
+		$query->setType($type);
 		
 		
 		// GET INDEXED ARRAY OF FIELDS
 		$fields = array_key_exists(self::$OPTION_FIELDS, $arg_settings) ? $arg_settings[self::$OPTION_FIELDS] : null;
-		if ( is_string($fields) )
+		$fields_names = array();
+		$fields_records = array();
+		if ( is_null($fields) )
 		{
-			$fields = array($fields);
+			Trace::step($context, 'set default fields: all model fields', self::$TRACE_QUERY_BUILDER);
+			$fields = $arg_model->getModelFieldsRecords();
+			$query->setFields($fields);
 		}
-		$this->setFieldsNames($fields);
+		else
+		{
+			if ( is_string($fields) )
+			{
+				$fields = explode(',', $fields);
+			}
+			foreach($fields as $field_key => $field_value)
+			{
+				if ( is_string($field_value) )
+				{
+					$fields_names[] = $field_value;
+					continue;
+				}
+				// NO IN V1
+				// if ( is_array($field_value) )
+				// {
+					// if ( is_string($field_key) )
+					// {
+						// $fields_records[$field_key] = $field_value;
+						// continue;
+					// }
+					// if ( array_key_exists('name', $field_value) )
+					// {
+						// $field_name = $field_value['name'];
+						// $fields_records[$field_name] = $field_value;
+						// continue;
+					// }
+				// }
+				return Trace::leaveko($context, 'bad field at ['.$field_key.']', null, self::$TRACE_QUERY_BUILDER);
+			}
+		}
 		
+		if ( count($fields_records) > 0 )
+		{
+			$query->setFields($fields_records);
+		}
+		else
+		{
+			$query->setFieldsNames($fields_names, $arg_model);
+		}
 		
 		// GET INDEXED ARRAY OF VALUES
 		$values = array_key_exists(self::$OPTION_VALUES, $arg_settings) ? $arg_settings[self::$OPTION_VALUES] : null;
 		if ( is_array($values) )
 		{
-			$this->setValues($values);
+			$query->setValues($values);
 		}
 		
 		
@@ -319,7 +365,7 @@ final class QueryBuilderV1
 		$orders	= array_key_exists(self::$OPTION_ORDERS, $arg_settings) ? $arg_settings[self::$OPTION_ORDERS] : null;
 		if ( is_array($orders) )
 		{
-			$this->setOrders($orders);
+			$query->setOrders($orders);
 		}
 		
 		
@@ -327,7 +373,7 @@ final class QueryBuilderV1
 		$groups	= array_key_exists(self::$OPTION_GROUPS, $arg_settings) ? $arg_settings[self::$OPTION_GROUPS] : null;
 		if ( is_array($groups) )
 		{
-			$this->setGroups($groups);
+			$query->setGroups($groups);
 		}
 		
 		
@@ -335,7 +381,7 @@ final class QueryBuilderV1
 		$filters	= array_key_exists(self::$OPTION_FILTERS, $arg_settings) ? $arg_settings[self::$OPTION_FILTERS] : null;
 		if ( is_array($filters) )
 		{
-			$this->setGroups($filters);
+			$query->setGroups($filters);
 		}
 		
 		
@@ -376,7 +422,7 @@ final class QueryBuilderV1
 		$crud_db = array_key_exists(self::$OPTION_CRUD_DB, $arg_settings) ? $arg_settings[self::$OPTION_CRUD_DB] : null;
 		if ( is_string($crud_db) )
 		{
-			$this->setCustom('crud_db', $crud_db);
+			$query->setCustom('crud_db', $crud_db);
 		}
 		
 		
@@ -384,7 +430,7 @@ final class QueryBuilderV1
 		$crud_table = array_key_exists(self::$OPTION_CRUD_TABLE, $arg_settings) ? $arg_settings[self::$OPTION_CRUD_TABLE] : null;
 		if ( is_string($crud_table) )
 		{
-			$this->setCustom('crud_table', $crud_table);
+			$query->setCustom('crud_table', $crud_table);
 		}
 		
 		
@@ -400,12 +446,12 @@ final class QueryBuilderV1
 	static public function checkJoinRecord($arg_join_record)
 	{
 		$context = 'AbstractQuery.checkJoinRecord(record)';
-		Trace::enter($context, '', self::$TRACE_ABSTRACT_QUERY);
+		Trace::enter($context, '', self::$TRACE_QUERY_BUILDER);
 		
 		// CHECK JOIN RECORD
 		if ( ! is_array($arg_join_record) || count($arg_join_record) < 6 || count($arg_join_record) > 7)
 		{
-			return Trace::leaveko($context, 'bad join record', false, self::$TRACE_ABSTRACT_QUERY);
+			return Trace::leaveko($context, 'bad join record', false, self::$TRACE_QUERY_BUILDER);
 		}
 		
 		// CHECK LEFT PART
@@ -418,7 +464,7 @@ final class QueryBuilderV1
 		
 		if (! $left_is_valid)
 		{
-			return Trace::leaveko($context, 'bad join left part', false, self::$TRACE_ABSTRACT_QUERY);
+			return Trace::leaveko($context, 'bad join left part', false, self::$TRACE_QUERY_BUILDER);
 		}
 		
 		// CHECK RIGHT PART
@@ -432,7 +478,7 @@ final class QueryBuilderV1
 		
 		if (! $right_is_valid)
 		{
-			return Trace::leaveko($context, 'bad join right part', false, self::$TRACE_ABSTRACT_QUERY);
+			return Trace::leaveko($context, 'bad join right part', false, self::$TRACE_QUERY_BUILDER);
 		}
 		
 		// CHECK MODE
@@ -440,9 +486,9 @@ final class QueryBuilderV1
 		
 		if (! $join_mode_is_valid)
 		{
-			return Trace::leaveko($context, 'bad join mode', false, self::$TRACE_ABSTRACT_QUERY);
+			return Trace::leaveko($context, 'bad join mode', false, self::$TRACE_QUERY_BUILDER);
 		}
 		
-		return Trace::leaveok($context, 'record is ok', true, self::$TRACE_ABSTRACT_QUERY);
+		return Trace::leaveok($context, 'record is ok', true, self::$TRACE_QUERY_BUILDER);
 	}
 }

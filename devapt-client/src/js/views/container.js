@@ -563,6 +563,11 @@ function(Devapt, DevaptView, DevaptTypes, DevaptOptions, DevaptClasses)
 				}
 			}
 			
+			// GET ITEM FROM MODEL
+			if ( self.items_source === 'model' )
+			{
+			}
+			
 			
 			self.leave(context, self.msg_success);
 			return items;

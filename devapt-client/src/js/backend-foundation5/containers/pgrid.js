@@ -42,7 +42,7 @@ function(Devapt, DevaptTypes, DevaptOptions, DevaptClasses, DevaptContainer, und
 		self.inheritFrom(arg_name, arg_parent_jqo, arg_options);
 		
 		// INIT
-		self.trace				= true;
+		self.trace				= false;
 		self.class_name			= 'DevaptPGrid';
 		self.is_view			= true;
 		

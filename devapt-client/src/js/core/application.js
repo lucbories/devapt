@@ -10,8 +10,8 @@
  */
 
 define(
-['Devapt', 'core/traces', 'core/types', 'core/init', 'core/nav-history'],
-function(Devapt, DevaptTrace, DevaptTypes, DevaptInit, DevaptNavHistory)
+['Devapt', 'core/traces', 'core/types', 'core/init', /*'core/events',*/ 'core/nav-history'],
+function(Devapt, DevaptTrace, DevaptTypes, DevaptInit, /*DevaptEvents,*/ DevaptNavHistory)
 {
 	/**
 	 * @memberof	DevaptApplication
@@ -211,6 +211,10 @@ function(Devapt, DevaptTrace, DevaptTypes, DevaptInit, DevaptNavHistory)
 				);
 			}
 		}
+		
+		
+		// ENABLE EVENTS PROCESSING
+		// DevaptEvents.enable();
 		
 		
 		DevaptTrace.trace_leave(context, '', DevaptApplication.app_trace);

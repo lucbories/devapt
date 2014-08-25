@@ -3,7 +3,7 @@
  * @desc        Devapt event class
  * @see			core/object.js
  * @ingroup     DEVAPT_CORE
- * @date        2013-08-15
+ * @date        2014-07-02
  * @version		1.0.x
  * @author      Luc BORIES
  * @copyright	Copyright (C) 2011 Luc BORIES All rights reserved.
@@ -11,8 +11,8 @@
  */
 
 define(
-['Devapt', 'core/traces', 'core/types', 'core/events', 'core/object-base'],
-function(Devapt, DevaptTraces, DevaptTypes, DevaptEvents, DevaptObjectBase)
+['Devapt', 'core/traces', 'core/types', 'core/events', 'core/object-base', 'core/classes'],
+function(Devapt, DevaptTraces, DevaptTypes, DevaptEvents, DevaptObjectBase, DevaptClasses)
 {
 	/**
 	 * @class				DevaptEvent
@@ -51,6 +51,8 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptEvents, DevaptObjectBase)
 			// CONSTRUCTOR BEGIN
 			var context				= self.class_name + '(' + arg_event_name + ')';
 			self.enter(context, 'constructor');
+			self.value(context, 'event name', arg_event_name);
+			// self.value(context, 'event target', arg_event_target_object.to_string());
 			
 			
 			// EVENT ATTRIBUTES
@@ -80,6 +82,7 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptEvents, DevaptObjectBase)
 			var context = 'get_target()';
 			this.enter(context, '');
 			
+			// console.log(this.target_object, context);
 			
 			this.leave(context, 'success');
 			return this.target_object;
@@ -95,9 +98,10 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptEvents, DevaptObjectBase)
 		 */
 		this.get_target_name = function()
 		{
-			var context = 'get_target()';
+			var context = 'get_target_name()';
 			this.enter(context, '');
 			
+			// console.log(DevaptTypes.is_null(this.target_object) ? 'null target' : this.target_object.name, 'get_target_name()');
 			
 			this.leave(context, 'success');
 			return DevaptTypes.is_null(this.target_object) ? 'null target' : this.target_object.name;
@@ -136,8 +140,11 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptEvents, DevaptObjectBase)
 				this.value(context, 'fired callback index', cb_index);
 				var callback = arg_callbacks_array[cb_index];
 				// TODO : process callback result
-				var operands = new Array(this.target_object).concat(this.operands_array);
-				// console.log(operands);
+				var operands = new Array(this).concat(this.target_object).concat(this.operands_array);
+				// console.log(typeof this.target_object, 'typeof target');
+				// console.log(this.target_object, 'target');
+				// console.log(typeof operands, 'typeof operands');
+				// console.log(operands, 'operands');
 				this.do_callback(callback, operands);
 			}
 			
@@ -173,7 +180,14 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptEvents, DevaptObjectBase)
 		// self.register_mixin(DevaptMixinEventListener);
 		/* --------------------------------------------------------------------------------------------- */
 	}
-
+	
+	
+	// INTROSPECTION : REGISTER CLASS
+	DevaptClasses.register_class(DevaptEvent, ['DevaptObjectBase'], 'Luc BORIES', '2014-07-02', 'Event class.');
+	
+	
+	// INTROSPECTION : REGISTER OPTIONS
+	DevaptEvents.enable();
 	
 	return DevaptEvent;
 } );

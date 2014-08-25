@@ -25,8 +25,8 @@
  */
 
 define(
-['Devapt', 'core/traces', 'core/types', 'core/resources', 'backend-foundation5/factory', 'backend-foundation5/foundation-init'],
-function(Devapt, DevaptTraces, DevaptTypes, DevaptResources, DevaptFoundation5Factory, undefined)
+['Devapt', 'core/traces', 'core/types', 'core/resources', 'factory', 'backend-foundation5/foundation-init'],
+function(Devapt, DevaptTraces, DevaptTypes, DevaptResources, DevaptFactory, undefined)
 {
 	/**
 	 * @memberof	DevaptFoundation5Backend
@@ -44,6 +44,15 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptResources, DevaptFoundation5Fa
 	 * @desc		Trace flag
 	 */
 	DevaptFoundation5Backend.backend_trace = false;
+	
+	
+	/**
+	 * @memberof	DevaptFoundation5Backend
+	 * @public
+	 * @static
+	 * @desc		Backend relative path
+	 */
+	DevaptFoundation5Backend.backend_path = 'backend-foundation5';
 	
 	
 	/**
@@ -130,7 +139,7 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptResources, DevaptFoundation5Fa
 	 */
 	DevaptFoundation5Backend.build_from_declaration = function(arg_resource_json)
 	{
-		return DevaptFoundation5Factory.build_from_declaration(arg_resource_json);
+		return DevaptFactory.build_from_declaration(arg_resource_json, DevaptFoundation5Backend.backend_path);
 	}
 	
 	

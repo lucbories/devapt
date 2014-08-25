@@ -130,6 +130,5 @@ function(Devapt, DevaptTrace, DevaptTypes, DevaptOptions, DevaptClasses, DevaptC
 	// INTROSPETION : REGISTER OPTIONS
 	
 	
-	
 	return DevaptRow;
 } );

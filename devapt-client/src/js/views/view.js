@@ -10,8 +10,8 @@
  */
 
 define(
-['Devapt', 'core/object', 'core/types', 'core/options', 'core/classes', 'core/resources', 'views/mixin-template', 'views/mixin-options-css'],
-function(Devapt, DevaptObject, DevaptTypes, DevaptOptions, DevaptClasses, DevaptResources, DevaptMixinTemplate, DevaptMixinOptionsCSS)
+['Devapt', 'core/object', 'core/types', 'core/options', 'core/classes', 'core/resources', 'views/mixin-template', 'views/mixin-bind', 'views/mixin-options-css'],
+function(Devapt, DevaptObject, DevaptTypes, DevaptOptions, DevaptClasses, DevaptResources, DevaptMixinTemplate, DevaptMixinBind, DevaptMixinOptionsCSS)
 {
 	/**
 	 * @public
@@ -31,7 +31,7 @@ function(Devapt, DevaptObject, DevaptTypes, DevaptOptions, DevaptClasses, Devapt
 		self.inheritFrom(arg_name, arg_options, false);
 		
 		// INIT
-		self.trace				= true;
+		self.trace				= false;
 		self.class_name			= 'DevaptView';
 		self.is_view			= true;
 		self.parent_jqo			= null;
@@ -381,7 +381,9 @@ function(Devapt, DevaptObject, DevaptTypes, DevaptOptions, DevaptClasses, Devapt
 		/* --------------------------------------------------------------------------------------------- */
 		// APPEND MIXIN METHODS
 		self.register_mixin(DevaptMixinTemplate);
+		self.register_mixin(DevaptMixinBind);
 		self.register_mixin(DevaptMixinOptionsCSS);
+		delete self.mixin_init;
 		delete self.register_options;
 		/* --------------------------------------------------------------------------------------------- */
 		
@@ -449,7 +451,7 @@ function(Devapt, DevaptObject, DevaptTypes, DevaptOptions, DevaptClasses, Devapt
 	DevaptOptions.register_bool_option(DevaptView, 'has_vscrollbar',	false, false, ['view_has_vscrollbar']);	// TODO
 	
 	// LAYOUT
-	DevaptOptions.register_str_option(DevaptView, 'position',				null, false, ['view_position']);	// TODO
+	DevaptOptions.register_str_option(DevaptView, 'position',			null, false, ['view_position']);	// TODO
 	
 	// TEMPLATE OPTIONS
 	DevaptMixinTemplate.register_options(DevaptView);

@@ -90,6 +90,7 @@ final class QueryBuilderV2
 		{
 			$query_json_array = array('action'=>'select');
 		}
+		Trace::value($context, 'query_json_array', $query_json_array, self::$TRACE_QUERY_BUILDER);
 		if ( ! is_array($query_json_array) )
 		{
 			Trace::value($context, 'query_json_array', $query_json_array, self::$TRACE_QUERY_BUILDER);
@@ -104,7 +105,7 @@ final class QueryBuilderV2
 		switch($arg_action)
 		{
 			case 'create':
-				$default_sql_action = Query::$TYPE_CREATE;
+				$default_sql_action = Query::$TYPE_INSERT;
 				break;
 			case 'update':
 				$default_sql_action = Query::$TYPE_UPDATE;
@@ -148,7 +149,7 @@ final class QueryBuilderV2
 		}
 		if ( is_string($query_one_field) && $query_one_field !== '' )
 		{
-			$query->setOneField($query_one_field);
+			$query->setOneFieldName($query_one_field, $arg_model->getModelFieldsRecords());
 		}
 		
 		
@@ -219,26 +220,16 @@ final class QueryBuilderV2
 		
 		
 		// GET FILTERS
-		$filters = null;
 		if ( array_key_exists('filters', $query_json_array) )
 		{
 			$filters = $query_json_array['filters'];
-		}
-		if ( is_array($filters) )
-		{
-			Trace::step($context, 'set filters', self::$TRACE_QUERY_BUILDER);
 			
-			// TODO PROCESS FILTERS
-			// $filters_records = array();
-			// foreach($filters as $filter_record)
-			// {
-				// if ( is_array($filter_record) && count($filter_record) === 2 )
-				// {
-					// $orders_records[] = $filter_record;
-				// }
-			// }
-			
-			$query->setFilters($filters_records);
+			if ( is_array($filters) )
+			{
+				Trace::step($context, 'set filters', self::$TRACE_QUERY_BUILDER);
+				
+				$query->setFilters($filters);
+			}
 		}
 		
 		
@@ -300,7 +291,7 @@ final class QueryBuilderV2
 		if ( is_string($crud_db) )
 		{
 			Trace::step($context, 'set crud db', self::$TRACE_QUERY_BUILDER);
-			$this->setCustom('crud_db', $crud_db);
+			$query->setCustom('crud_db', $crud_db);
 		}
 		
 		
@@ -313,7 +304,7 @@ final class QueryBuilderV2
 		if ( is_string($crud_table) )
 		{
 			Trace::step($context, 'set crud table', self::$TRACE_QUERY_BUILDER);
-			$this->setCustom('crud_table', $crud_table);
+			$query->setCustom('crud_table', $crud_table);
 		}
 		
 		
@@ -358,7 +349,7 @@ final class QueryBuilderV2
 		{
 			$type = Query::$TYPE_SELECT;
 		}
-		$this->setType($type);
+		$query->setType($type);
 		
 		
 		// GET INDEXED ARRAY OF FIELDS
@@ -367,7 +358,7 @@ final class QueryBuilderV2
 		{
 			$fields = array($fields);
 		}
-		$this->setFieldsNames($fields);
+		$query->setFieldsNames($fields);
 		
 		
 		// GET INDEXED ARRAY OF VALUES

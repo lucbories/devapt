@@ -2,7 +2,7 @@
  * @file        core/object-base.js
  * @desc        Object base class
  * @ingroup     DEVAPT_CORE
- * @date        2014-05-10
+ * @date        2014-07-01
  * @version		1.0.x
  * @author      Luc BORIES
  * @copyright	Copyright (C) 2011 Luc BORIES All rights reserved.
@@ -37,8 +37,10 @@ function(Devapt, DevaptTrace, DevaptTypes, DevaptOptions, DevaptClasses,
 		
 		
 		
-		/* --------------------------------------------------------------------------------------------- */
+		/* --------------------------------------------- CLASS AND OBJECT ------------------------------------------------ */
+		
 		/**
+		 * @memberof				DevaptObjectBase
 		 * @public
 		 * @method				is_a(arg_proto)
 		 * @desc				Test class inheritance
@@ -51,10 +53,160 @@ function(Devapt, DevaptTrace, DevaptTypes, DevaptOptions, DevaptClasses,
 		}
 		
 		
+		/**
+		 * @memberof				DevaptObjectBase
+		 * @public
+		 * @method					clone_object(arg_object_to_clone)
+		 * @desc					Duplicate an existing object
+		 * @param {object}			arg_object_to_clone		Object to clone
+		 * @return {object}			Clone
+		 */
+		self.clone_object = function(arg_object_to_clone)
+		{
+			// NULL OR SIMPLE TYPE (NOT OBJECT)
+			if (arg_object_to_clone == null || typeof(arg_object_to_clone) != 'object')
+			{
+				return arg_object_to_clone;
+			}
+			
+			// ARRAY
+			if ( DevaptTypes.is_array(arg_object_to_clone) )
+			{
+				var tmp = new Array();
+				for(key in arg_object_to_clone)
+				{
+					tmp.push(arg_object_to_clone[key]);
+				}
+				return tmp;
+			}
+			
+			return jQuery.extend(true, {}, arg_object_to_clone);
+		}
 		
-		/* --------------------------------------------------------------------------------------------- */
 		
 		/**
+		 * @public
+		 * @method				merge_object(arg_options, arg_replace)
+		 * @desc				Merge settings
+		 * @param {object}		arg_options		settings
+		 * @param {boolean}		arg_replace		should replace existing setting flag
+		 * @return {boolean}
+		 */
+		self.merge_object = function(arg_options, arg_replace)
+		{
+			var context = 'merge_object(options,replace)';
+			self.enter(context, '');
+			
+			if ( DevaptTypes.is_object(arg_options) )
+			{
+				self.step(context, 'options are a valid object');
+				
+				for(option_key in arg_options)
+				{
+					self.step(context, option_key);
+					
+					var option = arg_options[option_key];
+					
+					if ( ! DevaptTypes.is_null(self[option_key]) )
+					{
+						self.step(context, 'self has an existing option');
+						if ( DevaptTypes.is_null(self[option_key]) )
+						{
+							self.step(context, 'update self null option with given option');
+							self[option_key] = option;
+						}
+						else
+						{
+							self.step(context, 'skip given option because existing option is not null');
+							if (arg_replace)
+							{
+								self[option_key] = option;
+							}
+						}
+					}
+					else
+					{
+						self.step(context, 'append the given option');
+						self[option_key] = option;
+					}
+				}
+			}
+			else
+			{
+				self.step(context, 'options are not a valid object');
+			}
+			
+			self.leave(context, 'success');
+			return true;
+		}
+		
+		
+		/**
+		 * @public
+		 * @method					destroy(...)
+		 * @desc					Delete every given arguments
+		 * @param {anything}		variable arguments of any type
+		 * @return {null}
+		 */
+		self.destroy = function(/*... variable arguments*/)
+		{
+			var self = this;
+			var context = 'destroy(...)';
+			self.enter(context, '');
+			
+			
+            var args_count = arguments.length;
+			var current_arg = null;
+			
+			// LOOP ON ARGUMENTS
+            for (var i = 0 ; i < args_count ; i++)
+			{
+                current_arg = arguments[i];
+                if (current_arg)
+				{
+					// DELETE ARRAY ITEMS
+                    if ( DevaptTypes.is_array(current_arg) )
+					{
+                        self.destroy.apply(self, current_arg);
+                    }
+					
+					// DELETE OBJECT WITH DESTRUCTOR
+					else if ( DevaptTypes.is_function(current_arg.destroy_self) )
+					{
+                        arg.destroy_self();
+                    }
+					
+					// DELETE OBJECT PROPERTIES
+					else if ( DevaptTypes.is_object(current_arg) )
+					{
+						var properties_count = current_arg.length;
+						var property_name = null;
+						var property_ref = null;
+						
+						for (var property_index = 0 ; i < args_count ; i++)
+						{
+							property_name = current_arg[property_index];
+							property_ref = current_arg[property_name];
+							if (property_ref)
+							{
+								current_arg[property_name] = self.destroy(property_ref);
+							}
+						}
+					}
+                }
+            }
+			
+			
+			self.leave(context, 'success');
+            return null;
+        }
+		
+		
+		
+		/* --------------------------------------------- ASPECT ------------------------------------------------ */
+		
+		/**
+		 * @memberof				DevaptObjectBase
 		 * @public
 		 * @method					register_aspect_before(arg_method_name, arg_callback)
 		 * @desc					Register a method to be executed before the original method
@@ -115,6 +267,7 @@ function(Devapt, DevaptTrace, DevaptTypes, DevaptOptions, DevaptClasses,
 		
 		
 		/**
+		 * @memberof				DevaptObjectBase
 		 * @public
 		 * @method					register_aspect_after(arg_method_name, arg_callback)
 		 * @desc					Register a method to be executed after the original method
@@ -175,63 +328,11 @@ function(Devapt, DevaptTrace, DevaptTypes, DevaptOptions, DevaptClasses,
 		}
 		
 		
-		/**
-		 * @public
-		 * @method					register_mixin_proxy_method(arg_method_name)
-		 * @desc					Unregister a proxy method
-		 * @param {string}			arg_method_name			Method name
-		 * @return {boolean}		true:success,false:failure
-		 */
-		self.unregister_mixin_proxy_method = function(arg_method_name)
-		{
-			var context = 'unregister_mixin_proxy_method(method name)';
-			self.enter(context, '');
-			
-			
-			// GET ORIGINAL METHOD CALLBACK
-			var proxied = this[arg_method_name];
-			self.assertNotNull(context, 'original callback', proxied);
-			
-			// REMOVE LAST PROXIED CALLBACK
-			this[arg_method_name] = this[arg_method_name].proxied;
-			
-			
-			self.leave(context, 'success');
-			return true;
-		}
 		
+		/* --------------------------------------------- MIXINS ------------------------------------------------ */
 		
 		/**
-		 * @public
-		 * @method					clone_object(arg_object_to_clone)
-		 * @desc					Duplicate an existing object
-		 * @param {object}			arg_object_to_clone		Object to clone
-		 * @return {object}			Clone
-		 */
-		self.clone_object = function(arg_object_to_clone)
-		{
-			// NULL OR SIMPLE TYPE (NOT OBJECT)
-			if (arg_object_to_clone == null || typeof(arg_object_to_clone) != 'object')
-			{
-				return arg_object_to_clone;
-			}
-			
-			// ARRAY
-			if ( DevaptTypes.is_array(arg_object_to_clone) )
-			{
-				var tmp = new Array();
-				for(key in arg_object_to_clone)
-				{
-					tmp.push(arg_object_to_clone[key]);
-				}
-				return tmp;
-			}
-			
-			return jQuery.extend(true, {}, arg_object_to_clone);
-		}
-		
-		
-		/**
+		 * @memberof				DevaptObjectBase
 		 * @public
 		 * @method					register_mixin(arg_mixin_proto, arg_mixin_attr_names)
 		 * @desc					Enhance an existing object with attributes/methods of an other object (mixin)
@@ -301,6 +402,7 @@ function(Devapt, DevaptTrace, DevaptTypes, DevaptOptions, DevaptClasses,
 		
 		
 		/**
+		 * @memberof				DevaptObjectBase
 		 * @public
 		 * @method					register_mixin(arg_mixin_proto, arg_mixin_method_names)
 		 * @desc					Enhance an existing object with methods of an other object (mixin)
@@ -360,6 +462,34 @@ function(Devapt, DevaptTrace, DevaptTypes, DevaptOptions, DevaptClasses,
 		}
 		
 		
+		/**
+		 * @memberof				DevaptObjectBase
+		 * @public
+		 * @method					register_mixin_proxy_method(arg_method_name)
+		 * @desc					Unregister a proxy method
+		 * @param {string}			arg_method_name			Method name
+		 * @return {boolean}		true:success,false:failure
+		 */
+		self.unregister_mixin_proxy_method = function(arg_method_name)
+		{
+			var context = 'unregister_mixin_proxy_method(method name)';
+			self.enter(context, '');
+			
+			
+			// GET ORIGINAL METHOD CALLBACK
+			var proxied = this[arg_method_name];
+			self.assertNotNull(context, 'original callback', proxied);
+			
+			// REMOVE LAST PROXIED CALLBACK
+			this[arg_method_name] = this[arg_method_name].proxied;
+			
+			
+			self.leave(context, 'success');
+			return true;
+		}
+		
+		
+		
 		/* --------------------------------------------------------------------------------------------- */
 		// APPEND MIXIN METHODS
 		self.register_mixin(DevaptMixinTrace);
@@ -370,7 +500,7 @@ function(Devapt, DevaptTrace, DevaptTypes, DevaptOptions, DevaptClasses,
 	
 
 	// INTROSPETION : REGISTER CLASS
-	DevaptClasses.register_class(DevaptObjectBase, [], 'Luc BORIES', '2013-08-21', 'Object base class.');
+	DevaptClasses.register_class(DevaptObjectBase, [], 'Luc BORIES', '2014-07-01', 'Object base class.');
 
 
 
@@ -379,6 +509,7 @@ function(Devapt, DevaptTrace, DevaptTypes, DevaptOptions, DevaptClasses,
 	DevaptOptions.register_str_option(DevaptObjectBase, 'class_type',		null, true, []);
 	DevaptOptions.register_str_option(DevaptObjectBase, 'name',				null, true, []);
 	DevaptOptions.register_bool_option(DevaptObjectBase, 'trace',			false, true, []);
+	
 	
 	return DevaptObjectBase;
 } );

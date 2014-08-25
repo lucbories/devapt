@@ -1,6 +1,6 @@
 {
 	"name": "devapt/devapt-server",
-    "description": "A short description of what your package does",
+    "description": "The Developper Application Toolkit is a declarative programming library.",
 	
 	"repositories": [
 		{
@@ -32,6 +32,8 @@
 			"zendframework/zend-stdlib" : "2.2.*",
 			"zendframework/zend-uri" : "2.2.*",
 			"zendframework/zend-validator" : "2.2.*",
-			"zendframework/zend-version" : "2.2.*"
+			"zendframework/zend-version" : "2.2.*",
+			
+			"atoum/atoum" : "dev-master"
 		}
 }

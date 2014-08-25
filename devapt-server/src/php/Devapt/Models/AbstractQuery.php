@@ -201,7 +201,7 @@ abstract class AbstractQuery
 	public function getFieldsNames()
 	{
 		// return array_keys( $this->query_fields );
-		return $this->query_fields;
+		return $this->query_fields_names;
 	}
 	
 	/**
@@ -209,14 +209,116 @@ abstract class AbstractQuery
 	 * @param[in]	arg_fields_names		query fields names (array of string)
 	 * @return		boolean
 	 */
-	public function setFieldsNames($arg_fields_names)
+	public function setFieldsNames($arg_fields_names, $arg_model)
 	{
 		$context = 'AbstractQuery.setFieldsNames(fields names)';
 		Trace::enter($context, '', self::$TRACE_ABSTRACT_QUERY);
 		
-		$this->query_fields = $arg_fields_names;
 		
-		return Trace::leaveok($context, 'fields argument is not an array', false, self::$TRACE_ABSTRACT_QUERY);
+		// CHECK MODEL
+		if ( ! is_object($arg_model) )
+		{
+			return Trace::leaveko($context, 'bad model', false, self::$TRACE_ABSTRACT_QUERY);
+		}
+		
+		// CHECK FIELDS NAMES
+		if ( ! is_array($arg_fields_names) )
+		{
+			return Trace::leaveko($context, 'bad names', false, self::$TRACE_ABSTRACT_QUERY);
+		}
+		
+		// SET FIELDS NAMES
+		$this->query_fields_names = $arg_fields_names;
+		
+		// SET FIELDS RECORDS
+		$fields = $arg_model->getModelFieldsRecords();
+		$this->query_fields = array();
+		foreach($this->query_fields_names as $field_name)
+		{
+			if ( ! array_key_exists($field_name, $fields) )
+			{
+				return Trace::leaveko($context, 'bad field name ['.$field_name.']', false, self::$TRACE_ABSTRACT_QUERY);
+			}
+			
+			$this->query_fields[] = $fields[$field_name];
+		}
+		
+		
+		return Trace::leaveok($context, '', true, self::$TRACE_ABSTRACT_QUERY);
+	}
+	
+	
+	
+	/**
+	 * @brief		Get query fields
+	 * @return		array		array of fields records
+	 */
+	public function getFields()
+	{
+		return $this->query_fields;
+	}
+	
+	/**
+	 * @brief		Get query fields
+	 * @return		array		array of fields records
+	 */
+	public function hasFields()
+	{
+		return is_array($this->query_fields) && is_array($this->query_fields_names) && count($this->query_fields) === count($this->query_fields_names);
+	}
+	
+	/**
+	 * @brief		Set query fields
+	 * @param[in]	arg_fields_records		query fields records (array of records)
+	 * @return		boolean
+	 */
+	public function setFields($arg_fields_records)
+	{
+		$context = 'AbstractQuery.setFields(fields records)';
+		Trace::enter($context, '', self::$TRACE_ABSTRACT_QUERY);
+		
+		
+		// RESET FIELDS ATTRIBUTES
+		$this->query_fields = $arg_fields_records;
+		$this->query_fields_names = null;
+		
+		// SET FIELDS RECORDS FROM AN INDEXED ARRAY
+		if ( ! Types::isAssoc($arg_fields_records) )
+		{
+			$this->query_fields = array();
+			$this->query_fields_names = array();
+			
+			foreach($arg_fields_records as $field_index => $field_record)
+			{
+				// CHECK FIELD NAME
+				if ( ! array_key_exists('name', $field_record) )
+				{
+					return Trace::leaveok($context, 'field record at index ['.$field_index.'] has no name', false, self::$TRACE_ABSTRACT_QUERY);
+				}
+				
+				$field_name = $field_record['name'];
+				$this->query_fields[$field_name] = $field_record;
+				$this->query_fields_names[] = $field_name;
+			}
+		}
+		
+		// SET FIELDS NAMES
+		if ( is_null($this->query_fields_names) )
+		{
+			foreach($this->query_fields as $field_name => $field_record)
+			{
+				// CHECK FIELD NAME
+				if ( ! array_key_exists('name', $field_record) )
+				{
+					$this->query_fields[$field_name]['name'] = $field_name;
+				}
+				
+				$this->query_fields_names[] = $field_name;
+			}
+		}
+		
+		
+		return Trace::leaveok($context, 'success', true, self::$TRACE_ABSTRACT_QUERY);
 	}
 	
 	
@@ -228,6 +330,27 @@ abstract class AbstractQuery
 	{
 		return $this->query_one_field;
 	}
+	
+	
+	/**
+	 * @brief		Get query field name for one field operation
+	 * @return		string				field name
+	 */
+	public function getOneFieldName()
+	{
+		return is_array($this->query_one_field) && array_key_exists('name', $this->query_one_field) ? $this->query_one_field['name'] : null;
+	}
+	
+	
+	/**
+	 * @brief		Test if query is a one field operation
+	 * @return		boolean
+	 */
+	public function hasOneField()
+	{
+		return is_array($this->query_one_field) && array_key_exists('name', $this->query_one_field);
+	}
+	
 	
 	/**
 	 * @brief		Set query one field record by name
@@ -334,12 +457,24 @@ abstract class AbstractQuery
 		}
 		
 		$assoc_values = array();
-		$field_index = 0;
-		foreach($this->query_fields as $field_name)
+		
+		// INDEXED VALUES ARRAY
+		if (false)
 		{
-			// $field_name = $field_record['name'];
-			$assoc_values[$field_name] = $this->query_values[$field_index];
-			++$field_index;
+			$field_index = 0;
+			foreach($this->query_fields_names as $field_name)
+			{
+				// $field_name = $field_record['name'];
+				$assoc_values[$field_name] = $this->query_values[$field_index];
+				++$field_index;
+			}
+		}
+		else
+		{
+			foreach($this->query_fields_names as $field_name)
+			{
+				$assoc_values[$field_name] = $this->query_values[$field_name];
+			}
 		}
 		
 		return Trace::leaveok($context, '', $assoc_values, self::$TRACE_ABSTRACT_QUERY);
@@ -368,7 +503,7 @@ abstract class AbstractQuery
 		
 		
 		// CHECK VALUES AND FIELDS ARRAYS
-		if ( ! is_array($this->query_fields) )
+		if ( ! is_array($this->query_fields) || count($this->query_fields) === 0 )
 		{
 			return Trace::leaveko($context, 'query_fields is not an array', false, self::$TRACE_ABSTRACT_QUERY);
 		}
@@ -411,9 +546,8 @@ abstract class AbstractQuery
 			$tmp_values = array();
 			for($values_index = 0 ; $values_index < $query_values_count ; $values_index++)
 			{
-				$loop_field = $this->query_fields[$values_index];
+				$loop_key = $this->query_fields_names[$values_index];
 				$loop_value = $this->query_values[$values_index];
-				$loop_key = $loop_field['name'];
 				$tmp_values[$loop_key] = $loop_value;
 			}
 			

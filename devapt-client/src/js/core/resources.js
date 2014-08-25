@@ -223,7 +223,7 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptCache, DevaptApplication)
 				}
 				
 				// NOT FOUND AND NO MORE CALLBACK
-				DevaptTraces.trace_warn(cb_context, 'resource found for [' + arg_resource_name + ']', true);
+				DevaptTraces.trace_warn(cb_context, 'resource not found for [' + arg_resource_name + ']', true);
 				DevaptTraces.trace_leave(cb_context, 'not found: no more provider', DevaptResources.resources_trace);
 			};
 		

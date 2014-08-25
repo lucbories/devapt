@@ -31,7 +31,7 @@ function(Devapt, DevaptTypes, DevaptOptions, DevaptClasses, DevaptContainer, und
 		self.inheritFrom(arg_name, arg_parent_jqo, arg_options);
 		
 		// INIT
-		self.trace				= true;
+		self.trace				= false;
 		self.class_name			= 'DevaptTable';
 		self.is_view			= true;
 		
@@ -150,7 +150,13 @@ function(Devapt, DevaptTypes, DevaptOptions, DevaptClasses, DevaptContainer, und
 			
 			
 			var node_jqo = $('<tr>');
-			
+			node_jqo.click(
+				function()
+				{
+					console.log(node_jqo.index(), 'table.row.clicked');
+					self.fire_event('devapt.events.records.selected', [node_jqo.index(), node_jqo]);
+				}
+			);
 			
 			self.leave(context, 'success');
 			return node_jqo;

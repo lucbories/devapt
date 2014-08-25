@@ -205,14 +205,19 @@ class Query extends AbstractQuery
 		}
 		
 		// CHECK STRING VALUE
-		if ( ! is_string($values_str) || $values_str === '' )
+		if ( ( ! is_string($values_str) && ! is_array($values_str) ) || (is_string($values_str) && $values_str === '') )
 		{
+			Trace::value($context, 'values_str', $values_str, self::$TRACE_QUERY);
 			Trace::warning('Query.getRequestArrayValue: bad value string');
 			return Trace::leaveko($context, 'bad value for ['.$arg_name.']', null, self::$TRACE_QUERY);
 		}
 		
 		// CREATE ARRAY FROM JSON STRING
-		$values = JsonFormatter::decode($values_str, JsonFormatter::TYPE_ARRAY);
+		$values = $values_str;
+		if ( is_string($values_str) )
+		{
+			$values = JsonFormatter::decode($values_str, JsonFormatter::TYPE_ARRAY);
+		}
 		Trace::value($context, 'values for ['.$arg_name.']', $values, self::$TRACE_QUERY);
 		if ( ! is_array($values) )
 		{

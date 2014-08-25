@@ -10,8 +10,8 @@
  */
 
 define(
-['Devapt', 'core/traces', 'core/types', 'core/event'/*, 'core/resources'*/],
-function(Devapt, DevaptTraces, DevaptTypes, DevaptEvent/*, DevaptResources*/)
+['Devapt', 'core/traces', 'core/types', 'core/event'],
+function(Devapt, DevaptTraces, DevaptTypes, DevaptEvent)
 {
 	/**
 	 * @memberof	DevaptEvents
@@ -28,7 +28,25 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptEvent/*, DevaptResources*/)
 	 * @static
 	 * @desc		Trace flag
 	 */
-	DevaptEvents.events_trace = false;
+	DevaptEvents.events_trace = true;
+	
+	
+	/**
+	 * @memberof	DevaptEvents
+	 * @public
+	 * @static
+	 * @desc		Events status (wait,run)
+	 */
+	DevaptEvents.events_status = 'wait';
+	
+	
+	/**
+	 * @memberof	DevaptEvents
+	 * @public
+	 * @static
+	 * @desc		Events buffe for wait status
+	 */
+	DevaptEvents.events_buffer = [];
 	
 	
 	/**
@@ -114,7 +132,7 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptEvent/*, DevaptResources*/)
 	 * @memberof			DevaptEvents
 	 * @public
 	 * @method				DevaptEvents.add(arg_event)
-	 * @desc				Append an fired event to the events repository (static method)
+	 * @desc				Append a fired event to the events repository (static method)
 	 * @param {object}		arg_event
 	 * @return {nothing}
 	 */
@@ -124,6 +142,7 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptEvent/*, DevaptResources*/)
 		DevaptEvents.target_events[ arg_event.get_target_name() ] = arg_event;
 		DevaptEvents.kind_events[ arg_event.name ] = arg_event;
 		
+		// RUN CALLBACK ON EVENTS LISTENERS ADD
 		if (DevaptEvents.add_event_callbacks.length > 0)
 		{
 			for(cb_index in DevaptEvents.add_event_callbacks)
@@ -158,6 +177,14 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptEvent/*, DevaptResources*/)
 		}
 		
 		
+		// WAIT STATUS
+		if ( DevaptEvents.events_status === 'wait')
+		{
+			DevaptEvents.events_buffer.push(event);
+			DevaptTraces.trace_leave(context, 'event is buffered for wait status', DevaptEvents.events_trace);
+			return;
+		}
+		
 		// REGISTER EVENT
 		DevaptEvents.add(event);
 		
@@ -179,6 +206,61 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptEvent/*, DevaptResources*/)
 	/**
 	 * @memberof	DevaptEvents
 	 * @public
+	 * @method		DevaptEvents.disable()
+	 * @desc		Set wait status (static method)
+	 * @return		nothing
+	 */
+	DevaptEvents.disable = function()
+	{
+		// SET STATUS TO WAIT
+		DevaptEvents.events_status = 'wait';
+	}
+	
+	
+	/**
+	 * @memberof	DevaptEvents
+	 * @public
+	 * @method		DevaptEvents.enable()
+	 * @desc		Set run status (static method)
+	 * @return		nothing
+	 */
+	DevaptEvents.enable = function()
+	{
+		var context = 'DevaptEvents.enable()';
+		DevaptTraces.trace_enter(context, '', DevaptEvents.events_trace);
+		
+		// SET STATUS TO RUN
+		DevaptEvents.events_status = 'run';
+		
+		// PROCESS BUFFER OF WAITING EVENTS
+		for(event_index in DevaptEvents.events_buffer)
+		{
+			var event = DevaptEvents.events_buffer[event_index];
+			
+			// REGISTER EVENT
+			DevaptEvents.add(event);
+			
+			
+			// GET CALLBACKS ARRAY
+			var event_callbacks = event.target_object.events_callbacks[event.name];
+			
+			// FIRE EVENT
+			if (event_callbacks)
+			{
+				event.fire(event_callbacks);
+			}
+		}
+		
+		// EMPTY BUFFER
+		DevaptEvents.events_buffer = [];
+		
+		DevaptTraces.trace_leave(context, '', DevaptEvents.events_trace);
+	}
+	
+	
+	/**
+	 * @memberof	DevaptEvents
+	 * @public
 	 * @method		DevaptEvents.reset()
 	 * @desc		Remove all fired events of the repository (static method)
 	 * @return		nothing
@@ -189,7 +271,7 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptEvent/*, DevaptResources*/)
 		DevaptEvents.target_events = new Object();
 		DevaptEvents.kind_events = new Object();
 	}
-
+	
 	
 	return DevaptEvents;
 } );

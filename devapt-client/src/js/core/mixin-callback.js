@@ -51,7 +51,9 @@ function(DevaptTypes)
 			if (arg_callback && typeof(arg_callback) === 'function')
 			{
 				self.step(context, 'call function callback');
-				cb_result = arg_callback.apply(null,arg_operands_array);
+				// console.log(typeof arg_operands_array, 'operands type');
+				// console.log(arg_operands_array.length, 'operands.length');
+				cb_result = arg_callback.apply(null, arg_operands_array);
 			}
 			else if (arg_callback && typeof(arg_callback) === 'object' && arg_callback.length >= 2)
 			{
@@ -84,6 +86,7 @@ function(DevaptTypes)
 			{
 				self.step(context, 'call string callback [' + arg_callback + ']');
 				
+				// TODO SECURITY CONCERN !
 				cb_result = eval(arg_callback);
 			}
 			else

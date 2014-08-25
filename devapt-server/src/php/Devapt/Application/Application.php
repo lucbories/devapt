@@ -233,4 +233,97 @@ class Application extends AbstractApplication implements ApplicationInterface
 			}
 		}
 	}
+	
+	
+	
+    /**
+     * Run the application for Tests Units
+     *
+     * @return boolean
+     */
+    public function run_tu($arg_tu_path)
+	{
+		// if (self::$DEBUG_RUNNING)
+		// {
+			// Debug::dump('Application: starts running for TU');
+		// }
+		
+		define('DEVAPT_APP_PRIVATE_ROOT', $arg_tu_path);
+		define('DEVAPT_APP_MODULES_ROOT', $arg_tu_path.'/modules/');
+		define('DEVAPT_MODULES_ROOT', $arg_tu_path.'/modules/');
+		
+		// INIT CONNECTIONS AND SECURITY AND MODULES
+		if ( ! $this->getConfig()->getStatusOffline() )
+		{
+			// INIT CONNECTIONS
+			if ( ! $this->initConnections() )
+			{
+				Debug::dump('Application: Init connections failed.');
+				return false;
+			}
+			
+			// INIT TRACES
+			if ( ! $this->initTraces() )
+			{
+				Trace::error('Application: Init traces failed.');
+				return false;
+			}
+			
+			// INIT SECURITY
+			if ( ! $this->initSecurity() )
+			{
+				Trace::error('Application: Init security failed.');
+				return false;
+			}
+			
+			// INIT SESSIONS
+			// if ( ! $this->initSessions() )
+			// {
+				// Trace::error('Application: Init sessions failed.');
+				// return;
+			// }
+			// $this->getSessionManager()->start();
+			
+			// INIT MODULES
+			if ( ! $this->initModules() )
+			{
+				Trace::error('Application: Init modules failed.');
+				return false;
+			}
+		}
+		
+		// INIT MODULES
+		// if ( ! $this->initDispatcher() )
+		// {
+			// Trace::error('Application: Init dispatcher failed.');
+			// return;
+		// }
+		
+		// PROCESS REQUEST
+		// if (self::$DEBUG_RUNNING)
+		// {
+			// Debug::dump('Application: process request');
+		// }
+		// $request = $this->getRequest();
+		// $response = $this->getResponse();
+		// $result = Dispatcher::dispatch($request, $response);
+		
+		// if (! $result)
+		// {
+			// TODO
+		// }
+		
+		// if (self::$DEBUG_RUNNING)
+		// {
+			// if (! $result)
+			// {
+				// Debug::dump('Application: stops running with request failure');
+			// }
+			// else
+			// {
+				// Debug::dump('Application: stops running with request success');
+			// }
+		// }
+		return true;
+	}
 }

@@ -64,7 +64,9 @@ function(Devapt, DevaptTypes, DevaptOptions, DevaptClasses, DevaptContainer, und
 		
 		// CONTRUCT INSTANCE
 		self.DevaptList_contructor();
-		
+		// console.log(self.bind, 'self.bind');
+		// self.bind('*', 'records', 'login', 'view_access_users_details', 'filters', 'login');
+		self.bind('devapt.events.list.selected', 'update', 'records', 'login', 'view_access_users_details', 'filters', 'login');
 		
 		
 		/**
@@ -103,6 +105,16 @@ function(Devapt, DevaptTypes, DevaptOptions, DevaptClasses, DevaptContainer, und
 			self.enter(context, '');
 			
 			var node_jqo = $('<li>');
+			node_jqo.click(
+				function()
+				{
+					var node_index = parseInt( node_jqo.index() );
+					var node_value = node_jqo.text();
+					console.log(node_index, 'list.clicked.index');
+					console.log(node_value, 'list.clicked.value');
+					self.fire_event('devapt.events.list.selected', [node_index, node_value]);
+				}
+			);
 			
 			self.leave(context, 'success');
 			return node_jqo;

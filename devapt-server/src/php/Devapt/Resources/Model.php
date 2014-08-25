@@ -97,7 +97,7 @@ class Model extends AbstractResource
 	// STATIC ATTRIBUTES
 	
 	/// @brief	TRACE FLAG
-	static public $MODEL_TRACE		= true;
+	static public $MODEL_TRACE		= false;
 	
 	
 	// ALL MODEL ATTRIBUTES
@@ -699,6 +699,8 @@ class Model extends AbstractResource
 				}
 			}
 		}
+		
+		Trace::leaveok($context, '', self::$MODEL_TRACE);
 	}
 	
 	

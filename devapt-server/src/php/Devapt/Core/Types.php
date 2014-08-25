@@ -44,7 +44,7 @@ final class Types
 	 * @param[in]	arg_value			the input value (anything)
 	 * @return		boolean
 	 */
-	static function isAssoc($arg_value)
+	static public function isAssoc($arg_value)
 	{
 		// CREDITS : http://fr2.php.net/manual/en/function.is-array.php (skaimauve at yahoo dot ca)
 		return is_array($arg_value) && array_diff_key($arg_value, array_keys( array_keys($arg_value) ) );

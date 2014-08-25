@@ -264,25 +264,25 @@ class SqlEngine
 			case 'read-1':
 			{
 				Trace::step($context, $arg_action.' for query version '.$query_version, self::$TRACE_ENGINE);
-				$sql_action = SqlBuilderV1::compileSelect($this, $arg_query, $sql);
+				$sql_action = SqlBuilder::compileSelect($this, $arg_query, $sql);
 				break;
 			}
 			case 'create-1':
 			{
 				Trace::step($context, $arg_action.' for query version '.$query_version, self::$TRACE_ENGINE);
-				$sql_action = SqlBuilderV1::compileInsert($this, $arg_query, $sql);
+				$sql_action = SqlBuilder::compileInsert($this, $arg_query, $sql);
 				break;
 			}
 			case 'update-1':
 			{
 				Trace::step($context, $arg_action.' for query version '.$query_version, self::$TRACE_ENGINE);
-				$sql_action = SqlBuilderV1::compileUpdate($this, $arg_query, $sql);
+				$sql_action = SqlBuilder::compileUpdate($this, $arg_query, $sql);
 				break;
 			}
 			case 'delete-1':
 			{
 				Trace::step($context, $arg_action.' for query version '.$query_version, self::$TRACE_ENGINE);
-				$sql_action = SqlBuilderV1::compileDelete($this, $arg_query, $sql);
+				$sql_action = SqlBuilder::compileDelete($this, $arg_query, $sql);
 				break;
 			}
 			
@@ -290,25 +290,25 @@ class SqlEngine
 			case 'read-2':
 			{
 				Trace::step($context, $arg_action.' for query version '.$query_version, self::$TRACE_ENGINE);
-				$sql_action = SqlBuilderV1::compileSelect($this, $arg_query, $sql);
+				$sql_action = SqlBuilder::compileSelect($this, $arg_query, $sql);
 				break;
 			}
 			case 'create-2':
 			{
 				Trace::step($context, $arg_action.' for query version '.$query_version, self::$TRACE_ENGINE);
-				$sql_action = SqlBuilderV1::compileInsert($this, $arg_query, $sql);
+				$sql_action = SqlBuilder::compileInsert($this, $arg_query, $sql);
 				break;
 			}
 			case 'update-2':
 			{
 				Trace::step($context, $arg_action.' for query version '.$query_version, self::$TRACE_ENGINE);
-				$sql_action = SqlBuilderV1::compileUpdate($this, $arg_query, $sql);
+				$sql_action = SqlBuilder::compileUpdate($this, $arg_query, $sql);
 				break;
 			}
 			case 'delete-2':
 			{
 				Trace::step($context, $arg_action.' for query version '.$query_version, self::$TRACE_ENGINE);
-				$sql_action = SqlBuilderV1::compileDelete($this, $arg_query, $sql);
+				$sql_action = SqlBuilder::compileDelete($this, $arg_query, $sql);
 				break;
 			}
 			

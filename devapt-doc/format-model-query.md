@@ -140,7 +140,7 @@ JSON object string format:
 	orders: [],
 	groups: [],
 	slice: { offset:'...', length:'...' },
-	joins: [],
+	joins: []
 }`
 
 with attributes definition:

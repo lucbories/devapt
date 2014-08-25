@@ -1,9 +1,9 @@
 /**
  * @file        views/mixin-options-css.js
  * @desc        Mixin for CSS rendering options
- * @see			DevaptMixinOptionsCSS
+ * @see			DevaptView
  * @ingroup     DEVAPT_CORE
- * @date        2014-07-114
+ * @date        2014-07-14
  * @version		1.0.x
  * @author      Luc BORIES
  * @copyright	Copyright (C) 2011 Luc BORIES All rights reserved.
@@ -26,7 +26,7 @@ function(Devapt, DevaptTypes, DevaptOptions)
 		 * @public
 		 * @desc				Enable/disable trace for mixin operations
 		 */
-		mixin_options_css_trace: true,
+		mixin_options_css_trace: false,
 		
 		
 		/**
@@ -257,31 +257,43 @@ function(Devapt, DevaptTypes, DevaptOptions)
 			}
 			
 			// DISPLAY ON LANDSCAPE
-			if (self.display_on_landscape)
-			{
-				display_class = 'show-for-landscape';
-				target_jqo.addClass(display_class);
-			}
+			// if (self.display_on_landscape)
+			// {
+				// display_class = 'show-for-landscape';
+				// target_jqo.addClass(display_class);
+			// }
+			// else
+			// {
+				// display_class = 'hide-for-landscape';
+				// target_jqo.addClass(display_class);
+			// }
 			
 			// DISPLAY ON PORTRAIT
-			if (self.display_on_portrait)
-			{
-				display_class = 'show-for-portrait';
-				target_jqo.addClass(display_class);
-			}
+			// if (self.display_on_portrait)
+			// {
+				// display_class = 'show-for-portrait';
+				// target_jqo.addClass(display_class);
+			// }
+			// else
+			// {
+				// display_class = 'hide-for-portrait';
+				// target_jqo.addClass(display_class);
+			// }
 			
 			// DISPLAY ON TOUCH
-			if (self.display_on_touch)
+			if ( target_jqo.hasClass('touch') )
 			{
-				display_class = 'show-for-touch';
-				target_jqo.addClass(display_class);
+				if (self.display_on_touch)
+				{
+					display_class = 'show-for-touch';
+					target_jqo.addClass(display_class);
+				}
+				else
+				{
+					display_class = 'hide-for-touch';
+					target_jqo.addClass(display_class);
+				}
 			}
-			else
-			{
-				display_class = 'hide-for-touch';
-				target_jqo.addClass(display_class);
-			}
-			
 			
 			
 			// TOOLTIP
@@ -333,8 +345,8 @@ function(Devapt, DevaptTypes, DevaptOptions)
 		DevaptOptions.register_bool_option(arg_prototype, 'display_on_small',		true, false, ['view_display_on_small']);
 		DevaptOptions.register_bool_option(arg_prototype, 'display_on_medium',		true, false, ['view_display_on_medium']);
 		DevaptOptions.register_bool_option(arg_prototype, 'display_on_large',		true, false, ['view_display_on_large']);
-		DevaptOptions.register_bool_option(arg_prototype, 'display_on_landscape',	true, false, ['view_display_on_landscape']);
-		DevaptOptions.register_bool_option(arg_prototype, 'display_on_portrait',	true, false, ['view_display_on_portrait']);
+		// DevaptOptions.register_bool_option(arg_prototype, 'display_on_landscape',	true, false, ['view_display_on_landscape']); // TODO
+		// DevaptOptions.register_bool_option(arg_prototype, 'display_on_portrait',	false, false, ['view_display_on_portrait']); // TODO
 		DevaptOptions.register_bool_option(arg_prototype, 'display_on_touch',		true, false, ['view_display_on_touch']);
 	};
 	

@@ -391,6 +391,6 @@ define(['Devapt', 'core/types'], function(Devapt, DevaptTypes)
 			DevaptTraces.debug( { level:'DEBUG', step:null, context:arg_context, text:arg_label + '=[' + DevaptTypes.get_value_str(arg_value) + ']' } );
 		}
 	}
-
+	
 	return DevaptTraces;
 } );

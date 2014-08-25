@@ -77,6 +77,7 @@ final class Broker
 		// A RESOURCE RECORD IS CACHED
 		if ( array_key_exists($arg_resource_name, Broker::$resources_records_array) )
 		{
+			Trace::step($context, 'a resource record is found in cache', Broker::$TRACE_BROKER);
 			$resource_record	= Broker::$resources_records_array[$arg_resource_name];
 			$resource_object	= Broker::buildResourceObjectFromRecord($resource_record);
 			
@@ -87,10 +88,18 @@ final class Broker
 		// SEARCH RESOURCE IN NOT LOADED PROVIDERS
 		if ( Broker::searchResource($arg_resource_name) )
 		{
+			Trace::step($context, 'a resource object is found in cache', Broker::$TRACE_BROKER);
 			$resource_object	= Broker::$resources_objects_array[$arg_resource_name];
 			
+			$result = ! is_null($resource_object);
+			if ( ! $result)
+			{
+				Trace::leave($context, 'resource not found in not loaded providers', Broker::$TRACE_BROKER);
+				return false;
+			}
+			
 			Trace::leave($context, 'resource found in not loaded providers', Broker::$TRACE_BROKER);
-			return ! is_null($resource_object);
+			return true;
 		}
 		
 		return Trace::leaveko($context, '', false, Broker::$TRACE_BROKER);
