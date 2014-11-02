@@ -19,27 +19,15 @@ namespace Devapt\Models\Sql;
 // DEVAPT IMPORTS
 use Devapt\Core\Trace;
 use Devapt\Core\Types;
-use Devapt\Security\DbConnexions;
+// use Devapt\Security\DbConnexions;
 use Devapt\Models\Query;
 use Devapt\Models\Sql\FilterNode;
 use Devapt\Resources\Model;
 
 // ZEND IMPORTS
 use Zend\Db\Sql\Sql;
-// use Zend\Db\Sql\Select;
-// use Zend\Db\Sql\Create;
 use Zend\Db\Sql\Update;
-// use Zend\Db\Sql\Delete;
 use Zend\Db\Sql\Where;
-use Zend\Db\Sql\Predicate\Expression as Expr;
-use Zend\Db\Sql\Predicate\Operator as Oper;
-use Zend\Db\Sql\Predicate\Like;
-use Zend\Db\Sql\Predicate\In;
-use Zend\Db\Sql\Predicate\Between;
-use Zend\Db\Sql\Predicate\IsNull;
-use Zend\Db\Sql\Predicate\IsNotNull;
-use Zend\Db\Sql\Predicate\PredicateSet;
-use Zend\Db\ResultSet\ResultSet;
 
 
 final class SqlBuilderUpdate
@@ -47,7 +35,7 @@ final class SqlBuilderUpdate
 	// STATIC ATTRIBUTES
 	
 	/// @brief TRACE FLAG
-	static public $TRACE_BUILDER = true;
+	static public $TRACE_BUILDER = false;
 	
 	
 	
@@ -85,19 +73,19 @@ final class SqlBuilderUpdate
 		
 		// INIT SQL
 		$model			= $arg_sql_engine->getModel();
+		
 		// $default_db		= DbConnexions::getConnexionDatabase($model->getModelConnexionName());
 		$default_table	= $model->getModelCrudTableName();
 		$fields_records = $model->getModelFieldsRecords();
 		
-		$columns = array();
 		$froms = array($default_table => $default_table);
 		$where = new Where();
-		$groups = array();
-		$orders = array();
 		
-		// $query_fields = $arg_query->getFields();
+		
+		// GET FIELDS NAMES AND VALUES
 		$query_fields_names = $arg_query->getFieldsNames();
-		$query_values = $arg_query->getOperandsValues();
+		$query_values = $arg_query->getOperandsAssocValues();
+		Trace::value($context, 'query_fields_names', $query_fields_names, self::$TRACE_BUILDER);
 		Trace::value($context, 'query_values', $query_values, self::$TRACE_BUILDER);
 		if ( ! is_array($query_values) )
 		{
@@ -105,8 +93,15 @@ final class SqlBuilderUpdate
 		}
 		
 		
-		// CREATE ZF2 SQL OBJECT
-		$update = $arg_zf2_sql->update(/*$default_db.'.'.*/$default_table);
+		// ZF2 DO NOT SUPPORT MULTI ROWS UPDATE
+		$query_values_cursor = $arg_query->getOperandsValuesCursor();
+		if ( ! is_numeric($query_values_cursor) || $query_values_cursor < 0 )
+		{
+			return Trace::leaveko($context, 'bad query values cursor', false, self::$TRACE_BUILDER);
+		}
+		Trace::value($context, 'records cursor', $query_values_cursor, self::$TRACE_BUILDER);
+		$query_values_record = $query_values[$query_values_cursor];
+		Trace::value($context, 'cursor record', $query_values_record, self::$TRACE_BUILDER);
 		
 		
 		// GET PRIMARY KEY FIELD NAME
@@ -115,45 +110,27 @@ final class SqlBuilderUpdate
 		{
 			return Trace::leaveko($context, 'bad pk field name', null, self::$TRACE_BUILDER);
 		}
+		Trace::value($context, 'pk_name', $pk_name, self::$TRACE_BUILDER);
 		
 		// GET PRIMARY KEY FIELD VALUE
-		$pk_value = array_key_exists($pk_name, $query_values) ? $query_values[$pk_name] : null;
+		$pk_value = array_key_exists($pk_name, $query_values_record) ? $query_values_record[$pk_name] : $arg_query->getRecordId();
 		if ( is_null($pk_value) )
 		{
 			return Trace::leaveko($context, 'bad pk field value', null, self::$TRACE_BUILDER);
 		}
+		if ( is_array($pk_value) )
+		{
+			$pk_value = $pk_value[$query_values_cursor];
+		}
+		Trace::value($context, 'pk_value', $pk_value, self::$TRACE_BUILDER);
 		
 		
 		// WHERE
 		Trace::step($context, 'has filters ?', self::$TRACE_BUILDER);
-		$query_filters = $arg_query->getFilters();
-		//	 filter option example:
-		//		model_filters= "field=brand_name,type=String,modifier=upper,op=equals,var1=\"ADJ\""
-		if ( is_array($query_filters) )
+		if ( $arg_query->hasFiltersTree() )
 		{
-			Trace::step($context, 'query has ['.count($query_filters).'] filters', self::$TRACE_BUILDER);
-			
-			$build_filters_records = array();
-			$tree_root = new FilterNode(null, null, new PredicateSet( array() ) );
-			$current_node = &$tree_root;
-			foreach($query_filters AS $key => $filter_record)
-			{
-				Trace::step($context, 'loop on filter ?', self::$TRACE_BUILDER);
-				
-				// CHECK FILTER RECORD
-				if ( ! is_array($filter_record) )
-				{
-					return Trace::leaveko($context, 'filter record isn t an array', null, self::$TRACE_BUILDER);
-				}
-				
-				// BUILD FILTER NODE
-				$current_node = SqlFiltersBuilder::buildFilterNode($arg_zf2_sql, $current_node, $fields_records, $filter_record);
-				if ( ! is_object($current_node) )
-				{
-					return Trace::leaveko($context, 'bad filter node', null, self::$TRACE_BUILDER);
-				}
-			}
-			// Trace::value($context, 'tree_root', $tree_root, true/*self::$TRACE_BUILDER*/);
+			// GET FILTERS TREE
+			$tree_root = $arg_query->getFiltersTree();
 			
 			// SET WHERE
 			Trace::step($context, 'has filters tree root ?', self::$TRACE_BUILDER);
@@ -161,9 +138,12 @@ final class SqlBuilderUpdate
 			{
 				Trace::step($context, 'update where with filters tree root', self::$TRACE_BUILDER);
 				$where->addPredicate($tree_root->getPredicate(), $tree_root->getCombination());
-				// Debug::dump($tree_root->getPredicate());
 			}
 		}
+		
+		
+		// CREATE ZF2 SQL OBJECT
+		$update = $arg_zf2_sql->update(/*$default_db.'.'.*/$default_table);
 		
 		
 		// SET PRIMARY KEY FIELD FILTER
@@ -172,13 +152,13 @@ final class SqlBuilderUpdate
 		
 		
 		// REMOVE PK VALUE FROM RECORD
-		unset($query_values[$pk_name]);
+		unset($query_values_record[$pk_name]);
 		
 		// SET RECORD VALUES
-		$update->set($query_values, $update::VALUES_SET); // REPLACE EXISTING VALUES
+		$update->set($query_values_record, $update::VALUES_SET); // REPLACE EXISTING VALUES
 		
 		
 		
-		return Trace::leaveok($context, 'success', $delete, self::$TRACE_BUILDER);
+		return Trace::leaveok($context, 'success', $update, self::$TRACE_BUILDER);
 	}
 }

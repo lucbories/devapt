@@ -49,6 +49,14 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptCache, DevaptApplication)
 	 * @memberof	DevaptResources
 	 * @public
 	 * @static
+	 * @desc		Resources promises repository (access by name)
+	 */
+	DevaptResources.resources_promises_by_name = {};
+	
+	/**
+	 * @memberof	DevaptResources
+	 * @public
+	 * @static
 	 * @desc		Storage engines for resources providers: callbacks as "call(resource name, ok_cb, ko_cb) -> boolean"
 	 */
 	DevaptResources.resources_providers = [];
@@ -264,7 +272,7 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptCache, DevaptApplication)
 		DevaptResources.resources_instances_by_name[arg_resource_instance.name] = arg_resource_instance;
 		
 		
-		DevaptTraces.trace_leave(context, 'resource instance registered', DevaptResources.resources_trace);
+		DevaptTraces.trace_leave(context, 'resource instance registered for [' + arg_resource_instance.name + ']', DevaptResources.resources_trace);
 		return true;
 	}
 	
@@ -298,7 +306,7 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptCache, DevaptApplication)
 			master_deferred.reject();
 			
 			DevaptTraces.trace_leave(context, 'failure: promise is rejected: arg is not a string', DevaptResources.resources_trace);
-			return master_deferred.promise();
+			return promise;
 		}
 		
 		
@@ -319,21 +327,49 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptCache, DevaptApplication)
 			return promise;
 		}
 		
+		// A PROMISE ALREADY EXISTS
+		var existing_promise = DevaptResources.resources_promises_by_name[arg_resource_name];
+		if ( DevaptTypes.is_object(existing_promise) )
+		{
+			DevaptTraces.trace_leave(context, 'a promise already exists', DevaptResources.resources_trace);
+			return existing_promise;
+		}
+		
+		// CREATE MAIN DEFERRED OBJECT
+		var master_deferred = $.Deferred();
+		
+		// GET MAIN PROMISE
+		var promise = master_deferred.promise();
 		
 		// GET RESOURCE DECLARATION AND BUILD RESOURCE
-		var promise = DevaptResources.get_resource_declaration(arg_resource_name);
-		promise = promise.then(
+		var result_promise = DevaptResources.get_resource_declaration(arg_resource_name);
+		DevaptResources.resources_promises_by_name[arg_resource_name] = master_deferred;
+		result_promise.then(
 			function(arg_declaration)
 			{
 				// BUILD RESOURCE INSTANCE FROM RESOURCE DECLARATION
 				DevaptTraces.trace_step(context, 'promise is resolved: resource declaration is found', DevaptResources.resources_trace);
 				return DevaptResources.build_from_declaration(arg_declaration);
 			}
+		)
+		.then(
+			function(arg_instance)
+			{
+				// console.log(arg_instance, 'instance');
+				master_deferred.resolve(arg_instance);
+				
+				// REMOVE WAITING PROMISE
+				DevaptResources.resources_promises_by_name[arg_resource_name] = null;
+				delete DevaptResources.resources_promises_by_name[arg_resource_name];
+				
+				DevaptTraces.trace_step(context, 'remove promise from resource promises repository', DevaptResources.resources_trace);
+				return arg_instance;
+			}
 		);
 		
 		
 		DevaptTraces.trace_leave(context, 'resource build is async', DevaptResources.resources_trace);
-		return promise;
+		return master_deferred;
 	}
 	
 	

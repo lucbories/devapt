@@ -62,20 +62,19 @@ define(['Devapt', 'core/traces', 'core/types'], function(Devapt, DevaptTraces, D
 		// GET CLASS NAME FROM A FUNCTION
 		if ( DevaptTypes.is_function(arg_class_value) )
 		{
-			// console.log('DevaptClasses.get_class_name : from a function');
+			DevaptTraces.trace_step(context, 'DevaptClasses.get_class_name : from a function', DevaptClasses.classes_trace);
+			
 			if ( DevaptTypes.is_string(arg_class_value.name) )
 			{
-				// console.log('DevaptClasses.get_class_name : from a function : with .name');
-				// console.log('arg_class_value.name:' + arg_class_value.name);
 				DevaptTraces.trace_leave(context, 'class value is a function and its name is a string', DevaptClasses.classes_trace);
 				return arg_class_value.name;
 			}
 			else
 			{
-				// console.log('DevaptClasses.get_class_name : from a function : without .name');
+				DevaptTraces.trace_step(context, 'DevaptClasses.get_class_name : from a function : without .name', DevaptClasses.classes_trace);
+				
 				if (arg_class_value.prototype.name !== undefined)
 				{
-					// console.log('arg_class_value.prototype.name:' + class_name);
 					DevaptTraces.trace_leave(context, 'class value is a function and its prototype name is defined', DevaptClasses.classes_trace);
 					return arg_class_value.prototype.name;
 				}
@@ -85,9 +84,7 @@ define(['Devapt', 'core/traces', 'core/types'], function(Devapt, DevaptTraces, D
 					var src_code = arg_class_value.toString();
 					var results = func_name_regex.exec(src_code);
 					var class_name = (results && results.length > 1) ? results[1] : "";
-					// console.log(src_code);
-					// console.log(resuls);
-					// console.log('class_name:' + class_name);
+					
 					DevaptTraces.trace_leave(context, 'class value is a function and its prototype name is undefined', DevaptClasses.classes_trace);
 					return class_name;
 				}
@@ -99,14 +96,12 @@ define(['Devapt', 'core/traces', 'core/types'], function(Devapt, DevaptTraces, D
 		{
 			if ( DevaptTypes.is_string(arg_class_value.class_name) )
 			{
-				// console.log('arg_class_value.class_name:' + arg_class_value.class_name);
 				DevaptTraces.trace_leave(context, 'class value is an object and class value object name is a string', DevaptClasses.classes_trace);
 				return arg_class_value.class_name;
 			}
 		}
 		
-		// console.log( Devapt.get_prototype_name(arg_class_value.prototype) );
-		// console.log('no class name');
+		
 		DevaptTraces.trace_leave(context, 'bad class value', DevaptClasses.classes_trace);
 		return null;
 	}

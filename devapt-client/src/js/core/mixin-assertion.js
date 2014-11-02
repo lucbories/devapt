@@ -10,7 +10,7 @@
  * @license		Apache License Version 2.0, January 2004; see LICENSE.txt or http://www.apache.org/licenses/
  */
 
-define( ['core/types'], function(DevaptTypes)
+define( ['core/types', 'core/inheritance'], function(DevaptTypes, DevaptInheritance)
 {
 	/**
 	 * @mixin				DevaptMixinAssertion
@@ -126,7 +126,7 @@ define( ['core/types'], function(DevaptTypes)
 		 */
 		assertInherit: function(arg_context, arg_name, arg_value, arg_class_obj)
 		{
-			var bool_result = arg_value instanceof arg_class_obj || Devapt.test_inheritance(arg_value, arg_class_obj);
+			var bool_result = arg_value instanceof arg_class_obj || DevaptInheritance.test_inheritance(arg_value, arg_class_obj);
 			this.assert(arg_context, arg_name, bool_result, 'Assert Inherit', arg_value);
 		},
 		
@@ -161,6 +161,43 @@ define( ['core/types'], function(DevaptTypes)
 		assertFunction: function(arg_context, arg_name, arg_value)
 		{
 			this.assert(arg_context, arg_name, DevaptTypes.is_function(arg_value), 'Assert Function', arg_value);
+		},
+		
+		
+		/**
+		 * @memberof			DevaptMixinAssertion
+		 * @public
+		 * @method				assertObject(arg_context, arg_name, arg_value)
+		 * @desc				Assert that value is an object
+		 * @param {string}		arg_context			assertion context
+		 * @param {string}		arg_name			assertion value name
+		 * @param {string}		arg_value			assertion value to test
+		 * @return {nothing}	(throw exception if assertion failed)
+		 */
+		assertObject: function(arg_context, arg_name, arg_value)
+		{
+			this.assert(arg_context, arg_name, DevaptTypes.is_object(arg_value), 'Assert Object', arg_value);
+		},
+		
+		
+		/**
+		 * @memberof			DevaptMixinAssertion
+		 * @public
+		 * @method				assertObjectSize(arg_context, arg_name, arg_value, arg_size_min, arg_size_max)
+		 * @desc				Assert that value is an object and the attributes count is greater or equal to the given min size and lesser or equal to the given max size
+		 * @param {string}		arg_context			assertion context
+		 * @param {string}		arg_name			assertion value name
+		 * @param {string}		arg_value			assertion value to test
+		 * @param {integer}		arg_size_min		assertion array minimal size
+		 * @param {integer}		arg_size_max		assertion array maximal size
+		 * @return {nothing}	(throw exception if assertion failed)
+		 */
+		assertObjectSize: function(arg_context, arg_name, arg_value, arg_size_min, arg_size_max)
+		{
+			var keys_count = DevaptTypes.is_object(arg_value) ? Object.keys(arg_value).length : -1;
+			var min_is_valid = keys_count >= arg_size_min;
+			var max_is_valid = DevaptTypes.is_null(arg_size_max) ? true : (keys_count <= arg_size_max);
+			this.assert(arg_context, arg_name, DevaptTypes.is_object(arg_value) && min_is_valid && max_is_valid, 'Assert assertObjectSize', 'length:' + arg_value.length + ' min:' + min_is_valid + ' max:' + max_is_valid);
 		},
 		
 		

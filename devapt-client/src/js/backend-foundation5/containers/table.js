@@ -35,9 +35,12 @@ function(Devapt, DevaptTypes, DevaptOptions, DevaptClasses, DevaptContainer, und
 		self.class_name			= 'DevaptTable';
 		self.is_view			= true;
 		
-		self.table_header_jqo			= null;
-		self.table_body_jqo	= null;
+		self.table_header_jqo	= null;
+		self.table_body_jqo		= null;
 		self.has_divider		= false;
+		
+		self.items_jquery_parent = null;
+		self.items_jquery_filter = 'tr';
 		
 		
 		/**
@@ -68,6 +71,35 @@ function(Devapt, DevaptTypes, DevaptOptions, DevaptClasses, DevaptContainer, und
 		
 		// CONTRUCT INSTANCE
 		self.DevaptTable_contructor();
+		
+		
+		
+		/**
+		 * @public
+		 * @memberof			DevaptTable
+		 * @desc				Get a container item node by the node item text
+		 * @param {string}		arg_node_item_text		node item text
+		 * @return {object}		node jQuery object
+		 */
+		self.get_node_by_content = function(arg_node_item_text)
+		{
+			var self = this;
+			var context = 'get_node_by_content(text)';
+			self.enter(context, '');
+			
+			
+			// SELECT ANCHOR BY CONTENT
+			var node_jqo = $('tr:contains("' + arg_node_item_text + '"):eq(0)', self.items_jquery_parent);
+			if ( ! node_jqo)
+			{
+				self.leave(context, self.msg_failure);
+				return null;
+			}
+			
+			
+			self.leave(context, self.msg_success);
+			return node_jqo;
+		}
 		
 		
 		
@@ -112,26 +144,10 @@ function(Devapt, DevaptTypes, DevaptOptions, DevaptClasses, DevaptContainer, und
 				}
 			}
 			
+			self.items_jquery_parent = self.table_body_jqo;
+			
 			
 			self.leave(context, 'success');
-		}
-		
-		
-		/**
-		 * @public
-		 * @memberof			DevaptContainer
-		 * @desc				End the render of the container
-		 * @return {nothing}
-		 */
-		self.render_end = function()
-		{
-			var self = this;
-			var context = 'render_end()';
-			self.enter(context, '');
-			
-			
-			
-			self.leave(context, self.msg_success);
 		}
 		
 		
@@ -153,10 +169,11 @@ function(Devapt, DevaptTypes, DevaptOptions, DevaptClasses, DevaptContainer, und
 			node_jqo.click(
 				function()
 				{
-					console.log(node_jqo.index(), 'table.row.clicked');
-					self.fire_event('devapt.events.records.selected', [node_jqo.index(), node_jqo]);
+					var node_index = parseInt( node_jqo.index() );
+					self.select_item_node(node_index);
 				}
 			);
+			
 			
 			self.leave(context, 'success');
 			return node_jqo;
@@ -165,22 +182,22 @@ function(Devapt, DevaptTypes, DevaptOptions, DevaptClasses, DevaptContainer, und
 		
 		/**
 		 * @public
-		 * @memberof			DevaptContainer
+		 * @memberof			DevaptTable
 		 * @desc				Render an item RECORD content
 		 * @param {object}		arg_deferred		deferred object
-		 * @param {object}		arg_item_jqo		
-		 * @param {array}		arg_item_record
+		 * @param {object}		arg_item_jqo		item jQuery object node
+		 * @param {array}		arg_item_object		item object content
 		 * @return {object}		jQuery object node
 		 */
-		self.render_item_record = function(arg_deferred, arg_item_jqo, arg_item_record)
+		self.render_item_object = function(arg_deferred, arg_item_jqo, arg_item_object)
 		{
 			var self = this;
-			var context = 'render_item_record(deferred,jqo,content)';
+			var context = 'render_item_object(deferred,jqo,content)';
 			self.enter(context, '');
 			
 			
 			// CHECK RECORD
-			var record = arg_item_record;
+			var record = arg_item_object;
 			self.assertNotNull(context, 'record', record);
 			self.value(context, 'record', record);
 			
@@ -190,14 +207,17 @@ function(Devapt, DevaptTypes, DevaptOptions, DevaptClasses, DevaptContainer, und
 			
 			
 			// LOOP ON FIELDS
-			for(field_index in self.items_records_fields_names)
+			for(field_index in self.items_fields)
 			{
-				var field_name = self.items_records_fields_names[field_index];
+				var field_name = self.items_fields[field_index];
 				var field_value = record[field_name];
 				var field_jqo = $('<td>');
 				field_jqo.html(field_value);
 				tr_jqo.append(field_jqo);
 			}
+			
+			// ATTACH RECORD
+			arg_item_jqo.data('record', arg_item_object);
 			
 			
 			self.leave(context, self.msg_success);

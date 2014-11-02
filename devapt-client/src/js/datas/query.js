@@ -27,8 +27,8 @@
  */
 
 define(
-['Devapt', 'core/traces', 'core/types', 'core/events', 'core/object'],
-function(Devapt, DevaptTraces, DevaptTypes, DevaptQuerys, DevaptObject)
+['Devapt', 'core/traces', 'core/types', 'core/classes', 'core/options', 'core/events', 'core/object'],
+function(Devapt, DevaptTraces, DevaptTypes, DevaptClasses, DevaptOptions, DevaptEvents, DevaptObject)
 {
 	/**
 	 * @class				DevaptQuery
@@ -44,7 +44,7 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptQuerys, DevaptObject)
 		
 		// INHERIT
 		self.inheritFrom = DevaptObject;
-		self.inheritFrom(arg_event_name, arg_options, false);
+		self.inheritFrom(arg_name, arg_options, false);
 		
 		// INIT
 		self.trace				= false;
@@ -72,6 +72,8 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptQuerys, DevaptObject)
 				self.error(context + ': init options failure');
 			}
 			
+			self.filters_by_field = {};
+			
 			
 			// CONSTRUCTOR END
 			self.leave(context, 'success');
@@ -95,30 +97,111 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptQuerys, DevaptObject)
 			var context = 'get_json()';
 			self.enter(context, '');
 			
+			
 			var json_obj = {
 				query_json: {
-					action: 'select_count',
-					one_field: 'id_user',
-					values: null,
-					values_count: 0
-/*	crud_db: '...',
-	crud_table: '...',
-	fields: [],
-	one_field: '...',
-	values: {},
-	values_count: ...,
-	filters: [],
-	orders: [],
-	groups: [],
-	slice: { offset:'...', length:'...' },
-	joins: [],*/
+					action: self.action,
+					crud_db: self.crud_db,
+					crud_table: self.crud_table,
+					fields: self.fields,
+					one_field: self.one_field,
+					values: self.values,
+					values_count: self.values_count,
+					filters: self.filters,
+					orders: self.orders,
+					groups: self.groups,
+					slice: self.slice,
+					joins: self.joins
 				}
 			};
+			// console.log(self.filters, self.name + '.' + context);
+			// console.log(json_obj, context + '.json_obj');
+			
 			
 			self.leave(context, 'success');
 			return json_obj;
 		}
-/*		// ONE FIELD
+		
+		
+		/**
+		 * @memberof			DevaptQuery
+		 * @public
+		 * @method				DevaptQuery.remove_filters_for_field(field name)
+		 * @desc				Remove all filters for the given field from the query
+		 * @param {string}		arg_field_name
+		 * @return {nothing}
+		 */
+		self.remove_filters_for_field = function(arg_field_name)
+		{
+			var context = 'remove_filters_for_field(field name)';
+			self.enter(context, '');
+			
+			
+			// LOOP ON EXISTING FILTERS FOR THE GIVEN FIELD NAME
+			var field_filters = self.filters_by_field[arg_field_name];
+			for(filter_key in field_filters)
+			{
+				// GET FILTER
+				var filter = field_filters[filter_key];
+				
+				// REMOVE FILTER
+				self.filters.splice(filter.index, 1);
+			}
+			
+			// RESET EXISTING FILTERS FOR THE GIVEN FIELD NAME
+			self.filters_by_field[arg_field_name] = [];
+			
+			
+			self.leave(context, 'success');
+		}
+		
+		
+		/**
+		 * @memberof			DevaptQuery
+		 * @public
+		 * @method				DevaptQuery.add_filter(filter)
+		 * @desc				Add a filter to the query
+		 * @param {string}		arg_field_name
+		 * @param {object}		arg_filter
+		 * @param {boolean}		filter should be unique on this field
+		 * @return {nothing}
+		 */
+		self.add_filter = function(arg_field_name, arg_filter, arg_is_unique)
+		{
+			var context = 'add_filter(field name,filter,unique)';
+			self.enter(context, '');
+			
+			
+			// INIT FILTERS
+			if ( ! DevaptTypes.is_array(self.filters) )
+			{
+				self.step(context, 'init Query filters');
+				self.filters = [];
+			}
+			
+			// REMOVE EXISTING FILED FILTERS
+			if (arg_is_unique)
+			{
+				self.remove_filters_for_field(arg_field_name);
+			}
+			
+			// ADD FILTER
+			var field_filters = self.filters_by_field[arg_field_name];
+			if ( ! DevaptTypes.is_array(field_filters) )
+			{
+				self.filters_by_field[arg_field_name] = [];
+			}
+			field_filters.push( { index:self.filters.length, filter:arg_field_name } );
+			self.filters.push(arg_filter);
+			// console.log(self.filters, self.name + '.' + context);
+			
+			
+			self.leave(context, 'success');
+		}
+		
+		
+		
+		// ONE FIELD
 		this.set_one_field = function(arg_one_field)
 		{
 			// this.assert(arg_one_field instanceof LibaptField);
@@ -150,7 +233,7 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptQuerys, DevaptObject)
 		this.set_select_count = function()
 		{
 			this.action = 'select_count';
-		}*/
+		}
 		
 		
 		

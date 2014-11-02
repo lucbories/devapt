@@ -36,6 +36,13 @@ application.menus.menu1.index					(menu index on depending on position)
 */
 class Menu extends AbstractResource
 {
+	// STATIC ATTRIBUTES
+	
+	/// @brief TRACE FLAG
+	static public $TRACE_MENU = false;
+	
+	
+	
 	// RESOURCE ATTRIBUTES
 	
 	/// @brief		menu label (string)
@@ -108,7 +115,7 @@ class Menu extends AbstractResource
 	 */
 	public function __construct($arg_resource_record)
 	{
-		Trace::debug('Constructor for menu ['.$arg_resource_record[AbstractResource::$RESOURCE_NAME].']');
+		Trace::step('Menu.Constructor', 'for menu ['.$arg_resource_record[AbstractResource::$RESOURCE_NAME].']', self::$TRACE_MENU);
 		
 		// SET BASE RESOURCE ATTRIBUTES
 		$this->setResourceName($arg_resource_record[AbstractResource::$RESOURCE_NAME]);

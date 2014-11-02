@@ -14,7 +14,7 @@
  * //@todo		...
  */
 
-namespace Devapt\Models\Sql;
+namespace Devapt\Models;
 
 // DEVAPT IMPORTS
 use Devapt\Core\Trace;
@@ -48,7 +48,7 @@ final class QueryUnaryOperatorBuilder
 	 */
 	static public function buildOperatorExpression($arg_op_type_name, $arg_op_name, $arg_expr_str)
 	{
-		$context = 'QueryOperatorBuilder.buildOperatorExpression';
+		$context = 'QueryUnaryOperatorBuilder.buildOperatorExpression';
 		Trace::enter($context, $arg_op_name, self::$TRACE_BUILDER);
 		
 		
@@ -73,7 +73,7 @@ final class QueryUnaryOperatorBuilder
 	 */
 	static public function buildOperatorString($arg_op_type_name, $arg_op_name, $arg_expr_str)
 	{
-		$context = 'QueryOperatorBuilder.buildFilterModifier';
+		$context = 'QueryUnaryOperatorBuilder.buildFilterModifier';
 		Trace::step($context, $arg_op_name, self::$TRACE_BUILDER);
 		
 		/*

@@ -28,6 +28,12 @@ use Devapt\Views\PageFooterViewRenderer;
 
 class ViewController extends AbstractController
 {
+	// STATIC ATTRIBUTES
+	
+	/// @brief TRACE FLAG
+	static public $TRACE_VIEW_CONTROLLER = false;
+	
+	
     /**
      * Constructor
      */
@@ -95,7 +101,7 @@ class ViewController extends AbstractController
 		// SEND RENDERED VIEW
 		$arg_response->send();
 		
-		Trace::info('ViewController: Render view success ['.$arg_resource_name.']');
+		Trace::step('ViewController::doGetAction', 'Render view success ['.$arg_resource_name.']', self::$TRACE_VIEW_CONTROLLER);
 		return true;
 	}
 }

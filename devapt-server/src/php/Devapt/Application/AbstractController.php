@@ -29,6 +29,11 @@ use Devapt\Security\Authorization;
 
 abstract class AbstractController implements ControllerInterface
 {
+	// STATIC ATTRIBUTES
+	
+	/// @brief TRACE FLAG
+	static public $TRACE_ABSTRACT_CONTROLLER = false;
+	
 	/// @brief Controller need an action attribute ?
 	protected $has_action_attribute			= true;
 	protected $authorization_is_cheched		= false;
@@ -45,6 +50,8 @@ abstract class AbstractController implements ControllerInterface
 	
 	public function dispatch($arg_resource_name, $arg_action_name, $arg_id, $arg_request, $arg_response)
 	{
+		$context = "AbstractController.dispatch";
+		
 		// RESET AUTHORIZATION FLAG
 		$this->authorization_is_cheched = false;
 		
@@ -74,12 +81,13 @@ abstract class AbstractController implements ControllerInterface
 		if ($result)
 		{
 			// ACTION SUCCESS
-			Trace::info("AbstractController: Controller authorization success for action [$arg_action_name] on resource [$arg_resource_name]");
+			Trace::step($context, "Controller authorization success for action [$arg_action_name] on resource [$arg_resource_name]", self::$TRACE_ABSTRACT_CONTROLLER);
 			return true;
 		}
 		
 		// ACTION FAILURE
-		Trace::warning("AbstractController: Controller authorization failed for action [$arg_action_name] on resource [$arg_resource_name]");("AbstractController: Controller action [$arg_action_name] on resource [$arg_resource_name] failed");
+		Trace::warning("AbstractController: Controller authorization failed for action [$arg_action_name] on resource [$arg_resource_name]");
+		Trace::warning("AbstractController: Controller action [$arg_action_name] on resource [$arg_resource_name] failed");
 		return false;
 	}
 	
@@ -93,6 +101,8 @@ abstract class AbstractController implements ControllerInterface
      */
 	protected function checkAuthorization($arg_resource_name, $arg_access_name)
 	{
+		$context = "AbstractController.checkAuthorization";
+		
 		$this->authorization_is_cheched = true;
 		
 		// TEST IF AUTHENTIFICATION IS ENABLED
@@ -121,7 +131,7 @@ abstract class AbstractController implements ControllerInterface
 		if ($result == true)
 		{
 			// AUDIT ACCESS
-			Trace::info('AbstractController: Authentication success');
+			Trace::step($context, 'Authentication success', self::$TRACE_ABSTRACT_CONTROLLER);
 			return true;
 		}
 		

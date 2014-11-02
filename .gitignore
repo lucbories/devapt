@@ -1,6 +1,9 @@
 *.log
 *.session
 *.cache
+.settings
+.project
+.buildpath
 vendor
 all_zf2
 composer.phar

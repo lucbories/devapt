@@ -1,6 +1,14 @@
 /**
  * @file        datas/storage-api.js
  * @desc        Devapt storage engines base class features
+ *              API:
+ *                  ->is_valid()              : boolean
+ *                  ->read_all_records()      : promise
+ *                  ->read_records(query)     : promise
+ *                  ->create_records(query)   : promise
+ *                  ->update_records(query)   : promise
+ *                  ->delete_records(query)   : promise
+ *  
  * @ingroup     DEVAPT_DATAS
  * @date        2014-08-11
  * @version		1.0.x
@@ -51,7 +59,6 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptClasses, DevaptObject)
 			
 			
 			// API STORAGE ATTRIBUTES
-			self.is_valid		= false;
 			self.is_sync		= true;
 			self.is_cached		= false;
 			self.cache_ttl		= null;
@@ -59,7 +66,7 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptClasses, DevaptObject)
 			
 			// CONSTRUCTOR END
 			self.leave(context, 'success');
-		}
+		};
 		
 		
 		// CONSTRUCTOR END
@@ -75,8 +82,8 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptClasses, DevaptObject)
 		 */
 		self.is_valid = function()
 		{
-			return self.is_valid;
-		}
+			return false;
+		};
 		
 		
 		/**
@@ -89,7 +96,7 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptClasses, DevaptObject)
 		self.read_all_records = function ()
 		{
 			return null;
-		}
+		};
 		
 		
 		/**
@@ -103,7 +110,7 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptClasses, DevaptObject)
 		self.read_records = function (arg_query)
 		{
 			return null;
-		}
+		};
 		
 		
 		/**
@@ -117,7 +124,7 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptClasses, DevaptObject)
 		self.create_records = function (arg_records)
 		{
 			return null;
-		}
+		};
 		
 		
 		/**
@@ -131,7 +138,7 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptClasses, DevaptObject)
 		self.update_records = function (arg_records)
 		{
 			return null;
-		}
+		};
 		
 		
 		/**
@@ -145,7 +152,7 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptClasses, DevaptObject)
 		self.delete_records = function (arg_records)
 		{
 			return null;
-		}
+		};
 	}
 	
 	
@@ -158,4 +165,4 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptClasses, DevaptObject)
 	
 	
 	return DevaptStorage;
-}
+} );

@@ -1,27 +1,39 @@
 <?php
 namespace Devapt\tests\units\Models;
 
+//	------------------------------------ USE CASE -----------------------------------
+//	cmd>d:
+//	cmd>cd D:\DATAS\GitHub\DevApt\devapt-server\tests
+//	cmd>php ..\dist\mageekguy.atoum.phar -f devapt\tests\units\Models\QueryBuilderV1.php
+//	---------------------------------------------------------------------------------
+
+
+
+// 	------------------------------------ DEPENDENCIES -------------------------------
+
 // REQUIRE DEVAPT, ZF2 AND ATOUM
-require(__DIR__ . '/../../../autoload.php');
-require(__DIR__ . '/ModelsAtoum.php');
-// require(__DIR__ . '/init_request_select.php');
+require_once(__DIR__ . '/../../../autoload.php');
+require_once(__DIR__ . '/UsersModel.php');
 
 // IMPORTS ATOUM
 use \atoum;
 
 // IMPORTS ZF2
-use Zend\Config\Reader\Ini AS IniReader;
 
 // IMPORTS DEVAPT
-use Devapt\Application\Application as Application;
 
+//	---------------------------------------------------------------------------------
+
+
+
+// 	------------------------------------ TEST ---------------------------------------
 // TEST CLASS
-class QueryBuilderV1 extends ModelsAtoum
+class QueryBuilderV1 extends atoum
 {
     /*
      * QueryBuilderV1::__construct()
      */
-    public function test__construct()
+	public function test__construct()
     {
 		$this
 			// SCALAR
@@ -36,86 +48,221 @@ class QueryBuilderV1 extends ModelsAtoum
      */
     public function testBuildFromRequest()
     {
-		$this->initApplication();
-		$model = $this->getModelUsers();
+		$users_model_test = new UsersModel();
+		$result = $users_model_test->initApplication();
+		$this->boolean($result)->isTrue();
 		
+		// TEST: MODEL IS NULL => QUERY IS NULL
 		{
 			$action = 'read';
-			$request = $this->getRequestV1UsersSelect_1();
+			$request = $users_model_test->getRequestSelectAll('1');
 			$query = \Devapt\Models\QueryBuilderV1::buildFromRequest($action, null, $request, null);
 			$this->variable($query)->IsNull();
 		}
-		{
-			$action = 'read';
-			$query = \Devapt\Models\QueryBuilderV1::buildFromRequest($action, $model, null, null);
-			$this->variable($query)->IsNull();
-		}
-		{
-			$request = $this->getRequestV1UsersSelect_1();
-			$query = $this->getQueryV1Select($model, $request, null);
-		}
-		{
-			$request = $this->getRequestV1UsersSelect_2();
-			$query = $this->getQueryV1Select($model, $request, null);
-		}
-		{
-			$request = $this->getRequestV1UsersSelect_3();
-			$query = $this->getQueryV1Select($model, $request, 123);
-		}
-		{
-			$request = $this->getRequestV1UsersInsert_1();
-			$query = $this->getQueryV1Create($model, $request, null);
-		}
-	}
-	
-	
-    /*
-     * QueryBuilderV1::buildFromArray($arg_action, $arg_model, $arg_array, $arg_id)
-     */
-    public function testBuildFromArray()
-    {
-		$this->initApplication();
-		$model = $this->getModelUsers();
 		
+		
+		// TEST: REQUEST IS NULL => QUERY IS NULL
+		$action = 'read';
+		$query = $users_model_test->getQueryFromRequest(null, $action, null);
+		$this->variable($query)->IsNull();
+		
+		$action = 'create';
+		$query = $users_model_test->getQueryFromRequest(null, $action, null);
+		$this->variable($query)->IsNull();
+		
+		$action = 'delete';
+		$query = $users_model_test->getQueryFromRequest(null, $action, null);
+		$this->variable($query)->IsNull();
+		
+		$action = 'update';
+		$query = $users_model_test->getQueryFromRequest(null, $action, null);
+		$this->variable($query)->IsNull();
+		
+		
+		// TEST: SELECT ALL QUERY IS NOT NULL
+		$query = $users_model_test->getQuerySelectAll('1');
+		$this->variable($query)->IsNotNull();
+		$sql_str = $users_model_test->getQuerySqlString($query, 'read');
+		// echo 'sql_str:'.$sql_str;
+		$target_sql = "SELECT `id_user` AS `id_user`, `login` AS `login`, `lastname` AS `lastname`, `firstname` AS `firstname`, `email` AS `email`, `password` AS `password` FROM `users` AS `users`";
+		$this->string($sql_str)->isIdenticalTo($target_sql);
+		
+		
+		// TEST: SELECT ALL LOGIN,LASTNAME QUERY IS NOT NULL
+		$query = $users_model_test->getQuerySelectAllLoginLastname('1');
+		$this->variable($query)->IsNotNull();
+		$sql_str = $users_model_test->getQuerySqlString($query, 'read');
+		// echo 'sql_str:'.$sql_str;
+		$target_sql = "SELECT `login` AS `login`, `lastname` AS `lastname` FROM `users` AS `users` ORDER BY `lastname` DESC";
+		$this->string($sql_str)->isIdenticalTo($target_sql);
+		
+		
+		// TEST: SELECT ALL LOGIN,LASTNAME WITH ONE FILTER QUERY IS NOT NULL
+		$query = $users_model_test->getQuerySelectAllLoginLastnameWithOneFilter('1');
+		$this->variable($query)->IsNotNull();
+		$sql_str = $users_model_test->getQuerySqlString($query, 'read');
+		// echo 'sql_str:'.$sql_str;
+		$target_sql = "SELECT `login` AS `login`, `lastname` AS `lastname` FROM `users` AS `users` WHERE (`UPPER`(`login`) LIKE 'A%') ORDER BY `lastname` DESC";
+		$this->string($sql_str)->isIdenticalTo($target_sql);
+		
+		
+		// TEST: SELECT ALL LOGIN,LASTNAME WITH MANY FILTERS QUERY IS NOT NULL
+		$query = $users_model_test->getQuerySelectAllLoginLastnameWithManyFilters('1');
+		$this->variable($query)->IsNotNull();
+		$sql_str = $users_model_test->getQuerySqlString($query, 'read');
+		// echo 'sql_str:'.$sql_str;
+		$target_sql = "SELECT `login` AS `login`, `lastname` AS `lastname`, `firstname` AS `firstname` FROM `users` AS `users` WHERE (`UPPER`(`login`) LIKE 'A%' AND `firstname` LIKE '%th' AND `LOWER`(`firstname`) IN (smith, juth)) GROUP BY `lastname`, `firstname` ORDER BY `lastname` DESC, `firstname` ASC";
+		$this->string($sql_str)->isIdenticalTo($target_sql);
+		
+		
+		// TEST: SELECT ALL LOGIN,LASTNAME WITH JOIN
+		// $query = $users_model_test->getQuerySelectAllLoginLastnameWithJoin('1');
+		// $this->variable($query)->IsNotNull();
+		// $sql_str = $users_model_test->getQuerySqlString($query, 'read');
+		// echo 'sql_str:'.$sql_str;
+		// $target_sql = "SELECT `login` AS `login`, `lastname` AS `lastname`, `firstname` AS `firstname` FROM `users` AS `users` WHERE (`UPPER`(`login`) LIKE 'A%' AND `firstname` LIKE '%th' AND `LOWER`(`firstname`) IN (smith, juth)) GROUP BY `lastname`, `firstname` ORDER BY `lastname` DESC, `firstname` ASC";
+		// $this->string($sql_str)->isIdenticalTo($target_sql);
+		
+		
+		// TEST: INSERT NOTHING QUERY IS NULL
+		$action = 'create';
+		$query = $users_model_test->getQueryFromRequest(null, $action, null);
+		$this->variable($query)->IsNull();
+		
+		
+		// TEST: INSERT NOTHING QUERY IS NULL
+		$query = $users_model_test->getQueryCreateRecords('1', null);
+		$this->variable($query)->IsNull();
+		
+		
+		// TEST: INSERT EMPTY RECORDS QUERY IS NULL
+		$query = $users_model_test->getQueryCreateRecords('1', array());
+		$this->variable($query)->IsNull();
+		
+		
+		// TEST: INSERT ONE RECORD QUERY
+		$records = array();
+		$records[] = array( 'login'=>'test123', 'firstname'=>'John', 'lastname'=>'TEST123', 'password'=>'xxx', 'email'=>'test123@test.tst' );
+		$query = $users_model_test->getQueryCreateRecords('1', $records);
+		$this->variable($query)->IsNotNull();
+		$sql_str = $users_model_test->getQuerySqlString($query, 'create');
+		// echo 'sql_str:'.$sql_str;
+		$target_sql = "INSERT INTO `users` (`login`, `lastname`, `firstname`, `email`, `password`) VALUES ('test123', 'TEST123', 'John', 'test123@test.tst', 'xxx')";
+		$this->string($sql_str)->isIdenticalTo($target_sql);
+		
+		
+		// TEST: INSERT TWO RECORDS QUERY
+			// DEFINE QUERY
+		$records = array();
+		$records[] = array( 'login'=>'test123', 'firstname'=>'John', 'lastname'=>'TEST123', 'password'=>'xxx', 'email'=>'test123@test.tst' );
+		$records[] = array( 'login'=>'test456', 'firstname'=>'Jim', 'lastname'=>'TEST456', 'password'=>'yyy', 'email'=>'test456@test.tst' );
+		$query = $users_model_test->getQueryCreateRecords('1', $records);
+		$this->variable($query)->IsNotNull();
+			// LOOP ON RECORDS TO INSERT
+		$values_count	= $query->getOperandsValuesCount();
+		$target_sql		= array();
+		$target_sql[]	= "INSERT INTO `users` (`login`, `lastname`, `firstname`, `email`, `password`) VALUES ('test123', 'TEST123', 'John', 'test123@test.tst', 'xxx')";
+		$target_sql[]	= "INSERT INTO `users` (`login`, `lastname`, `firstname`, `email`, `password`) VALUES ('test456', 'TEST456', 'Jim', 'test456@test.tst', 'yyy')";
+		while($query->getOperandsValuesCursor() < $values_count)
 		{
-			$action = 'read';
-			$request = $this->getRequestV1UsersSelect_1();
-			$records = $request->getQuery()->toArray();
-			$query = \Devapt\Models\QueryBuilderV1::buildFromArray($action, null, $records, null);
-			$this->variable($query)->IsNull();
+			$sql_str = $users_model_test->getQuerySqlString($query, 'create');
+			$this->string($sql_str)->isIdenticalTo($target_sql[$query->getOperandsValuesCursor()]);
+			$query->getOperandsValuesCursorIncr();
 		}
+		
+		
+		// TEST: UPDATE NOTHING QUERY IS NULL
+		$action = 'update';
+		$query = $users_model_test->getQueryFromRequest(null, $action, null);
+		$this->variable($query)->IsNull();
+		
+		
+		// TEST: UPDATE NOTHING QUERY IS NULL
+		$query = $users_model_test->getQueryUpdateRecords('1', null);
+		$this->variable($query)->IsNull();
+		
+		
+		// TEST: UPDATE EMPTY RECORDS QUERY IS NULL
+		$query = $users_model_test->getQueryUpdateRecords('1', array());
+		$this->variable($query)->IsNull();
+		
+		
+		// TEST: UPDATE ONE RECORD QUERY
+		$records = array();
+		$records[] = array( 'login'=>'test123', 'firstname'=>'NewJohn' );
+		$query = $users_model_test->getQueryUpdateRecords('1', $records, '123');
+		$this->variable($query)->IsNotNull();
+		$sql_str = $users_model_test->getQuerySqlString($query, 'update');
+		// echo 'sql_str:'.$sql_str;
+		$target_sql = "UPDATE `users` SET `login` = 'test123', `firstname` = 'NewJohn' WHERE `id_user` = '123'";
+		$this->string($sql_str)->isIdenticalTo($target_sql);
+		
+		
+		// TEST: UPDATE TWO RECORDS QUERY
+			// DEFINE QUERY
+		$records = array();
+		$records[] = array( 'login'=>'test123', 'firstname'=>'NewJohn' );
+		$records[] = array( 'firstname'=>'NewJim', 'email'=>'test456-new@test.tst' );
+		$query = $users_model_test->getQueryUpdateRecords('1', $records, ['123', '456']);
+		$this->variable($query)->IsNotNull();
+			// LOOP ON RECORDS TO INSERT
+		$values_count	= $query->getOperandsValuesCount();
+		$target_sql		= array();
+		$target_sql[]	= "UPDATE `users` SET `login` = 'test123', `firstname` = 'NewJohn' WHERE `id_user` = '123'";
+		$target_sql[]	= "UPDATE `users` SET `firstname` = 'NewJim', `email` = 'test456-new@test.tst' WHERE `id_user` = '456'";
+		while($query->getOperandsValuesCursor() < $values_count)
 		{
-			$action = 'read';
-			$query = \Devapt\Models\QueryBuilderV1::buildFromArray($action, $model, null, null);
-			$this->variable($query)->IsNull();
+			$sql_str = $users_model_test->getQuerySqlString($query, 'update');
+			$this->string($sql_str)->isIdenticalTo($target_sql[$query->getOperandsValuesCursor()]);
+			$query->getOperandsValuesCursorIncr();
 		}
-		{
-			$action = 'read';
-			$request = $this->getRequestV1UsersSelect_1();
-			$records = $request->getQuery()->toArray();
-			$query = \Devapt\Models\QueryBuilderV1::buildFromArray($action, $model, $records, null);
-			$this->object($query)->isInstanceOf('\Devapt\Models\Query');
-		}
-		{
-			$action = 'read';
-			$request = $this->getRequestV1UsersSelect_2();
-			$records = $request->getQuery()->toArray();
-			$query = \Devapt\Models\QueryBuilderV1::buildFromArray($action, $model, $records, null);
-			$this->object($query)->isInstanceOf('\Devapt\Models\Query');
-		}
-		{
-			$action = 'read';
-			$request = $this->getRequestV1UsersSelect_3();
-			$records = $request->getQuery()->toArray();
-			$query = \Devapt\Models\QueryBuilderV1::buildFromArray($action, $model, $records, null);
-			$this->object($query)->isInstanceOf('\Devapt\Models\Query');
-		}
-		{
-			$action = 'read';
-			$request = $this->getRequestV1UsersInsert_1();
-			$records = $request->getQuery()->toArray();
-			$query = \Devapt\Models\QueryBuilderV1::buildFromArray($action, $model, $records, null);
-			$this->object($query)->isInstanceOf('\Devapt\Models\Query');
-		}
+		
+		
+		// TEST: DELETE NOTHING QUERY IS NULL
+		$action = 'delete';
+		$query = $users_model_test->getQueryFromRequest(null, $action, null);
+		$this->variable($query)->IsNull();
+		
+		
+		// TEST: DELETE NOTHING QUERY IS NULL
+		$query = $users_model_test->getQueryDeleteRecords('1', null);
+		$this->variable($query)->IsNull();
+		
+		
+		// TEST: DELETE EMPTY RECORDS QUERY IS NULL
+		$query = $users_model_test->getQueryDeleteRecords('1', array());
+		$this->variable($query)->IsNull();
+		
+		
+		// TEST: DELETE ONE RECORD QUERY WITH LOGIN
+		$records = array();
+		$records[] = array( 'login'=>'test123' );
+		$query = $users_model_test->getQueryDeleteRecords('1', $records, null);
+		$this->variable($query)->IsNotNull();
+		$sql_str = $users_model_test->getQuerySqlString($query, 'delete');
+		// echo 'sql_str:'.$sql_str;
+		$target_sql = "DELETE FROM `users` WHERE `login` = 'test123'";
+		$this->string($sql_str)->isIdenticalTo($target_sql);
+		
+		
+		// TEST: DELETE ONE RECORD QUERY WITH URL ID
+		$records = array();
+		$query = $users_model_test->getQueryDeleteRecords('1', $records, '123');
+		$this->variable($query)->IsNotNull();
+		$sql_str = $users_model_test->getQuerySqlString($query, 'delete');
+		// echo 'sql_str:'.$sql_str;
+		$target_sql = "DELETE FROM `users` WHERE `id_user` = '123'";
+		$this->string($sql_str)->isIdenticalTo($target_sql);
+		
+		
+		// TEST: DELETE ONE RECORD QUERY WITH QUERY ID
+		$records = array();
+		$records[] = array( 'id_user'=>'123' );
+		$query = $users_model_test->getQueryDeleteRecords('1', $records, null);
+		$this->variable($query)->IsNotNull();
+		$sql_str = $users_model_test->getQuerySqlString($query, 'delete');
+		// echo 'sql_str:'.$sql_str;
+		$target_sql = "DELETE FROM `users` WHERE `id_user` = '123'";
+		$this->string($sql_str)->isIdenticalTo($target_sql);
 	}
 }

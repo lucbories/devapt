@@ -37,6 +37,9 @@ function(Devapt, DevaptTrace, DevaptTypes, DevaptOptions, DevaptClasses, DevaptC
 		self.class_name			= 'DevaptRow';
 		self.is_view			= true;
 		
+		self.items_jquery_parent = null;
+		self.items_jquery_filter = 'li';
+		
 		
 		/**
 		 * @public
@@ -86,6 +89,8 @@ function(Devapt, DevaptTrace, DevaptTypes, DevaptOptions, DevaptClasses, DevaptC
 			self.content_jqo.addClass('row');
 			self.content_jqo.addClass('devapt_row');
 			self.parent_jqo.append(self.content_jqo);
+			
+			self.items_jquery_parent = self.content_jqo;
 			
 			
 			self.leave(context, 'success');

@@ -63,6 +63,8 @@ function(Devapt, DevaptTrace, DevaptTypes, DevaptOptions, DevaptClasses,
 		 */
 		self.clone_object = function(arg_object_to_clone)
 		{
+			// console.log(arg_object_to_clone, 'DevaptObjectBase.arg_object_to_clone');
+			
 			// NULL OR SIMPLE TYPE (NOT OBJECT)
 			if (arg_object_to_clone == null || typeof(arg_object_to_clone) != 'object')
 			{
@@ -75,12 +77,22 @@ function(Devapt, DevaptTrace, DevaptTypes, DevaptOptions, DevaptClasses,
 				var tmp = new Array();
 				for(key in arg_object_to_clone)
 				{
-					tmp.push(arg_object_to_clone[key]);
+					var cloned_object = DevaptObjectBase.clone_object(arg_object_to_clone[key]);
+					cloned_object.is_cloned = true;
+					tmp.push(cloned_object);
 				}
+				
+				// console.log(tmp, 'DevaptObjectBase.cloned array');
+				// console.log(arg_object_to_clone, 'DevaptObjectBase.arg array');
 				return tmp;
 			}
 			
-			return jQuery.extend(true, {}, arg_object_to_clone);
+			// OBJECT
+			var cloned_object = jQuery.extend(true, {}, arg_object_to_clone);
+			cloned_object.is_cloned = true;
+			// console.log(cloned_object, 'DevaptObjectBase.cloned object');
+			// console.log(arg_object_to_clone, 'DevaptObjectBase.arg object');
+			return cloned_object;
 		}
 		
 		

@@ -434,11 +434,11 @@ final class Trace
 			{
 				self::$logger->addWriter(new \Zend\Log\Writer\Null);
 			}
-			Trace::info('Trace init success');
+			// Trace::info('Trace init success');
 		}
 		else
 		{
-			Trace::info('Trace init failure');
+			// Trace::info('Trace init failure');
 		}
 		
 		return $result;

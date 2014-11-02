@@ -45,9 +45,14 @@ function(DevaptTypes)
 			self.push_trace(self.trace, self.mixin_callback_trace);
 			var context = 'do_callback(callback,operands)';
 			self.enter(context, '');
+			// self.value(context, 'arg_callback', arg_callback);
+			
 			
 			var cb_result = null;
-			
+			if ( DevaptTypes.is_null(arg_operands_array) )
+			{
+				arg_operands_array = [];
+			}
 			if (arg_callback && typeof(arg_callback) === 'function')
 			{
 				self.step(context, 'call function callback');
@@ -61,6 +66,8 @@ function(DevaptTypes)
 				var cb_object	= arg_callback[0];
 				var cb_method	= arg_callback[1];
 				var cb_operands	= [];
+				// self.value(context, 'arg_callback[0]', arg_callback[0]);
+				// self.value(context, 'arg_callback[1]', arg_callback[1]);
 				
 				// CHECK CALLBACK
 				self.assertNotNull(context, 'cb_object', cb_object);

@@ -162,8 +162,10 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptClasses, DevaptObject)
 			// CREATE REFERRED OBJECT
 			var deferred = $.Deferred();
 			
-			// FAILURE
+			// GET DATAS
 			var datas_records = self.get_datas_array();
+			
+			// FAILURE
 			if ( ! DevaptTypes.is_array(datas_records) )
 			{
 				deferred.reject();

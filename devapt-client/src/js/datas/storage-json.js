@@ -37,7 +37,7 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptOptions, DevaptClasses, Devapt
 		self.inheritFrom(arg_name, arg_options, false);
 		
 		// INIT
-		self.trace				= true;
+		self.trace				= false;
 		self.class_name			= 'DevaptJsonStorage';
 		self.is_storage			= true;
 		
@@ -63,10 +63,9 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptOptions, DevaptClasses, Devapt
 			}
 			
 			// API STORAGE ATTRIBUTES
-			self.is_valid		= false;
 			self.is_sync		= false;
 			self.is_cached		= false;
-			self.cache_ttl		= null;
+			// self.cache_ttl		= null;
 			
 			// JSON STORAGE ATTRIBUTES
 			// self.http_method_read	= 'GET';
@@ -83,11 +82,26 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptOptions, DevaptClasses, Devapt
 			
 			// CONSTRUCTOR END
 			self.leave(context, 'success');
-		}
+		};
 		
 		
 		// CONSTRUCTOR END
 		self.DevaptJsonStorage_contructor();
+		
+		
+		
+		/**
+		 * @memberof				DevaptJsonStorage
+		 * @public
+		 * @method					DevaptJsonStorage.is_valid()
+		 * @desc					Test if the storage engine is valid
+		 * @return {boolean}		Is valid ?
+		 */
+		self.is_valid = function()
+		{
+			// TODO
+			return true;
+		};
 		
 		
 		
@@ -106,24 +120,32 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptOptions, DevaptClasses, Devapt
 			
 			
 			// CREATE AJAX REQUEST
-			var url = self.url_read;
-			var ajax_promise = $.ajax(
-				{
-					contentType	: self.http_format + '; charset=' + self.http_charset,
-					dataType	: self.data_type,
-					async		: ! self.is_sync,
-					cache		: self.is_cached,
-					type		: (! self.http_method_read || self.is_cached) ? 'GET' : self.http_method_read,
-					url			: url,
-					timeout		: self.http_timeout,
-					data		: null
-				}
-			);
+			// var url = self.url_read;
+			var url = self.url_read + '?query_api=2';
+			var ajax_settings = {
+				contentType	: self.http_format + '; charset=' + self.http_charset,
+				dataType	: self.data_type,
+				async		: ! self.is_sync,
+				cache		: self.is_cached,
+				type		: (! self.http_method_read || self.is_cached) ? 'GET' : self.http_method_read,
+				url			: url,
+				timeout		: self.http_timeout,
+				data		: null
+			};
+			// console.log(ajax_settings);
 			
+			var ajax_promise = $.ajax(ajax_settings);
+			// console.log(ajax_promise);
+			// ajax_promise.done(
+				// function(result)
+				// {
+					// console.log(result, 'storage-json.result');
+				// }
+			// );
 			
 			self.leave(context, self.msg_success_promise);
 			return ajax_promise;
-		}
+		};
 		/*
 			TEST:
 			require(['datas/storage-json'],
@@ -150,15 +172,15 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptOptions, DevaptClasses, Devapt
 			
 			
 			// CREATE AJAX REQUEST
-			// var json_datas = arg_query.get_json();
-			var json_datas = {
-				query_json: {
-					action: 'select_count',
-					one_field: 'id_user',
-					values: null,
-					values_count: 0
-				}
-			};
+			var json_datas = arg_query ? arg_query.get_json() : null;
+			// var json_datas = {
+				// query_json: {
+					// action: 'select_count',
+					// one_field: 'id_user',
+					// values: null,
+					// values_count: 0
+				// }
+			// };
 			var url = self.url_read + '?query_api=2';
 			var ajax_promise = $.ajax(
 				{
@@ -176,7 +198,7 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptOptions, DevaptClasses, Devapt
 			
 			self.leave(context, self.msg_success_promise);
 			return ajax_promise;
-		}
+		};
 		/*
 			TEST:
 			require(['datas/storage-json'],
@@ -210,7 +232,7 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptOptions, DevaptClasses, Devapt
 					query_json: {
 						action: 'insert',
 						values: arg_records,
-						values_count: 1
+						values_count: arg_records.length
 					}
 				};
 			var url = self.url_create + '?query_api=2';
@@ -230,7 +252,7 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptOptions, DevaptClasses, Devapt
 			
 			self.leave(context, self.msg_success_promise);
 			return ajax_promise;
-		}
+		};
 		/*
 			TEST:
 			require(['datas/storage-json'],
@@ -284,7 +306,7 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptOptions, DevaptClasses, Devapt
 			
 			self.leave(context, self.msg_success_promise);
 			return ajax_promise;
-		}
+		};
 		/*
 			TEST:
 			require(['datas/storage-json'],
@@ -338,7 +360,7 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptOptions, DevaptClasses, Devapt
 			
 			self.leave(context, self.msg_success_promise);
 			return ajax_promise;
-		}
+		};
 		/*
 			TEST:
 			require(['datas/storage-json'],

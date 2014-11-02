@@ -56,7 +56,7 @@ function(Devapt, DevaptTraces, DevaptTypes)
 		);
 		
 		
-		test('DevaptTypes.is/are array,object,null,undefined', 5+3+10+3+12+3+3+10,
+		test('DevaptTypes.is/are array,object,null,undefined', 5+3+10+3+12+3+3+10+14,
 			function()
 			{
 				// 5
@@ -129,6 +129,25 @@ function(Devapt, DevaptTraces, DevaptTypes)
 				equal(DevaptTypes.are_object([0,{}]),					false, 'DevaptTypes.are_object: [0,{}]');
 				equal(DevaptTypes.are_object([{},{}]),					true, 'DevaptTypes.are_object: [{},{}]');
 				equal(DevaptTypes.are_object([{a:'a'},{}]),				true, 'DevaptTypes.are_object: [{a:\'a\'},{}]');
+				
+				// is_object_with: 14
+				equal(DevaptTypes.is_object_with(0),							false, 'DevaptTypes.is_object_with: 0, nothing');
+				equal(DevaptTypes.is_object_with(0, []),						false, 'DevaptTypes.is_object_with: 0, []');
+				equal(DevaptTypes.is_object_with(0, ['a', 'b']),				false, 'DevaptTypes.is_object_with: 0, [a, b]');
+				
+				equal(DevaptTypes.is_object_with({}),							false, 'DevaptTypes.is_object_with: {}');
+				equal(DevaptTypes.is_object_with({}, []),						true, 'DevaptTypes.is_object_with: {}, []');
+				equal(DevaptTypes.is_object_with({}, ['a', 'b']),				false, 'DevaptTypes.is_object_with: {}, [a, b]');
+				
+				equal(DevaptTypes.is_object_with({a:'a'}),						false, 'DevaptTypes.is_object_with: {a:\'a\'}');
+				equal(DevaptTypes.is_object_with({a:'a'}, []),					true, 'DevaptTypes.is_object_with: {a:\'a\'}, []');
+				equal(DevaptTypes.is_object_with({a:'a'}, ['a']),				true, 'DevaptTypes.is_object_with: {a:\'a\'}, [a]');
+				equal(DevaptTypes.is_object_with({a:'a'}, ['a', 'b']),			false, 'DevaptTypes.is_object_with: {a:\'a\'}, [a, b]');
+				
+				equal(DevaptTypes.is_object_with({a:'aa', b:'bb'}),				false, 'DevaptTypes.is_object_with: {a:\'aa\', b:\'bb\'}');
+				equal(DevaptTypes.is_object_with({a:'aa', b:'bb'}, []),			true, 'DevaptTypes.is_object_with: {a:\'aa\', b:\'bb\'}, []');
+				equal(DevaptTypes.is_object_with({a:'aa', b:'bb'}, ['a']),		true, 'DevaptTypes.is_object_with: {a:\'aa\', b:\'bb\'}, [a]');
+				equal(DevaptTypes.is_object_with({a:'aa', b:'bb'}, ['a', 'b']),	true, 'DevaptTypes.is_object_with: {a:\'aa\', b:\'bb\'}, [a, b]');
 			}
 		);
 		

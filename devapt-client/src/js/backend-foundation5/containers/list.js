@@ -34,6 +34,8 @@ function(Devapt, DevaptTypes, DevaptOptions, DevaptClasses, DevaptContainer, und
 		self.trace				= false;
 		self.class_name			= 'DevaptList';
 		self.is_view			= true;
+		self.items_jquery_parent = null;
+		self.items_jquery_filter = 'li';
 		
 		
 		/**
@@ -58,15 +60,46 @@ function(Devapt, DevaptTypes, DevaptOptions, DevaptClasses, DevaptContainer, und
 			
 			
 			// CONSTRUCTOR END
-			self.leave(context, 'success');
+			self.leave(context, self.msg_success);
 		}
 		
 		
 		// CONTRUCT INSTANCE
 		self.DevaptList_contructor();
-		// console.log(self.bind, 'self.bind');
-		// self.bind('*', 'records', 'login', 'view_access_users_details', 'filters', 'login');
-		self.bind('devapt.events.list.selected', 'update', 'records', 'login', 'view_access_users_details', 'filters', 'login');
+		
+		
+		
+		/**
+		 * @public
+		 * @memberof			DevaptList
+		 * @desc				Get a container item node by the node item text
+		 * @param {string}		arg_node_item_text		node item text
+		 * @return {object}		node jQuery object
+		 */
+		self.get_node_by_content = function(arg_node_item_text)
+		{
+			var self = this;
+			var context = 'get_node_by_content(text)';
+			self.enter(context, '');
+			
+			
+			var node_jqo = null;
+			
+			// SELECT ANCHOR BY CONTENT
+			var a_jqo = $('li>a:contains("' + arg_node_item_text + '"):eq(0)', self.items_jquery_parent);
+			if ( ! a_jqo)
+			{
+				self.leave(context, self.msg_failure);
+				return null;
+			}
+			
+			// GET ANCHOR PARENT
+			node_jqo = a_jqo.parent();
+			
+			
+			self.leave(context, self.msg_success);
+			return node_jqo;
+		}
 		
 		
 		/**
@@ -86,6 +119,8 @@ function(Devapt, DevaptTypes, DevaptOptions, DevaptClasses, DevaptContainer, und
 			self.content_jqo.addClass('side-nav');
 			self.parent_jqo.append(self.content_jqo);
 			
+			self.items_jquery_parent = self.content_jqo;
+			
 			
 			self.leave(context, 'success');
 		}
@@ -104,17 +139,16 @@ function(Devapt, DevaptTypes, DevaptOptions, DevaptClasses, DevaptContainer, und
 			var context = 'render_item_node(index)';
 			self.enter(context, '');
 			
+			
 			var node_jqo = $('<li>');
 			node_jqo.click(
 				function()
 				{
 					var node_index = parseInt( node_jqo.index() );
-					var node_value = node_jqo.text();
-					console.log(node_index, 'list.clicked.index');
-					console.log(node_value, 'list.clicked.value');
-					self.fire_event('devapt.events.list.selected', [node_index, node_value]);
+					self.select_item_node(node_index);
 				}
 			);
+			
 			
 			self.leave(context, 'success');
 			return node_jqo;
@@ -157,6 +191,7 @@ function(Devapt, DevaptTypes, DevaptOptions, DevaptClasses, DevaptContainer, und
 			var self = this;
 			var context = 'render_item_text(deferred,jqo,content)';
 			self.enter(context, '');
+			self.value(context, 'arg_item_content', arg_item_content);
 			
 			var a_jqo = $('<a href="#">');
 			a_jqo.html(arg_item_content);
@@ -168,11 +203,11 @@ function(Devapt, DevaptTypes, DevaptOptions, DevaptClasses, DevaptContainer, und
 	}
 	
 	
-	// INTROSPETION : REGISTER CLASS
+	// INTROSPECTION : REGISTER CLASS
 	DevaptClasses.register_class(DevaptList, ['DevaptContainer'], 'Luc BORIES', '2014-05-09', 'Simple view class to display a list of items.');
 	
 	
-	// INTROSPETION : REGISTER OPTIONS
+	// INTROSPECTION : REGISTER OPTIONS
 	
 	
 	return DevaptList;

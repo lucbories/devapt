@@ -18,6 +18,7 @@ function(Devapt, DevaptTraces, DevaptTypes)
 	{
 		console.log('Running qUnit test for DevaptTypes');
 		
+		// TODO 
 		test('DevaptTypes.l/rpad', 2,
 			function()
 			{

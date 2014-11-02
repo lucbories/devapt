@@ -13,8 +13,15 @@
 
 namespace Devapt\Models;
 
+// ZEND IMPORTS
+use Zend\Db\Sql\Predicate\PredicateSet;
+
 // DEVAPT IMPORTS
 use Devapt\Core\Trace;
+use Devapt\Models\Sql;
+// use Devapt\Models\Filters\FilterNode;
+use Devapt\Models\Filters\QueryFiltersBuilderV1;
+use \Devapt\Security\DbConnexions;
 
 final class QueryBuilderV1
 {
@@ -161,7 +168,7 @@ final class QueryBuilderV1
 		if ( is_array($values) )
 		{
 			Trace::step($context, 'set values', self::$TRACE_QUERY_BUILDER);
-			$query->setOperandsValues($values);
+			$query->setOperandsValues($values, count($values));
 		}
 		
 		
@@ -198,19 +205,9 @@ final class QueryBuilderV1
 		$filters = Query::getRequestArrayValue($arg_request, self::$OPTION_FILTERS, '|', null);
 		if ( is_array($filters) )
 		{
-			Trace::step($context, 'set filters', self::$TRACE_QUERY_BUILDER);
+			Trace::step($context, 'set filters to build', self::$TRACE_QUERY_BUILDER);
 			
-			$filters_records = array();
-			foreach($filters as $filter_str)
-			{
-				$filter_record = explode(',', $filter_str);
-				if ( is_array($filter_record) && count($filter_record) >= 2 )
-				{
-					$filters_records[] = $filter_record;
-				}
-			}
-			
-			$query->setFilters($filters_records);
+			$query->setFiltersToBuild($filters);
 		}
 		
 		
@@ -229,15 +226,62 @@ final class QueryBuilderV1
 		if ( is_array($joins) )
 		{
 			Trace::step($context, 'set joins', self::$TRACE_QUERY_BUILDER);
-			foreach($joins as $join_record)
+			
+			$default_db		= DbConnexions::getConnexionDatabase($arg_model->getModelConnexionName());
+			$default_table	= $arg_model->getModelCrudTableName();
+			
+			$query_joins_records = array();
+			foreach($joins as $join_record_str)
 			{
+				Trace::value($context, 'join_record_str', $join_record_str, self::$TRACE_QUERY_BUILDER);
+				
+				$join_record_array = explode(',', $join_record_str);
+				$join_record = array();
+				foreach($join_record_array as $join_record_item_str)
+				{
+					$join_record_item = explode('=', $join_record_item_str);
+					if (count($join_record_item) !== 2)
+					{
+						Trace::value($context, 'join_record_item_str', $join_record_item_str, self::$TRACE_QUERY_BUILDER);
+						Trace::leaveko($context, 'bad join record item', null, self::$TRACE_QUERY_BUILDER);
+					}
+					$key = $join_record_item[0];
+					$value = $join_record_item[1];
+					$join_record[$key] = $value;
+				}
+				
+				// CHECK JOIN RECORD
 				if ( ! self::checkJoinRecord($join_record) )
 				{
+					Trace::value($context, 'join_record', $join_record, self::$TRACE_QUERY_BUILDER);
 					Trace::leaveko($context, 'bad join record', null, self::$TRACE_QUERY_BUILDER);
 				}
+				
+				// CREATE QUERY JOIN RECORD
+				$query_join_record = array();
+				$query_join_record['mode'] = array_key_exists('join_mode', $join_record) ? $join_record['join_mode'] : 'INNER';
+				$query_join_record['mode'] = strtolower( $query_join_record['mode'] );
+				if ( ! in_array($query_join_record['mode'], Query::$JOIN_MODES) )
+				{
+					$query_join_record['mode'] = 'inner';
+				}
+				
+				$query_join_record['source'] = array();
+				$query_join_record['source']['db'] = array_key_exists('db', $join_record) ? $join_record['db'] : $default_db;
+				$query_join_record['source']['table'] = array_key_exists('table', $join_record) ? $join_record['table'] : $default_table;
+				$query_join_record['source']['column'] = $join_record['column'];
+				
+				$query_join_record['target'] = array();
+				$query_join_record['target']['db'] = array_key_exists('join_db', $join_record) ? $join_record['join_db'] : $default_db;
+				$query_join_record['target']['table'] = $join_record['join_table'];
+				$query_join_record['target']['table_alias'] = array_key_exists('join_table_alias', $join_record) ? $join_record['join_table_alias'] : $join_record['join_table'];
+				$query_join_record['target']['column'] = $join_record['join_column'];
+				
+				// ADD QUERY JOIN RECORD
+				$query_joins_records[] = $query_join_record;
 			}
 			
-			$query->setJoins($joins);
+			$query->setJoins($query_joins_records);
 		}
 		
 		
@@ -269,7 +313,7 @@ final class QueryBuilderV1
 	 * @param[in]	arg_action		action name: create/read/update/delete
 	 * @param[in]	arg_model		model (object)
 	 * @param[in]	arg_settings	settings (array)
-	 * @param[in]	arg_id			record id (string|integer)
+	 * @param[in]	arg_id			record id (string|integer|array)
 	 * @return		Query object or null
 	 */
 	static public function buildFromArray($arg_action, $arg_model, $arg_settings, $arg_id)
@@ -381,7 +425,7 @@ final class QueryBuilderV1
 		$filters	= array_key_exists(self::$OPTION_FILTERS, $arg_settings) ? $arg_settings[self::$OPTION_FILTERS] : null;
 		if ( is_array($filters) )
 		{
-			$query->setGroups($filters);
+			$query->setFiltersToBuild($filters);
 		}
 		
 		
@@ -449,8 +493,9 @@ final class QueryBuilderV1
 		Trace::enter($context, '', self::$TRACE_QUERY_BUILDER);
 		
 		// CHECK JOIN RECORD
-		if ( ! is_array($arg_join_record) || count($arg_join_record) < 6 || count($arg_join_record) > 7)
+		if ( ! is_array($arg_join_record) || count($arg_join_record) < 6 || count($arg_join_record) > 8)
 		{
+			Trace::value($context, 'count($arg_join_record)', count($arg_join_record), self::$TRACE_QUERY_BUILDER);
 			return Trace::leaveko($context, 'bad join record', false, self::$TRACE_QUERY_BUILDER);
 		}
 		

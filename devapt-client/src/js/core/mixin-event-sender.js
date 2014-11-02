@@ -44,26 +44,27 @@ define(['core/types', 'core/event', 'core/events'], function(DevaptTypes, Devapt
 			this.enter(context, '');
 			
 			
-			// GET EVENT
-			var event = arg_event_name_or_obj;
+			// GET EVENT NAME
+			var event = null;
+			var event_name = null;
 			if ( DevaptTypes.is_string(arg_event_name_or_obj) )
 			{
-				event = new DevaptEvent(arg_event_name_or_obj, this, arg_operands_or_nothing);
+				event_name = arg_event_name_or_obj;
 			}
-			else if ( ! event instanceof DevaptEvent )
+			else if ( event instanceof DevaptEvent )
 			{
-				this.leave(context, 'bad event object of type[' + typeof event + ']');
+				event = arg_event_name_or_obj;
+				event_name = event.name;
+			}
+			else
+			{
+				this.leave(context, 'bad event name or object of type [' + typeof arg_event_name_or_obj + ']');
 				this.pop_trace();
 				return false;
 			}
 			
-			
-			// REGISTER EVENT
-			DevaptEvents.add(event);
-			
-			
 			// GET CALLBACKS ARRAY
-			var event_callbacks = this.events_callbacks[event.name];
+			var event_callbacks = this.events_callbacks[event_name];
 			
 			// GET ALL EVENTS CALLBACK
 			var all_events_callbacks = this.events_callbacks['*'];
@@ -71,6 +72,25 @@ define(['core/types', 'core/event', 'core/events'], function(DevaptTypes, Devapt
 			{
 				event_callbacks = all_events_callbacks.concat(event_callbacks);
 			}
+			
+			// TEST IF CALLBACKS EXISTS
+			if ( ! DevaptTypes.is_array(event_callbacks) || event_callbacks.length === 0 )
+			{
+				this.leave(context, this.msg_success + ': no listeners->not fired');
+				this.pop_trace();
+				return true;
+			}
+			
+			// BUILD EVENT IF NEEDED
+			if ( event === null )
+			{
+				event = new DevaptEvent(event_name, this, arg_operands_or_nothing);
+			}
+			
+			
+			// REGISTER EVENT
+			// DevaptEvents.add(event);
+			
 			
 			// FIRE EVENT
 			if (event_callbacks)

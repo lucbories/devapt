@@ -29,6 +29,9 @@ class ModelController extends AbstractController
 {
 	// STATIC ATTRIBUTES
 	
+	/// @brief TRACE FLAG
+	static public $TRACE_MODEL_CONTROLLER = false;
+	
 	/// @brief CONTROLLER ACTION NAME FOR CREATE OPERATION
 	public static $ACTION_CREATE = 'create';
 	
@@ -63,7 +66,7 @@ class ModelController extends AbstractController
 	 */
 	public function doGetAction($arg_resource_name, $arg_action_name, $arg_id, $arg_request, $arg_response)
 	{
-		$context = 'ModelController.doGetAction: ';
+		$context = 'ModelController::doGetAction: ';
 		
 		
 		// CHECK ACTION NAME
@@ -81,7 +84,7 @@ class ModelController extends AbstractController
 		}
 		
 		
-		Trace::info('ModelController: Process GET model action success');
+		Trace::step($context, 'Process GET model action success', self::$TRACE_MODEL_CONTROLLER);
 		return true;
 	}
 	
@@ -97,7 +100,7 @@ class ModelController extends AbstractController
 	 */
 	public function doPutAction($arg_resource_name, $arg_action_name, $arg_id, $arg_request, $arg_response)
 	{
-		$context = 'ModelController.doGPutAction: ';
+		$context = 'ModelController::doGPutAction: ';
 		
 		
 		// CHECK ACTION NAME
@@ -112,7 +115,7 @@ class ModelController extends AbstractController
 		}
 		
 		
-		Trace::info('ModelController: Process PUT model action success');
+		Trace::step($context, 'Process PUT model action success', self::$TRACE_MODEL_CONTROLLER);
 		return true;
 	}
 	
@@ -128,7 +131,7 @@ class ModelController extends AbstractController
 	 */
 	public function doPostAction($arg_resource_name, $arg_action_name, $arg_id, $arg_request, $arg_response)
 	{
-		$context = 'ModelController.doPostAction: ';
+		$context = 'ModelController::doPostAction: ';
 		
 		
 		// CHECK ACTION NAME
@@ -146,7 +149,7 @@ class ModelController extends AbstractController
 		}
 		
 		
-		Trace::info('ModelController: Process POST model action success');
+		Trace::step($context, 'Process POST model action success', self::$TRACE_MODEL_CONTROLLER);
 		return true;
 	}
 	
@@ -162,7 +165,7 @@ class ModelController extends AbstractController
 	 */
 	public function doDeleteAction($arg_resource_name, $arg_action_name, $arg_id, $arg_request, $arg_response)
 	{
-		$context = 'ModelController.doDeleteAction: ';
+		$context = 'ModelController;;doDeleteAction: ';
 		
 		
 		// CHECK ACTION NAME
@@ -177,7 +180,7 @@ class ModelController extends AbstractController
 		}
 		
 		
-		Trace::info('ModelController: Process DELETE model action success');
+		Trace::step($context, 'Process DELETE model action success', self::$TRACE_MODEL_CONTROLLER);
 		return true;
 	}
 	
@@ -193,7 +196,7 @@ class ModelController extends AbstractController
 	 */
 	public function doModelAction($arg_resource_name, $arg_action_name, $arg_id, $arg_request, $arg_response)
 	{
-		$context = 'ModelController.doModelAction: ';
+		$context = 'ModelController::doModelAction: ';
 		
 		// CHECK ACTION NAME
 		if ( ! is_string($arg_action_name) )
@@ -288,7 +291,7 @@ class ModelController extends AbstractController
 		$arg_response->send();
 		
 		
-		Trace::info('ModelController: Process model action success ['.$arg_resource_name.']');
+		Trace::step($context, 'Process model action success ['.$arg_resource_name.']', self::$TRACE_MODEL_CONTROLLER);
 		return true;
 	}
 }

@@ -28,7 +28,7 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptEvent)
 	 * @static
 	 * @desc		Trace flag
 	 */
-	DevaptEvents.events_trace = true;
+	DevaptEvents.events_trace = false;
 	
 	
 	/**
@@ -133,7 +133,7 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptEvent)
 	 * @public
 	 * @method				DevaptEvents.add(arg_event)
 	 * @desc				Append a fired event to the events repository (static method)
-	 * @param {object}		arg_event
+	 * @param {object}		arg_event	event object
 	 * @return {nothing}
 	 */
 	DevaptEvents.add = function(arg_event)
@@ -159,7 +159,7 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptEvent)
 	 * @public
 	 * @method				DevaptEvents.fire(arg_event, arg_target)
 	 * @desc				Fire an event to the events repository (static method)
-	 * @param {object}		arg_event
+	 * @param {object}		arg_event	event object
 	 * @return {nothing}
 	 */
 	DevaptEvents.fire = function(arg_event)
@@ -186,7 +186,7 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptEvent)
 		}
 		
 		// REGISTER EVENT
-		DevaptEvents.add(event);
+		// DevaptEvents.add(event);
 		
 		
 		// GET CALLBACKS ARRAY
@@ -238,7 +238,7 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptEvent)
 			var event = DevaptEvents.events_buffer[event_index];
 			
 			// REGISTER EVENT
-			DevaptEvents.add(event);
+			// DevaptEvents.add(event);
 			
 			
 			// GET CALLBACKS ARRAY

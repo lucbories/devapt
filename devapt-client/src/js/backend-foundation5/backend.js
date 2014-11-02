@@ -223,8 +223,9 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptResources, DevaptFactory, unde
 		DevaptTraces.trace_enter(context, '', DevaptFoundation5Backend.backend_trace);
 		
 		
-		// INIT VIEW OBJECT
+		// INIT VIEW OBJECT ANBD PROMISE
 		var view = null;
+		var promise = null;
 		
 		
 		// CHECK NODE
@@ -247,7 +248,7 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptResources, DevaptFactory, unde
 			var master_deferred = $.Deferred();
 			
 			// GET MAIN PROMISE
-			var promise = master_deferred.promise();
+			promise = master_deferred.promise();
 			
 			// CHECK VIEW OBJECT
 			if ( ! view.is_view )
@@ -264,8 +265,6 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptResources, DevaptFactory, unde
 		}
 		
 		
-		// INIT PROMISE
-		var promise = null;
 		
 		
 		// VIEW ARG IS A STRING
@@ -298,30 +297,38 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptResources, DevaptFactory, unde
 		
 		
 		// RENDER VIEW
-		promise = promise.then(
+		promise.then(
 			function(view)
 			{
 				return (
-					function(view, node_jqo)
+					function(arg_view, node_jqo)
 					{
-						DevaptTraces.trace_step(context, 'success: promise is resolved: then callback for [' + view.name + ']', DevaptFoundation5Backend.backend_trace);
+						DevaptTraces.trace_step(context, 'success: promise is resolved: then callback for [' + arg_view.name + ']', DevaptFoundation5Backend.backend_trace);
 						
-						if ( ! view.is_view )
+						if ( ! arg_view.is_view )
 						{
-							// console.log(view, 'view');
+							// console.log(arg_view, 'view');
 							// console.log(node_jqo, 'node_jqo');
-							DevaptTraces.trace_leave(context, 'failure: promise is resolved: then callback: bad view resource [' + view.name + ']', DevaptFoundation5Backend.backend_trace);
-							return;
+							// CREATE MAIN DEFERRED OBJECT
+							var error_deferred = $.Deferred();
+							error_deferred.reject();
+							
+							// GET MAIN PROMISE
+							var error_promise = error_deferred.promise();
+							
+							DevaptTraces.trace_leave(context, 'failure: promise is resolved: then callback: bad view resource [' + arg_view.name + ']', DevaptFoundation5Backend.backend_trace);
+							return error_promise;
 						}
 						
+						// console.log(node_jqo, 'backend.render_view.set_parent.jqo for [' + arg_view_name_or_object + ']');
 						if ( ! DevaptTypes.is_null(node_jqo) )
 						{
-							view.set_parent(node_jqo);
+							arg_view.set_parent(node_jqo);
 						}
 						
-						var render_promise = view.render();
+						var render_promise = arg_view.render();
 						
-						DevaptTraces.trace_leave(context, 'success: promise is resolved: then callback: async render promise [' + view.name + ']', DevaptFoundation5Backend.backend_trace);
+						DevaptTraces.trace_leave(context, 'success: promise is resolved: then callback: async render promise [' + arg_view.name + ']', DevaptFoundation5Backend.backend_trace);
 						return render_promise;
 					}
 				)(view, arg_jqo_node);

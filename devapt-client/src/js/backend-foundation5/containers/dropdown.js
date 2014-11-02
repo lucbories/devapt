@@ -35,6 +35,9 @@ function(Devapt, DevaptTypes, DevaptOptions, DevaptClasses, DevaptContainer, und
 		self.class_name			= 'DevaptDropdown';
 		self.is_view			= true;
 		
+		self.items_jquery_parent = null;
+		self.items_jquery_filter = 'li';
+		
 		
 		/**
 		 * @public
@@ -65,6 +68,39 @@ function(Devapt, DevaptTypes, DevaptOptions, DevaptClasses, DevaptContainer, und
 		// CONTRUCT INSTANCE
 		self.DevaptDropdown_contructor();
 		
+			
+		
+		/**
+		 * @public
+		 * @memberof			DevaptDropdown
+		 * @desc				Get a container item node by the node item text
+		 * @param {string}		arg_node_item_text		node item text
+		 * @return {object}		node jQuery object
+		 */
+		self.get_node_by_content = function(arg_node_item_text)
+		{
+			var self = this;
+			var context = 'get_node_by_content(text)';
+			self.enter(context, '');
+			
+			
+			var node_jqo = null;
+			
+			// SELECT ANCHOR BY CONTENT
+			var a_jqo = $('li>a:contains("' + arg_node_item_text + '"):eq(0)', self.items_jquery_parent);
+			if ( ! a_jqo)
+			{
+				self.leave(context, self.msg_failure);
+				return null;
+			}
+			
+			// GET ANCHOR PARENT
+			node_jqo = a_jqo.parent();
+			
+			
+			self.leave(context, self.msg_success);
+			return node_jqo;
+		}
 		
 		
 		/**
@@ -100,6 +136,8 @@ function(Devapt, DevaptTypes, DevaptOptions, DevaptClasses, DevaptContainer, und
 			self.ul_jqo.attr('data-dropdown-content', '');
 			self.ul_jqo.addClass('f-dropdown');
 			
+			self.items_jquery_parent = self.ul_jqo;
+			
 			
 			self.leave(context, 'success');
 		}
@@ -107,18 +145,18 @@ function(Devapt, DevaptTypes, DevaptOptions, DevaptClasses, DevaptContainer, und
 		
 		/**
 		 * @public
-		 * @memberof			DevaptContainer
+		 * @memberof			DevaptDropdown
 		 * @desc				End the render of the container
 		 * @return {nothing}
 		 */
-		self.render_end = function()
+		self.render_end_self = function()
 		{
 			var self = this;
-			var context = 'render_end()';
+			var context = 'render_end_self()';
 			self.enter(context, '');
 			
 			
-			// INIT FOUNDATION
+			// INIT FOUNDATION DROPDONW PLUGIN
 			self.content_jqo.foundation();
 			
 			
@@ -139,7 +177,20 @@ function(Devapt, DevaptTypes, DevaptOptions, DevaptClasses, DevaptContainer, und
 			var context = 'render_item_node(index)';
 			self.enter(context, '');
 			
+			
 			var node_jqo = $('<li>');
+			
+			// HANDLE CLICK
+			node_jqo.click(
+				function()
+				{
+					var node_index = parseInt( node_jqo.index() );
+					self.select_item_node(node_index);
+					
+					self.ul_jqo.toggle('open');
+				}
+			);
+			
 			
 			self.leave(context, 'success');
 			return node_jqo;
@@ -194,35 +245,27 @@ function(Devapt, DevaptTypes, DevaptOptions, DevaptClasses, DevaptContainer, und
 		/**
 		 * @public
 		 * @memberof			DevaptDropdown
-		 * @desc				Append an item to the view
-		 * @param {object}		arg_item_jqo		item jQuery object
-		 * @param {object}		arg_item_record		item record
+		 * @desc				Process event selected
+		 * @param {array}		arg_event_operands		event operands array
 		 * @return {nothing}
 		 */
-		self.append_item_node = function(arg_item_jqo, arg_item_record)
+		self.on_selected_item_event = function(arg_event_operands)
 		{
 			var self = this;
-			var context = 'append_item_node(item node, record)';
+			var context = 'on_selected_item_event(opds)';
 			self.enter(context, '');
 			
 			
-			self.ul_jqo.append(arg_item_jqo);
-			
-			
-			// HANDLE CLICK
-			arg_item_jqo.click(
-				function()
-				{
-					self.fire_event('devapt.dropdown.item.clicked', [arg_item_jqo]);
-					console.log(arg_item_jqo, 'dropdown item fired');
-					self.ul_jqo.toggle('open');
-				}
-			);
+			// GET LABEL
+			var selected_map = arg_event_operands[2];
+			self.a_jqo.html(selected_map.label);
 			
 			
 			self.leave(context, self.msg_success);
-			return true;
 		}
+		
+		
+		self.add_event_callback('devapt.events.container.selected', [self, self.on_selected_item_event], false);
 	}
 	
 	

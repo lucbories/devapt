@@ -213,7 +213,7 @@ class Model extends AbstractResource
 	
 	/**
 	 * @brief		Constructor
-	 $ @param[in]	arg_resource_record	resource record
+	 * @param[in]	arg_resource_record	resource record
 	 * @return		nothing
 	 */
 	public function __construct($arg_resource_record)
@@ -524,7 +524,7 @@ class Model extends AbstractResource
 		// CHECK ARGS
 		if ( ! is_array($arg_fields_array) )
 		{
-			Trace::leave($context, 'bad fields array', self::$MODEL_TRACE);
+			Trace::leaveko($context, 'bad fields array', false, self::$MODEL_TRACE);
 			return;
 		}
 		
@@ -700,7 +700,7 @@ class Model extends AbstractResource
 			}
 		}
 		
-		Trace::leaveok($context, '', self::$MODEL_TRACE);
+		Trace::leaveok($context, '', true, self::$MODEL_TRACE);
 	}
 	
 	
@@ -850,6 +850,10 @@ class Model extends AbstractResource
 			$model_result['records']	= $records;
 			$model_result['status']		= 'ok';
 			$model_result['error']		= '';
+		}
+		if ( is_string($records) )
+		{
+			$model_result['error']		= $records;
 		}
 		
 		

@@ -54,7 +54,7 @@ interface SessionsAdapterInterface
      *
      * @return string
      */
-	public function getSessionId;
+	public function getSessionId();
 	
     /**
      * Set the session id
@@ -77,15 +77,15 @@ interface SessionsAdapterInterface
 	 * @param[in] arg_name session name
      * @return nothing
      */
-	public function setSessionName($arg_name
+	public function setSessionName($arg_name);
 	
 	
 	
 	
-	see SessionManager
+//	see SessionManager
 	
 	
-	
+	/*
 	interface StorageInterface extends Traversable, ArrayAccess, Serializable, Countable
 	{
 		public function getRequestAccessTime();
@@ -136,4 +136,5 @@ interface SessionsAdapterInterface
     public function setValidatorChain(EventManagerInterface $chain);
     public function getValidatorChain();
     public function isValid();
+    */
 }

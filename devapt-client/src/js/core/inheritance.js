@@ -9,7 +9,7 @@
  * @license		Apache License Version 2.0, January 2004; see LICENSE.txt or http://www.apache.org/licenses/
  */
 
-define(['Devapt', 'core/traces', 'core/types', 'core/classes'], function(Devapt, DevaptTraces, DevaptType, DevaptClasses)
+define(['Devapt', 'core/traces', 'core/types', 'core/classes'], function(Devapt, DevaptTraces, DevaptTypes, DevaptClasses)
 {
 	/**
 	 * @memberof	DevaptInheritance
@@ -26,7 +26,7 @@ define(['Devapt', 'core/traces', 'core/types', 'core/classes'], function(Devapt,
 	 * @static
 	 * @desc		Trace flag
 	 */
-	DevaptInheritance.inheritance_trace = false;
+	DevaptInheritance.inheritance_trace = true;
 
 
 	/**
@@ -50,7 +50,7 @@ define(['Devapt', 'core/traces', 'core/types', 'core/classes'], function(Devapt,
 	DevaptInheritance.get_inheritances = function()
 	{
 		return DevaptInheritance.inheritances;
-	}
+	};
 
 
 	/**
@@ -91,7 +91,7 @@ define(['Devapt', 'core/traces', 'core/types', 'core/classes'], function(Devapt,
 	 * @method				DevaptInheritance.get_inherited_classes(arg_class_proto)
 	 * @desc				Get all inherited classes
 	 * @param {object}		arg_class_proto				class prototype
-	 * @return {nothing}
+	 * @return {array}		inherited classes array
 	 */
 	DevaptInheritance.get_inherited_classes = function(arg_class_proto)
 	{
@@ -146,7 +146,6 @@ define(['Devapt', 'core/traces', 'core/types', 'core/classes'], function(Devapt,
 			class_name = arg_class_proto;
 			if (class_name == arg_class_proto_inherited.name)
 			{
-				// console.log('test_inheritance: is string : class name == proto');
 				DevaptTraces.trace_leave(context, 'inheritance is true', DevaptInheritance.inheritance_trace);
 				return true;
 			}
@@ -161,7 +160,6 @@ define(['Devapt', 'core/traces', 'core/types', 'core/classes'], function(Devapt,
 				
 				if (arg_class_proto == arg_class_proto_inherited)
 				{
-					// console.log('test_inheritance: is function : proto == proto');
 					DevaptTraces.trace_leave(context, 'inheritance is true', DevaptInheritance.inheritance_trace);
 					return true;
 				}
@@ -176,7 +174,6 @@ define(['Devapt', 'core/traces', 'core/types', 'core/classes'], function(Devapt,
 				{
 					DevaptTraces.trace_step(context, 'proto is not an object', DevaptInheritance.inheritance_trace);
 					
-					// console.log('test_inheritance: arg is not string/function/object');
 					DevaptTraces.trace_leave(context, 'inheritance is false', DevaptInheritance.inheritance_trace);
 					return false
 				}
@@ -185,7 +182,6 @@ define(['Devapt', 'core/traces', 'core/types', 'core/classes'], function(Devapt,
 				
 				if (arg_class_proto.class_name == arg_class_proto_inherited.name || arg_class_proto instanceof arg_class_proto_inherited)
 				{
-					// console.log('test_inheritance: is object : object == proto');
 					DevaptTraces.trace_leave(context, 'inheritance is true', DevaptInheritance.inheritance_trace);
 					return true;
 				}
@@ -193,13 +189,11 @@ define(['Devapt', 'core/traces', 'core/types', 'core/classes'], function(Devapt,
 				class_name = arg_class_proto.class_name;
 			}
 		}
-		// console.log('test_inheritance: ' + class_name + ' inherits ' + arg_class_proto_inherited.name + '?' + '(' + typeof(arg_class_proto) + ',' + typeof(arg_class_proto_inherited) + ')');
 		
 		DevaptTraces.trace_step(context, 'get inheritance record', DevaptInheritance.inheritance_trace);
 		var record = DevaptInheritance.inheritances[class_name];
 		if ( DevaptTypes.is_null(record) )
 		{
-			// console.log('test_inheritance: no record found');
 			DevaptTraces.trace_leave(context, 'inheritance is false', DevaptInheritance.inheritance_trace);
 			return false;
 		}

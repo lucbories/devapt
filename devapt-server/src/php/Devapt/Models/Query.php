@@ -34,7 +34,7 @@ class Query extends AbstractQuery
 	// STATIC ATTRIBUTES
 	
 	/// @brief		trace flag
-	static public $TRACE_QUERY = true;
+	static public $TRACE_QUERY = false;
 	
 	static public $FILTERS_GROUP_OPERATORS	= array('', '(', ')');
 	static public $FILTERS_GROUP_ENTER		= '(';
@@ -44,7 +44,7 @@ class Query extends AbstractQuery
 	static public $FILTERS_JOIN_AND			= 'and';
 	static public $FILTERS_JOIN_OR			= 'or';
 	
-	static public $FILTERS_TYPES = array("String", "Integer", "Float", "Date", "Time", "DateTime", "Boolean");
+	static public $FILTERS_TYPES = array("string", "integer", "float", "date", "time", "datetime", "boolean");
 	
 	static public $FILTERS_OPERATORS = array(
 		// ALL TYPES OPERATORS
@@ -65,6 +65,29 @@ class Query extends AbstractQuery
 		// DATE TIME
 		"time", "hour", "minute", "second"
 		);
+	
+	static public $FILTERS_ALL_OPERATORS = array(
+		// ALL TYPES OPERATORS
+		"equals", "notequals", "isnull", "isnotnull",
+		// STRING OPERATORS
+		"bw", "begins_with", "begins with", "contains", "ew", "ends_with", "ends with", "min length", "max length", "length between", "in",
+		// NUMBER OPERATORS
+		"gt", "ge", "lt", "le", "between",
+		
+		"nothing",
+		// STRING OPERATORS
+		"upper", "lower", "ltrim", "rtrim", "aes_encrypt", "aes_decrypt", "md5",
+		// NUMBER OPERATORS
+		"abs", "floor",
+		// DATE TIME
+		"date", "day", "week", "month", "year", "day of week", "day of month", "day of year", "last day of month", "quarter",
+		// DATE TIME
+		"time", "hour", "minute", "second"
+		);
+	
+	
+	// JOIN MODES
+	static public $JOIN_MODES = array('inner', 'straight join', 'left outer', 'right outer', 'natural left outer', 'natural right outer');
 	
 	
 	// INSTANCE ATTRIBUTES
@@ -107,6 +130,7 @@ class Query extends AbstractQuery
 		if ( ! is_object($arg_request) )
 		{
 			Trace::warning('Query.getRequestValue: bad request object');
+			Trace::value($context, 'request object for ['.$arg_name.']', $arg_request, self::$TRACE_QUERY);
 			Trace::step($context, 'bad request object for ['.$arg_name.']', self::$TRACE_QUERY);
 			return $arg_default;
 		}
@@ -239,7 +263,7 @@ class Query extends AbstractQuery
 	 * @param[in]	arg_action		action name: create/read/update/delete
 	 * @param[in]	arg_model		model (object)
 	 * @param[in]	arg_request		request (object)
-	 * @param[in]	arg_id			record id (string|integer)
+	 * @param[in]	arg_id			record id (string|integer|array)
 	 * @return		Query object or null
 	 */
 	static public function buildFromRequest($arg_action, $arg_model, $arg_request, $arg_id)

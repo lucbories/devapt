@@ -26,7 +26,7 @@ function(Devapt, DevaptTypes, DevaptOptions, DevaptResources, DevaptTemplate)
 		 * @public
 		 * @desc				Enable/disable trace for mixin operations
 		 */
-		mixin_template_trace: true,
+		mixin_template_trace: false,
 		
 		
 		/**

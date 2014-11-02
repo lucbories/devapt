@@ -127,7 +127,7 @@ function(Devapt, DevaptTrace, DevaptTypes, DevaptOptions, DevaptClasses, DevaptR
 					self.nav_jqo = $('<nav>');
 					self.content_jqo.append(self.nav_jqo);
 					self.parent_jqo.prepend(self.content_jqo);
-					console.log(self.content_jqo, 'self.content_jqo');
+					// console.log(self.content_jqo, 'self.content_jqo');
 					
 					// GET MENUBAR NAME
 					self.assertNotEmptyString(context, 'self.menubar_name', self.menubar_name);

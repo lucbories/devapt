@@ -72,7 +72,7 @@ function(Devapt, DevaptTrace, DevaptTypes, DevaptInit, /*DevaptEvents,*/ DevaptN
 	 * @method				DevaptApplication.gset_config(arg_config)
 	 * @desc				Get application configuration associative array
 	 * @param {object}		Application configuration
-	 * @return {boolean}		failure or success
+	 * @return {boolean}	failure or success
 	 */
 	DevaptApplication.set_config = function(arg_config)
 	{
@@ -182,7 +182,6 @@ function(Devapt, DevaptTrace, DevaptTypes, DevaptInit, /*DevaptEvents,*/ DevaptN
 		DevaptInit.init();
 		
 		// RENDER PAGE
-		// backend.render_page(view_name);
 		var hash = DevaptNavHistory.get_location_hash();
 		if ( DevaptTypes.is_not_empty_str(hash) )
 		{
@@ -202,6 +201,12 @@ function(Devapt, DevaptTrace, DevaptTypes, DevaptInit, /*DevaptEvents,*/ DevaptN
 				render_promise.then(
 					function(view)
 					{
+						DevaptTrace.trace_step(context, 'ERROR: resource view is not an valid object', DevaptApplication.app_trace);
+						if ( ! DevaptTypes.is_object(view) || ! view.is_view )
+						{
+							return;
+						}
+						
 						DevaptNavHistory.history_breadcrumbs_object = view;
 						view.add_event_callback('nav-history.add',
 							[view, view.add_history_item],
@@ -211,10 +216,6 @@ function(Devapt, DevaptTrace, DevaptTypes, DevaptInit, /*DevaptEvents,*/ DevaptN
 				);
 			}
 		}
-		
-		
-		// ENABLE EVENTS PROCESSING
-		// DevaptEvents.enable();
 		
 		
 		DevaptTrace.trace_leave(context, '', DevaptApplication.app_trace);

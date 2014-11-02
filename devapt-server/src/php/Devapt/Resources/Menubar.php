@@ -57,6 +57,12 @@ application.menus.menu2.index					(menu index on depending on position)
 */
 class Menubar extends AbstractResource
 {
+	// STATIC ATTRIBUTES
+	
+	/// @brief TRACE FLAG
+	static public $TRACE_MENUBAR = false;
+	
+	
 	// RESOURCE ATTRIBUTES
 	
 	/// @brief		menubar label (string)

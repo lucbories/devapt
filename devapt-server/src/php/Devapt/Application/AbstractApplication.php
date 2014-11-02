@@ -364,7 +364,10 @@ abstract class AbstractApplication
 		$modules = $this->getConfig()->getAttributesCollection($arg_collection_key);
 		if ( ! is_array($modules) )
 		{
-			Trace::info("Application: Load modules collection [$arg_collection_key] for base path [$arg_base_path] is empty");
+			if (self::$TRACE_APP)
+			{
+				Trace::info("Application.initModulesCollection: Load modules collection [$arg_collection_key] for base path [$arg_base_path] is empty");
+			}
 			return true;
 		}
 		
@@ -379,7 +382,10 @@ abstract class AbstractApplication
 				foreach($views as $file_name)
 				{
 					$file_name = $arg_base_path.$file_name;
-					Trace::debug("Application: Load module [$module_name] resources view file [$file_name]");
+					if (self::$TRACE_APP)
+					{
+						Trace::debug("Application.initModulesCollection: Load module [$module_name] resources view file [$file_name]");
+					}
 					if ( ! is_readable($file_name) )
 					{
 						Trace::error("Application: Load module [$module_name] resources view file [$file_name] failed.");
@@ -397,7 +403,10 @@ abstract class AbstractApplication
 				foreach($menubars as $file_name)
 				{
 					$file_name = $arg_base_path.$file_name;
-					Trace::debug("Application: Load module [$module_name] resources menubar file [$file_name]");
+					if (self::$TRACE_APP)
+					{
+						Trace::debug("Application.initModulesCollection: Load module [$module_name] resources menubar file [$file_name]");
+					}
 					if ( ! is_readable($file_name) )
 					{
 						Trace::error("Application: Load module [$module_name] resources menubar file [$file_name] failed.");
@@ -415,7 +424,10 @@ abstract class AbstractApplication
 				foreach($models as $file_name)
 				{
 					$file_name = $arg_base_path.$file_name;
-					Trace::debug("Application: Load module [$module_name] resources model file [$file_name]");
+					if (self::$TRACE_APP)
+					{
+						Trace::debug("Application.initModulesCollection", "Load module [$module_name] resources model file [$file_name]");
+					}
 					if ( ! is_readable($file_name) )
 					{
 						Trace::error("Application: Load module [$module_name] resources model file [$file_name] failed.");

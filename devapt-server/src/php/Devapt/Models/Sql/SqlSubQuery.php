@@ -1,6 +1,6 @@
 <?php
 /**
- * @file        SqlSubQueryBuilder.php
+ * @file        SqlSubQuery.php
  * @brief       Static class to build SQL sub-query
  * @details     ...
  * @see			...
@@ -27,7 +27,7 @@ use Zend\Db\Sql\Update;
 use Zend\Db\Sql\Delete;
 use Zend\Db\Sql\Where;
 use Zend\Db\Sql\Predicate\Expression as Expr;
-use Zend\Db\Sql\Predicate\Operator as Oper;
+use Zend\Db\Sql\Predicate\Operator;
 use Zend\Db\Sql\Predicate\Like;
 use Zend\Db\Sql\Predicate\In;
 use Zend\Db\Sql\Predicate\Between;
@@ -38,7 +38,7 @@ use Zend\Db\ResultSet\ResultSet;
 
 use \Devapt\Security\DbConnexions;
 
-final class SqlSubQueryBuilder
+final class SqlSubQuery
 {
 	// STATIC ATTRIBUTES
 	static public $TRACE_SUBQUERY_BUILDER = false;
@@ -66,7 +66,7 @@ final class SqlSubQueryBuilder
 	 */
 	static public function compileSubSelect($arg_sql, $arg_field_record)
 	{
-		$context = 'SqlSubQueryBuilder.compileSubSelect';
+		$context = 'SqlSubQuery.compileSubSelect';
 		Trace::enter($context, '', self::$TRACE_SUBQUERY_BUILDER);
 		
 		// CHECK ARGS
@@ -82,56 +82,84 @@ final class SqlSubQueryBuilder
 		}
 		
 		// GET FIELD ATTRIBUTES
+		$field_name				= $arg_field_record['name'];
+		
 		$field_has_foreign_link	= $arg_field_record['has_foreign_link'];
+		
 		// $field_sql_db			= $arg_field_record['sql_db'];
 		$field_sql_table		= $arg_field_record['sql_table'];
 		$field_sql_column		= $arg_field_record['sql_column'];
 		// $field_sql_table_alias	= $field_sql_table.'_0';
 		$field_sql_alias		= array_key_exists('sql_alias', $arg_field_record) ? $arg_field_record['sql_alias'] : $field_sql_column;
+		
 		$field_sql_is_expr		= $arg_field_record['sql_is_expression'];
 		// $field_sql_is_pk		= $arg_field_record['sql_is_primary_key'];
 		
-		// FIELD HAS FOREIGN LINK
-		if ($field_has_foreign_link)
+		
+		// CHECK EXPRESSION
+		if ($field_sql_is_expr)
 		{
-			Trace::step($context, 'field ['.$field_sql_alias.'] has foreign link', self::$TRACE_SUBQUERY_BUILDER);
-			
-			// BUILD SUB QUERY
-			$field_sql_foreign_db			= $arg_field_record['sql_foreign_db'];
-			$field_sql_foreign_table		= $arg_field_record['sql_foreign_table'];
-			$field_sql_foreign_column		= $arg_field_record['sql_foreign_column'];
-			$field_sql_foreign_key			= $arg_field_record['sql_foreign_key'];
-			$field_sql_foreign_table_alias	= $arg_field_record['sql_foreign_table_alias'];
-			
-			$sub_select = $arg_sql->select();
-			
-			// FILL SELECT
-			if ($field_sql_is_expr)
-			{
-				Trace::step($context, 'field is expression', self::$TRACE_SUBQUERY_BUILDER);
-				$sub_select->columns( array($field_sql_alias => new Expr($field_sql_column) ) );
-			}
-			else
-			{
-				Trace::step($context, 'field is regular', self::$TRACE_SUBQUERY_BUILDER);
-				$sub_select->columns( array($field_sql_alias => $field_sql_foreign_table_alias.'.'.$field_sql_foreign_column ) );
-			}
-			
-			// FILL FROM WITH FOREIGN TABLE
-			if ( ! array_key_exists($field_sql_foreign_table_alias, $froms) )
-			{
-				Trace::step($context, 'add from table', self::$TRACE_SUBQUERY_BUILDER);
-				$sub_select->from( array($field_sql_foreign_table_alias => $field_sql_foreign_db.'.'.$field_sql_foreign_table) );
-			}
-			
-			// FILL WHERE
-			$sub_select->equalsTo($field_sql_table.'.'.$field_sql_column, $field_sql_foreign_table_alias.'.'.$field_sql_foreign_key);
-			
-			$expr = new Expr('?', array($sub_select) );
-			
-			return Trace::leaveok($context, '', $expr, self::$TRACE_SUBQUERY_BUILDER);
+			Trace::warning($context.': bad field : field is expr');
+			return null;
 		}
 		
-		return Trace::leaveko($context, 'field has no foreign link', null, self::$TRACE_SUBQUERY_BUILDER);
+		
+		// CHECK FOREIGN LINK
+		if ( ! $field_has_foreign_link)
+		{
+			Trace::warning($context.': bad field : field is not a foreign link');
+			return Trace::leaveko($context, 'field has no foreign link', null, self::$TRACE_SUBQUERY_BUILDER);
+		}
+		
+		
+		// BUID SQL
+		Trace::step($context, 'field ['.$field_name.'] has foreign link', self::$TRACE_SUBQUERY_BUILDER);
+		
+		
+		// GET ZF2 SELECT OBJECT
+		$sub_select = $arg_sql->select();
+		
+		
+		// GET FIELD FOREIGN ATTRIBUTES
+		$field_sql_foreign_db			= $arg_field_record['sql_foreign_db'];
+		$field_sql_foreign_table		= $arg_field_record['sql_foreign_table'];
+		$field_sql_foreign_column		= $arg_field_record['sql_foreign_column'];
+		$field_sql_foreign_key			= $arg_field_record['sql_foreign_key'];
+		$field_sql_foreign_table_alias	= $arg_field_record['sql_foreign_table_alias'];
+		Trace::value($context, 'field_sql_foreign_db', $field_sql_foreign_db, self::$TRACE_SUBQUERY_BUILDER);
+		Trace::value($context, 'field_sql_foreign_table', $field_sql_foreign_table, self::$TRACE_SUBQUERY_BUILDER);
+		Trace::value($context, 'field_sql_foreign_column', $field_sql_foreign_column, self::$TRACE_SUBQUERY_BUILDER);
+		Trace::value($context, 'field_sql_foreign_key', $field_sql_foreign_key, self::$TRACE_SUBQUERY_BUILDER);
+		Trace::value($context, 'field_sql_foreign_table_alias', $field_sql_foreign_table_alias, self::$TRACE_SUBQUERY_BUILDER);
+		
+		
+		/* SQL: (
+			SELECT field.foreign_column
+			FROM field.foreign_table AS field.foreign_table_alias
+			WHERE field.column = field.foreign_table_alias . field.foreign_key
+			) AS field.alias
+		*/
+		
+		// BUILD PREDICATE
+		$sub_select->columns( array($field_sql_foreign_column => $field_sql_foreign_column ) );
+		$sub_select->from( array($field_sql_foreign_table_alias => $field_sql_foreign_table) );
+		$arg_operand_1 = $field_sql_table.'.'.$field_sql_column;
+		$arg_operand_2 = $field_sql_foreign_table_alias.'.'.$field_sql_foreign_key;
+		$type1 = Operator::TYPE_IDENTIFIER;
+		$type2 = Operator::TYPE_IDENTIFIER;
+		$predicate = new Operator($arg_operand_1, Operator::OPERATOR_EQUAL_TO, $arg_operand_2, $type1, $type2);
+		
+		
+		// BUILD EXPRESSION
+		$sub_select->where($predicate);
+		$expr = new Expr('?', array($sub_select) );
+		
+		
+		// TRACE
+		// $sql = $sub_select->getSqlString(  );
+		// Trace::value($context, 'sql', $sql, self::$TRACE_SUBQUERY_BUILDER);
+		
+		
+		return Trace::leaveok($context, '', $expr, self::$TRACE_SUBQUERY_BUILDER);
 	}
 }

@@ -19,27 +19,11 @@ namespace Devapt\Models\Sql;
 // DEVAPT IMPORTS
 use Devapt\Core\Trace;
 use Devapt\Core\Types;
-// use Devapt\Security\DbConnexions;
 use Devapt\Models\Query;
-// use Devapt\Models\Sql\FilterNode;
 use Devapt\Resources\Model;
 
 // ZEND IMPORTS
 use Zend\Db\Sql\Sql;
-// use Zend\Db\Sql\Select;
-// use Zend\Db\Sql\Create;
-// use Zend\Db\Sql\Update;
-// use Zend\Db\Sql\Delete;
-// use Zend\Db\Sql\Where;
-// use Zend\Db\Sql\Predicate\Expression as Expr;
-// use Zend\Db\Sql\Predicate\Operator as Oper;
-// use Zend\Db\Sql\Predicate\Like;
-// use Zend\Db\Sql\Predicate\In;
-// use Zend\Db\Sql\Predicate\Between;
-// use Zend\Db\Sql\Predicate\IsNull;
-// use Zend\Db\Sql\Predicate\IsNotNull;
-// use Zend\Db\Sql\Predicate\PredicateSet;
-// use Zend\Db\ResultSet\ResultSet;
 
 
 final class SqlBuilderInsert
@@ -47,7 +31,7 @@ final class SqlBuilderInsert
 	// STATIC ATTRIBUTES
 	
 	/// @brief TRACE FLAG
-	static public $TRACE_BUILDER = true;
+	static public $TRACE_BUILDER = false;
 	
 	
 	
@@ -85,30 +69,30 @@ final class SqlBuilderInsert
 		
 		// INIT INSERT
 		$model			= $arg_sql_engine->getModel();
-		// $default_db		= DbConnexions::getConnexionDatabase($model->getModelConnexionName());
 		$default_table	= $model->getModelCrudTableName();
-		// $fields_records = $model->getModelFieldsRecords();
-		
-		// $columns = array();
-		// $froms = array($default_table => $default_table);
-		// $where = new Where();
-		// $groups = array();
-		// $orders = array();
 		
 		$query_fields_names = $arg_query->getFieldsNames();
 		$query_values = $arg_query->getOperandsAssocValues();
 		
 		
-		// CREATE ZF2 SQL OBJECT
-		$insert = $arg_zf2_sql->insert(/*$default_db.'.'.*/$default_table)->columns($query_fields_names);
-		
-		
 		// CHECK AND SET RECORD VALUES
-		if ( ! is_array($query_values) && ! Types::isAssoc($query_values) )
+		if ( ! is_array($query_values) )
 		{
 			return Trace::leaveko($context, 'bad query values for insert operation', false, self::$TRACE_BUILDER);
 		}
-		$insert->values($query_values, $insert::VALUES_SET); // REPLACE EXISTING VALUES
+		
+		
+		// CREATE ZF2 SQL OBJECT
+		$insert = $arg_zf2_sql->insert($default_table)->columns($query_fields_names);
+		
+		
+		// ZF2 DO NOT SUPPORT MULTI ROWS INSERT
+		$query_values_cursor = $arg_query->getOperandsValuesCursor();
+		if ( ! is_numeric($query_values_cursor) || $query_values_cursor < 0 )
+		{
+			return Trace::leaveko($context, 'bad query values cursor', false, self::$TRACE_BUILDER);
+		}
+		$insert->values($query_values[$query_values_cursor]);
 		
 		
 		return Trace::leaveok($context, 'success', $insert, self::$TRACE_BUILDER);

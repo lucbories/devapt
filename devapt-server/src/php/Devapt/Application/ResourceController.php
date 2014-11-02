@@ -26,6 +26,11 @@ use Devapt\Resources\View as ViewResource;
 class ResourceController extends AbstractController
 {
 	// STATIC ATTRIBUTES
+	
+	/// @brief TRACE FLAG
+	static public $TRACE_RESOURCE_CONTROLLER = false;
+	
+	/// @brief ACTION NAME
 	static public $RESOURCES_ACTION_GET		= 'get_resource';
 	
 	
@@ -124,7 +129,7 @@ class ResourceController extends AbstractController
 		$arg_response->send();
 		
 		
-		Trace::info('ResourceController: get action success ['.$arg_resource_name.']');
+		Trace::step('ResourceController::doGetAction', 'get action success ['.$arg_resource_name.']', self::$TRACE_RESOURCE_CONTROLLER);
 		return true;
 	}
 }

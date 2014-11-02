@@ -103,8 +103,11 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptClasses, DevaptOptions)
 		
 		// CHECK CLASS OPTIONS
 		var class_options = DevaptOptions.options[class_name];
+		// console.log(class_options, 'get_option class_options');
 		if ( DevaptTypes.is_object(class_options) )
 		{
+			DevaptTraces.trace_step(context, 'class options are found', DevaptOptions.options_get_trace);
+			
 			// GET OPTION
 			var option_obj = class_options[arg_option_name];
 			if ( ! DevaptTypes.is_null(option_obj) )
@@ -112,6 +115,7 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptClasses, DevaptOptions)
 				DevaptTraces.trace_leave(context, 'found', DevaptOptions.options_get_trace);
 				return option_obj;
 			}
+			// console.log(class_options, 'get_option class_options');
 			
 			// SEARCH OPTION NAME IN OPTIONS ALIAS
 			for(option_key in class_options)
@@ -128,6 +132,8 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptClasses, DevaptOptions)
 		// SEARCH OPTION NAME IN INHERITED CLASSES
 		if (arg_is_inherited)
 		{
+			DevaptTraces.trace_step(context, 'search option name in inherited classes', DevaptOptions.options_get_trace);
+			
 			var inherited_classes = DevaptInheritance.get_inherited_classes(arg_class_obj);
 			if ( DevaptTypes.is_null(arg_class_names_stack) )
 			{
@@ -187,13 +193,13 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptClasses, DevaptOptions)
 		{
 			// console.log(arg_class_instance)
 			DevaptTraces.trace_leave(context, 'class instance is not an object', DevaptOptions.options_get_trace);
-			return false;
+			return null;
 		}
 		if ( ! DevaptTypes.is_string(arg_option_name) )
 		{
 			// console.log(arg_option_name);
 			DevaptTraces.trace_leave(context, 'bad option name', DevaptOptions.options_get_trace);
-			return false;
+			return null;
 		}
 		
 		// GET OPTION
@@ -201,7 +207,7 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptClasses, DevaptOptions)
 		if ( ! DevaptTypes.is_object(option) )
 		{
 			DevaptTraces.trace_leave(context, 'bad option', DevaptOptions.options_get_trace);
-			return false;
+			return null;
 		}
 		
 		// GET OBJECT ATTRIBUTE
@@ -209,7 +215,8 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptClasses, DevaptOptions)
 		if ( DevaptTypes.is_null(object_value) )
 		{
 			DevaptTraces.trace_leave(context, 'default option', DevaptOptions.options_get_trace);
-			return option.defaut_value;
+			// console.info(option.default_value, 'get_option_value clone option default value');
+			return DevaptOptions.clone_object(option.default_value);
 		}
 		
 		DevaptTraces.trace_leave(context, 'found', DevaptOptions.options_get_trace);

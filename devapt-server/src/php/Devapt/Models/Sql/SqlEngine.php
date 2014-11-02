@@ -23,26 +23,28 @@
 
 namespace Devapt\Models\Sql;
 
-// DEVAPT IMPORTS
-use Devapt\Core\Trace;
-use Devapt\Models\Query;
-use Devapt\Models\Sql\FilterNode;
-use Devapt\Resources\Model;
-
 // ZEND IMPORTS
 use Zend\Debug\Debug;
 use Zend\Db\Adapter\Adapter as DbAdapter;
 use Zend\Db\Sql\Sql;
 use Zend\Db\ResultSet\ResultSet;
+use Zend\Db\Sql\Predicate\PredicateSet;
 
-use \Devapt\Security\DbConnexions;
+// DEVAPT IMPORTS
+use Devapt\Core\Trace;
+use Devapt\Models\Query;
+use Devapt\Models\Filters\FilterNode;
+use Devapt\Models\Filters\QueryFiltersBuilderV1;
+use Devapt\Models\Filters\QueryFiltersBuilderV2;
+use Devapt\Resources\Model;
+use Devapt\Security\DbConnexions;
 
 class SqlEngine
 {
 	// STATIC ATTRIBUTES
 	
 	/// @brief TRACE FLAG
-	static public $TRACE_ENGINE	= true;
+	static public $TRACE_ENGINE	= false;
 	
 	
 	
@@ -230,11 +232,11 @@ class SqlEngine
 	/**
 	 * @brief		Insert datas
 	 * @param[in]	arg_query			query (object)
-	 * @return		booean				array of records
+	 * @return		boolean				array of records
 	 */
-	public function do_crud($arg_query, $arg_action)
+	public function getSqlAction($arg_query, $arg_action)
 	{
-		$context = 'SqlEngine.do_crud(query,action)';
+		$context = 'SqlEngine.getSqlAction(query,action)';
 		Trace::enter($context, '', self::$TRACE_ENGINE);
 		
 		
@@ -256,9 +258,87 @@ class SqlEngine
 		$sql = new Sql( $this->getDbAdapter() );
 		
 		
-		// BUILD SQL
-		$sql_action = null;
+		// GET QUERY VERSION
 		$query_version = $arg_query->getVersion();
+		
+		
+		// BUILD SQL FILTERS
+		if ( $arg_query->hasFiltersToBuild() && $query_version === '1' )
+		{
+			Trace::step($context, 'query has filters v1 to build', self::$TRACE_ENGINE);
+			
+			// GET FILTERS
+			$filters = $arg_query->getFiltersToBuild();
+			
+			// GET ALL MODEL FIELDS
+			$fields_records = $this->model->getModelFieldsRecords();
+			
+			// INIT FILTER TREE
+			$tree_root = new FilterNode(null, null, new PredicateSet( array() ) );
+			$current_node = &$tree_root;
+			
+			// LOOP ON FILTERS
+			foreach($filters as $filter_str)
+			{
+				// GET FILTER RECORD
+				$filter_record = explode(',', $filter_str);
+				
+				// CHECK FILTER RECORD
+				if ( ! is_array($filter_record) || count($filter_record) < 2 )
+				{
+					return Trace::leaveko($context, 'filter record isn t a valid array', null, self::$TRACE_ENGINE);
+				}
+				
+				// BUILD FILTER NODE
+				$current_node = QueryFiltersBuilderV1::buildFilterNode($sql, $current_node, $fields_records, $filter_record);
+				if ( ! is_object($current_node) )
+				{
+					return Trace::leaveko($context, 'bad filter node', null, self::$TRACE_ENGINE);
+				}
+			}
+			
+			$arg_query->setFiltersTree($tree_root);
+		}
+		
+		if ( $arg_query->hasFiltersToBuild() && $query_version === '2' )
+		{
+			Trace::step($context, 'query has filters v2 to build', self::$TRACE_ENGINE);
+			
+			// GET FILTERS
+			$filters_records = $arg_query->getFiltersToBuild();
+			
+			// GET ALL MODEL FIELDS
+			$fields_records = $this->model->getModelFieldsRecords();
+			
+			// INIT FILTER TREE
+			$tree_root = new FilterNode(null, null, new PredicateSet( array() ) );
+			
+			// GET ALL MODEL FIELDS
+			$fields_records = $this->model->getModelFieldsRecords();
+			
+			// INIT FILTER TREE
+			$tree_root = new FilterNode(null, null, new PredicateSet( array() ) );
+			
+			// LOOP ON FILTERS
+			foreach($filters_records as $filter_record)
+			{
+				// BUILD FILTER NODE
+				$current_node = QueryFiltersBuilderV2::buildFilterNode($sql, $tree_root, $fields_records, $filter_record, 'and');
+				if ( ! is_object($current_node) )
+				{
+					return Trace::leaveko($context, 'bad filter node', null, self::$TRACE_ENGINE);
+				}
+				
+				// LINK FILTER
+				$tree_root->addChild($current_node);
+			}
+			
+			$arg_query->setFiltersTree($tree_root);
+		}
+		
+		
+		// BUILD SQL
+		$sql_action = null;;
 		switch($arg_action.'-'.$query_version)
 		{
 			case 'read-1':
@@ -318,6 +398,28 @@ class SqlEngine
 				Trace::step($context, 'action not found ['.$arg_action.'] for query version '.$query_version, self::$TRACE_ENGINE);
 			}
 		}
+		
+		if ( ! is_object($sql_action) )
+		{
+			return Trace::leaveko($context, 'sql compilation failed', null, self::$TRACE_ENGINE);
+		}
+		
+		return Trace::leaveok($context, '', $sql_action, self::$TRACE_ENGINE);
+	}
+		
+	/**
+	 * @brief		Insert datas
+	 * @param[in]	arg_query			query (object)
+	 * @return		boolean				array of records
+	 */
+	public function do_crud($arg_query, $arg_action)
+	{
+		$context = 'SqlEngine.do_crud(query,action)';
+		Trace::enter($context, '', self::$TRACE_ENGINE);
+		
+		
+		// GET SQL ACTION
+		$sql_action = $this->getSqlAction($arg_query, $arg_action);
 		if ( ! is_object($sql_action) )
 		{
 			return Trace::leaveko($context, 'sql compilation failed', null, self::$TRACE_ENGINE);
@@ -332,8 +434,10 @@ class SqlEngine
 		
 		
 		// EXECUTE SQL
+		$sql = new Sql( $this->getDbAdapter() );
 		$statement = $sql->prepareStatementForSqlObject($sql_action);
 		$query_results = array();
+		$error_msg = null;
 		try
 		{
 			$query_results = $statement->execute();
@@ -344,8 +448,15 @@ class SqlEngine
 			Trace::value($context, 'exception.message', $e->getMessage(), self::$TRACE_ENGINE);
 			Trace::value($context, 'exception.code', $e->getCode(), self::$TRACE_ENGINE);
 			Trace::value($context, 'exception.file', $e->getFile(), self::$TRACE_ENGINE);
+			
+			$error_msg = $e->getMessage();
 		}
 		
+		// PROCESS ERROR
+		if ( ! is_null($error_msg) )
+		{
+			return Trace::leaveok($context, '', $error_msg, self::$TRACE_ENGINE);
+		}
 		
 		// GET RESULTS
 		$result_set = new ResultSet();

@@ -37,6 +37,7 @@ define(
 		events_callbacks: new Object(),
 		
 		
+		
 		/**
 		 * @memberof			DevaptMixinEventListener
 		 * @public
@@ -51,6 +52,7 @@ define(
 			this.push_trace(this.trace, this.mixin_event_listener_trace);
 			var context = 'has_event_callback(' + arg_event_name + ',callback)';
 			this.enter(context, '');
+			
 			
 			var event_callbacks = this.events_callbacks[arg_event_name];
 			if ( DevaptTypes.is_array(event_callbacks) )
@@ -103,10 +105,12 @@ define(
 				}
 			}
 			
+			
 			this.leave(context, 'not found');
 			this.pop_trace();
 			return false;
 		},
+		
 		
 		
 		/**
@@ -124,12 +128,13 @@ define(
 			this.push_trace(this.trace, this.mixin_event_listener_trace);
 			var context = 'add_event_callback(' + arg_event_name + ',callback)';
 			this.enter(context, '');
-
+			
+			
 			// CHECK EVENT NAME ARGUMENT
-			this.assertNotEmptyString(context, arg_event_name);
+			this.assertNotEmptyString(context, 'event name', arg_event_name);
 			
 			// CHECK EVENT CALLBACK ARGUMENT
-			this.assertNull(context, arg_event_cb);
+			this.assertNotNull(context, 'event cb', arg_event_cb);
 			
 			// CHECK UNIQUE ARGUMENT
 			if ( DevaptTypes.is_null(arg_unique) )
@@ -154,10 +159,12 @@ define(
 			// APPEND CALLBACK
 			event_callbacks.push(arg_event_cb);
 			
+			
 			this.leave(context, 'success');
 			this.pop_trace();
 			return true;
 		},
+		
 		
 		
 		/**
@@ -174,6 +181,7 @@ define(
 			this.push_trace(this.trace, this.mixin_event_listener_trace);
 			var context = 'remove_event_callback(' + arg_event_name + ',callback)';
 			this.enter(context, '');
+			
 			
 			// GET CALLBACKS ARRAY
 			var event_callbacks = this.events_callbacks[arg_event_name];
@@ -196,6 +204,7 @@ define(
 				this.pop_trace();
 				return false;
 			}
+			
 			
 			this.leave(context, 'success');
 			this.pop_trace();

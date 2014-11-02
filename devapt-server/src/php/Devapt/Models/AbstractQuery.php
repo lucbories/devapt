@@ -23,7 +23,7 @@ abstract class AbstractQuery
 	// STATIC ATTRIBUTES
 	
 	/// @brief TRACE FLAG
-	static public $TRACE_ABSTRACT_QUERY		= true;
+	static public $TRACE_ABSTRACT_QUERY		= false;
 	
 	
 	/// @brief		Option : api version (string)
@@ -97,6 +97,9 @@ abstract class AbstractQuery
 	/// @brief QUERY FIELDS VALUES
 	protected $query_values			= null;
 	
+	/// @brief QUERY FIELDS VALUES CURSOR
+	protected $query_values_cursor	= 0;
+	
 	/// @brief QUERY ORDERS RECORDS
 	protected $query_orders			= null;
 	
@@ -109,8 +112,11 @@ abstract class AbstractQuery
 	/// @brief QUERY SLICE LENGTH
 	protected $query_slice_length	= null;
 	
-	/// @brief QUERY FILTERS RECORDS
-	protected $query_filters		= null;
+	/// @brief QUERY FILTERS TREE
+	protected $query_filters_tree	= null;
+	
+	/// @brief QUERY FILTERS TO BUILD
+	protected $query_filters_to_build	= null;
 	
 	/// @brief QUERY JOINS TABLES RECORDS
 	protected $query_joins			= null;
@@ -420,15 +426,66 @@ abstract class AbstractQuery
 		$context = 'AbstractQuery.setRecordId(id)';
 		Trace::enter($context, '', self::$TRACE_ABSTRACT_QUERY);
 		
-		if ( is_string($arg_record_id) && strlen($arg_record_id) > 0 )
+		// SCALAR TYPE
+		if ( is_numeric($arg_record_id) || (is_string($arg_record_id) && strlen($arg_record_id) > 0) )
 		{
 			$this->query_record_id = $arg_record_id;
 			return Trace::leaveok($context, '', true, self::$TRACE_ABSTRACT_QUERY);
 		}
 		
+		// ARRAY TYPE
+		if ( is_array($arg_record_id) && count($arg_record_id) > 0 )
+		{
+			foreach($arg_record_id as $id)
+			{
+				if ( ! is_numeric($id) || ! (is_string($id) && strlen($id) > 0) )
+				{
+					return Trace::leaveok($context, 'bad ids array item', false, self::$TRACE_ABSTRACT_QUERY);
+				}
+			}
+			$this->query_record_id = $arg_record_id;
+		}
+		
 		return Trace::leaveko($context, 'record id argument is not an not empty string', false, self::$TRACE_ABSTRACT_QUERY);
 	}
 	
+	
+	
+	/**
+	 * @brief		Get query operands values
+	 * @return		integer
+	 */
+	public function getOperandsValuesCursor()
+	{
+		return $this->query_values_cursor;
+	}
+	
+	/**
+	 * @brief		Increment query operands values cursor
+	 * @return		integer
+	 */
+	public function getOperandsValuesCursorIncr()
+	{
+		return ++$this->query_values_cursor;
+	}
+	
+	/**
+	 * @brief		Decrement query operands values cursor
+	 * @return		integer
+	 */
+	public function getOperandsValuesCursorDecr()
+	{
+		return --$this->query_values_cursor;
+	}
+	
+	/**
+	 * @brief		Get query operands values count
+	 * @return		integer
+	 */
+	public function getOperandsValuesCount()
+	{
+		return count($this->query_values);
+	}
 	
 	
 	/**
@@ -449,52 +506,74 @@ abstract class AbstractQuery
 		$context = 'AbstractQuery.getOperandsAssocValues()';
 		Trace::enter($context, '', self::$TRACE_ABSTRACT_QUERY);
 		
-		if ( count($this->query_fields) !== count($this->query_values) )
+		
+		// CHECK VALUES
+		if ( ! is_array($this->query_values) )
 		{
-			Trace::value($context, 'query_fields', $this->query_fields, self::$TRACE_ABSTRACT_QUERY);
-			Trace::value($context, 'query_values', $this->query_values, self::$TRACE_ABSTRACT_QUERY);
-			return Trace::leaveko($context, 'bad values count ('.count($this->query_values).')', null, self::$TRACE_ABSTRACT_QUERY);
+			return Trace::leaveok($context, '', null, self::$TRACE_ABSTRACT_QUERY);
 		}
 		
+		// INIT ASSOCIATIVE ARRAY
 		$assoc_values = array();
 		
-		// INDEXED VALUES ARRAY
-		if (false)
+		// LOOP ON VALUES RECORDS
+		foreach($this->query_values as $record)
 		{
-			$field_index = 0;
+			$assoc_record = array();
+			
+			// ASSOCIATIVE ARRAY
+			if ( Types::isAssoc($record) )
+			{
+				foreach($this->query_fields_names as $field_name)
+				{
+					if ( array_key_exists($field_name, $record) )
+					{
+						$assoc_record[$field_name] = $record[$field_name];
+					}
+				}
+				
+				$assoc_values[] = $assoc_record;
+				continue;
+			}
+			
+			// INDEXED ARRAY
+			$index = 0;
 			foreach($this->query_fields_names as $field_name)
 			{
-				// $field_name = $field_record['name'];
-				$assoc_values[$field_name] = $this->query_values[$field_index];
-				++$field_index;
+				$assoc_record[$field_name] = $record[$index];
+				++$index;
 			}
+			$assoc_values[] = $assoc_record;
 		}
-		else
-		{
-			foreach($this->query_fields_names as $field_name)
-			{
-				$assoc_values[$field_name] = $this->query_values[$field_name];
-			}
-		}
+		
 		
 		return Trace::leaveok($context, '', $assoc_values, self::$TRACE_ABSTRACT_QUERY);
 	}
 	
 	/**
 	 * @brief		Set query operands values
-	 * @param[in]	arg_values		operands values (array of strings)
+	 * @param[in]	arg_values			operands values (array of strings)
+	 * @param[in]	arg_values_count	operands values count (integer)
 	 * @return		boolean
 	 */
-	public function setOperandsValues($arg_values)
+	public function setOperandsValues($arg_values, $arg_values_count)
 	{
-		$context = 'AbstractQuery.setOperandsValues(values)';
+		$context = 'AbstractQuery.setOperandsValues(values, count)';
 		Trace::enter($context, '', self::$TRACE_ABSTRACT_QUERY);
+		
 		
 		// REPLACE PREDEFINED VALUES
 		if (  ! is_array($arg_values) )
 		{
 			$this->query_values = null;
 			return Trace::leaveko($context, 'values argument is not an array', false, self::$TRACE_ABSTRACT_QUERY);
+		}
+		
+		// CHECK VALUES COUNT
+		if ( count($arg_values) !== $arg_values_count )
+		{
+			$this->query_values = null;
+			return Trace::leaveko($context, 'bad values count ['.count($arg_values).'], given count ['.$arg_values_count.']', false, self::$TRACE_ABSTRACT_QUERY);
 		}
 		
 		
@@ -631,31 +710,81 @@ abstract class AbstractQuery
 	
 	
 	/**
-	 * @brief		Get query filters
+	 * @brief		Test if a query has filters to build
+	 * @return		boolean
+	 */
+	public function hasFiltersToBuild()
+	{
+		return is_array($this->query_filters_to_build);
+	}
+	
+	
+	/**
+	 * @brief		Get query filters to build
 	 * @return		array
 	 */
-	public function getFilters()
+	public function getFiltersToBuild()
 	{
-		return $this->query_filters;
+		return $this->query_filters_to_build;
+	}
+	
+	/**
+	 * @brief		Set query filters to build
+	 * @param[in]	arg_filters_tree		FilterNode instance (object)
+	 * @return		boolean
+	 */
+	public function setFiltersToBuild($arg_filters_records)
+	{
+		$context = 'AbstractQuery.setFiltersToBuild(filters)';
+		Trace::enter($context, '', self::$TRACE_ABSTRACT_QUERY);
+		
+		if ( is_array($arg_filters_records) )
+		{
+			$this->query_filters_to_build = $arg_filters_records;
+			return Trace::leaveok($context, '', true, self::$TRACE_ABSTRACT_QUERY);
+		}
+		
+		return Trace::leaveko($context, 'filters argument is not an array', false, self::$TRACE_ABSTRACT_QUERY);
+	}
+	
+	
+	
+	/**
+	 * @brief		Test if a query filters tree is available
+	 * @return		boolean
+	 */
+	public function hasFiltersTree()
+	{
+		return is_object($this->query_filters_tree);
+	}
+	
+	/**
+	 * @brief		Get query filters tree
+	 * @return		object
+	 */
+	public function getFiltersTree()
+	{
+		return $this->query_filters_tree;
 	}
 	
 	/**
 	 * @brief		Set query filters
-	 * @param[in]	arg_record_id		id (string)
+	 * @param[in]	arg_filters_tree		FilterNode instance (object)
 	 * @return		boolean
 	 */
-	public function setFilters($arg_filters)
+	public function setFiltersTree($arg_filters_tree)
 	{
-		$context = 'AbstractQuery.setFilters(filters)';
+		$context = 'AbstractQuery.setFiltersTree(filters)';
 		Trace::enter($context, '', self::$TRACE_ABSTRACT_QUERY);
 		
-		if ( is_array($arg_filters) )
+		if ( is_object($arg_filters_tree) && ($arg_filters_tree instanceof \Devapt\Models\Filters\FilterNode) )
 		{
-			$this->query_filters = $arg_filters;
-			return Trace::leaveok($context, 'filters count['.count($arg_filters).']', true, self::$TRACE_ABSTRACT_QUERY);
+			$this->query_filters_tree = $arg_filters_tree;
+			return Trace::leaveok($context, '', true, self::$TRACE_ABSTRACT_QUERY);
 		}
 		
-		return Trace::leaveko($context, 'filters argument is not an array', false, self::$TRACE_ABSTRACT_QUERY);
+		Trace::value($context, 'arg_filters_tree', $arg_filters_tree, self::$TRACE_ABSTRACT_QUERY);
+		return Trace::leaveko($context, 'filters argument is not an FilterNode object', false, self::$TRACE_ABSTRACT_QUERY);
 	}
 	
 	

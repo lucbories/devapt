@@ -17,7 +17,7 @@ require.config(
 			'foundation':	'/devapt-client/lib/foundation-' + foundation_version + '/js/foundation.min',
 			
 			// ALL
-			'QUnit':		'/devapt-client/lib/qunit-1.13.0/qunit-1.13.0',
+			'QUnit':		'/devapt-client/lib/qunit-1.15.0/qunit-1.15.0',
 			'runtu':		'/devapt-client/tests/run-tests',
 			'jStorage':		'/devapt-client/lib/jstorage-0.4.3/jstorage',
 			'mustache':		'/devapt-client/lib/mustache/mustache-wrap',

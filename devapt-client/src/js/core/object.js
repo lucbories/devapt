@@ -232,6 +232,7 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptOptions, DevaptClasses, Devapt
 	DevaptObject.msg_success = 'success';
 	DevaptObject.msg_failure = 'failure';
 	DevaptObject.msg_success_promise = 'success: returns promise';
+	DevaptObject.msg_success_require = 'success: a requirejs request is processing';
 	
 	
 	return DevaptObject;

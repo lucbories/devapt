@@ -67,9 +67,9 @@ function(Devapt, DevaptObject, DevaptTypes, DevaptOptions, DevaptClasses, Devapt
 			// SET ID
 			if ( DevaptTypes.is_object(self.parent_jqo) )
 			{
-				if ( DevaptTypes.is_not_empty_str(self.html_id) )
+				if ( DevaptTypes.is_not_empty_str(self.parent_html_id) )
 				{
-					self.parent_jqo.attr('id', self.html_id);
+					self.parent_jqo.attr('id', self.parent_html_id);
 				}
 			}
 			
@@ -179,6 +179,12 @@ function(Devapt, DevaptObject, DevaptTypes, DevaptOptions, DevaptClasses, Devapt
 			
 			// RENDER WITHOUT TEMPLATE
 			var promise = self.render_self(deferred);
+			promise.done(
+				function()
+				{
+					self.content_jqo.attr('id', self.get_view_id());
+				}
+			);
 			
 			// APPLY CSS OPTIONS
 			if ( DevaptTypes.is_function(self.applyCssOptions) )
@@ -407,6 +413,12 @@ function(Devapt, DevaptObject, DevaptTypes, DevaptOptions, DevaptClasses, Devapt
 	DevaptClasses.register_class(DevaptView, ['DevaptObject'], 'Luc BORIES', '2013-08-21', 'All views base class.');
 	
 	
+	// INTROSPETION : REGISTER MIXINS OPTIONS
+	DevaptMixinTemplate.register_options(DevaptView);
+	DevaptMixinBind.register_options(DevaptView);
+	DevaptMixinOptionsCSS.register_options(DevaptView);
+	
+	
 	// INTROSPETION : REGISTER OPTIONS
 	DevaptOptions.register_str_option(DevaptView, 'parent_html_id',			null, false, ['view_parent_html_id']);
 	DevaptOptions.register_str_option(DevaptView, 'html_id',				null, false, ['view_html_id']);
@@ -428,18 +440,18 @@ function(Devapt, DevaptObject, DevaptTypes, DevaptOptions, DevaptClasses, Devapt
 		}
 	);
 	
-	DevaptOptions.register_option(DevaptView, {
-			name: 'links',
-			type: 'array',
-			aliases: ['view_links'],
-			default_value: [],
-			array_separator: ',',
-			array_type: 'String',
-			format: '',
-			is_required: false,
-			childs: {}
-		}
-	);
+	// DevaptOptions.register_option(DevaptView, {
+			// name: 'links',
+			// type: 'array',
+			// aliases: ['view_links'],
+			// default_value: [],
+			// array_separator: ',',
+			// array_type: 'String',
+			// format: '',
+			// is_required: false,
+			// childs: {}
+		// }
+	// );
 	
 	// FEATURES
 	DevaptOptions.register_bool_option(DevaptView, 'has_title_bar',		true, false, ['view_has_title_bar']);	// TODO
@@ -452,12 +464,6 @@ function(Devapt, DevaptObject, DevaptTypes, DevaptOptions, DevaptClasses, Devapt
 	
 	// LAYOUT
 	DevaptOptions.register_str_option(DevaptView, 'position',			null, false, ['view_position']);	// TODO
-	
-	// TEMPLATE OPTIONS
-	DevaptMixinTemplate.register_options(DevaptView);
-	
-	// CSS OPTIONS
-	DevaptMixinOptionsCSS.register_options(DevaptView);
 	
 	// EVENTS
 	DevaptOptions.register_str_option(DevaptView, 'js_on_ready',		null, false, ['view_js_on_ready']);	// TODO

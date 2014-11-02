@@ -15,7 +15,8 @@
 			crud_table: '...',
 			fields: [],
 			one_field: '...',
-			values: {},
+			values: [{},{}...],
+			values_count: ...,
 			filters: [],
 			orders: [],
 			groups: [],
@@ -33,15 +34,22 @@
 
 namespace Devapt\Models;
 
+// ZEND IMPORTS
+use Zend\Db\Sql\Predicate\PredicateSet;
+
 // DEVAPT IMPORTS
 use Devapt\Core\Trace;
+use Devapt\Model\Sql;
+// use Devapt\Model\Filters;
+use Devapt\Models\Filters\QueryFiltersBuilderV2;
+use \Devapt\Security\DbConnexions;
 
 final class QueryBuilderV2
 {
 	// STATIC ATTRIBUTES
 	
 	/// @brief		trace flag
-	static public $TRACE_QUERY_BUILDER = true;
+	static public $TRACE_QUERY_BUILDER = false;
 	
 	
 	/// @brief		Option : model action (string)
@@ -64,7 +72,7 @@ final class QueryBuilderV2
 	 * @param[in]	arg_action		action name: create/read/update/delete
 	 * @param[in]	arg_model		model (object)
 	 * @param[in]	arg_request		request (object)
-	 * @param[in]	arg_id			record id (string|integer)
+	 * @param[in]	arg_id			record id (string|integer|array)
 	 * @return		Query object or null
 	 */
 	static public function buildFromRequest($arg_action, $arg_model, $arg_request, $arg_id)
@@ -86,6 +94,29 @@ final class QueryBuilderV2
 		
 		// GET QUERY ARG
 		$query_json_array = Query::getRequestJsonArrayValue($arg_request, self::$OPTION_JSON, null);
+		$query = QueryBuilderV2::buildFromArray($arg_action, $arg_model, $query_json_array, $arg_id);
+		
+		
+		return Trace::leaveok($context, 'success', $query, self::$TRACE_QUERY_BUILDER);
+	}
+	
+	
+	
+	/**
+	 * @brief		Build the query from an array (static)
+	 * @param[in]	arg_action		action name: create/read/update/delete
+	 * @param[in]	arg_model		model (object)
+	 * @param[in]	arg_settings	settings (array)
+	 * @param[in]	arg_id			record id (string|integer)
+	 * @return		Query object or null
+	 */
+	static public function buildFromArray($arg_action, $arg_model, $arg_settings, $arg_id)
+	{
+		$context = 'QueryBuilderV2::buildFromArray(action,model,settings,id)';
+		Trace::enter($context, '', self::$TRACE_QUERY_BUILDER);
+		
+		
+		$query_json_array = $arg_settings;
 		if ( ! is_array($query_json_array) && $arg_action === 'read')
 		{
 			$query_json_array = array('action'=>'select');
@@ -138,7 +169,7 @@ final class QueryBuilderV2
 			Trace::step($context, 'set default fields: all model fields', self::$TRACE_QUERY_BUILDER);
 			$fields = array_keys($arg_model->getModelFieldsRecords());
 		}
-		$query->setFieldsNames($fields);
+		$query->setFieldsNames($fields, $arg_model);
 		
 		
 		// GET ONE FIELD
@@ -163,14 +194,19 @@ final class QueryBuilderV2
 		
 		// GET VALUES
 		$values = null;
+		$values_count = null;
 		if ( array_key_exists('values', $query_json_array) )
 		{
 			$values = $query_json_array['values'];
 		}
 		if ( is_array($values) )
 		{
+			if ( array_key_exists('values_count', $query_json_array) )
+			{
+				$values_count = $query_json_array['values_count'];
+			}
 			Trace::step($context, 'set values', self::$TRACE_QUERY_BUILDER);
-			$query->setOperandsValues($values);
+			$query->setOperandsValues($values, $values_count);
 		}
 		
 		
@@ -222,14 +258,11 @@ final class QueryBuilderV2
 		// GET FILTERS
 		if ( array_key_exists('filters', $query_json_array) )
 		{
-			$filters = $query_json_array['filters'];
+			Trace::step($context, 'set filters to build', self::$TRACE_QUERY_BUILDER);
 			
-			if ( is_array($filters) )
-			{
-				Trace::step($context, 'set filters', self::$TRACE_QUERY_BUILDER);
-				
-				$query->setFilters($filters);
-			}
+			$filters_records = $query_json_array['filters'];
+			
+			$query->setFiltersToBuild($filters_records);
 		}
 		
 		
@@ -270,15 +303,53 @@ final class QueryBuilderV2
 		if ( is_array($joins) )
 		{
 			Trace::step($context, 'set joins', self::$TRACE_QUERY_BUILDER);
+			
+			$default_db		= DbConnexions::getConnexionDatabase($arg_model->getModelConnexionName());
+			$default_table	= $arg_model->getModelCrudTableName();
+			
+			$query_joins_records = array();
 			foreach($joins as $join_record)
 			{
+				// CHECK JOIN RECORD
 				if ( ! self::checkJoinRecord($join_record) )
 				{
-					Trace::leaveko($context, 'bad join record', null, self::$TRACE_QUERY_BUILDER);
+					Trace::value($context, 'join_record', $join_record, self::$TRACE_QUERY_BUILDER);
+					return Trace::leaveko($context, 'bad join record', null, self::$TRACE_QUERY_BUILDER);
 				}
+				if ( ! array_key_exists('source', $join_record) )
+				{
+					return Trace::leaveko($context, 'bad join record: no source', null, self::$TRACE_QUERY_BUILDER);
+				}
+				if ( ! array_key_exists('target', $join_record) )
+				{
+					return Trace::leaveko($context, 'bad join record: no target', null, self::$TRACE_QUERY_BUILDER);
+				}
+				
+				// CREATE QUERY JOIN RECORD
+				$query_join_record = array();
+				$query_join_record['mode'] = array_key_exists('mode', $join_record) ? $join_record['mode'] : 'INNER';
+				$query_join_record['mode'] = strtolower( $query_join_record['mode'] );
+				if ( ! in_array($query_join_record['mode'], Query::$JOIN_MODES) )
+				{
+					$query_join_record['mode'] = 'inner';
+				}
+				
+				$query_join_record['source'] = array();
+				$query_join_record['source']['db'] = array_key_exists('db', $join_record['source']) ? $join_record['source']['db'] : $default_db;
+				$query_join_record['source']['table'] = array_key_exists('table', $join_record['source']) ? $join_record['source']['table'] : $default_table;
+				$query_join_record['source']['column'] = $join_record['source']['column'];
+				
+				$query_join_record['target'] = array();
+				$query_join_record['target']['db'] = array_key_exists('join_db', $join_record['target']) ? $join_record['target']['db'] : $default_db;
+				$query_join_record['target']['table'] = $join_record['target']['table'];
+				$query_join_record['target']['table_alias'] = array_key_exists('table_alias', $join_record['target']) ? $join_record['target']['table_alias'] : $join_record['target']['table'];
+				$query_join_record['target']['column'] = $join_record['target']['column'];
+				
+				// ADD QUERY JOIN RECORD
+				$query_joins_records[] = $query_join_record;
 			}
 			
-			$query->setJoins($joins);
+			$query->setJoins($query_joins_records);
 		}
 		
 		
@@ -312,140 +383,6 @@ final class QueryBuilderV2
 	}
 	
 	
-	
-	/**
-	 * @brief		Build the query from an array (static)
-	 * @param[in]	arg_action		action name: create/read/update/delete
-	 * @param[in]	arg_model		model (object)
-	 * @param[in]	arg_settings	settings (array)
-	 * @param[in]	arg_id			record id (string|integer)
-	 * @return		Query object or null
-	 */
-	static public function buildFromArray($arg_action, $arg_model, $arg_settings, $arg_id)
-	{
-		$context = 'QueryBuilderV2::buildFromArray(action,model,settings,id)';
-		Trace::enter($context, '', self::$TRACE_QUERY_BUILDER);
-		
-		
-		// CHECK ARGS
-		if ( ! is_object($arg_model) )
-		{
-			return Trace::leaveko($context, 'bad model object', null, self::$TRACE_QUERY_BUILDER);
-		}
-		if ( ! is_array($arg_settings) )
-		{
-			return Trace::leaveko($context, 'bad settings array', null, self::$TRACE_QUERY_BUILDER);
-		}
-		// TODO BUILD FROM ARRAY
-		return Trace::leaveko($context, 'not yet implemented', null, self::$TRACE_QUERY_BUILDER);
-		/*
-		// CREATE QUERY
-		$query = new Query($arg_action);
-		
-		
-		// GET TYPE OF THE QUERY
-		$type = array_key_exists(self::$OPTION_ACTION, $arg_settings) ? $arg_settings[self::$OPTION_ACTION] : $arg_action;
-		if ( ! is_string($type) )
-		{
-			$type = Query::$TYPE_SELECT;
-		}
-		$query->setType($type);
-		
-		
-		// GET INDEXED ARRAY OF FIELDS
-		$fields = array_key_exists(self::$OPTION_FIELDS, $arg_settings) ? $arg_settings[self::$OPTION_FIELDS] : null;
-		if ( is_string($fields) )
-		{
-			$fields = array($fields);
-		}
-		$query->setFieldsNames($fields);
-		
-		
-		// GET INDEXED ARRAY OF VALUES
-		$values = array_key_exists(self::$OPTION_VALUES, $arg_settings) ? $arg_settings[self::$OPTION_VALUES] : null;
-		if ( is_array($values) )
-		{
-			$this->setValues($values);
-		}
-		
-		
-		// GET INDEXED ARRAY OF ORDERS
-		$orders	= array_key_exists(self::$OPTION_ORDERS, $arg_settings) ? $arg_settings[self::$OPTION_ORDERS] : null;
-		if ( is_array($orders) )
-		{
-			$this->setOrders($orders);
-		}
-		
-		
-		// GET INDEXED ARRAY OF GROUPS
-		$groups	= array_key_exists(self::$OPTION_GROUPS, $arg_settings) ? $arg_settings[self::$OPTION_GROUPS] : null;
-		if ( is_array($groups) )
-		{
-			$this->setGroups($groups);
-		}
-		
-		
-		// GET INDEXED ARRAY OF FILTERS
-		$filters	= array_key_exists(self::$OPTION_FILTERS, $arg_settings) ? $arg_settings[self::$OPTION_FILTERS] : null;
-		if ( is_array($filters) )
-		{
-			$this->setGroups($filters);
-		}
-		
-		
-		// SLICE WITH BEGIN AND END OR OFFSET AND LENGTH
-		$offset	= array_key_exists(self::$OPTION_SLICE_OFFSET, $arg_settings) ? $arg_settings[self::$OPTION_SLICE_OFFSET] : null;
-		$length	= array_key_exists(self::$OPTION_SLICE_LENGTH, $arg_settings) ? $arg_settings[self::$OPTION_SLICE_LENGTH] : null;
-		$begin	= array_key_exists(self::$OPTION_SLICE_BEGIN, $arg_settings) ? $arg_settings[self::$OPTION_SLICE_BEGIN] : null;
-		$end	= array_key_exists(self::$OPTION_SLICE_END, $arg_settings) ? $arg_settings[self::$OPTION_SLICE_END] : null;
-		
-		if ( ! ( is_numeric($offset) && is_numeric($length) ) && is_numeric($begin) && is_numeric($end) && $begin > 0 && $end > $begin )
-		{
-			$offset = $begin;
-			$length = $end - $begin;
-		}
-		if ( is_numeric($offset) && is_numeric($length) )
-		{
-			$query->setSlice($offset, $length);
-		}
-		
-		
-		// GET JOINS RECORDS
-		$joins	= array_key_exists(self::$OPTION_JOINS, $arg_settings) ? $arg_settings[self::$OPTION_JOINS] : null;
-		if ( is_array($joins) )
-		{
-			foreach($joins as $join_record)
-			{
-				if ( ! self::checkJoinRecord($join_record) )
-				{
-					Trace::leaveko($context, 'bad join record', null, self::$TRACE_QUERY_BUILDER);
-				}
-			}
-			
-			$query->setJoins($joins);
-		}
-		
-		
-		// GET CRUD DB
-		$crud_db = array_key_exists(self::$OPTION_CRUD_DB, $arg_settings) ? $arg_settings[self::$OPTION_CRUD_DB] : null;
-		if ( is_string($crud_db) )
-		{
-			$this->setCustom('crud_db', $crud_db);
-		}
-		
-		
-		// GET CRUD TABLE
-		$crud_table = array_key_exists(self::$OPTION_CRUD_TABLE, $arg_settings) ? $arg_settings[self::$OPTION_CRUD_TABLE] : null;
-		if ( is_string($crud_table) )
-		{
-			$this->setCustom('crud_table', $crud_table);
-		}
-		
-		
-		return Trace::leaveok($context, 'success', $query, self::$TRACE_QUERY_BUILDER);*/
-	}
-	
-	
 	/**
 	 * @brief		Check query join record
 	 * @param[in]	arg_join_record		query join record (assoc array)
@@ -454,52 +391,58 @@ final class QueryBuilderV2
 	static public function checkJoinRecord($arg_join_record)
 	{
 		$context = 'AbstractQuery.checkJoinRecord(record)';
-		Trace::enter($context, '', self::$TRACE_ABSTRACT_QUERY);
+		Trace::enter($context, '', self::$TRACE_QUERY_BUILDER);
 		
-		// TODO CHECK JOIN RECORD
-		return Trace::leaveko($context, 'not yet implemented', false, self::$TRACE_ABSTRACT_QUERY);
-		/*
-		// CHECK JOIN RECORD
-		if ( ! is_array($arg_join_record) || count($arg_join_record) < 6 || count($arg_join_record) > 7)
+		
+		// CHECK JOIN MODE
+		if ( ! array_key_exists('mode', $arg_join_record) )
 		{
-			return Trace::leaveko($context, 'bad join record', false, self::$TRACE_ABSTRACT_QUERY);
+			return Trace::leaveko($context, 'bad join record: no mode', false, self::$TRACE_QUERY_BUILDER);
 		}
 		
-		// CHECK LEFT PART
-		$join_db_left			= array_key_exists('db', $arg_join_record) ? true : true;
-		$join_table_left		= array_key_exists('table', $arg_join_record) ? true : false;
-		$join_column_left		= array_key_exists('column', $arg_join_record) ? true : false;
-		
-		$left_is_valid			= $join_db_left && $join_table_left && $join_column_left;
-		$left_is_valid			= $left_is_valid && is_string($join_table_left) && strlen($join_table_left) > 0 && is_string($join_column_left) && strlen($join_column_left) > 0;
-		
-		if (! $left_is_valid)
+		// CHECK JOIN SOURCE
+		if ( ! array_key_exists('source', $arg_join_record) )
 		{
-			return Trace::leaveko($context, 'bad join left part', false, self::$TRACE_ABSTRACT_QUERY);
+			return Trace::leaveko($context, 'bad join record: no source', false, self::$TRACE_QUERY_BUILDER);
+		}
+		$source_record = $arg_join_record['source'];
+		if ( ! array_key_exists('db', $source_record) )
+		{
+			Trace::step($context, 'set default source db', self::$TRACE_QUERY_BUILDER);
+		}
+		if ( ! array_key_exists('table', $source_record) )
+		{
+			Trace::step($context, 'set default source table', self::$TRACE_QUERY_BUILDER);
+		}
+		if ( ! array_key_exists('column', $source_record) )
+		{
+			return Trace::leaveko($context, 'bad join record: no source column', false, self::$TRACE_QUERY_BUILDER);
 		}
 		
-		// CHECK RIGHT PART
-		$join_db_right			= array_key_exists('join_db', $arg_join_record) ? true : true;
-		$join_table_right		= array_key_exists('join_table', $arg_join_record) ? true : false;
-		$join_table_alias_right	= array_key_exists('join_table_alias', $arg_join_record) ? true : false;
-		$join_column_right		= array_key_exists('join_column', $arg_join_record) ? true : false;
-		
-		$right_is_valid			= $join_db_right && $join_table_right && $join_table_alias_right && $join_column_right;
-		$right_is_valid			= $right_is_valid && is_string($join_table_right) && strlen($join_table_right) > 0 && is_string($join_table_alias_right) && strlen($join_table_alias_right) > 0 && is_string($join_column_right) && strlen($join_column_right) > 0;
-		
-		if (! $right_is_valid)
+		// CHECK JOIN TARGET
+		if ( ! array_key_exists('target', $arg_join_record) )
 		{
-			return Trace::leaveko($context, 'bad join right part', false, self::$TRACE_ABSTRACT_QUERY);
+			return Trace::leaveko($context, 'bad join record: no target', false, self::$TRACE_QUERY_BUILDER);
+		}
+		$target_record = $arg_join_record['target'];
+		if ( ! array_key_exists('db', $target_record) )
+		{
+			Trace::step($context, 'set default target db', self::$TRACE_QUERY_BUILDER);
+		}
+		if ( ! array_key_exists('table', $target_record) )
+		{
+			return Trace::leaveko($context, 'bad join record: no target table', false, self::$TRACE_QUERY_BUILDER);
+		}
+		if ( ! array_key_exists('table_alias', $target_record) )
+		{
+			Trace::step($context, 'set default target table alias', self::$TRACE_QUERY_BUILDER);
+		}
+		if ( ! array_key_exists('column', $target_record) )
+		{
+			return Trace::leaveko($context, 'bad join record: no target column', false, self::$TRACE_QUERY_BUILDER);
 		}
 		
-		// CHECK MODE
-		$join_mode_is_valid		= array_key_exists('join_mode', $arg_join_record) ? in_array($arg_join_record['join_mode'], ['INNER', 'OUTER', 'LEFT', 'RIGHT']) : false;
 		
-		if (! $join_mode_is_valid)
-		{
-			return Trace::leaveko($context, 'bad join mode', false, self::$TRACE_ABSTRACT_QUERY);
-		}
-		
-		return Trace::leaveok($context, 'record is ok', true, self::$TRACE_ABSTRACT_QUERY);*/
+		return Trace::leaveok($context, 'record is ok', true, self::$TRACE_QUERY_BUILDER);
 	}
 }

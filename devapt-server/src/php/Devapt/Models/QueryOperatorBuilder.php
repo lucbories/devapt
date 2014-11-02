@@ -14,7 +14,7 @@
  * //@todo		...
  */
 
-namespace Devapt\Models\Sql;
+namespace Devapt\Models;
 
 // DEVAPT IMPORTS
 use Devapt\Core\Trace;

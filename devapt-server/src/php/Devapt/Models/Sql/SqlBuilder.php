@@ -1,6 +1,6 @@
 <?php
 /**
- * @file        SqlBuilderV1.php
+ * @file        SqlBuilder.php
  * @brief       Static class to build SQL query
  * @details     ...
  * @see			...
@@ -25,7 +25,7 @@ use Devapt\Models\Query;
 use Zend\Db\Sql\Sql;
 
 
-final class SqlBuilderV1
+final class SqlBuilder
 {
 	// STATIC ATTRIBUTES
 	

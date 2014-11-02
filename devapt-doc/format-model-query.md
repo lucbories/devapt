@@ -134,13 +134,13 @@ JSON object string format:
 	crud_table: '...',
 	fields: [],
 	one_field: '...',
-	values: {},
+	values: [{}],
 	values_count: ...,
 	filters: [],
 	orders: [],
 	groups: [],
 	slice: { offset:'...', length:'...' },
-	joins: []
+	joins: [] ???????????????????????????????
 }`
 
 with attributes definition:
@@ -171,12 +171,12 @@ with attributes definition:
   * values: field name for unary operation 
   
  * values
-  * default value: {}
-  * value type:  an associative array of field name / field value
-  * values: fields/values association
+  * default value: []
+  * value type: an indexed array of associative array of field name / field value
+  * values: array of fields/values association
       * to build a filter on fields
-      * or to insert fields values
-      * or to update fields values
+      * or to insert records
+      * or to update records
 
  * values_count
   * default value : 0
@@ -209,7 +209,7 @@ with attributes definition:
 		`{
 			mode: string in 'inner', 'straight join', 'left outer', 'right outer', 'natural left outer', 'natural right outer' 
 			source: { db: '...', table: '...', column: '...' },
-			target: { db: '...', table: '...', column: '...' }
+			target: { db: '...', table: '...', column: '...', table_alias: '...' }
 		}`
   
  * filters
@@ -217,8 +217,13 @@ with attributes definition:
   * value type: a JSON array of filters objects
   * values: each filter object is as
 		`{
-			predicate: 'AND' / 'OR'
+			combination: 'AND' / 'OR'
 			expression: expression object
+		}`
+		or
+		`{
+			combination: 'AND' / 'OR'
+			filters: filters array
 		}`
 
  * expression object:
@@ -227,10 +232,10 @@ with attributes definition:
 			operands: an array of expression
 		}`
 		or
-		{
+		`{
 			value: expression value
 			type: value type name
-		}
+		}`
 	
  * value types: "String", "Integer", "Float", "Date", "Time", "DateTime", "Boolean"
  

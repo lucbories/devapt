@@ -494,7 +494,14 @@ define(['Devapt', 'core/traces', 'core/types-is'], function(Devapt, DevaptTraces
 		}
 		else if ( DevaptTypes.is_object(arg_value) )
 		{
-			value = Object.values(arg_value);
+			// value = Object.values(arg_value);
+			// TODO Object.values()
+			var values_array = [];
+			for(attr_key in arg_value)
+			{
+				values_array.push( arg_value[attr_key] );
+			}
+			value = values_array;
 		}
 		
 		if ( ! DevaptTypes.is_array(value) )

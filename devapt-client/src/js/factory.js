@@ -119,7 +119,27 @@ function(Devapt, DevaptTraces, DevaptTypes)
 			case 'model':
 			{
 				DevaptTraces.trace_step(context, 'resource class_type is model', DevaptFactory.factory_trace);
-				break;
+				
+				var model_name = arg_resource_json.name;
+				
+				require(['datas/model'],
+					function(ModelClass) 
+					{
+						DevaptTraces.trace_enter(context + '.dependencies are loaded', '', DevaptFactory.factory_trace);
+						
+						// CREATE MODEL
+						var model = new ModelClass(model_name, arg_resource_json);
+						
+						// RESOLVE DEFERRED
+						master_deferred.resolve(model);
+						
+						DevaptTraces.trace_leave(context + '.dependencies are loaded', 'promise is resoved: [' + model_name + '] resource is build', DevaptFactory.factory_trace);
+						return;
+					}
+				);
+			
+				DevaptTraces.trace_leave(context, '[' + model_name + '] async resource build', DevaptFactory.factory_trace);
+				return promise;
 			}
 		}
 		

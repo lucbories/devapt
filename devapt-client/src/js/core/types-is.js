@@ -170,7 +170,7 @@ define(['Devapt', 'core/traces'], function(Devapt, DevaptTraces)
 	 */
 	DevaptTypes.is_object = function(arg_value)
 	{
-		return ! DevaptTypes.is_null(arg_value) && typeof arg_value == 'object';
+		return ! DevaptTypes.is_null(arg_value) && typeof arg_value === 'object';
 	}
 
 	/**
@@ -190,6 +190,46 @@ define(['Devapt', 'core/traces'], function(Devapt, DevaptTraces)
 		}
 		return DevaptTypes.is_object(arg_values);
 	}
+
+	/**
+	 * @memberof			DevaptTypes
+	 * @public
+	 * @static
+	 * @method				DevaptTypes.is_object(arg_value)
+	 * @desc				Test if the value is an object
+	 * @param {anything}	arg_value			value to test
+	 * @return {boolean}
+	 */
+	DevaptTypes.is_object_with = function(arg_value, arg_attributes_array)
+	{
+		var cb_has_attribute = function(attr_name) { return arg_value[attr_name] !== undefined; };
+		return DevaptTypes.is_object(arg_value) && DevaptTypes.is_array(arg_attributes_array) && arg_attributes_array.every(cb_has_attribute);
+	}
+
+	/**
+	 * @memberof			DevaptTypes
+	 * @public
+	 * @static
+	 * @method				DevaptTypes.are_objectg(arg_values)
+	 * @desc				Test if an array of value are object
+	 * @param {array}		arg_values			values to test
+	 * @return {boolean}
+	 */
+	DevaptTypes.are_object_with = function(arg_values, arg_attributes_array)
+	{
+		if ( DevaptTypes.is_array(arg_values) )
+		{
+			var cb_is_object_with = function(obj)
+				{
+					var cb_has_attribute = function(attr_name) { return obj[attr_name] !== undefined; };
+					return arg_attributes_array.every(cb_has_attribute);
+				};
+			return arg_values.length > 0 ? arg_values.every(cb_is_object_with) : false;
+		}
+		return DevaptTypes.is_object_with(arg_values);
+	}
+	
+	
 
 	/**
 	 * @memberof			DevaptTypes

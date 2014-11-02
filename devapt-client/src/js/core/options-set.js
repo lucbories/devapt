@@ -13,6 +13,48 @@ define(['Devapt', 'core/traces', 'core/types', 'core/options-get'],
 function(Devapt, DevaptTraces, DevaptTypes, DevaptOptions)
 {
 	/**
+	 * @memberof				DevaptOptions
+	 * @public
+	 * @method					clone_object(arg_object_to_clone)
+	 * @desc					Duplicate an existing object
+	 * @param {object}			arg_object_to_clone		Object to clone
+	 * @return {object}			Clone
+	 */
+	DevaptOptions.clone_object = function(arg_object_to_clone)
+	{
+		// console.log(arg_object_to_clone, 'DevaptOptions.arg_object_to_clone');
+		
+		// NULL OR SIMPLE TYPE (NOT OBJECT)
+		if (arg_object_to_clone == null || typeof(arg_object_to_clone) != 'object')
+		{
+			return arg_object_to_clone;
+		}
+		
+		// ARRAY
+		if ( DevaptTypes.is_array(arg_object_to_clone) )
+		{
+			var tmp = new Array();
+			for(key in arg_object_to_clone)
+			{
+				var cloned_object = DevaptOptions.clone_object(arg_object_to_clone[key]);
+				cloned_object.is_cloned = true;
+				tmp.push(cloned_object);
+			}
+			
+			// console.log(tmp, 'DevaptOptions.cloned array');
+			// console.log(arg_object_to_clone, 'DevaptOptions.arg array');
+			return tmp;
+		}
+		
+		var cloned_object = jQuery.extend(true, {}, arg_object_to_clone);
+		cloned_object.is_cloned = true;
+		// console.log(cloned_object, 'DevaptOptions.cloned object');
+		// console.log(arg_object_to_clone, 'DevaptOptions.arg object');
+		return cloned_object;
+	},
+	
+	
+	/**
 	 * @memberof			DevaptOptions
 	 * @public
 	 * @static
@@ -52,6 +94,7 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptOptions)
 		var option = arg_option_object;
 		if ( ! DevaptTypes.is_object(option) )
 		{
+			DevaptTraces.trace_step(context, 'search option record', trace_step);
 			option = DevaptOptions.get_option(arg_class_instance, arg_option_name, arg_is_inherited, []);
 			if ( ! DevaptTypes.is_object(option) )
 			{
@@ -60,6 +103,7 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptOptions)
 				return false;
 			}
 		}
+		DevaptTraces.trace_var(context, 'option', option, DevaptOptions.options_set_trace);
 		DevaptTraces.trace_var(context, 'class_name', option.class_name, DevaptOptions.options_set_trace);
 		
 		
@@ -70,6 +114,7 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptOptions)
 		// GET TARGET OBJECT
 		var target_object = arg_class_instance;
 		var objects = option_name.split('.');
+		DevaptTraces.trace_var(context, 'objects.length', objects.length, DevaptOptions.options_set_trace);
 		if (objects.length == 2)
 		{
 			target_name = objects[0];
@@ -128,7 +173,7 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptOptions)
 		// GET OBJECT ATTRIBUTE
 		if ( DevaptTypes.is_null(arg_option_value) )
 		{
-			target_object[option_name] = option.defaut_value;
+			target_object[option_name] = DevaptOptions.clone_object(option.default_value)
 			DevaptTraces.trace_leave(context, 'set default value', DevaptOptions.options_set_trace);
 			return true;
 		}
@@ -138,19 +183,19 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptOptions)
 		DevaptTraces.trace_step(context, 'switch on option type[' + option_type + ']', trace_step);
 		switch(option_type)
 		{
-			case 'boolean':		target_object[option_name] = DevaptTypes.to_boolean(arg_option_value, option.defaut_value);
+			case 'boolean':		target_object[option_name] = DevaptTypes.to_boolean(arg_option_value, option.default_value);
 								DevaptTraces.trace_leave(context, 'success for Boolean', DevaptOptions.options_set_trace);
 								return true;
 								
-			case 'integer':		target_object[option_name] = DevaptTypes.to_integer(arg_option_value, option.defaut_value);
+			case 'integer':		target_object[option_name] = DevaptTypes.to_integer(arg_option_value, option.default_value);
 								DevaptTraces.trace_leave(context, 'success for Integer', DevaptOptions.options_set_trace);
 								return true;
 								
-			case 'float':		target_object[option_name] = DevaptTypes.to_float(arg_option_value, option.defaut_value);
+			case 'float':		target_object[option_name] = DevaptTypes.to_float(arg_option_value, option.default_value);
 								DevaptTraces.trace_leave(context, 'success for Float', DevaptOptions.options_set_trace);
 								return true;
 								
-			case 'date':		target_object[option_name] = DevaptTypes.to_date(arg_option_value, option.defaut_value);
+			case 'date':		target_object[option_name] = DevaptTypes.to_date(arg_option_value, option.default_value);
 								DevaptTraces.trace_leave(context, 'success for Date', DevaptOptions.options_set_trace);
 								return true;
 								
@@ -174,8 +219,8 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptOptions)
 								DevaptTraces.trace_leave(context, 'success for String', DevaptOptions.options_set_trace);
 								return true;
 								
-			case 'object':		DevaptTraces.trace_step(context, 'type is object for [' + option_name + ']', trace_step);
-								
+			case 'object': {
+								DevaptTraces.trace_step(context, 'type is object for [' + option_name + ']', trace_step);
 								
 								// VALUE IS AN OBJECT
 								if ( DevaptTypes.is_object(arg_option_value) )
@@ -193,7 +238,8 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptOptions)
 								if ( ! DevaptTypes.is_object(option.childs) || option.childs.length === 0 )
 								{
 									DevaptTraces.trace_step(context, 'option has no childs: get values object', trace_step);
-									var values = DevaptTypes.to_object(arg_option_value, option.defaut_value, ',', '=');
+									var default_value = DevaptOptions.clone_object(option.default_value);
+									var values = DevaptTypes.to_object(arg_option_value, default_value, ',', '=');
 									DevaptTraces.trace_var(context, 'values', values, trace_step);
 									
 									if ( target_object[option_name] === undefined )
@@ -276,9 +322,13 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptOptions)
 								
 								DevaptTraces.trace_leave(context, 'success for Object', DevaptOptions.options_set_trace);
 								return true;
+							}
+							
+			case 'array': {
+								DevaptTraces.trace_step(context, 'type is array for [' + option_name + ']', trace_step);
 								
-			case 'array':		
-								values_array = DevaptTypes.to_array(arg_option_value, option.default_value, option.array_separator);
+								var default_value = DevaptOptions.clone_object(option.default_value);
+								values_array = DevaptTypes.to_array(arg_option_value, default_value, option.array_separator);
 								for(array_key in values_array)
 								{
 									var value = values_array[array_key];
@@ -289,6 +339,7 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptOptions)
 								
 								DevaptTraces.trace_leave(context, 'success for Array', DevaptOptions.options_set_trace);
 								return true;
+							}
 		}
 		
 		DevaptTraces.trace_leave(context, 'bad option type[' + option.type + ']', DevaptOptions.options_set_trace);
@@ -350,11 +401,14 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptOptions)
 			arg_force_replace = false;
 		}
 		
+		
 		// SET DEFAULT OPTIONS VALUES
 		var class_name		= arg_class_instance.class_name;
 		var class_options	= DevaptOptions.options[class_name];
 		var filled_options	= {};
+		DevaptTraces.trace_var(context, 'class_options', class_options, DevaptOptions.options_set_trace);
 		DevaptTraces.trace_var(context, 'class_name', class_name, DevaptOptions.options_set_trace);
+		
 		if ( DevaptTypes.is_object(class_options) )
 		{
 			DevaptTraces.trace_step(context, 'set options default values:', trace_step);
@@ -366,7 +420,9 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptOptions)
 				var option_obj		= class_options[option_key];
 				var option_name		= option_obj.name;
 				var option_alias	= null;
-				// console.log(option_obj);
+				DevaptTraces.trace_var(context, 'option_obj', option_obj, DevaptOptions.options_set_trace);
+				DevaptTraces.trace_var(context, 'option_name', option_name, DevaptOptions.options_set_trace);
+				
 				// GET POTENTIAL GIVEN VALUE FOR OPTION NAME AND ALIAS
 				var given_value		= arg_options_obj[option_obj.name];
 				if (given_value === undefined && DevaptTypes.is_array(option_obj.aliases) )
@@ -383,7 +439,7 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptOptions)
 				}
 				
 				// GET OPTION VALUE
-				var default_value	= option_obj.default_value;
+				var default_value	= DevaptOptions.clone_object(option_obj.default_value);
 				var option_value	= given_value === undefined ? default_value : given_value;
 				
 				// SET OPTION VALUE

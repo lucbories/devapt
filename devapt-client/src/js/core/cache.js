@@ -54,12 +54,14 @@ function(Devapt, DevaptTrace, DevaptTypes, jStorage)
 		var context = 'DevaptCache.get(key,default)';
 		DevaptTrace.trace_enter(context, '', DevaptCache.cache_trace);
 		
+		
 		var value = $.jStorage.get(arg_key, arg_default);
 		if (!value)
 		{
 			DevaptTrace.trace_leave(context, 'not found', DevaptCache.cache_trace);
 			return false;
 		}
+		
 		
 		DevaptTrace.trace_leave(context, 'found', DevaptCache.cache_trace);
 		return value;
@@ -103,6 +105,7 @@ function(Devapt, DevaptTrace, DevaptTypes, jStorage)
 		var context = 'DevaptCache.set_into_cache(key,value,ttl)';
 		DevaptTrace.trace_enter(context, '', DevaptCache.cache_trace);
 		
+		
 		var options = DevaptTypes.is_number(arg_ttl) ? { 'TTL': arg_ttl } : { 'TTL': DevaptCache.cache_default_ttl };
 		var result = $.jStorage.set(arg_key, arg_value, options);
 		if (!result)
@@ -110,6 +113,7 @@ function(Devapt, DevaptTrace, DevaptTypes, jStorage)
 			DevaptTrace.trace_leave(context, 'failure', LibaptCache.cache_trace);
 			return false;
 		}
+		
 		
 		DevaptTrace.trace_leave(context, '', DevaptCache.cache_trace);
 		return true;

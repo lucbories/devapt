@@ -200,7 +200,7 @@ class Application extends AbstractApplication implements ApplicationInterface
 			}
 		}
 		
-		// INIT MODULES
+		// INIT DISPATCHER
 		if ( ! $this->initDispatcher() )
 		{
 			Trace::error('Application: Init dispatcher failed.');

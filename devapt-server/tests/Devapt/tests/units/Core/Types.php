@@ -4,6 +4,33 @@ namespace Devapt\tests\units\Core;
 // REQUIRE DEVAPT, ZF2 AND ATOUM
 require(__DIR__ . "/../../../autoload.php");
 
+/*
+D:\DATAS\GitHub\DevApt\devapt-server\tests>php ..\dist\mageekguy.atoum.phar -f
+evapt\tests\units\Core\Types.php
+> PHP path: C:\Program Files (x86)\EasyPHP-DevServer-14.1VC11\binaries\php\php_
+unningversion\php.exe
+> PHP version:
+=> PHP 5.5.8 (cli) (built: Jan  8 2014 15:32:25)
+Copyright (c) 1997-2013 The PHP Group
+Zend Engine v2.5.0, Copyright (c) 1998-2013 Zend Technologies
+    with Xdebug v2.2.3, Copyright (c) 2002-2013, by Derick Rethans
+> Devapt\tests\units\Core\Types...
+[....________________________________________________________][0/4]
+[S...________________________________________________________][1/4]
+[SS..________________________________________________________][2/4]
+[SSS.________________________________________________________][3/4]
+[SSSS________________________________________________________][4/4]
+=> Test duration: 0.10 second.
+=> Memory usage: 1.00 Mb.
+> Total test duration: 0.10 second.
+> Total test memory usage: 1.00 Mb.
+> Code coverage value: 96.43%
+=> Class Devapt\Core\Types: 96.43%
+==> Devapt\Core\Types::__construct(): 0.00%
+> Running duration: 0.60 second.
+Success (1 test, 4/4 methods, 0 void method, 0 skipped method, 179 assertions)!
+*/
+
 // USE ATOUM
 use \atoum;
 

@@ -220,7 +220,8 @@ function(Devapt, DevaptTraces, DevaptTypes)
 			}
 		);
 		
-		
+		// TODO 
+		/*
 		test('DevaptTypes.to_time', 1,
 			function()
 			{
@@ -258,7 +259,7 @@ function(Devapt, DevaptTraces, DevaptTypes)
 			{
 				equal(DevaptTypes.to_callback(''),						'', 'DevaptTypes.to_callback: ""');
 			}
-		);
+		);*/
 	}
 	
 	return run_tests;

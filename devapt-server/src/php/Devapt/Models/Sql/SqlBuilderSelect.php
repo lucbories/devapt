@@ -44,7 +44,7 @@ final class SqlBuilderSelect
 	// STATIC ATTRIBUTES
 	
 	/// @brief TRACE FLAG
-	static public $TRACE_BUILDER = true;
+	static public $TRACE_BUILDER = false;
 	
 	
 	
@@ -95,57 +95,73 @@ final class SqlBuilderSelect
 		$where = new Where();
 		$groups = array();
 		$orders = array();
+		$joins_tables = array();
+		$joins_columns = array();
+		$joins = array();
 		
 		// $query_fields = $arg_query->getFields();
 		$query_fields_names = $arg_query->getFieldsNames();
+		$query_joins = $model->getModelJoinsRecords();
 		
 		
-		// JOINS
-		Trace::step($context, 'has join records ?', self::$TRACE_BUILDER);
-		$query_joins = $arg_query->getJoins();
+		// FILL JOINS TABLES
 		if ( is_array($query_joins) )
 		{
+			Trace::step($context, 'fill joins tables ', self::$TRACE_BUILDER);
 			Trace::step($context, 'process ['.count($query_joins).'] joins', self::$TRACE_BUILDER);
 			
 			foreach($query_joins as $join_record)
 			{
 				Trace::step($context, 'loop on join record', self::$TRACE_BUILDER);
+				Trace::value($context, 'join record', $join_record, self::$TRACE_BUILDER);
 				
 				// CHECK JOIN RECORD
-				if ( is_array($join_record) && count($join_record) >= 6 )
+				if ( is_array($join_record) && count($join_record) === 3 && array_key_exists('mode', $join_record)&& array_key_exists('source', $join_record) && array_key_exists('target', $join_record) )
 				{
 					Trace::step($context, 'process current join record', self::$TRACE_BUILDER);
 					
 					// GET JOIN ATTRIBUTES
-					$join_db_left			= array_key_exists('db', $join_record) ? $join_record['db'] : $default_db;
-					$join_table_left		= array_key_exists('table', $join_record) ? $join_record['table'] : $default_table;
-					$join_column_left		= $join_record['column'];
+					$join_mode_str			= $join_record['mode'];
 					
-					$join_db_right			= array_key_exists('join_db', $join_record) ? $join_record['join_db'] : $default_db;
-					$join_table_right		= $join_record['join_table'];
-					$join_table_alias_right	= array_key_exists('join_table_alias', $join_record) ? $join_record['join_table_alias'] : $join_table_right;
-					$join_column_right		= $join_record['join_column'];
-					$join_mode_str			= array_key_exists('join_mode', $join_record) ? $join_record['join_mode'] : 'INNER';
-					$join_mode				= Select::JOIN_INNER;
-					switch( strtoupper($join_mode_str) )
+					$has_source = is_array($join_record['source']) && count($join_record['source']) >= 1 && array_key_exists('column', $join_record['source']);
+					if (! $has_source)
 					{
-						case 'INNER':	$join_mode = Select::JOIN_INNER; break;
-						case 'OUTER':	$join_mode = Select::JOIN_OUTER; break;
-						case 'LEFT':	$join_mode = Select::JOIN_LEFT; break;
-						case 'RIGHT':	$join_mode = Select::JOIN_RIGHT; break;
+						return Trace::leaveko($context, 'bad join source record', null, self::$TRACE_BUILDER);
 					}
+					$join_db_left			= array_key_exists('db', $join_record['source']) ? $join_record['source']['db'] : $default_db;
+					$join_table_left		= array_key_exists('table', $join_record['source']) ? $join_record['source']['table'] : $default_table;
+					$join_column_left		= $join_record['source']['column'];
+					
+					$has_target = is_array($join_record['target']) && count($join_record['target']) >= 2 && array_key_exists('table', $join_record['target']) && array_key_exists('column', $join_record['target']);
+					if (! $has_target)
+					{
+						return Trace::leaveko($context, 'bad join target record', null, self::$TRACE_BUILDER);
+					}
+					$join_db_right			= array_key_exists('db', $join_record['target']) ? $join_record['target']['db'] : $default_db;
+					$join_table_right		= $join_record['target']['table'];
+					$join_table_alias_right	= array_key_exists('table_alias', $join_record['target']) ? $join_record['target']['table_alias'] : 'join_'.$join_table_right;
+					$join_column_right		= $join_record['target']['column'];
+					
+					$joins_tables[$join_table_alias_right] = $join_table_alias_right;
 					
 					// FILL LEFT TABLE
-					if ( ! array_key_exists($join_table_left, $froms) )
+					$table_exists = array_key_exists($join_table_left, $froms) || array_key_exists($join_table_left, $joins_tables);
+					if ( ! $table_exists )
 					{
 						// $froms[$join_table_left] = $join_db_left.'.'.$join_table_left;
 						return Trace::leaveko($context, 'join left table not found ['.$join_table_left.']', null, self::$TRACE_BUILDER);
 					}
 					
-					// SET JOIN
-					$select->join( array( $join_table_alias_right => $join_db_right.'.'.$join_table_right), $join_table_left.'.'.$join_column_left.'='.$join_table_alias_right.'.'.$join_column_right, $join_mode);
+					// SET JOIN RECORD
+					$join_mode = $join_mode_str; // TODO CHECK JOIN MODE
+					// $join_columns = array_key_exists($join_table_right, $joins_columns) ? $joins_columns[$join_table_right] : $select::SQL_STAR;
+					$joins[] = array(
+						'right_table' => $join_table_alias_right,
+						'right' => array( $join_table_alias_right => $join_table_right),
+						'on' => $join_table_left.'.'.$join_column_left.'='.$join_table_alias_right.'.'.$join_column_right,
+						'mode' => $join_mode
+						);
 				}
-				
 				else
 				{
 					Trace::step($context, 'bad join record', self::$TRACE_BUILDER);
@@ -180,14 +196,26 @@ final class SqlBuilderSelect
 			$one_field_sql_db			= $field_has_foreign_link ? $one_field_record['sql_foreign_db'] : $one_field_record['sql_db'];
 			$one_field_sql_table		= $field_has_foreign_link ? $one_field_record['sql_foreign_table'] : $one_field_record['sql_table'];
 			$one_field_sql_column		= $field_has_foreign_link ? $one_field_record['sql_foreign_column'] : $one_field_record['sql_column'];
-			$one_field_sql_alias		= array_key_exists('sql_alias', $one_field_record) ? $one_field_record['sql_alias'] : $one_field_sql_column;
+			$one_field_sql_alias		= array_key_exists('sql_alias', $one_field_record) ? $one_field_record['sql_alias'] : $one_field_sql_table.'_'.$one_field_sql_column;
 			
-			$columns[$one_field_sql_alias] = $one_field_sql_column;
+			
+			if ( array_key_exists($one_field_sql_table, $joins_tables) )
+			{
+				if ( ! array_key_exists($one_field_sql_table, $joins_columns) || ! is_array($joins_columns[$one_field_sql_table]) )
+				{
+					$joins_columns[$one_field_sql_table] = array();
+				}
+				$joins_columns[$one_field_sql_table][$one_field_sql_alias] = $one_field_sql_column;
+			}
+			else
+			{
+				$columns[$one_field_sql_alias] =$one_field_sql_column; // ZF2 doesn't accept a table.column scheme
+			}
 			
 			// CHECK FIELD TABLE
-			if ( ! array_key_exists($one_field_sql_table, $froms) )
+			if ( ! ( array_key_exists($one_field_sql_table, $froms) || array_key_exists($one_field_sql_table, $joins_tables) ) )
 			{
-				return Trace::leaveko($context, 'field table ['.$one_field_sql_table.'] is not known from ['.(is_array($froms) ? implode(',', $froms) : 'null').']', null, self::$TRACE_BUILDER);
+				return Trace::leaveko($context, 'one field table ['.$one_field_sql_table.'] is not known from ['.(is_array($froms) ? implode(',', $froms) : 'null').'] and ['.(is_array($joins_tables) ? implode(',', $joins_tables) : 'null').']', null, self::$TRACE_BUILDER);
 			}
 		}
 		
@@ -211,7 +239,8 @@ final class SqlBuilderSelect
 				$field_sql_db			= $field_record['sql_db'];
 				$field_sql_table		= $field_record['sql_table'];
 				$field_sql_column		= $field_record['sql_column'];
-				$field_sql_alias		= array_key_exists('sql_alias', $field_record) ? $field_record['sql_alias'] : $field_sql_column;
+				// $field_sql_alias		= array_key_exists('sql_alias', $field_record) ? $field_record['sql_alias'] : $field_sql_column;
+				$field_sql_alias		= $field_name;
 				$field_sql_is_expr		= $field_record['sql_is_expression'];
 				$field_sql_is_pk		= $field_record['sql_is_primary_key'];
 				
@@ -221,12 +250,13 @@ final class SqlBuilderSelect
 					Trace::step($context, 'field has foreign link', self::$TRACE_BUILDER);
 					
 					// CREAT FOREIGN LINK SUB QUERY
-					$sub_select_exp = SqlSubQueryBuilder::compileSubSelect($arg_zf2_sql, $field_record);
+					$sub_select_exp = SqlSubQuery::compileSubSelect($arg_zf2_sql, $field_record);
 					if ( is_null($sub_select_exp) )
 					{
 						return Trace::leaveko($context, 'foreign field sub query creation failed', null, self::$TRACE_BUILDER);
 					}
 					
+					// REGISTER COLUMN
 					$columns[$field_sql_alias] = $sub_select_exp;
 				}
 				
@@ -239,6 +269,8 @@ final class SqlBuilderSelect
 					if ($field_sql_is_expr)
 					{
 						Trace::step($context, 'field is an expression', self::$TRACE_BUILDER);
+						
+						// REGISTER COLUMN
 						$columns[$field_sql_alias] = new Expression($field_sql_column);
 					}
 					
@@ -247,12 +279,28 @@ final class SqlBuilderSelect
 					{
 						Trace::step($context, 'field is regular', self::$TRACE_BUILDER);
 						
-						$columns[$field_sql_alias] = $field_sql_column;
+						// REGISTER COLUMN
+						if ( array_key_exists($field_sql_table, $joins_tables) )
+						{
+							if ( ! array_key_exists($field_sql_table, $joins_columns) || ! is_array($joins_columns[$field_sql_table]) )
+							{
+								$joins_columns[$field_sql_table] = array();
+							}
+							$joins_columns[$field_sql_table][$field_sql_alias] = $field_sql_column;
+						}
+						else
+						{
+							$columns[$field_sql_alias] = $field_sql_column; // ZF2 doesn't accept a table.column scheme
+						}
 						
 						// CHECK FIELD TABLE
-						if ( ! array_key_exists($field_sql_table, $froms) )
+						Trace::value($context, 'field_sql_table', $field_sql_table, self::$TRACE_BUILDER);
+						Trace::value($context, 'joins_tables', $joins_tables, self::$TRACE_BUILDER);
+						
+						if ( ! ( array_key_exists($field_sql_table, $froms) || array_key_exists($field_sql_table, $joins_tables) ) )
 						{
-							return Trace::leaveko($context, 'field table ['.$field_sql_table.'] is not known from ['.(is_array($froms) ? implode(',', $froms) : 'null').']', null, self::$TRACE_BUILDER);
+							$tables_list_str = (is_array($froms) ? implode(',', $froms) : 'null').'] and ['.(is_array($joins_tables) ? implode(',', $joins_tables) : 'null');
+							return Trace::leaveko($context, 'field table ['.$field_sql_table.'] is not known from ['.$tables_list_str.']', null, self::$TRACE_BUILDER);
 						}
 					}
 				}
@@ -266,6 +314,29 @@ final class SqlBuilderSelect
 		{
 			$columns = array('count' => new Expression('count(' . $one_field_sql_column . ')') );
 			$froms = array($one_field_sql_table=>$one_field_sql_table);
+		}
+		
+		
+		// JOINS
+		Trace::step($context, 'has join records ?', self::$TRACE_BUILDER);
+		if ( is_array($joins) && count($joins) > 0 )
+		{
+			Trace::step($context, 'process ['.count($joins).'] joins', self::$TRACE_BUILDER);
+			
+			foreach($joins as $join_record)
+			{
+				Trace::value($context, 'join record', $join_record, self::$TRACE_BUILDER);
+				
+				$join_table_right = $join_record['right_table'];
+				$join_columns = array_key_exists($join_table_right, $joins_columns) ? $joins_columns[$join_table_right] : $select::SQL_STAR;
+				// var_dump($join_columns);
+				$select->join(
+					$join_record['right'],
+					$join_record['on'],
+					$join_columns,
+					$join_record['mode']
+					);
+			}
 		}
 		
 		
@@ -287,42 +358,24 @@ final class SqlBuilderSelect
 		
 		// WHERE
 		Trace::step($context, 'has filters ?', self::$TRACE_BUILDER);
-		$query_filters = $arg_query->getFilters();
-		//	 filter option example:
-		//		model_filters= "field=brand_name,type=String,modifier=upper,op=equals,var1=\"ADJ\""
-		if ( is_array($query_filters) )
+		if ( $arg_query->hasFiltersTree() )
 		{
-			Trace::step($context, 'query has ['.count($query_filters).'] filters', self::$TRACE_BUILDER);
-			
-			$build_filters_records = array();
-			$tree_root = new FilterNode(null, null, new PredicateSet( array() ) );
-			$current_node = &$tree_root;
-			foreach($query_filters AS $key => $filter_record)
-			{
-				Trace::step($context, 'loop on filter ?', self::$TRACE_BUILDER);
-				
-				// CHECK FILTER RECORD
-				if ( ! is_array($filter_record) )
-				{
-					return Trace::leaveko($context, 'filter record isn t an array', null, self::$TRACE_BUILDER);
-				}
-				
-				// BUILD FILTER NODE
-				$current_node = SqlFiltersBuilder::buildFilterNode($arg_zf2_sql, $current_node, $fields_records, $filter_record);
-				if ( ! is_object($current_node) )
-				{
-					return Trace::leaveko($context, 'bad filter node', null, self::$TRACE_BUILDER);
-				}
-			}
-			// Trace::value($context, 'tree_root', $tree_root, true/*self::$TRACE_BUILDER*/);
+			// GET FILTERS TREE
+			$tree_root = $arg_query->getFiltersTree();
 			
 			// SET WHERE
 			Trace::step($context, 'has filters tree root ?', self::$TRACE_BUILDER);
-			if ( is_object($tree_root) && $tree_root instanceof FilterNode )
+			if ( is_object($tree_root) && $tree_root instanceof \Devapt\Models\Filters\FilterNode )
 			{
 				Trace::step($context, 'update where with filters tree root', self::$TRACE_BUILDER);
-				$where->addPredicate($tree_root->getPredicate(), $tree_root->getCombination());
-				// Debug::dump($tree_root->getPredicate());
+				$root_predicate = $tree_root->getPredicate();
+				if ( ! ( is_object($root_predicate) && $root_predicate instanceof \Zend\Db\Sql\Predicate\PredicateInterface ) )
+				{
+					Trace::value($context, 'root_predicate', $root_predicate, self::$TRACE_BUILDER);
+					return Trace::leaveko($context, 'bad tree root predicate', null, self::$TRACE_BUILDER);
+				}
+				
+				$where->addPredicate($root_predicate, $tree_root->getCombination());
 			}
 		}
 		
@@ -347,7 +400,7 @@ final class SqlBuilderSelect
 					$groups[] = $group_record;
 				}
 			}
-			$select->group(groups);
+			$select->group($groups);
 		}
 		
 		
@@ -365,7 +418,7 @@ final class SqlBuilderSelect
 					$orders[] = $group_record[0].' '.$group_record[1];
 				}
 			}
-			$select->order(orders);
+			$select->order($orders);
 		}
 		
 		
@@ -380,6 +433,11 @@ final class SqlBuilderSelect
 			$select->offset($query_slice_offset);
 			$select->limit($query_slice_length);
 		}
+		
+		
+		// TRACE SQL
+		$sql = $select->getSqlString();
+		Trace::value($context, 'sql', $sql, true ||self::$TRACE_BUILDER);
 		
 		
 		return Trace::leaveok($context, 'success', $select, self::$TRACE_BUILDER);
