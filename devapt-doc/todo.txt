@@ -1,0 +1,26 @@
+todo
+
+views
+.	form
+.	editors
+	window
+	progress bar
+	progress window
+	contextual menu
+	toolbar
+	titlebar
+	settings
+
+others
+.	i18n
+.	plugin
+	actions: import/export/crud/pager
+.	login/logout/mdp
+	crypt
+	
+plugins
+	flot
+	dygraph
+	pivot
+	cleditor
+	datatables
