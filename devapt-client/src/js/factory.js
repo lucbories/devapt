@@ -199,6 +199,12 @@ function(Devapt, DevaptTraces, DevaptTypes)
 				break;
 			}
 			
+			case 'Input':
+			{
+				view_requires = ['views/input'];
+				break;
+			}
+			
 			
 			// BACKEND VIEW CLASSES
 			

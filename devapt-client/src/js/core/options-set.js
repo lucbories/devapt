@@ -27,9 +27,10 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptOptions)
 		// NULL OR SIMPLE TYPE (NOT OBJECT)
 		if (arg_object_to_clone == null || typeof(arg_object_to_clone) != 'object')
 		{
+			// console.log(arg_object_to_clone, 'DevaptOptions.arg_object_to_clone is not object');
 			return arg_object_to_clone;
 		}
-		
+		// console.log(arg_object_to_clone, 'DevaptOptions.arg_object_to_clone is object');
 		// ARRAY
 		if ( DevaptTypes.is_array(arg_object_to_clone) )
 		{
@@ -292,9 +293,10 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptOptions)
 											}
 										}
 									}
-									else 
-									
-									// TODO ?????
+									else
+									{
+										// TODO ?????
+									}
 									
 									// LOOP ON CHILD OPTIONS
 									DevaptTraces.trace_step(context, 'loop on childs', trace_step);
@@ -334,7 +336,6 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptOptions)
 									var value = values_array[array_key];
 									values_array[array_key] = DevaptTypes.convert_value(value, null, option.array_type);
 								}
-								
 								target_object[option_name] = values_array;
 								
 								DevaptTraces.trace_leave(context, 'success for Array', DevaptOptions.options_set_trace);

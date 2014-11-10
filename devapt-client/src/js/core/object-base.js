@@ -34,7 +34,7 @@ function(Devapt, DevaptTrace, DevaptTypes, DevaptOptions, DevaptClasses,
 		self.trace				= false;
 		self.class_name			= 'DevaptObjectBase';
 		self.name				= DevaptTypes.to_string(arg_name, 'no name');
-		
+		self.uid				= DevaptObjectBase.uid_counter++;
 		
 		
 		/* --------------------------------------------- CLASS AND OBJECT ------------------------------------------------ */
@@ -510,7 +510,17 @@ function(Devapt, DevaptTrace, DevaptTypes, DevaptOptions, DevaptClasses,
 		/* --------------------------------------------------------------------------------------------- */
 	}
 	
-
+	
+	
+	/**
+	 * @public
+	 * @see					DevaptObjectBase
+	 * @desc				Devapt object unique id (integer)
+	 */
+	DevaptObjectBase.uid_counter = 0;
+	
+	
+	
 	// INTROSPETION : REGISTER CLASS
 	DevaptClasses.register_class(DevaptObjectBase, [], 'Luc BORIES', '2014-07-01', 'Object base class.');
 

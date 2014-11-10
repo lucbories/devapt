@@ -1,7 +1,7 @@
 /**
- * @file        datas/mixin-model-read.js
- * @desc        Mixin use datas
- * @see			...
+ * @file        datas/mixin-datasource.js
+ * @desc        Mixin for data source use
+ * @see			DevaptModel, DevaptStorage
  * @ingroup     DEVAPT_CORE
  * @date        2014-10-11
  * @version		1.0.x
@@ -11,13 +11,17 @@
  */
 
 define(
-['Devapt', 'core/types', 'core/options', 'core/resources', 'datas/query', 'core/events', 'core/classes'],
-function(Devapt, DevaptTypes, DevaptOptions, DevaptResources, DevaptQuery, DevaptEvents, DevaptClasses)
+['Devapt', 'core/types', 'core/options', 'core/resources', 'datas/query', 'core/classes',
+	'datas/mixin-datasource-inline', 'datas/mixin-datasource-events', 'datas/mixin-datasource-classes', 'datas/mixin-datasource-resources',
+	'datas/mixin-datasource-logs', 'datas/mixin-datasource-model'],
+function(Devapt, DevaptTypes, DevaptOptions, DevaptResources, DevaptQuery, DevaptClasses,
+	DevaptMixinDatasoureInline, DevaptMixinDatasoureEvents, DevaptMixinDatasoureClasses, DevaptMixinDatasoureResources,
+	DevaptMixinDatasoureLogs, DevaptMixinDatasoureModel)
 {
 	/**
 	 * @mixin				DevaptMixinDatasoure
 	 * @public
-	 * @desc				Mixin of template methods
+	 * @desc				Mixin for data source use
 	 */
 	var DevaptMixinDatasoure = 
 	{
@@ -64,30 +68,48 @@ function(Devapt, DevaptTypes, DevaptOptions, DevaptResources, DevaptQuery, Devap
 			self.enter(context, '');
 			
 			
+			// INIT LAST DISPLAYED ITEM INDEX
 			self.items_last_index = null;
 			
+			// PROCESS CUSTOM INIT
 			self.assertNotEmptyString(context, 'source', self.items_source);
 			switch(self.items_source)
 			{
 				case 'inline':
 					// LOAD MIXIN INLINE
+					self.register_mixin(DevaptMixinDatasoureInline);
 					self.init_data_source_inline();
 					break;
 					
 				case 'model':
 					// LOAD MIXIN MODEL
+					self.register_mixin(DevaptMixinDatasoureModel);
 					self.init_data_source_model();
+					break;
+					
+				case 'classes':
+					// LOAD MIXIN CLASSES
+					self.register_mixin(DevaptMixinDatasoureClasses);
+					self.init_data_source_classes();
+					break;
+					
+				case 'logs':
+					// LOAD MIXIN CLASSES
+					self.register_mixin(DevaptMixinDatasoureLogs);
+					self.init_data_source_logs();
 					break;
 					
 				case 'events':
 					// LOAD MIXIN EVENTS
+					self.register_mixin(DevaptMixinDatasoureEvents);
 					self.init_data_source_events();
 					break;
 					
-				// case 'resources':
+				case 'resources':
 					// LOAD MIXIN RESOURCES
-					// self.init_data_source_resources();
-					// break;
+					self.register_mixin(DevaptMixinDatasoureResources);
+					self.init_data_source_resources();
+					break;
 					
 				default:
 					self.error(context, 'bad items source: [' + self.items_source + ']');
@@ -157,78 +179,6 @@ function(Devapt, DevaptTypes, DevaptOptions, DevaptResources, DevaptQuery, Devap
 		/**
 		 * @public
 		 * @memberof			DevaptMixinDatasoure
-		 * @desc				Init inline data source
-		 * @return {nothing}
-		 */
-		init_data_source_inline: function()
-		{
-			var self = this;
-			self.push_trace(self.trace, self.mixin_trace_datasource);
-			var context = 'init_data_source_inline()';
-			self.enter(context, '');
-			
-			
-			// PREPARE OPTIONS
-			if ( self.items_inline && self.items_options && self.items_options.length >= self.items_inline.length)
-			{
-				self.step(context, 'register items options');
-				
-				self.init_data_source_options(self.items_inline);
-			}
-			
-			
-			self.leave(context, self.msg_success);
-			self.pop_trace();
-		},
-		
-		
-		/**
-		 * @public
-		 * @memberof			DevaptMixinDatasoure
-		 * @desc				Init model data source
-		 * @return {nothing}
-		 */
-		init_data_source_model: function()
-		{
-			var self = this;
-			self.push_trace(self.trace, self.mixin_trace_datasource);
-			var context = 'init_data_source_model()';
-			self.enter(context, '');
-			
-			
-			var promise = self.get_items_model();
-			
-			
-			self.leave(context, self.msg_success);
-			self.pop_trace();
-		},
-		
-		
-		
-		/**
-		 * @public
-		 * @memberof			DevaptMixinDatasoure
-		 * @desc				Init events data source
-		 * @return {nothing}
-		 */
-		init_data_source_events: function()
-		{
-			var self = this;
-			self.push_trace(self.trace, self.mixin_trace_datasource);
-			var context = 'init_data_source_events()';
-			self.enter(context, '');
-			
-			
-			
-			self.leave(context, self.msg_success);
-			self.pop_trace();
-		},
-		
-		
-		
-		/**
-		 * @public
-		 * @memberof			DevaptMixinDatasoure
 		 * @desc				Get items array
 		 * @return {promise}
 		 */
@@ -240,246 +190,59 @@ function(Devapt, DevaptTypes, DevaptOptions, DevaptResources, DevaptQuery, Devap
 			self.enter(context, '');
 			
 			
+			// SWITCH ON DATA SOURCE
+			self.assertNotEmptyString(context, 'source', self.items_source);
+			var promise = null;
+			switch(self.items_source)
+			{
+				case 'inline':
+					// LOAD MIXIN INLINE ITEMS
+					promise = self.get_items_array_inline();
+					self.leave(context, self.msg_success_promise);
+					self.pop_trace();
+					return promise;
+					
+				case 'model':
+					// LOAD MIXIN MODEL ITEMS
+					promise = self.get_items_array_model();
+					self.leave(context, self.msg_success_promise);
+					self.pop_trace();
+					return promise;
+					
+				case 'classes':
+					// LOAD MIXIN CLASSES ITEMS
+					promise = self.get_items_array_classes();
+					self.leave(context, self.msg_success_promise);
+					self.pop_trace();
+					return promise;
+					
+				case 'logs':
+					// LOAD MIXIN CLASSES ITEMS
+					promise = self.get_items_array_logs();
+					self.leave(context, self.msg_success_promise);
+					self.pop_trace();
+					return promise;
+					
+				case 'events':
+					// LOAD MIXIN EVENTS ITEMS
+					promise = self.get_items_array_events();
+					self.leave(context, self.msg_success_promise);
+					self.pop_trace();
+					return promise;
+					
+				case 'resources':
+					// LOAD MIXIN RESOURCES ITEMS
+					promise = self.get_items_array_resources();
+					self.leave(context, self.msg_success_promise);
+					self.pop_trace();
+					return promise;
+			}
+			
+			
+			// BAD DATA SOURCE
 			var deferred = $.Deferred();
 			var items_promise = deferred.promise();
 			
-			
-			// GET ITEMS FROM INLINE SOURCE
-			if ( self.items_source === 'inline' )
-			{
-				var items = [];
-				if ( self.items_source_format === 'json' )
-				{
-					var json_str = self.items_inline.join(',');
-					var json_obj = $.parseJSON(json_str);
-					// console.log(json_obj);
-					items = json_obj;
-				}
-				else
-				{
-					items = self.items_inline;
-				}
-				
-				deferred.resolve(items);
-				
-				self.leave(context, self.msg_success_promise);
-				self.pop_trace();
-				return items_promise;
-			}
-			
-			
-			// GET ITEMS FROM EVENTS SOURCE
-			if ( self.items_source === 'events' )
-			{
-				var items = [];
-				var event_index = self.items_last_index ? self.items_last_index : 0;
-				for( ; event_index < DevaptEvents.all_events.length ; event_index++)
-				{
-					var event = DevaptEvents.all_events[event_index];
-					var record = {};
-					record['name']				= event.name;
-					record['ts']				= event.fired_ts;
-					record['target_name']		= event.target_object.name;
-					record['operands_count']	= event.operands_array.length;
-					items.push(record);
-				}
-				self.items_last_index = event_index;
-				// console.log(items, 'events');
-				
-				if ( self.items_source_format === 'json' )
-				{
-					var json_str = items.join(',');
-					var json_obj = $.parseJSON(json_str);
-					// console.log(json_obj);
-					items = json_obj;
-				}
-				
-				deferred.resolve(items);
-				
-				self.leave(context, self.msg_success_promise);
-				self.pop_trace();
-				return items_promise;
-			}
-			
-			
-			// GET ITEMS FROM EVENTS SOURCE
-			if ( self.items_source === 'resources' )
-			{
-				var items = [];
-				for(resource_name in DevaptResources.resources_instances_by_name)
-				{
-					var resource = DevaptResources.resources_instances_by_name[resource_name];
-					var record = {};
-					record['name']				= resource.name;
-					record['class_name']		= resource.class_name;
-					record['trace']				= resource.trace ? 'true' : 'false';
-					items.push(record);
-				}
-				// console.log(items, 'resources');
-				
-				if ( self.items_source_format === 'json' )
-				{
-					var json_str = items.join(',');
-					var json_obj = $.parseJSON(json_str);
-					// console.log(json_obj);
-					items = json_obj;
-				}
-				
-				deferred.resolve(items);
-				
-				self.leave(context, self.msg_success_promise);
-				self.pop_trace();
-				return items_promise;
-			}
-			
-			
-			// GET ITEMS FROM CLASSES SOURCE
-			if ( self.items_source === 'classes' )
-			{
-				var items = [];
-				for(class_index in DevaptClasses.introspect_classes_array)
-				{
-					var class_record = DevaptClasses.introspect_classes_array[class_index];
-					var record = {};
-					record['name']			= class_record.name;
-					record['author']		= class_record.author;
-					record['updated']		= class_record.updated;
-					record['description']	= class_record.description;
-					items.push(record);
-				}
-				// console.log(items, 'resources');
-				
-				if ( self.items_source_format === 'json' )
-				{
-					var json_str = items.join(',');
-					var json_obj = $.parseJSON(json_str);
-					// console.log(json_obj);
-					items = json_obj;
-				}
-				
-				deferred.resolve(items);
-				
-				self.leave(context, self.msg_success_promise);
-				self.pop_trace();
-				return items_promise;
-			}
-			
-			
-			// GET ITEM FROM MODEL SOURCE
-			if ( self.items_source === 'model' )
-			{
-				// var query = null;
-				var model_promise = self.get_items_model();
-				
-				
-				// ITERATE ON RECORDS
-				if (self.items_iterator === 'records')
-				{
-					self.step(context, 'iterator is records');
-					
-					model_promise.then(
-						function(model) {
-							self.assertNotNull(context, 'model', model);
-							self.assertNotNull(context, 'self.items_model', self.items_model);
-							
-							var engine_promise = self.items_model.get_engine();
-							
-							return engine_promise;
-						},
-						function()
-						{
-							console.error('model promise failed', context);
-						}
-					).then(
-						function(engine)
-						{
-							// console.log(engine, 'engine');
-							self.assertNotNull(context, 'engine', engine);
-							
-							var query = self.get_query();
-							if ( ! DevaptTypes.is_object(query) )
-							{
-								return engine.read_all_records();
-							}
-							
-							return engine.read_records(query);
-						},
-						function()
-						{
-							console.error('engine promise failed', context);
-						}
-					).then(
-						function(result)
-						{
-							var items = [];
-							
-							if ( DevaptTypes.is_object(result) )
-							{
-								if (result.count > 0)
-								{
-									items = result.records;
-								}
-							}
-							
-							deferred.resolve(items);
-							
-							return items_promise;
-						}
-					);
-					
-					self.leave(context, self.msg_success_promise);
-					self.pop_trace();
-					return items_promise;
-				}
-				
-				
-				// ITERATE ON FIELDS
-				if (self.items_iterator === 'fields')
-				{
-					self.step(context, 'iterator is fields');
-					
-					model_promise.then(
-						function(model)
-						{
-							self.assertNotNull(context, 'model', model);
-							var items = [];
-							
-							// GET CURRENT RECORD
-							var record = self.items_current_record;
-							if ( DevaptTypes.is_object(record) )
-							{
-								self.step(context, 'current record is found');
-								
-								// LOOP ON FIELDS
-								for(field_index in self.items_fields)
-								{
-									var field_name = self.items_fields[field_index];
-									var field_value = record[field_name];
-									var field_record = { 'field_name': field_name, 'field_value': field_value };
-									
-									items.push(field_record);
-								}
-							}
-							
-							self.items_records = items;
-							self.items_records_count = items.length;
-							
-							deferred.resolve(items);
-						},
-						function()
-						{
-							console.error('engine promise failed', context);
-						}
-					);
-					
-					self.leave(context, self.msg_success_promise);
-					self.pop_trace();
-					return items_promise;
-				}
-			}
-			
-			
-			// DEFAULT SOURCE
 			deferred.reject();
 			
 			
@@ -508,7 +271,7 @@ function(Devapt, DevaptTypes, DevaptOptions, DevaptResources, DevaptQuery, Devap
 			
 			
 			// GET ITEMS TYPES FROM INLINE SOURCE
-			if ( self.items_source === 'inline' || self.items_source === 'events' || self.items_source === 'classes' || self.items_source === 'resources' || self.items_source === 'views' || self.items_source === 'models' )
+			if ( self.items_source === 'inline' || self.items_source === 'logs' || self.items_source === 'events' || self.items_source === 'classes' || self.items_source === 'resources' || self.items_source === 'views' || self.items_source === 'models' )
 			{
 				var types = [];
 				
@@ -626,7 +389,19 @@ function(Devapt, DevaptTypes, DevaptOptions, DevaptResources, DevaptQuery, Devap
 				array_type: 'String',
 				format: '',
 				is_required: false,
-				childs: {}
+				childs: {
+					// opts:{
+						// name: 'opts',
+						// type: 'array',
+						// aliases: [],
+						// default_value: [],
+						// array_separator: '|',
+						// array_type: 'object',
+						// format: '',
+						// is_required: false,
+						// childs: {}
+					// }
+				}
 			}
 		);
 		

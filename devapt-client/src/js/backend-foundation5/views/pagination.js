@@ -10,8 +10,8 @@
  */
 
 define(
-['Devapt', 'core/traces', 'core/types', 'core/options', 'core/classes', 'views/view', 'backend-foundation5/foundation-init'],
-function(Devapt, DevaptTrace, DevaptTypes, DevaptOptions, DevaptClasses, DevaptView, undefined)
+['Devapt', 'core/traces', 'core/types', 'core/options', 'core/classes', 'core/resources', 'views/view', 'backend-foundation5/foundation-init'],
+function(Devapt, DevaptTrace, DevaptTypes, DevaptOptions, DevaptClasses, DevaptResources, DevaptView, undefined)
 {
 	/**
 	 * @public
@@ -45,6 +45,7 @@ function(Devapt, DevaptTrace, DevaptTypes, DevaptOptions, DevaptClasses, DevaptV
 		self.DevaptPagination_contructor = function()
 		{
 			// CONSTRUCTOR BEGIN
+			var self = this;
 			var context = self.class_name + '(' + arg_name + ')';
 			self.enter(context, 'constructor');
 			
@@ -65,6 +66,125 @@ function(Devapt, DevaptTrace, DevaptTypes, DevaptOptions, DevaptClasses, DevaptV
 		// CONTRUCT INSTANCE
 		self.DevaptPagination_contructor();
 		
+		
+		
+		/**
+		 * @public
+		 * @memberof			DevaptPagination
+		 * @desc				Init event handling
+		 * @return {nothing}
+		 */
+		self.init_event_handling = function()
+		{
+			var self = this;
+			var context = 'init_event_handling()';
+			self.enter(context, '');
+			
+			
+			// INIT PAGINATIONS
+			var target_views = self.get_property('pagination_views');
+			target_views.forEach(
+				function(view_name)
+				{
+					var promise = DevaptResources.get_resource_instance(view_name);
+					promise.done(
+						function(view)
+						{
+							self.step(context, 'link with view [' + view.name + ']');
+							
+							if (view.on_pagination_previous_event)
+							{
+								self.add_event_callback('devapt.pagination.update_previous', [view, view.on_pagination_previous_event], false);
+							}
+							
+							if (view.on_pagination_current_event)
+							{
+								self.add_event_callback('devapt.pagination.update_current', [view, view.on_pagination_current_event], false);
+							}
+							
+							if (view.on_pagination_next_event)
+							{
+								self.add_event_callback('devapt.pagination.update_next', [view, view.on_pagination_next_event], false);
+							}
+							
+							if (self.on_update_pagination)
+							{
+								view.add_event_callback('devapt.pagination.update_pagination', [self, self.on_update_pagination], false);
+							}
+						}
+					);
+				}
+			);
+			
+			
+			self.leave(context, 'success: promise is resolved');
+		}
+		
+		
+		/**
+		 * @public
+		 * @memberof			DevaptPagination
+		 * @desc				On update pagination event
+		 * @param {array}		arg_event_operands		event operands array
+		 * @return {nothing}
+		 */
+		self.on_update_pagination = function(arg_event_operands)
+		{
+			var self = this;
+			var context = 'on_update_pagination(opds)';
+			self.enter(context, '');
+			
+			
+			// TEST STATUS
+			if (self.status === 'on_update_pagination')
+			{
+				self.leave(context, 'already processing event');
+				return;
+			}
+			
+			// CHANGE STATUS
+			self.status = 'on_update_pagination';
+			
+			// console.log(arg_event_operands, context);
+			
+			var items_first_index = arg_event_operands[2];
+			var items_last_index = arg_event_operands[3];
+			
+			self.pagination_first_page =  Math.floor(items_first_index / self.pagination_size);
+			if (self.pagination_first_page*self.pagination_size < items_first_index)
+			{
+				self.pagination_first_page++; 
+			}
+			
+			self.pagination_last_page = Math.floor(items_last_index / self.pagination_size);
+			if (self.pagination_last_page*self.pagination_size < items_last_index)
+			{
+				self.pagination_last_page++; 
+			}
+			
+			self.pagination_first_page =  Math.max(self.pagination_first_page, 1);
+			self.pagination_last_page =  Math.max(self.pagination_last_page, 1);
+			
+			// console.log(self.pagination_first_page, context + '.pagination_first_page');
+			// console.log(self.pagination_last_page, context + '.pagination_last_page');
+			
+			self.pagination_current_page = Math.min(self.pagination_current_page, self.pagination_last_page);
+			self.pagination_current_page = Math.max(self.pagination_current_page, self.pagination_first_page);
+			// console.log(self.pagination_current_page, context + '.pagination_current_page');
+			// console.log(self.pagination_size, context + '.pagination_size');
+			
+			self.update_pagination_current(self.pagination_current_page);
+			
+			// var deferred = $.Deferred();
+			// self.remove_items();
+			// self.render_items(deferred);
+			
+			// CHANGE STATUS
+			self.status = 'ready';
+			
+			
+			self.leave(context, 'success');
+		}
 		
 		
 		/**
@@ -111,6 +231,14 @@ function(Devapt, DevaptTrace, DevaptTypes, DevaptOptions, DevaptClasses, DevaptV
 			// WITHOUT PAGE SCROLLING
 			if (self.pagination_last_page <= self.pagination_size)
 			{
+				// SHOW/HIDE NODES
+				var nodes_jqo = $('li', self.ul_jqo);
+				nodes_jqo = $('li', self.ul_jqo).show();
+				for(var li_index = self.pagination_last_page + 1 ; li_index <= self.pagination_size ; li_index++)
+				{
+					nodes_jqo.eq(li_index).removeClass('current').hide();
+				}
+				
 				self.update_pagination_current_without_scrolling(arg_current_page);
 			}
 			// WITH PAGE SCROLLING
@@ -132,7 +260,7 @@ function(Devapt, DevaptTrace, DevaptTypes, DevaptOptions, DevaptClasses, DevaptV
 			
 			
 			// PROPAGATE EVENT
-			self.fire_event('update_pagination_current', arg_current_page);
+			self.fire_event('devapt.pagination.update_current', [arg_current_page]);
 			
 			
 			self.leave(context, 'success');
@@ -200,8 +328,8 @@ function(Devapt, DevaptTrace, DevaptTypes, DevaptOptions, DevaptClasses, DevaptV
 			
 			// GET PAGES ATTRIBUTES
 			var last_page = self.pagination_last_page > 0 ? self.pagination_last_page : 10;
-			var first_page = self.pagination_first_page >=0 && self.pagination_first_page <= last_page ? self.pagination_first_page : 0;
-			var current_page = self.pagination_current_page >= first_page && self.pagination_current_page <= last_page ? self.pagination_current_page : first_page;
+			var first_page = (self.pagination_first_page >=0 && self.pagination_first_page <= last_page) ? self.pagination_first_page : 0;
+			var current_page = (self.pagination_current_page >= first_page && self.pagination_current_page <= last_page) ? self.pagination_current_page : first_page;
 			self.value(context, 'last_page', last_page);
 			self.value(context, 'first_page', first_page);
 			self.value(context, 'current_page', current_page);
@@ -424,13 +552,26 @@ function(Devapt, DevaptTrace, DevaptTypes, DevaptOptions, DevaptClasses, DevaptV
 			// self.enter(context, '');
 			
 			
+			// ADD NODE IF NEEDED
+			var items_count = $('li', self.ul_jqo).length;
+			var current_page = (arg_is_current ? arg_page_index : -1);
+			while (arg_item_index >= items_count)
+			{
+				self.add_item(arg_item_index, current_page);
+				++items_count;
+			}
+			
+			// GET NODE
 			var li_jqo = $('li:eq(' + arg_item_index + ')', self.parent_jqo)
+			li_jqo.show();
 			li_jqo.removeClass('current');
 			
+			// GET NODE ANCHOR
 			var a_jqo = $('a', li_jqo);
 			var label = self.get_page_label(arg_page_label);
 			a_jqo.text(label);
 			
+			// UPDATE NODE
 			li_jqo.attr('devapt-pagination-index', arg_page_index);
 			
 			if (arg_is_current)
@@ -450,6 +591,7 @@ function(Devapt, DevaptTrace, DevaptTypes, DevaptOptions, DevaptClasses, DevaptV
 			{
 				li_jqo.addClass('unavailable');
 			}
+			
 			
 			// self.leave(context, 'success');
 			return true;
@@ -479,7 +621,7 @@ function(Devapt, DevaptTrace, DevaptTypes, DevaptOptions, DevaptClasses, DevaptV
 			self.update_pagination_current(parseInt(self.pagination_current_page) - 1);
 			
 			// PROPAGATE EVENT
-			self.fire_event('update_pagination_previous', self.pagination_current_page);
+			self.fire_event('devapt.pagination.update_previous', self.pagination_current_page);
 			
 			
 			self.leave(context, 'success');
@@ -511,7 +653,7 @@ function(Devapt, DevaptTrace, DevaptTypes, DevaptOptions, DevaptClasses, DevaptV
 			self.update_pagination_current(parseInt(self.pagination_current_page) + 1);
 			
 			// PROPAGATE EVENT
-			self.fire_event('update_pagination_next', self.pagination_current_page);
+			self.fire_event('devapt.pagination.update_next', self.pagination_current_page);
 			
 			
 			self.leave(context, 'success');
@@ -529,7 +671,7 @@ function(Devapt, DevaptTrace, DevaptTypes, DevaptOptions, DevaptClasses, DevaptV
 		self.render_self = function(arg_deferred)
 		{
 			var self = this;
-			var context = 'render_self()';
+			var context = 'render_self(deferred)';
 			self.enter(context, '');
 			
 			
@@ -538,11 +680,114 @@ function(Devapt, DevaptTrace, DevaptTypes, DevaptOptions, DevaptClasses, DevaptV
 			// console.log(self.parent_jqo);
 			
 			
+			// CREATE MAIN NODE
+			var div_jqo = $('<div>');
+			self.parent_jqo.append(div_jqo);
+			if ( self.get_property('pagination_centered') )
+			{
+				div_jqo.addClass('pagination-centered');
+			}
+			self.ul_jqo = $('<ul>');
+			self.ul_jqo.addClass('pagination');
+			div_jqo.append(self.ul_jqo);
+			self.content_jqo = div_jqo;
+			
+			
+			var promise = self.render_items(arg_deferred);
+			
+			
+			self.leave(context, 'success: promise is resolved');
+			return promise;
+		}
+		
+		
+		/**
+		 * @public
+		 * @memberof			DevaptPagination
+		 * @desc				Remove view items
+		 * @return {nothing}
+		 */
+		self.remove_items = function()
+		{
+			var self = this;
+			var context = 'remove_items()';
+			self.enter(context, '');
+			
+			
+			$('li', self.ul_jqo).remove();
+			
+			
+			self.leave(context, self.msg_success);
+		}
+		
+		
+		/**
+		 * @public
+		 * @memberof			DevaptPagination
+		 * @desc				Render view items
+		 * @param {integer}		arg_index			item index
+		 * @param {integer}		arg_current_page	current page
+		 * @return {nothing}
+		 */
+		self.add_item = function(arg_index, arg_current_page)
+		{
+			var self = this;
+			var context = 'add_item(index,current)';
+			self.enter(context, '');
+			
+			
+			// CREATE LI TAG
+			var li_jqo = $('<li>');
+			self.ul_jqo.append(li_jqo);
+			li_jqo.attr('devapt-pagination-index', arg_index);
+			if (arg_index === arg_current_page)
+			{
+				li_jqo.addClass('current');
+			}
+			
+			// CREATE A TAG
+			var a_jqo = $('<a>');
+			li_jqo.append(a_jqo);
+			a_jqo.attr('href', '#');
+			var label = self.get_page_label(arg_index);
+			a_jqo.text(label);
+			
+			// ON CLICK
+			a_jqo.click(
+				function()
+				{
+					if ( ! $(this).parent().hasClass('unavailable') )
+					{
+						var index = $(this).parent().attr('devapt-pagination-index');
+						self.update_pagination_current( parseInt(index) );
+					}
+				}
+			);
+			
+			
+			self.leave(context, self.msg_success);
+		}
+		
+		
+		/**
+		 * @public
+		 * @memberof			DevaptPagination
+		 * @desc				Render view items
+		 * @param {object}		arg_deferred	deferred object
+		 * @return {object}		deferred promise object
+		 */
+		self.render_items = function(arg_deferred)
+		{
+			var self = this;
+			var context = 'render_items(deferred)';
+			self.enter(context, '');
+			
+			
 			// GET ATTRIBUTES
 			var size_index = self.pagination_size > 0 ? self.pagination_size - 1 : 10;
 			var last_page = self.pagination_last_page > 0 ? self.pagination_last_page : 10;
-			var first_page = self.pagination_first_page >=0 && self.pagination_first_page <= last_page ? self.pagination_first_page : 0;
-			var current_page = self.pagination_current_page >= first_page && self.pagination_current_page <= last_page ? self.pagination_current_page : first_page;
+			var first_page = (self.pagination_first_page >=0 && self.pagination_first_page <= last_page) ? self.pagination_first_page : 0;
+			var current_page = (self.pagination_current_page >= first_page && self.pagination_current_page <= last_page) ? self.pagination_current_page : first_page;
 			size_index = Math.min(first_page + size_index, last_page);
 			self.value(context, 'size_index', size_index);
 			self.value(context, 'last_page', last_page);
@@ -550,18 +795,9 @@ function(Devapt, DevaptTrace, DevaptTypes, DevaptOptions, DevaptClasses, DevaptV
 			self.value(context, 'current_page', current_page);
 			
 			
-			// CREATE MAIN NODE
-			var div_jqo = $('<div>');
-			self.parent_jqo.append(div_jqo);
-			div_jqo.addClass('pagination-centered');
-			var ul_jqo = $('<ul>');
-			ul_jqo.addClass('pagination');
-			div_jqo.append(ul_jqo);
-			
-			
 			// CREATE LEFT ARROW
 			var left_arrow_li_jqo = $('<li class="arrow">');
-			ul_jqo.append(left_arrow_li_jqo);
+			self.ul_jqo.append(left_arrow_li_jqo);
 			if (current_page === first_page)
 			{
 				left_arrow_li_jqo.addClass('unavailable');
@@ -583,39 +819,13 @@ function(Devapt, DevaptTrace, DevaptTypes, DevaptOptions, DevaptClasses, DevaptV
 			{
 				self.value(context, 'loop_index', loop_index);
 				
-				// CREATE LI TAG
-				var li_jqo = $('<li>');
-				ul_jqo.append(li_jqo);
-				li_jqo.attr('devapt-pagination-index', loop_index);
-				if (loop_index === current_page)
-				{
-					li_jqo.addClass('current');
-				}
-				
-				// CREATE A TAG
-				var a_jqo = $('<a>');
-				li_jqo.append(a_jqo);
-				a_jqo.attr('href', '#');
-				var label = self.get_page_label(loop_index);
-				a_jqo.text(label);
-				
-				// ON CLICK
-				a_jqo.click(
-					function()
-					{
-						if ( ! $(this).parent().hasClass('unavailable') )
-						{
-							var index = $(this).parent().attr('devapt-pagination-index');
-							self.update_pagination_current( parseInt(index) );
-						}
-					}
-				);
+				self.add_item(loop_index, current_page);
 			}
 			
 			
 			// CREATE LEFT ARROW
 			var right_arrow_li_jqo = $('<li class="arrow">');
-			ul_jqo.append(right_arrow_li_jqo);
+			self.ul_jqo.append(right_arrow_li_jqo);
 			if (current_page === last_page)
 			{
 				right_arrow_li_jqo.addClass('unavailable');
@@ -640,6 +850,11 @@ function(Devapt, DevaptTrace, DevaptTypes, DevaptOptions, DevaptClasses, DevaptV
 			self.leave(context, 'success: promise is resolved');
 			return promise;
 		}
+		
+		
+		// INIT EVENT HANDLING
+		self.init_event_handling();
+		// console.log(self.name, 'init_event_handling');
 	}
 	
 	
@@ -648,31 +863,17 @@ function(Devapt, DevaptTrace, DevaptTypes, DevaptOptions, DevaptClasses, DevaptV
 	
 	
 	// INTROSPETION : REGISTER OPTIONS
-	DevaptOptions.register_str_option(DevaptPagination, 'pagination_type', 'index', false, []); //  index / alphabet / range
-	DevaptOptions.register_int_option(DevaptPagination, 'pagination_range_step', 1, false, []); //  page = index * range_step
-	DevaptOptions.register_int_option(DevaptPagination, 'pagination_size', 10, false, []);
-	DevaptOptions.register_int_option(DevaptPagination, 'pagination_first_page', 1, false, []);
-	DevaptOptions.register_int_option(DevaptPagination, 'pagination_current_page', 5, false, []);
-	DevaptOptions.register_int_option(DevaptPagination, 'pagination_last_page', 10, false, []);
-	DevaptOptions.register_int_option(DevaptPagination, 'pagination_prefix_size', 0, false, []);
-	DevaptOptions.register_int_option(DevaptPagination, 'pagination_suffix_size', 0, false, []);
+	DevaptOptions.register_str_option(DevaptPagination, 'pagination_type',			'index', false, []); //  index / alphabet / range
+	DevaptOptions.register_int_option(DevaptPagination, 'pagination_range_step',	1, false, []); //  page = index * range_step
+	DevaptOptions.register_int_option(DevaptPagination, 'pagination_size',			10, false, []);
+	DevaptOptions.register_int_option(DevaptPagination, 'pagination_first_page',	1, false, []);
+	DevaptOptions.register_int_option(DevaptPagination, 'pagination_current_page',	5, false, []);
+	DevaptOptions.register_int_option(DevaptPagination, 'pagination_last_page',		10, false, []);
+	DevaptOptions.register_int_option(DevaptPagination, 'pagination_prefix_size',	0, false, []);
+	DevaptOptions.register_int_option(DevaptPagination, 'pagination_suffix_size',	0, false, []);
+	DevaptOptions.register_bool_option(DevaptPagination, 'pagination_centered',		true, false, []);
+	DevaptOptions.register_array_option(DevaptPagination, 'pagination_views',		[], false, ',', 'String', []);
 	
-/*	view, html, callback
-	
-	DevaptOptions.register_int_option(DevaptPagination, 'medium_device_blocks', 4, false, []);
-	DevaptOptions.register_int_option(DevaptPagination, 'large_device_blocks', 6, false, []);
-	DevaptOptions.register_option(DevaptPagination, {
-			name: 'grid_contents',
-			type: 'array',
-			aliases: [],
-			default_value: [],
-			array_separator: ',',
-			array_type: 'String',
-			format: '',
-			is_required: true,
-			childs: {}
-		}
-	);*/
 	
 	return DevaptPagination;
 } );

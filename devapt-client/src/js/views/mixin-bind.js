@@ -329,8 +329,15 @@ function(Devapt, DevaptTypes, DevaptOptions, DevaptResources)
 					if ( ! self.is_rendering )
 					{
 						var deferred = $.Deferred();
-						self.remove_items();
-						self.render_items(deferred);
+						if ( self.renders_count === 0)
+						{
+							self.render(deferred);
+						}
+						else
+						{
+							self.remove_items();
+							self.render_items(deferred);
+						}
 					}
 				}
 			}

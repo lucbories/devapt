@@ -84,6 +84,8 @@ function(Devapt, DevaptTrace, DevaptOptions, DevaptClasses, DevaptView, DevaptAp
 			// CHECK CONTAINER NODE
 			self.assertNotNull(context, 'arg_deferred', arg_deferred);
 			self.assertNotNull(context, 'parent_jqo', self.parent_jqo);
+			self.content_jqo = $('<div>');
+			self.parent_jqo.append(self.content_jqo);
 			
 			// GET AND RENDER VIEW CONTENT
 			var promise = arg_deferred.then(
@@ -95,7 +97,7 @@ function(Devapt, DevaptTrace, DevaptOptions, DevaptClasses, DevaptView, DevaptAp
 			.then(
 				function(arg_html)
 				{
-					self.parent_jqo.html(arg_html);
+					self.content_jqo.html(arg_html);
 				}
 			);
 			

@@ -90,7 +90,7 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptMixinAssertion, DevaptEvent, D
 			$(window).bind('popstate',
 				function(e)
 				{
-					DevaptNavHistory.on_hash_change(e);
+					return DevaptNavHistory.on_hash_change(e);
 				}
 			);
 		}
@@ -99,12 +99,18 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptMixinAssertion, DevaptEvent, D
 			$(window).bind('hashchange',
 				function(e)
 				{
-					DevaptNavHistory.on_hash_change(e);
+					return DevaptNavHistory.on_hash_change(e);
 				}
 			);
 		}
 		
-		DevaptNavHistory.push_url_content('Start', window.location.pathname, window.title, window.location.pathname);
+		// REGISTER HOME PAGE
+		var content_label	= 'Home';
+		var content_id		= null;
+		var content_url		= window.location.pathname;
+		var page_title		= 'Home';
+		var page_location	= window.location.pathname;
+		DevaptNavHistory.push_url_content(content_label, content_id, content_url, page_title, page_location);
 	}
 	
 
@@ -440,6 +446,7 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptMixinAssertion, DevaptEvent, D
 		var context = 'DevaptNavHistory.set_content(state)';
 		DevaptTraces.trace_enter(context, '', DevaptNavHistory.history_trace);
 		
+		
 		// CHECK STATE OBJECT
 		if ( ! DevaptTypes.is_object(arg_state) )
 		{
@@ -474,7 +481,7 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptMixinAssertion, DevaptEvent, D
 			return false;
 		}
 		
-		// TEST STATE ATTRIBUTES
+		// HTML CONTENT
 		if ( DevaptTypes.is_not_empty_str(content_id) && DevaptTypes.is_not_empty_str(content_html) )
 		{
 			var result = DevaptNavHistory.set_page_html_content(content_label, content_id, content_html, page_title, page_location, arg_force_render);
@@ -482,6 +489,8 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptMixinAssertion, DevaptEvent, D
 			DevaptTraces.trace_leave(context, 'set html content', DevaptNavHistory.history_trace);
 			return result;
 		}
+		
+		// VIEW CONTENT
 		if ( DevaptTypes.is_not_empty_str(content_id) && DevaptTypes.is_not_empty_str(content_view) )
 		{
 			var result = DevaptNavHistory.set_page_view_content(content_label, content_id, content_view, page_title, page_location, arg_force_render);
@@ -489,6 +498,23 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptMixinAssertion, DevaptEvent, D
 			DevaptTraces.trace_leave(context, 'set view content', DevaptNavHistory.history_trace);
 			return result;
 		}
+		
+		// URL CONTENT
+		if ( DevaptTypes.is_not_empty_str(content_url) )
+		{
+			window.title = page_title;
+			window.location = page_location;
+			
+			// SAVE NAVIGATION
+			if (arg_force_render)
+			{
+				DevaptNavHistory.push_html_content(content_label, content_id, content_html, page_title, page_location)
+			}
+			
+			DevaptTraces.trace_leave(context, 'set view content', DevaptNavHistory.history_trace);
+			return result;
+		}
+		
 		
 		DevaptTraces.trace_leave(context, 'bad state content', DevaptNavHistory.history_trace);
 		return false;

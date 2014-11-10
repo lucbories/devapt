@@ -209,7 +209,7 @@ function(Devapt, DevaptTrace, DevaptTypes, DevaptInit, /*DevaptEvents,*/ DevaptN
 						
 						DevaptNavHistory.history_breadcrumbs_object = view;
 						view.add_event_callback('nav-history.add',
-							[view, view.add_history_item],
+							[view, view.on_nav_history_add],
 							false
 						);
 					}

@@ -158,6 +158,7 @@ define(
 			
 			// APPEND CALLBACK
 			event_callbacks.push(arg_event_cb);
+			// console.log(arg_event_cb, arg_event_name);
 			
 			
 			this.leave(context, 'success');

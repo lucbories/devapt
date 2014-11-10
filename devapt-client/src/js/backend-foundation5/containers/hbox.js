@@ -35,6 +35,9 @@ function(Devapt, DevaptTypes, DevaptOptions, DevaptClasses, DevaptContainer, und
 		self.class_name			= 'DevaptHBox';
 		self.is_view			= true;
 		
+		self.items_jquery_parent = null;
+		self.items_jquery_filter = 'li';
+		
 		
 		/**
 		 * @public
@@ -91,6 +94,8 @@ function(Devapt, DevaptTypes, DevaptOptions, DevaptClasses, DevaptContainer, und
 			self.content_jqo.addClass('medium-block-grid-' + medium_blocks);
 			self.content_jqo.addClass('large-block-grid-' + large_blocks);
 			self.parent_jqo.append(self.content_jqo);
+			
+			self.items_jquery_parent = self.content_jqo;
 			
 			
 			self.leave(context, 'success');

@@ -34,6 +34,8 @@ function(Devapt, DevaptObject, DevaptTypes, DevaptOptions, DevaptClasses, Devapt
 		self.trace				= false;
 		self.class_name			= 'DevaptView';
 		self.is_view			= true;
+		self.status				= 'ready';
+		
 		self.parent_jqo			= null;
 		self.content_jqo		= null;
 		
@@ -55,11 +57,11 @@ function(Devapt, DevaptObject, DevaptTypes, DevaptOptions, DevaptClasses, Devapt
 			
 			// SET CONTAINER JQUERY OBJECT
 			self.parent_jqo = DevaptTypes.is_null(arg_jquery_object) ? $('#' + self.name + '_view_id') : arg_jquery_object;
-			if (self.trace)
-			{
-				console.log(arg_jquery_object, 'arg_jquery_object');
-				console.log(self.parent_jqo, 'parent_jqo');
-			}
+			// if (self.trace)
+			// {
+				// console.log(arg_jquery_object, 'arg_jquery_object');
+				// console.log(self.parent_jqo, 'parent_jqo');
+			// }
 			
 			// CHECK CONTAINER JQO
 			self.assertNotNull(context, 'self.parent_jqo', self.parent_jqo);
@@ -151,11 +153,15 @@ function(Devapt, DevaptObject, DevaptTypes, DevaptOptions, DevaptClasses, Devapt
 			
 			// CREATE REFERRED OBJECT
 			var deferred = $.Deferred();
-			
+			deferred.view_name = self.name;
+			deferred.view_uid = self.uid;
 			
 			// RENDER END CALLBACK
 			var render_end_cb = function() {
-				self.applyCssOptions(deferred);
+				if ( DevaptTypes.is_function(self.applyCssOptions) )
+				{
+					self.applyCssOptions(deferred);
+				}
 				
 				// SEND EVENT
 				self.fire_event('devapt.view.render.end');
@@ -165,19 +171,18 @@ function(Devapt, DevaptObject, DevaptTypes, DevaptOptions, DevaptClasses, Devapt
 			// RENDER WITH TEMPLATE
 			if ( self.template_enabled && DevaptTypes.is_function(self.render_template) )
 			{
+				// console.log('render with template', context);
 				var promise = self.render_template(deferred);
 				
-				// APPLY CSS OPTIONS
-				if ( DevaptTypes.is_function(self.applyCssOptions) )
-				{
-					promise.done(render_end_cb);
-				}
+				// APPLY CSS OPTIONS AND FIRE END EVENT
+				promise.done(render_end_cb);
 				
 				self.leave(context, 'render with template');
 				return promise;
 			}
 			
 			// RENDER WITHOUT TEMPLATE
+			// console.log('render without template', context);
 			var promise = self.render_self(deferred);
 			promise.done(
 				function()
@@ -186,11 +191,8 @@ function(Devapt, DevaptObject, DevaptTypes, DevaptOptions, DevaptClasses, Devapt
 				}
 			);
 			
-			// APPLY CSS OPTIONS
-			if ( DevaptTypes.is_function(self.applyCssOptions) )
-			{
-				promise.done(render_end_cb);
-			}
+			// APPLY CSS OPTIONS AND FIRE END EVENT
+			promise.done(render_end_cb);
 			
 			
 			self.leave(context, 'render without template');

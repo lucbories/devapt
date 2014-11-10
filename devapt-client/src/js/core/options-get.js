@@ -9,8 +9,8 @@
  * @license		Apache License Version 2.0, January 2004; see LICENSE.txt or http://www.apache.org/licenses/
  */
 
-define(['Devapt', 'core/traces', 'core/types', 'core/classes', 'core/options-base'],
-function(Devapt, DevaptTraces, DevaptTypes, DevaptClasses, DevaptOptions)
+define(['Devapt', 'core/traces', 'core/types', 'core/classes', 'core/options-base', 'core/inheritance'],
+function(Devapt, DevaptTraces, DevaptTypes, DevaptClasses, DevaptOptions, DevaptInheritance)
 {
 	/**
 	 * @memberof			DevaptOptions
@@ -188,6 +188,7 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptClasses, DevaptOptions)
 		var context = 'DevaptOptions.get_option_value(obj,option name)';
 		DevaptTraces.trace_enter(context, '', DevaptOptions.options_get_trace);
 		
+		
 		// CHECK ARGS
 		if ( ! DevaptTypes.is_object(arg_class_instance) )
 		{
@@ -202,22 +203,23 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptClasses, DevaptOptions)
 			return null;
 		}
 		
-		// GET OPTION
-		var option = DevaptOptions.get_option(arg_class_instance, arg_option_name, arg_is_inherited, []);
-		if ( ! DevaptTypes.is_object(option) )
-		{
-			DevaptTraces.trace_leave(context, 'bad option', DevaptOptions.options_get_trace);
-			return null;
-		}
-		
 		// GET OBJECT ATTRIBUTE
 		var object_value = arg_class_instance[arg_option_name];
 		if ( DevaptTypes.is_null(object_value) )
 		{
+			// GET OPTION
+			var option = DevaptOptions.get_option(arg_class_instance, arg_option_name, arg_is_inherited, []);
+			if ( ! DevaptTypes.is_object(option) )
+			{
+				DevaptTraces.trace_leave(context, 'bad option', DevaptOptions.options_get_trace);
+				return null;
+			}
+			
 			DevaptTraces.trace_leave(context, 'default option', DevaptOptions.options_get_trace);
 			// console.info(option.default_value, 'get_option_value clone option default value');
 			return DevaptOptions.clone_object(option.default_value);
 		}
+		
 		
 		DevaptTraces.trace_leave(context, 'found', DevaptOptions.options_get_trace);
 		return object_value;

@@ -35,6 +35,9 @@ function(Devapt, DevaptTypes, DevaptOptions, DevaptClasses, DevaptContainer, und
 		self.class_name			= 'DevaptVBox';
 		self.is_view			= true;
 		
+		self.items_jquery_parent = null;
+		self.items_jquery_filter = 'div.row';
+		
 		
 		/**
 		 * @public
@@ -84,6 +87,8 @@ function(Devapt, DevaptTypes, DevaptOptions, DevaptClasses, DevaptContainer, und
 			self.content_jqo = $('<div>');
 			self.content_jqo.addClass('row');
 			self.parent_jqo.append(self.content_jqo);
+			
+			self.items_jquery_parent = self.content_jqo;
 			
 			
 			self.leave(context, 'success');

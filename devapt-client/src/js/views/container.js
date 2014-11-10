@@ -34,8 +34,10 @@
  */
 
 define(
-['Devapt', 'views/view', 'core/types', 'core/options', 'core/classes', 'datas/mixin-get-model', 'core/template', 'datas/mixin-datasource', 'datas/mixin-query'],
-function(Devapt, DevaptView, DevaptTypes, DevaptOptions, DevaptClasses, DevaptMixinGetModel, DevaptTemplate, DevaptMixinDatasource, DevaptMixinQuery)
+['Devapt', 'views/view', 'core/types', 'core/options', 'core/classes', 'datas/mixin-get-model', 'core/template',
+	'datas/mixin-datasource', 'datas/mixin-query', 'views/mixin-filtered', 'views/mixin-pagination'],
+function(Devapt, DevaptView, DevaptTypes, DevaptOptions, DevaptClasses, DevaptMixinGetModel, DevaptTemplate,
+	DevaptMixinDatasource, DevaptMixinQuery, DevaptMixinFiltered, DevaptMixinPagination)
 {
 	/**
 	 * @public
@@ -65,6 +67,7 @@ function(Devapt, DevaptView, DevaptTypes, DevaptOptions, DevaptClasses, DevaptMi
 		self.class_name			= 'DevaptContainer';
 		self.is_view			= true;
 		self.is_container		= true;
+		// self.status				= 'created';
 		
 		self.items_objects		= [];
 		self.has_divider		= true;
@@ -81,6 +84,8 @@ function(Devapt, DevaptView, DevaptTypes, DevaptOptions, DevaptClasses, DevaptMi
 		self.register_mixin(DevaptMixinGetModel);
 		self.register_mixin(DevaptMixinDatasource);
 		self.register_mixin(DevaptMixinQuery);
+		self.register_mixin(DevaptMixinFiltered);
+		self.register_mixin(DevaptMixinPagination);
 		/* --------------------------------------------------------------------------------------------- */
 		
 		
@@ -123,6 +128,8 @@ function(Devapt, DevaptView, DevaptTypes, DevaptOptions, DevaptClasses, DevaptMi
 			self.mixin_init_datasource();
 			self.mixin_init_query();
 			self.mixin_init_bind();
+			self.mixin_init_filtered();
+			self.mixin_init_pagination();
 			
 			
 			// CONSTRUCTOR END
@@ -132,7 +139,7 @@ function(Devapt, DevaptView, DevaptTypes, DevaptOptions, DevaptClasses, DevaptMi
 		
 		// CONTRUCT INSTANCE
 		self.DevaptContainer_contructor();
-			
+		
 		
 		
 		/**
@@ -396,24 +403,51 @@ function(Devapt, DevaptView, DevaptTypes, DevaptOptions, DevaptClasses, DevaptMi
 			{
 				var refresh_cb = function ()
 				{
-					console.log(self.name, 'refresh');
+					// console.log(self.name, 'refresh');
 					
 					if ( ! self.is_rendering )
 					{
 						var deferred = $.Deferred();
+						
+						self.is_rendering = true;
 						
 						if (self.items_refresh.mode !== 'append')
 						{
 							self.remove_items();
 						}
 						
-						self.render_items(deferred);
-						
-						setTimeout(refresh_cb, self.items_refresh.frequency*1000);
+						// console.log('render_items call', context);
+						var items_count_before = $(self.items_jquery_filter, self.items_jquery_parent).length;
+						var promise = self.render_items(deferred);
+						promise.done(
+							function()
+							{
+								self.is_rendering = false;
+								
+								setTimeout(refresh_cb, self.items_refresh.frequency*1000);
+								
+								var items_count = $(self.items_jquery_filter, self.items_jquery_parent).filter('.devapt-container-visible').length;
+								if (self.mixin_pagination_apply_count === 0 || items_count_before !== items_count)
+								{
+									self.fire_event('devapt.pagination.update_pagination', [0, items_count]);
+								}
+							}
+						);
 					}
 				};
 				
 				setTimeout(refresh_cb, self.items_refresh.frequency*1000);
+			}
+			
+			// UPDATE PAGINATION FOR THE FIRST RENDERING
+			if (self.renders_count === 1)
+			{
+				var update_pagination_cb = function()
+				{
+					var items_count = $(self.items_jquery_filter, self.items_jquery_parent).filter('.devapt-container-visible').length;
+					self.fire_event('devapt.pagination.update_pagination', [0, items_count]);
+				};
+				setTimeout(update_pagination_cb, 200);
 			}
 			
 			// FIRE EVENT
@@ -441,18 +475,25 @@ function(Devapt, DevaptView, DevaptTypes, DevaptOptions, DevaptClasses, DevaptMi
 			
 			// INIT DEFAULT OPTIONS RECORD
 			var options = arg_item_defaults ? arg_item_defaults : {};
+			// self.items_options = self.get_property('items_options');
+			// console.log(options, context + '.options');
+			// console.log(self.items_options, context + '.self.items_options');
+			// console.log(arg_item_index, context + '.arg_item_index');
 			
 			// GET GIVEN OPTIONS RECORD
 			if ( DevaptTypes.is_not_empty_array(self.items_options) && self.items_options[arg_item_index] )
 			{
 				var item_options = self.items_options[arg_item_index];
+				// console.log(item_options, context + '.item_options');
 				
 				if ( DevaptTypes.is_string(item_options) )
 				{
+					// console.log(item_options, context + '.item_options is string');
 					var options_parts = item_options.split('|');
 					for(part_index in options_parts)
 					{
 						var record_part_str = options_parts[part_index];
+						// console.log(record_part_str, 'at ' + part_index + ' for ' + arg_item_index);
 						var record_part = record_part_str.split('=');
 						if ( DevaptTypes.is_not_empty_array(record_part) && record_part.length === 2 )
 						{
@@ -464,15 +505,43 @@ function(Devapt, DevaptView, DevaptTypes, DevaptOptions, DevaptClasses, DevaptMi
 				}
 				else if ( DevaptTypes.is_object(item_options) )
 				{
+					// console.log(item_options, context + '.item_options is object');
+					
 					var option_key = null;
 					for(option_key in item_options)
 					{
-						options[option_key] = item_options[option_key];
+						var loop_option = item_options[option_key];
+						// console.log(loop_option, context + '.loop_option');
+						
+						if ( DevaptTypes.is_string(loop_option) )
+						{
+							// console.log(loop_option, context + '.loop_option is string');
+							
+							var loop_childs = loop_option.split('|');
+							if ( loop_childs.length > 1 )
+							{
+								for(child_key in loop_childs)
+								{
+									var loop_child = loop_childs[child_key].split('=');
+									var loop_child_key = loop_child[0];
+									var loop_child_value = loop_child[1];
+									// console.log(loop_child, context + '.loop_child');
+									// console.log(loop_child_key, context + '.loop_child_key');
+									// console.log(loop_child_value, context + '.loop_child_value');
+									
+									options[loop_child_key] = loop_child_value;
+								}
+							}
+							else
+							{
+								options[option_key] = loop_option;
+							}
+						}
 					}
 				}
 				else
 				{
-					console.error(item_options, 'container.item_options is unknow');
+					self.error(item_options, 'container.item_options is unknow');
 				}
 			}
 			
@@ -481,6 +550,8 @@ function(Devapt, DevaptView, DevaptTypes, DevaptOptions, DevaptClasses, DevaptMi
 			{
 				options.label = self.items_labels[arg_item_index];
 			}
+			
+			// console.log(options, context + '.options');
 			
 			
 			self.leave(context, self.msq_success);
@@ -731,6 +802,7 @@ function(Devapt, DevaptView, DevaptTypes, DevaptOptions, DevaptClasses, DevaptMi
 			
 			// CREATE EMPTY ITEMNODE
 			var node_jqo = self.render_item_node(arg_item_index);
+			node_jqo.addClass('devapt-container-visible');
 			
 			// FILL ITEM NODE
 			switch(arg_item_type)
@@ -796,6 +868,12 @@ function(Devapt, DevaptView, DevaptTypes, DevaptOptions, DevaptClasses, DevaptMi
 					node_jqo = self.render_item_callback(arg_deferred, node_jqo, arg_item_content);
 					break;
 				}
+				default:
+				{
+					console.log(arg_item_type, 'arg_item_type');
+					self.leave(context, self.msg_failure);
+					return false;
+				}
 			}
 			
 			// APPEND ITEM NODE
@@ -808,6 +886,7 @@ function(Devapt, DevaptView, DevaptTypes, DevaptOptions, DevaptClasses, DevaptMi
 				heigth: false,
 				node: node_jqo
 			};
+			
 			self.append_item_node(node_jqo, record);
 			self.items_objects.push(record);
 			
@@ -831,7 +910,12 @@ function(Devapt, DevaptView, DevaptTypes, DevaptOptions, DevaptClasses, DevaptMi
 			var context = 'append_item_node(item node, record)';
 			self.enter(context, '');
 			
-			
+			if ( ! self.items_jquery_parent)
+			{
+				console.log(self.name, 'self.name');
+				console.log(self.items_jquery_parent, 'self.items_jquery_parent');
+				console.log(arg_item_jqo, 'arg_item_jqo');
+			}
 			self.items_jquery_parent.append(arg_item_jqo);
 			
 			
@@ -949,7 +1033,7 @@ function(Devapt, DevaptView, DevaptTypes, DevaptOptions, DevaptClasses, DevaptMi
 			// CHECK ITEM NODE
 			if ( ! node_jqo)
 			{
-				console.error('node not found', context);
+				self.error(context + ':node not found');
 				self.leave(context, self.msg_failure);
 				return;
 			}
@@ -1016,16 +1100,12 @@ function(Devapt, DevaptView, DevaptTypes, DevaptOptions, DevaptClasses, DevaptMi
 			
 			// RENDER ITEMS AT FIRST TIME WITH AUTOLOAD FALSE
 			self.renders_count++;
-			// console.log(self.renders_count, self.name + '.' + context + ':renders_count');
-			// console.log(self.items_autoload, self.name + '.' + context + ':items_autoload');
 			if (self.renders_count === 1 && ! self.items_autoload)
 			{
-				// console.log('without autoload', self.name + '.' + context);
-				
 				// RENDER END
 				self.render_end();
-				self.is_rendering = false;
 				arg_deferred.resolve();
+				self.is_rendering = false;
 				
 				self.leave(context, self.msg_success_promise);
 				return arg_deferred.promise();
@@ -1039,6 +1119,9 @@ function(Devapt, DevaptView, DevaptTypes, DevaptOptions, DevaptClasses, DevaptMi
 					// RENDER END
 					self.render_end();
 					self.is_rendering = false;
+					
+					var items_count = $(self.items_jquery_filter, self.items_jquery_parent).filter('.devapt-container-visible').length;
+					self.fire_event('devapt.pagination.update_pagination', [0, items_count]);
 				}
 			);
 			
@@ -1195,9 +1278,13 @@ function(Devapt, DevaptView, DevaptTypes, DevaptOptions, DevaptClasses, DevaptMi
 	DevaptMixinGetModel.register_options(DevaptContainer);
 	DevaptMixinDatasource.register_options(DevaptContainer);
 	DevaptMixinQuery.register_options(DevaptContainer);
+	DevaptMixinFiltered.register_options(DevaptContainer);
+	DevaptMixinPagination.register_options(DevaptContainer);
 	
 	
 	// INTROSPETION : REGISTER OPTIONS
+	DevaptOptions.register_obj_option(DevaptContainer, 'filtered',			null, false, []);
+	// DevaptOptions.register_array_option(DevaptContainer, 'paginations',		[], false, ',', 'String', []);
 	// DevaptOptions.register_str_option(DevaptContainer, 'items_model_name',		null, false, []); // model name
 	// DevaptOptions.register_obj_option(DevaptContainer, 'items_model',			null, false, []); // model object
 	

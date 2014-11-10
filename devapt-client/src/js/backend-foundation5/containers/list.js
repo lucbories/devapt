@@ -34,6 +34,7 @@ function(Devapt, DevaptTypes, DevaptOptions, DevaptClasses, DevaptContainer, und
 		self.trace				= false;
 		self.class_name			= 'DevaptList';
 		self.is_view			= true;
+		
 		self.items_jquery_parent = null;
 		self.items_jquery_filter = 'li';
 		

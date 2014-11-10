@@ -97,10 +97,10 @@ function(Devapt, DevaptTrace, DevaptTypes, DevaptOptions, DevaptClasses, DevaptR
 			// LOOP ON NAV HISTORY
 			var nav_stack = DevaptNavHistory.history_stack;
 			self.value(context, 'breadcrumbs html content', nav_stack);
-			for(content_key in self.nav_stack)
+			for(content_key in nav_stack)
 			{
-				var state = self.nav_stack[content_key];
-				self.assert(context, 'nav content at [' + content_key + ']', state);
+				var state = nav_stack[content_key];
+				self.assertNotNull(context, 'nav content at [' + content_key + ']', state);
 				self.add_history_item(state);
 			}
 			
@@ -122,18 +122,19 @@ function(Devapt, DevaptTrace, DevaptTypes, DevaptOptions, DevaptClasses, DevaptR
 		 * @public
 		 * @memberof			DevaptBreadcrumbs
 		 * @desc				Add an history item
-		* @param {object}		arg_operands_array		[target object, navigation history state object]
+		* @param {object}		arg_state		[target object, navigation history state object]
 		 * @return {nothing}
 		 */
-		self.add_history_item = function(arg_operands_array)
+		self.add_history_item = function(arg_state)
 		{
 			var self = this;
 			var context = 'add_history_item(state)';
 			self.enter(context, '');
 			
 			
-			var arg_state = arg_operands_array[1];
-			
+			// console.log(arg_state, 'arg_state');
+			self.assertNotNull(context, 'arg_state', arg_state);
+			self.assertNotEmptyString(context, 'arg_state.content_label', arg_state.content_label);
 			if ( self.history_labels[arg_state.content_label] )
 			{
 				self.leave(context, 'success: already in history');
@@ -143,9 +144,6 @@ function(Devapt, DevaptTrace, DevaptTypes, DevaptOptions, DevaptClasses, DevaptR
 			self.history_labels[arg_state.content_label] = arg_state;
 			
 			
-			// self.value(context, '', arg_state);
-			// console.log(arg_state);
-			
 			var li_jqo = $('<li>');
 			self.content_jqo.append(li_jqo);
 			
@@ -153,18 +151,42 @@ function(Devapt, DevaptTrace, DevaptTypes, DevaptOptions, DevaptClasses, DevaptR
 			li_jqo.append(a_jqo);
 			
 			a_jqo.attr('href', '#');
-			a_jqo.text('text:' + arg_state.content_label);
+			a_jqo.text(arg_state.content_label);
 			a_jqo.click(
 				(
 					function(state)
 					{
 						return function()
 						{
+							// console.log(state, context + '.onclick');
 							DevaptNavHistory.set_content(state, true);
 						}
 					}
 				)(arg_state)
 			);
+			
+			
+			self.leave(context, 'success');
+		}
+		
+		
+		
+		/**
+		 * @public
+		 * @memberof			DevaptBreadcrumbs
+		 * @desc				On navigation history new item
+		* @param {object}		arg_operands_array		[event object, target object, navigation history state object]
+		 * @return {nothing}
+		 */
+		self.on_nav_history_add = function(arg_operands_array)
+		{
+			var self = this;
+			var context = 'on_nav_history_add(event opds)';
+			self.enter(context, '');
+			
+			
+			var arg_state = arg_operands_array[2];
+			self.add_history_item(arg_state);
 			
 			
 			self.leave(context, 'success');
