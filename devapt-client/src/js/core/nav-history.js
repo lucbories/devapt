@@ -362,7 +362,9 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptMixinAssertion, DevaptEvent, D
 		
 		if ( DevaptTypes.is_object(DevaptNavHistory.history_breadcrumbs_object) && DevaptTypes.is_object(arg_state) )
 		{
-			var event = new DevaptEvent('nav-history.add', DevaptNavHistory.history_breadcrumbs_object, [arg_state]);
+			// console.log(arg_state, 'nav arg_state');
+			var event_name = 'nav-history.add_' + DevaptEvents.get_events_array().length;
+			var event = DevaptEvent.create(event_name, { target_object:DevaptNavHistory.history_breadcrumbs_object, operands_array:[arg_state] } );
 			DevaptEvents.fire(event);
 		}
 		
@@ -624,7 +626,7 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptMixinAssertion, DevaptEvent, D
 		
 		// GET CURRENT BACKEND
 		var backend = Devapt.get_current_backend();
-		DevaptMixinAssertion.assertNotNull(context, 'backend', backend);
+		DevaptMixinAssertion.infos.proto.assert_not_null(context, 'backend', backend);
 		
 		
 		// CLEAN HTML TAG

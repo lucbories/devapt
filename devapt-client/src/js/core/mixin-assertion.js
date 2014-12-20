@@ -10,13 +10,9 @@
  * @license		Apache License Version 2.0, January 2004; see LICENSE.txt or http://www.apache.org/licenses/
  */
 
-define( ['core/types', 'core/inheritance'], function(DevaptTypes, DevaptInheritance)
+define( ['core/types', 'core/inheritance', 'core/class'],
+function(DevaptTypes, DevaptInheritance, DevaptClass)
 {
-	/**
-	 * @mixin				DevaptMixinAssertion
-	 * @public
-	 * @desc				Mixin of methods for assertion
-	 */
 	var DevaptMixinAssertion =
 	{
 		/**
@@ -300,5 +296,69 @@ define( ['core/types', 'core/inheritance'], function(DevaptTypes, DevaptInherita
 	};
 	
 	
-	return DevaptMixinAssertion;
+	
+	/* --------------------------------------------- CREATE MIXIN CLASS ------------------------------------------------ */
+	
+	// MIXIN CLASS DEFINITION
+	var class_settings= {
+		'infos':{
+			'author':'Luc BORIES',
+			'created':'2014-07-01',
+			'updated':'2014-12-05',
+			'description':'Mixin methods to assert values.'
+		}
+	};
+	
+	
+	/**
+	 * @mixin				DevaptMixinAssertionClass
+	 * @public
+	 * @desc				Mixin of methods for values assertion
+	 */
+	var DevaptMixinAssertionClass = new DevaptClass('DevaptMixinAssertion', null, class_settings);
+	
+	DevaptMixinAssertionClass.add_public_method('assert', {}, DevaptMixinAssertion.assert);
+	
+	DevaptMixinAssertionClass.add_public_method('assertTrue', {}, DevaptMixinAssertion.assertTrue);
+	DevaptMixinAssertionClass.add_public_method('assertTrue', {}, DevaptMixinAssertion.assertTrue);
+	DevaptMixinAssertionClass.add_public_method('assertFalse', {}, DevaptMixinAssertion.assertFalse);
+	DevaptMixinAssertionClass.add_public_method('assertFalse', {}, DevaptMixinAssertion.assertFalse);
+	
+	DevaptMixinAssertionClass.add_public_method('assertNull', {}, DevaptMixinAssertion.assertNull);
+	DevaptMixinAssertionClass.add_public_method('assert_null', {}, DevaptMixinAssertion.assertNull);
+	DevaptMixinAssertionClass.add_public_method('assertNotNull', {}, DevaptMixinAssertion.assertNotNull);
+	DevaptMixinAssertionClass.add_public_method('assert_not_null', {}, DevaptMixinAssertion.assertNotNull);
+	
+	DevaptMixinAssertionClass.add_public_method('assertInherit', {}, DevaptMixinAssertion.assertInherit);
+	DevaptMixinAssertionClass.add_public_method('assert_inherits', {}, DevaptMixinAssertion.assertInherit);
+	
+	DevaptMixinAssertionClass.add_public_method('assertTypeof', {}, DevaptMixinAssertion.assertTypeof);
+	DevaptMixinAssertionClass.add_public_method('assert_typeof', {}, DevaptMixinAssertion.assertTypeof);
+	
+	DevaptMixinAssertionClass.add_public_method('assertFunction', {}, DevaptMixinAssertion.assertFunction);
+	DevaptMixinAssertionClass.add_public_method('assert_function', {}, DevaptMixinAssertion.assertFunction);
+	
+	DevaptMixinAssertionClass.add_public_method('assertObject', {}, DevaptMixinAssertion.assertObject);
+	DevaptMixinAssertionClass.add_public_method('assert_object', {}, DevaptMixinAssertion.assertObject);
+	DevaptMixinAssertionClass.add_public_method('assertObjectSize', {}, DevaptMixinAssertion.assertObjectSize);
+	DevaptMixinAssertionClass.add_public_method('assert_object_size', {}, DevaptMixinAssertion.assertObjectSize);
+	
+	DevaptMixinAssertionClass.add_public_method('assertArray', {}, DevaptMixinAssertion.assertArray);
+	DevaptMixinAssertionClass.add_public_method('assert_array', {}, DevaptMixinAssertion.assertArray);
+	DevaptMixinAssertionClass.add_public_method('assertArraySize', {}, DevaptMixinAssertion.assertArraySize);
+	DevaptMixinAssertionClass.add_public_method('assert_array_size', {}, DevaptMixinAssertion.assertArraySize);
+	DevaptMixinAssertionClass.add_public_method('assertNotEmptyArray', {}, DevaptMixinAssertion.assertNotEmptyArray);
+	DevaptMixinAssertionClass.add_public_method('assert_not_empty_array', {}, DevaptMixinAssertion.assertNotEmptyArray);
+	DevaptMixinAssertionClass.add_public_method('assertNotEmptyObjectOrArray', {}, DevaptMixinAssertion.assertNotEmptyObjectOrArray);
+	DevaptMixinAssertionClass.add_public_method('assert_not_empty_object_or_array', {}, DevaptMixinAssertion.assertNotEmptyObjectOrArray);
+	
+	DevaptMixinAssertionClass.add_public_method('assertNotEmptyString', {}, DevaptMixinAssertion.assertNotEmptyString);
+	DevaptMixinAssertionClass.add_public_method('assert_not_empty_string', {}, DevaptMixinAssertion.assertNotEmptyString);
+	DevaptMixinAssertionClass.add_public_method('assertNotEmptyValue', {}, DevaptMixinAssertion.assertNotEmptyValue);
+	DevaptMixinAssertionClass.add_public_method('assert_not_empty_value', {}, DevaptMixinAssertion.assertNotEmptyValue);
+	
+	
+	DevaptMixinAssertionClass.build_class();
+	
+	return DevaptMixinAssertionClass;
 } );

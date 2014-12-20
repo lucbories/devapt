@@ -10,8 +10,8 @@
  */
 
 define(
-['Devapt', 'core/traces', 'core/options', 'core/classes', 'views/view', 'core/application'],
-function(Devapt, DevaptTrace, DevaptOptions, DevaptClasses, DevaptView, DevaptApplication)
+['Devapt', 'core/class', 'views/view', 'core/application'],
+function(Devapt, DevaptClass, DevaptView, DevaptApplication)
 {
 	/**
 	 * @public
@@ -22,108 +22,80 @@ function(Devapt, DevaptTrace, DevaptOptions, DevaptClasses, DevaptView, DevaptAp
 	 * @param {object|null}	arg_options			Associative array of options
 	 * @return {nothing}
 	 */
-	function DevaptRemote(arg_name, arg_parent_jqo, arg_options)
+	
+	
+	/**
+	 * @public
+	 * @memberof			DevaptRemote
+	 * @desc				Render view
+	 * @param {object}		arg_deferred	deferred object
+	 * @return {object}		deferred promise object
+	 */
+	var cb_render_self = function(arg_deferred)
 	{
 		var self = this;
-		
-		// INHERIT
-		self.inheritFrom = DevaptView;
-		self.inheritFrom(arg_name, arg_parent_jqo, arg_options);
-		
-		// INIT
-		self.trace				= false;
-		self.class_name			= 'DevaptRemote';
-		self.is_view			= true;
+		var context = 'render_self(deferred)';
+		self.enter(context, '');
 		
 		
-		/**
-		 * @public
-		 * @memberof			DevaptRemote
-		 * @desc				Constructor
-		 * @return {nothing}
-		 */
-		self.DevaptPanel_contructor = function()
-		{
-			// CONSTRUCTOR BEGIN
-			var context = 'contructor(' + arg_name + ')';
-			self.enter(context, '');
-			
-			
-			// INIT OPTIONS
-			var init_option_result = DevaptOptions.set_options_values(self, arg_options, false);
-			if (! init_option_result)
+		// CHECK CONTAINER NODE
+		self.assertNotNull(context, 'arg_deferred', arg_deferred);
+		self.assertNotNull(context, 'parent_jqo', self.parent_jqo);
+		self.content_jqo = $('<div>');
+		self.parent_jqo.append(self.content_jqo);
+		
+		// GET AND RENDER VIEW CONTENT
+		var promise = arg_deferred.then(
+			function(arg_url)
 			{
-				self.error(context + ': init options failure');
+				return $.get(arg_url);
 			}
-			
-			
-			// CONSTRUCTOR END
-			self.leave(context, 'success');
-		}
+		)
+		.then(
+			function(arg_html)
+			{
+				self.content_jqo.html(arg_html);
+			}
+		);
+		
+		// GET APP BASE URL
+		var url_base	= DevaptApplication.get_url_base();
+		
+		// GET VIEW CONTENT URL
+		var view_content_url = url_base + 'views/' + self.name + '/html_view';
+		
+		// RESOLVE DEFERRED
+		arg_deferred.resolve(view_content_url);
 		
 		
-		// CONTRUCT INSTANCE
-		self.DevaptPanel_contructor();
-		
-		
-		
-		/**
-		 * @public
-		 * @memberof			DevaptRemote
-		 * @desc				Render view
-		 * @param {object}		arg_deferred	deferred object
-		 * @return {object}		deferred promise object
-		 */
-		self.render_self = function(arg_deferred)
-		{
-			var self = this;
-			var context = 'render_self(deferred)';
-			self.enter(context, '');
-			
-			
-			// CHECK CONTAINER NODE
-			self.assertNotNull(context, 'arg_deferred', arg_deferred);
-			self.assertNotNull(context, 'parent_jqo', self.parent_jqo);
-			self.content_jqo = $('<div>');
-			self.parent_jqo.append(self.content_jqo);
-			
-			// GET AND RENDER VIEW CONTENT
-			var promise = arg_deferred.then(
-				function(arg_url)
-				{
-					return $.get(arg_url);
-				}
-			)
-			.then(
-				function(arg_html)
-				{
-					self.content_jqo.html(arg_html);
-				}
-			);
-			
-			// GET APP BASE URL
-			var url_base	= DevaptApplication.get_url_base();
-			
-			// GET VIEW CONTENT URL
-			var view_content_url = url_base + 'views/' + self.name + '/html_view';
-			
-			// RESOLVE DEFERRED
-			arg_deferred.resolve(view_content_url);
-			
-			
-			self.leave(context, 'success: promise is resolved: async render');
-			return promise;
-		}
+		self.leave(context, 'success: promise is resolved: async render');
+		return promise;
 	}
 	
 	
-	// INTROSPETION : REGISTER CLASS
-	DevaptClasses.register_class(DevaptRemote, ['DevaptView'], 'Luc BORIES', '2013-08-21', 'Remote rendered view class.');
+	
+	/* --------------------------------------------- CREATE CLASS ------------------------------------------------ */
+	
+	// CLASS DEFINITION
+	var class_settings= {
+		'infos':{
+			'author':'Luc BORIES',
+			'created':'2014-06-24',
+			'updated':'2014-12-06',
+			'description':'Remote view class.'
+		}
+	};
+	
+	// CLASS CREATION
+	var parent_class = DevaptView;
+	var DevaptRemoteClass = new DevaptClass('DevaptRemote', parent_class, class_settings);
+	
+	// METHODS
+	DevaptRemoteClass.add_public_method('render_self', {}, cb_render_self);
+	
+	// PROPERTIES
+	DevaptRemoteClass.add_public_str_property('include_file_path_name',	'',		null, false, false, []);
 	
 	
-	// INTROSPETION : REGISTER OPTIONS
-	// DevaptOptions.register_str_option(DevaptRemote, '...',			null, true, []);
-	
-	
-	return DevaptRemote;
+	return DevaptRemoteClass;
 } );

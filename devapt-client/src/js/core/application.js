@@ -169,12 +169,17 @@ function(Devapt, DevaptTrace, DevaptTypes, DevaptInit, /*DevaptEvents,*/ DevaptN
 		
 		// INIT TOP MENUBAR
 		var topmenubar = DevaptApplication.get_topbar_name();
-		var options= {'class_name':'Menubar', 'class_type':'view', 'trace':false, 'name':topmenubar , 'menubar_name':topmenubar};
-		backend.build_from_declaration(options).then(
+		var topmenubar_promise = backend.render_view(null, topmenubar);
+		topmenubar_promise.then(
 			function(view)
 			{
+				if ( ! DevaptTypes.is_object(view) || ! view.is_view )
+				{
+					DevaptTrace.trace_step(context, 'ERROR: resource view is not a valid object', DevaptApplication.app_trace);
+					return;
+				}
+				
 				DevaptTrace.trace_step(context, 'Topbar menus render', DevaptApplication.app_trace);
-				view.render();
 			}
 		);
 		
@@ -197,13 +202,17 @@ function(Devapt, DevaptTrace, DevaptTypes, DevaptInit, /*DevaptEvents,*/ DevaptN
 			if (container_jqo)
 			{
 				DevaptNavHistory.history_breadcrumbs_name = breadcrumbs;
+				
+				// console.log(container_jqo, 'breadcrumbs container_jqo');
+				
 				var render_promise = backend.render_view(container_jqo, breadcrumbs);
+				
 				render_promise.then(
 					function(view)
 					{
-						DevaptTrace.trace_step(context, 'ERROR: resource view is not an valid object', DevaptApplication.app_trace);
 						if ( ! DevaptTypes.is_object(view) || ! view.is_view )
 						{
+							DevaptTrace.trace_step(context, 'ERROR: resource view is not a valid object', DevaptApplication.app_trace);
 							return;
 						}
 						

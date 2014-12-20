@@ -10,8 +10,8 @@
  */
 
 define(
-['Devapt', 'core/traces', 'core/types', 'core/options', 'core/classes', 'core/resources', 'views/view', 'core/application', 'backend-foundation5/foundation-init'],
-function(Devapt, DevaptTrace, DevaptTypes, DevaptOptions, DevaptClasses, DevaptResources, DevaptView, DevaptApplication, undefined)
+['Devapt', 'core/types', 'core/class', 'views/view', 'backend-foundation5/foundation-init'],
+function(Devapt, DevaptTypes, DevaptClass, DevaptView, undefined)
 {
 	/**
 	 * @public
@@ -22,94 +22,67 @@ function(Devapt, DevaptTrace, DevaptTypes, DevaptOptions, DevaptClasses, DevaptR
 	 * @param {object|null}	arg_options			Associative array of options
 	 * @return {nothing}
 	 */
-	function DevaptLabel(arg_name, arg_parent_jqo, arg_options)
+	
+	
+	/**
+	 * @public
+	 * @memberof			DevaptLabel
+	 * @desc				Render view
+	 * @param {object}		arg_deferred	deferred object
+	 * @return {object}		deferred promise object
+	 */
+	var cb_render_self = function(arg_deferred)
 	{
 		var self = this;
-		
-		// INHERIT
-		self.inheritFrom = DevaptView;
-		self.inheritFrom(arg_name, arg_parent_jqo, arg_options);
-		
-		// INIT
-		self.trace				= false;
-		self.class_name			= 'DevaptLabel';
-		self.is_view			= true;
+		var context = 'render_self(deferred)';
+		self.enter(context, '');
 		
 		
-		/**
-		 * @public
-		 * @memberof			DevaptLabel
-		 * @desc				Constructor
-		 * @return {nothing}
-		 */
-		self.DevaptLabel_contructor = function()
-		{
-			// CONSTRUCTOR BEGIN
-			var context = self.class_name + '(' + arg_name + ')';
-			self.enter(context, 'constructor');
-			
-			
-			// INIT OPTIONS
-			var init_option_result = DevaptOptions.set_options_values(self, arg_options, false);
-			if (! init_option_result)
-			{
-				self.error(context + ': init options failure');
-			}
-			
-			
-			// CONSTRUCTOR END
-			self.leave(context, 'success');
-		}
+		// CHECK DEFEREED
+		self.assertNotNull(context, 'arg_deferred', arg_deferred);
+		
+		// GET NODES
+		self.assertNotNull(context, 'parent_jqo', self.parent_jqo);
+		self.content_jqo = $('<span>');
+		self.parent_jqo.append(self.content_jqo);
+		
+		// GET VIEW LABEL TEXT
+		self.assertNotEmptyValue(context, 'self.label', self.label);
+		self.content_jqo.text(self.label);
+		
+		// RESOLVE AND GET PROMISE
+		arg_deferred.resolve();
+		var promise = arg_deferred.promise();
 		
 		
-		// CONTRUCT INSTANCE
-		self.DevaptLabel_contructor();
-		
-		
-		
-		/**
-		 * @public
-		 * @memberof			DevaptLabel
-		 * @desc				Render view
-		 * @param {object}		arg_deferred	deferred object
-		 * @return {object}		deferred promise object
-		 */
-		self.render_self = function(arg_deferred)
-		{
-			var self = this;
-			var context = 'render_self(deferred)';
-			self.enter(context, '');
-			
-			
-			// CHECK DEFEREED
-			self.assertNotNull(context, 'arg_deferred', arg_deferred);
-			
-			// GET NODES
-			self.assertNotNull(context, 'parent_jqo', self.parent_jqo);
-			self.content_jqo = $('<span>');
-			self.parent_jqo.append(self.content_jqo);
-			
-			// GET VIEW LABEL TEXT
-			self.assertNotEmptyValue(context, 'self.label', self.label);
-			self.content_jqo.text(self.label);
-			
-			// RESOLVE AND GET PROMISE
-			arg_deferred.resolve();
-			var promise = arg_deferred.promise();
-			
-			
-			self.leave(context, 'success: promise is resolved');
-			return promise;
-		}
+		self.leave(context, 'success: promise is resolved');
+		return promise;
 	}
 	
 	
-	// INTROSPETION : REGISTER CLASS
-	DevaptClasses.register_class(DevaptLabel, ['DevaptView'], 'Luc BORIES', '2013-08-21', 'Simple view class to display a text.');
+	
+	/* --------------------------------------------- CREATE CLASS ------------------------------------------------ */
+	
+	// CLASS DEFINITION
+	var class_settings= {
+		'infos':{
+			'author':'Luc BORIES',
+			'created':'2014-08-21',
+			'updated':'2014-12-13',
+			'description':'Simple view class to display an text.'
+		}
+	};
+	
+	// CLASS CREATION
+	var parent_class = DevaptView;
+	var DevaptLabelClass = new DevaptClass('DevaptLabel', parent_class, class_settings);
+	
+	// METHODS
+	DevaptLabelClass.add_public_method('render_self', {}, cb_render_self);
+	
+	// PROPERTIES
+	// DevaptLabelClass.add_public_str_property('image_url',		'',		null, false, false, []);
 	
 	
-	// INTROSPETION : REGISTER OPTIONS
-	
-	
-	return DevaptLabel;
+	return DevaptLabelClass;
 } );

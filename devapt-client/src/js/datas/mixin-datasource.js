@@ -11,10 +11,10 @@
  */
 
 define(
-['Devapt', 'core/types', 'core/options', 'core/resources', 'datas/query', 'core/classes',
+['Devapt', 'core/types', 'core/class',
 	'datas/mixin-datasource-inline', 'datas/mixin-datasource-events', 'datas/mixin-datasource-classes', 'datas/mixin-datasource-resources',
 	'datas/mixin-datasource-logs', 'datas/mixin-datasource-model'],
-function(Devapt, DevaptTypes, DevaptOptions, DevaptResources, DevaptQuery, DevaptClasses,
+function(Devapt, DevaptTypes, DevaptClass,
 	DevaptMixinDatasoureInline, DevaptMixinDatasoureEvents, DevaptMixinDatasoureClasses, DevaptMixinDatasoureResources,
 	DevaptMixinDatasoureLogs, DevaptMixinDatasoureModel)
 {
@@ -30,7 +30,7 @@ function(Devapt, DevaptTypes, DevaptOptions, DevaptResources, DevaptQuery, Devap
 		 * @public
 		 * @desc				Enable/disable trace for mixin operations
 		 */
-		mixin_trace_datasource: false,
+		// mixin_trace_datasource: false,
 		
 		
 		/**
@@ -39,14 +39,18 @@ function(Devapt, DevaptTypes, DevaptOptions, DevaptResources, DevaptQuery, Devap
 		 * @desc				Init mixin
 		 * @return {nothing}
 		 */
-		mixin_init_datasource: function()
+		mixin_init_datasource: function(self)
 		{
-			var self = this;
-			self.push_trace(self.trace, self.mixin_trace_datasource);
+			// var self = this;
+			self.push_trace(self.trace, DevaptMixinDatasoure.mixin_trace_datasource);
 			var context = 'mixin_init_datasource()';
 			self.enter(context, '');
 			
+			
+			// self.mixin_trace_datasource = true;
+			
 			self.init_data_source();
+			
 			
 			self.leave(context, '');
 			self.pop_trace();
@@ -60,10 +64,9 @@ function(Devapt, DevaptTypes, DevaptOptions, DevaptResources, DevaptQuery, Devap
 		 * @desc				Init data source
 		 * @return {nothing}
 		 */
-		init_data_source: function()
+		init_data_source: function(self)
 		{
-			var self = this;
-			self.push_trace(self.trace, self.mixin_trace_datasource);
+			self.push_trace(self.trace, DevaptMixinDatasoure.mixin_trace_datasource);
 			var context = 'init_data_source()';
 			self.enter(context, '');
 			
@@ -77,38 +80,38 @@ function(Devapt, DevaptTypes, DevaptOptions, DevaptResources, DevaptQuery, Devap
 			{
 				case 'inline':
 					// LOAD MIXIN INLINE
-					self.register_mixin(DevaptMixinDatasoureInline);
-					self.init_data_source_inline();
+					// self.register_mixin(DevaptMixinDatasoureInline);
+					self.init_data_source_inline(self);
 					break;
 					
 				case 'model':
 					// LOAD MIXIN MODEL
-					self.register_mixin(DevaptMixinDatasoureModel);
-					self.init_data_source_model();
+					// self.register_mixin(DevaptMixinDatasoureModel);
+					self.init_data_source_model(self);
 					break;
 					
 				case 'classes':
 					// LOAD MIXIN CLASSES
-					self.register_mixin(DevaptMixinDatasoureClasses);
-					self.init_data_source_classes();
+					// self.register_mixin(DevaptMixinDatasoureClasses);
+					self.init_data_source_classes(self);
 					break;
 					
 				case 'logs':
 					// LOAD MIXIN CLASSES
-					self.register_mixin(DevaptMixinDatasoureLogs);
-					self.init_data_source_logs();
+					// self.register_mixin(DevaptMixinDatasoureLogs);
+					self.init_data_source_logs(self);
 					break;
 					
 				case 'events':
 					// LOAD MIXIN EVENTS
-					self.register_mixin(DevaptMixinDatasoureEvents);
-					self.init_data_source_events();
+					// self.register_mixin(DevaptMixinDatasoureEvents);
+					self.init_data_source_events(self);
 					break;
 					
 				case 'resources':
 					// LOAD MIXIN RESOURCES
-					self.register_mixin(DevaptMixinDatasoureResources);
-					self.init_data_source_resources();
+					// self.register_mixin(DevaptMixinDatasoureResources);
+					self.init_data_source_resources(self);
 					break;
 					
 				default:
@@ -133,7 +136,7 @@ function(Devapt, DevaptTypes, DevaptOptions, DevaptResources, DevaptQuery, Devap
 		init_data_source_options: function(arg_items)
 		{
 			var self = this;
-			self.push_trace(self.trace, self.mixin_trace_datasource);
+			self.push_trace(self.trace, DevaptMixinDatasoure.mixin_trace_datasource);
 			var context = 'init_data_source_options(items)';
 			self.enter(context, '');
 			
@@ -185,10 +188,12 @@ function(Devapt, DevaptTypes, DevaptOptions, DevaptResources, DevaptQuery, Devap
 		get_items_array: function()
 		{
 			var self = this;
-			self.push_trace(self.trace, self.mixin_trace_datasource);
+			self.push_trace(self.trace, DevaptMixinDatasoure.mixin_trace_datasource);
 			var context = 'get_items_array()';
 			self.enter(context, '');
 			
+			
+			// console.log(self.items_source, context + '[' + self.name + ']:source');
 			
 			// SWITCH ON DATA SOURCE
 			self.assertNotEmptyString(context, 'source', self.items_source);
@@ -261,7 +266,7 @@ function(Devapt, DevaptTypes, DevaptOptions, DevaptResources, DevaptQuery, Devap
 		get_items_types_array: function()
 		{
 			var self = this;
-			self.push_trace(self.trace, self.mixin_trace_datasource);
+			self.push_trace(self.trace, DevaptMixinDatasoure.mixin_trace_datasource);
 			var context = 'get_items_types_array()';
 			self.enter(context, '');
 			
@@ -343,123 +348,74 @@ function(Devapt, DevaptTypes, DevaptOptions, DevaptResources, DevaptQuery, Devap
 	};
 	
 	
-	/**
-	 * @public
-	 * @memberof			DevaptMixinDatasoure
-	 * @desc				Register mixin options
-	 * @return {nothing}
-	 */
-	DevaptMixinDatasoure.register_options = function(arg_prototype)
-	{
-		DevaptOptions.register_obj_option(arg_prototype, 'items_model',			null, false, ['model']);
-		DevaptOptions.register_str_option(arg_prototype, 'items_model_name',	null, true, ['model_name']);
-		
-		DevaptOptions.register_bool_option(arg_prototype, 'items_autoload',		true, false, ['view_items_autoload']);
-		DevaptOptions.register_str_option(arg_prototype, 'items_source',		'inline', false, ['view_items_source']); // inline / model / events / resources
-		DevaptOptions.register_str_option(arg_prototype, 'items_source_format',	'array', false, ['view_items_source_format']); // json / array
 	
-		DevaptOptions.register_str_option(arg_prototype, 'items_iterator',		'records', false, []); // items iterator : records / fields
-		DevaptOptions.register_array_option(arg_prototype, 'items_fields',		[], false, ',', 'String', []); // item fields
-		DevaptOptions.register_str_option(arg_prototype, 'items_format',		null, false, []); // item format
-		DevaptOptions.register_obj_option(arg_prototype, 'items_current_record',	null, false, []);
-		DevaptOptions.register_obj_option(arg_prototype, 'items_refresh',		null, false, []);
-		
-		DevaptOptions.register_array_option(arg_prototype, 'items_records',		[], false, ',', 'Object', []); // items records
-		DevaptOptions.register_int_option(arg_prototype, 'items_records_count',		0, false, []); // items records count
-		
-		DevaptOptions.register_option(arg_prototype, {
-				name: 'items_inline',
-				type: 'array',
-				aliases: [],
-				default_value: [],
-				array_separator: ',',
-				array_type: 'String',
-				format: '',
-				is_required: false,
-				childs: {}
-			}
-		);
-		
-		DevaptOptions.register_option(arg_prototype, {
-				name: 'items_options',
-				type: 'array',
-				aliases: [],
-				default_value: [],
-				array_separator: ',',
-				array_type: 'String',
-				format: '',
-				is_required: false,
-				childs: {
-					// opts:{
-						// name: 'opts',
-						// type: 'array',
-						// aliases: [],
-						// default_value: [],
-						// array_separator: '|',
-						// array_type: 'object',
-						// format: '',
-						// is_required: false,
-						// childs: {}
-					// }
-				}
-			}
-		);
-		
-		DevaptOptions.register_option(arg_prototype, {
-				name: 'items_labels',
-				type: 'array',
-				aliases: [],
-				default_value: [],
-				array_separator: ',',
-				array_type: 'String',
-				format: '',
-				is_required: false,
-				childs: {}
-			}
-		);
-		
-		DevaptOptions.register_option(arg_prototype, {
-				name: 'items_types',
-				type: 'array',
-				aliases: ['view_items_types'],
-				default_value: ['view'],
-				array_separator: ',',
-				array_type: 'String',
-				format: '',
-				is_required: false,
-				childs: {}
-			}
-		); // array of: view / html / callback / object (json) / record
-		
-		DevaptOptions.register_option(arg_prototype, {
-				name: 'items_records_fields_names',
-				type: 'array',
-				aliases: ['view_items_records_fields'],
-				default_value: [],
-				array_separator: ',',
-				array_type: 'String',
-				format: '',
-				is_required: false,
-				childs: {}
-			}
-		);
-		
-		DevaptOptions.register_option(arg_prototype, {
-				name: 'items_records_fields_types',
-				type: 'array',
-				aliases: ['view_items_records_types'],
-				default_value: [],
-				array_separator: ',',
-				array_type: 'String',
-				format: '',
-				is_required: false,
-				childs: {}
-			}
-		);
-		
+	/* --------------------------------------------- CREATE CLASS ------------------------------------------------ */
+	
+	// CLASS DEFINITION
+	var class_settings= {
+		'infos':{
+			'author':'Luc BORIES',
+			'created':'2014-10-15',
+			'updated':'2014-12-06',
+			'description':'Mixin methods for datas model search.'
+		}
 	};
 	
+	// CREATE CLASS
+	var DevaptMixinDatasoureClass = new DevaptClass('DevaptMixinDatasoure', null, class_settings);
 	
-	return DevaptMixinDatasoure;
+	
+	// METHODS
+	DevaptMixinDatasoureClass.infos.ctor = DevaptMixinDatasoure.init_data_source;
+	DevaptMixinDatasoureClass.add_public_method('init_data_source_options', {}, DevaptMixinDatasoure.init_data_source_options);
+	DevaptMixinDatasoureClass.add_public_method('get_items_array', {}, DevaptMixinDatasoure.get_items_array);
+	DevaptMixinDatasoureClass.add_public_method('get_items_types_array', {}, DevaptMixinDatasoure.get_items_types_array);
+	
+	
+	// PROPERTIES
+	DevaptMixinDatasoureClass.add_public_bool_property('mixin_trace_datasource',	'',	false, false, false, []);
+	
+	DevaptMixinDatasoureClass.add_public_obj_property('items_model_obj',		'',	null, false, false, ['model']);
+	DevaptMixinDatasoureClass.add_public_str_property('items_model_name',		'', null, true, false, ['model_name']);
+	
+	DevaptMixinDatasoureClass.add_public_bool_property('items_autoload',		'',	true, false, false, ['view_items_autoload']);
+	DevaptMixinDatasoureClass.add_public_str_property('items_source',			'', 'inline', false, false, ['view_items_source']); // inline / model / events / resources
+	DevaptMixinDatasoureClass.add_public_str_property('items_source_format',	'',	'array', false, false, ['view_items_source_format']); // json / array
+
+	DevaptMixinDatasoureClass.add_public_str_property('items_iterator',			'', 'records', false, false, []); // items iterator : records / fields
+	DevaptMixinDatasoureClass.add_public_array_property('items_fields',			'', [], false, false, [], 'string', ','); // item fields
+	DevaptMixinDatasoureClass.add_public_str_property('items_format',			'', null, false, false, []); // item format
+	DevaptMixinDatasoureClass.add_public_obj_property('items_current_record',	'', null, false, false, []);
+	DevaptMixinDatasoureClass.add_public_obj_property('items_refresh',			'', null, false, false, []);
+	
+	DevaptMixinDatasoureClass.add_public_array_property('items_records',		'',	[], false, false, [], 'object', ','); // items records
+	DevaptMixinDatasoureClass.add_public_int_property('items_records_count',	'',	0, false, false, []); // items records count
+	
+	DevaptMixinDatasoureClass.add_public_array_property('items_inline',			'',	[], false, false, [], 'string', ',');
+	DevaptMixinDatasoureClass.add_public_array_property('items_options',		'',	[], false, false, [], 'string', ',');
+	
+	DevaptMixinDatasoureClass.add_public_array_property('items_labels',			'',	[], false, false, [], 'string', ',');
+	DevaptMixinDatasoureClass.add_public_array_property('items_types',			'',	['view'], false, false, ['view_items_types'], 'string', ',');
+		// array of: view / html / callback / object (json) / record
+	
+	DevaptMixinDatasoureClass.add_public_array_property('items_records_fields_names',	'',	[], false, false, ['view_items_records_fields'], 'string', ',');
+	DevaptMixinDatasoureClass.add_public_array_property('items_records_fields_types',	'',	[], false, false, ['view_items_records_types'], 'string', ',');
+	
+	
+	// MIXINS
+	DevaptMixinDatasoureClass.add_public_mixin(DevaptMixinDatasoureInline);
+	DevaptMixinDatasoureClass.add_public_mixin(DevaptMixinDatasoureEvents);
+	DevaptMixinDatasoureClass.add_public_mixin(DevaptMixinDatasoureClasses);
+	DevaptMixinDatasoureClass.add_public_mixin(DevaptMixinDatasoureResources);
+	DevaptMixinDatasoureClass.add_public_mixin(DevaptMixinDatasoureLogs);
+	DevaptMixinDatasoureClass.add_public_mixin(DevaptMixinDatasoureModel);
+	
+	
+	// BUILD CLASS
+	DevaptMixinDatasoureClass.build_class();
+	
+	
+	
+	return DevaptMixinDatasoureClass;
 }
 );

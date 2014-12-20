@@ -11,8 +11,8 @@
  */
 
 define(
-['Devapt', 'core/types', 'core/options'],
-function(Devapt, DevaptTypes, DevaptOptions)
+['Devapt', 'core/types', 'core/class'],
+function(Devapt, DevaptTypes, DevaptClass)
 {
 	/**
 	 * @mixin				DevaptMixinOptionsCSS
@@ -306,6 +306,20 @@ function(Devapt, DevaptTypes, DevaptOptions)
 				target_jqo.addClass('has-tip');
 			}
 			
+			// SCROLLING X
+			target_jqo.css('overflow-x', 'none');
+			if ( DevaptTypes.to_boolean(self.is_scrolling_x, false) )
+			{
+				target_jqo.css('overflow-x', 'scroll');
+			}
+			
+			// SCROLLING Y
+			target_jqo.css('overflow-y', 'none');
+			if ( DevaptTypes.to_boolean(self.is_scrolling_y, false) )
+			{
+				target_jqo.css('overflow-y', 'scroll');
+			}
+			
 			
 			self.leave(context, 'render CSS options');
 			self.pop_trace();
@@ -314,43 +328,68 @@ function(Devapt, DevaptTypes, DevaptOptions)
 	
 	
 	
-	/**
-	 * @public
-	 * @memberof			DevaptMixinOptionsCSS
-	 * @desc				Register mixin options
-	 * @return {nothing}
-	 */
-	DevaptMixinOptionsCSS.register_options = function(arg_prototype)
-	{
-		// SIZE
-		DevaptOptions.register_bool_option(arg_prototype, 'is_resizable',		true, false, ['view_is_resizable']);	// TODO
-		DevaptOptions.register_str_option(arg_prototype, 'width',				null, false, ['view_width']);
-		DevaptOptions.register_str_option(arg_prototype, 'width_min',			null, false, ['view_width_min']);
-		DevaptOptions.register_str_option(arg_prototype, 'width_max',			null, false, ['view_width_max']);
-		DevaptOptions.register_str_option(arg_prototype, 'height',				null, false, ['view_height']);
-		DevaptOptions.register_str_option(arg_prototype, 'height_min',			null, false, ['view_height_min']);
-		DevaptOptions.register_str_option(arg_prototype, 'height_max',			null, false, ['view_height_max']);
-		
-		// VIBILITY
-		DevaptOptions.register_bool_option(arg_prototype, 'is_visible',			true, false, ['view_is_visible']);	// TODO
-		
-		// CSS
-		DevaptOptions.register_str_option(arg_prototype, 'css_styles',			null, false, ['view_css_styles']);
-		DevaptOptions.register_str_option(arg_prototype, 'css_classes',			null, false, ['view_css_classes']);
-		DevaptOptions.register_str_option(arg_prototype, 'parent_css_styles',	null, false, ['view_parent_css_styles']);
-		DevaptOptions.register_str_option(arg_prototype, 'parent_css_classes',	null, false, ['view_parent_css_classes']);
-		DevaptOptions.register_str_option(arg_prototype, 'css_margin',			null, false, ['view_margin']);
-		DevaptOptions.register_str_option(arg_prototype, 'css_padding',			null, false, ['view_padding']);
-		
-		DevaptOptions.register_bool_option(arg_prototype, 'display_on_small',		true, false, ['view_display_on_small']);
-		DevaptOptions.register_bool_option(arg_prototype, 'display_on_medium',		true, false, ['view_display_on_medium']);
-		DevaptOptions.register_bool_option(arg_prototype, 'display_on_large',		true, false, ['view_display_on_large']);
-		// DevaptOptions.register_bool_option(arg_prototype, 'display_on_landscape',	true, false, ['view_display_on_landscape']); // TODO
-		// DevaptOptions.register_bool_option(arg_prototype, 'display_on_portrait',	false, false, ['view_display_on_portrait']); // TODO
-		DevaptOptions.register_bool_option(arg_prototype, 'display_on_touch',		true, false, ['view_display_on_touch']);
+	/* --------------------------------------------- CREATE MIXIN CLASS ------------------------------------------------ */
+	
+	// MIXIN CLASS DEFINITION
+	var class_settings= {
+		'infos':{
+			'author':'Luc BORIES',
+			'created':'2014-07-14',
+			'updated':'2014-12-06',
+			'description':'Mixin methods for  CSS rendering options.'
+		}
 	};
 	
 	
-	return DevaptMixinOptionsCSS;
+	/**
+	 * @mixin				DevaptMixinOptionsCSSClass
+	 * @public
+	 * @desc				Mixin of methods for  CSS rendering options
+	 */
+	var DevaptMixinOptionsCSSClass = new DevaptClass('DevaptMixinOptionsCSS', null, class_settings);
+	
+	DevaptMixinOptionsCSSClass.add_public_method('mixin_options_css_init', {}, DevaptMixinOptionsCSS.mixin_init);
+	DevaptMixinOptionsCSSClass.add_public_method('applyCssOptions', {}, DevaptMixinOptionsCSS.applyCssOptions);
+	DevaptMixinOptionsCSSClass.add_public_method('apply_css_options', {}, DevaptMixinOptionsCSS.applyCssOptions);
+	
+	DevaptMixinOptionsCSSClass.add_public_bool_property('template_enabled',	'', false, false, false, ['view_template_enabled']);
+	DevaptMixinOptionsCSSClass.add_public_str_property('template_string',	'', null, false, false, ['view_template_string']);
+	
+	// SIZE
+	DevaptMixinOptionsCSSClass.add_public_bool_property('is_resizable',		'', true, false, false, ['view_is_resizable']);	// TODO
+	DevaptMixinOptionsCSSClass.add_public_str_property('width',				'', null, false, false, ['view_width']);
+	DevaptMixinOptionsCSSClass.add_public_str_property('width_min',			'', null, false, false, ['view_width_min']);
+	DevaptMixinOptionsCSSClass.add_public_str_property('width_max',			'', null, false, false, ['view_width_max']);
+	DevaptMixinOptionsCSSClass.add_public_str_property('height',			'', null, false, false, ['view_height']);
+	DevaptMixinOptionsCSSClass.add_public_str_property('height_min',		'', null, false, false, ['view_height_min']);
+	DevaptMixinOptionsCSSClass.add_public_str_property('height_max',		'', null, false, false, ['view_height_max']);
+	
+	// VIBILITY
+	DevaptMixinOptionsCSSClass.add_public_str_property('is_visible',			'', true, false, false, ['view_is_visible']);	// TODO
+	
+	// CSS
+	DevaptMixinOptionsCSSClass.add_public_str_property('css_styles',			'', null, false, false, ['view_css_styles']);
+	DevaptMixinOptionsCSSClass.add_public_str_property('css_classes',			'', null, false, false, ['view_css_classes']);
+	DevaptMixinOptionsCSSClass.add_public_str_property('parent_css_styles',		'', null, false, false, ['view_parent_css_styles']);
+	DevaptMixinOptionsCSSClass.add_public_str_property('parent_css_classes',	'', null, false, false, ['view_parent_css_classes']);
+	DevaptMixinOptionsCSSClass.add_public_str_property('css_margin',			'', null, false, false, ['view_margin']);
+	DevaptMixinOptionsCSSClass.add_public_str_property('css_padding',			'', null, false, false, ['view_padding']);
+	
+	DevaptMixinOptionsCSSClass.add_public_str_property('display_on_small',		'', true, false, false, ['view_display_on_small']);
+	DevaptMixinOptionsCSSClass.add_public_str_property('display_on_medium',		'', true, false, false, ['view_display_on_medium']);
+	DevaptMixinOptionsCSSClass.add_public_str_property('display_on_large',		'', true, false, false, ['view_display_on_large']);
+	// DevaptMixinOptionsCSSClass.add_public_str_property('display_on_landscape',	'', true, false, false, ['view_display_on_landscape']); // TODO
+	// DevaptMixinOptionsCSSClass.add_public_str_property('display_on_portrait',	'', false, false, false, ['view_display_on_portrait']); // TODO
+	DevaptMixinOptionsCSSClass.add_public_str_property('display_on_touch',		'', true, false, false, ['view_display_on_touch']);
+	
+	// SCROLLING
+	DevaptMixinOptionsCSSClass.add_public_bool_property('is_scrolling_x',	'',		false, false, false, []);
+	DevaptMixinOptionsCSSClass.add_public_bool_property('is_scrolling_y',	'',		false, false, false, []);
+	
+	// BUILD CLASS
+	DevaptMixinOptionsCSSClass.build_class();
+	
+	
+	return DevaptMixinOptionsCSSClass;
 }
 );

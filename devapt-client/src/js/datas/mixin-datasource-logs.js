@@ -11,8 +11,8 @@
  */
 
 define(
-['Devapt', 'core/types', 'core/traces'],
-function(Devapt, DevaptTypes, DevaptTraces)
+['Devapt', 'core/types', 'core/class', 'core/traces'],
+function(Devapt, DevaptTypes, DevaptClass, DevaptTraces)
 {
 	/**
 	 * @mixin				DevaptMixinDatasoureLogs
@@ -27,9 +27,9 @@ function(Devapt, DevaptTypes, DevaptTraces)
 		 * @desc				Init logs data source
 		 * @return {nothing}
 		 */
-		init_data_source_logs: function()
+		init_data_source_logs: function(self)
 		{
-			var self = this;
+			// var self = this;
 			self.push_trace(self.trace, self.mixin_trace_datasource);
 			var context = 'init_data_source_logs()';
 			self.enter(context, '');
@@ -103,6 +103,34 @@ function(Devapt, DevaptTypes, DevaptTraces)
 	};
 	
 	
-	return DevaptMixinDatasoureLogs;
+	
+	/* --------------------------------------------- CREATE CLASS ------------------------------------------------ */
+	
+	// CLASS DEFINITION
+	var class_settings= {
+		'infos':{
+			'author':'Luc BORIES',
+			'created':'2014-10-15',
+			'updated':'2014-12-06',
+			'description':'Mixin methods for logs datas source.'
+		}
+	};
+	
+	// CREATE CLASS
+	var DevaptMixinDatasoureLogsClass = new DevaptClass('DevaptMixinDatasoureLogs', null, class_settings);
+	
+	// METHODS
+	// DevaptMixinDatasoureLogsClass.infos.ctor = DevaptMixinDatasoureLogs.init_data_source_logs;
+	DevaptMixinDatasoureLogsClass.add_public_method('init_data_source_logs', {}, DevaptMixinDatasoureLogs.init_data_source_logs);
+	DevaptMixinDatasoureLogsClass.add_public_method('get_items_array_logs', {}, DevaptMixinDatasoureLogs.get_items_array_logs);
+	
+	// PROPERTIES
+	
+	
+	// BUILD CLASS
+	DevaptMixinDatasoureLogsClass.build_class();
+	
+	
+	return DevaptMixinDatasoureLogsClass;
 }
 );

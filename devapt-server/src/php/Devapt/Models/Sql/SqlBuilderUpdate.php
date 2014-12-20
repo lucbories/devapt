@@ -105,7 +105,9 @@ final class SqlBuilderUpdate
 		
 		
 		// GET PRIMARY KEY FIELD NAME
-		$pk_name = $model->getModelPKFieldName();
+		$pk_field = $model->getModelPKFieldRecord();
+		$pk_column = $pk_field['sql_column'];
+		$pk_name = $pk_field['name'];
 		if ( ! is_string($pk_name) || $pk_name === '' )
 		{
 			return Trace::leaveko($context, 'bad pk field name', null, self::$TRACE_BUILDER);
@@ -147,12 +149,28 @@ final class SqlBuilderUpdate
 		
 		
 		// SET PRIMARY KEY FIELD FILTER
-		$where->equalTo($pk_name, $pk_value);
+		$where->equalTo($pk_column, $pk_value);
 		$update->where($where);
 		
 		
 		// REMOVE PK VALUE FROM RECORD
 		unset($query_values_record[$pk_name]);
+		
+		// TRANSLATE FIELD NAMES => SLQ COLUMNS
+		$model_fields = $model->getModelFieldsRecords();
+		foreach($query_fields_names as $field_name)
+		{
+			if ( array_key_exists($field_name, $query_values_record) )
+			{
+				$field_record = $model_fields[$field_name];
+				if ( is_array($field_record) )
+				{
+					$field_column = $field_record['sql_column'];
+					$query_values_record[$field_column] = $query_values_record[$field_name];
+				}
+				unset($query_values_record[$field_name]);
+			}
+		}
 		
 		// SET RECORD VALUES
 		$update->set($query_values_record, $update::VALUES_SET); // REPLACE EXISTING VALUES

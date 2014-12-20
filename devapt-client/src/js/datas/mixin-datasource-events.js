@@ -11,8 +11,8 @@
  */
 
 define(
-['Devapt', 'core/types', 'core/events'],
-function(Devapt, DevaptTypes, DevaptEvents)
+['Devapt', 'core/types', 'core/class', 'core/events'],
+function(Devapt, DevaptTypes, DevaptClass, DevaptEvents)
 {
 	/**
 	 * @mixin				DevaptMixinDatasoureEvents
@@ -27,9 +27,9 @@ function(Devapt, DevaptTypes, DevaptEvents)
 		 * @desc				Init events data source
 		 * @return {nothing}
 		 */
-		init_data_source_events: function()
+		init_data_source_events: function(self)
 		{
-			var self = this;
+			// var self = this;
 			self.push_trace(self.trace, self.mixin_trace_datasource);
 			var context = 'init_data_source_events()';
 			self.enter(context, '');
@@ -64,9 +64,10 @@ function(Devapt, DevaptTypes, DevaptEvents)
 			{
 				var items = [];
 				var event_index = self.items_last_index ? self.items_last_index : 0;
-				for( ; event_index < DevaptEvents.all_events.length ; event_index++)
+				var events_array = DevaptEvents.get_events_array();
+				for( ; event_index < events_array.length ; event_index++)
 				{
-					var event = DevaptEvents.all_events[event_index];
+					var event = events_array[event_index];
 					var record = {};
 					record['name']				= event.name;
 					record['ts']				= event.fired_ts;
@@ -103,6 +104,33 @@ function(Devapt, DevaptTypes, DevaptEvents)
 	};
 	
 	
-	return DevaptMixinDatasoureEvents;
+	
+	/* --------------------------------------------- CREATE CLASS ------------------------------------------------ */
+	
+	// CLASS DEFINITION
+	var class_settings= {
+		'infos':{
+			'author':'Luc BORIES',
+			'created':'2014-10-15',
+			'updated':'2014-12-06',
+			'description':'Mixin methods for events datas source.'
+		}
+	};
+	
+	// CREATE CLASS
+	var DevaptMixinDatasoureEventsClass = new DevaptClass('DevaptMixinDatasoureEvents', null, class_settings);
+	
+	// METHODS
+	DevaptMixinDatasoureEventsClass.infos.ctor = DevaptMixinDatasoureEvents.init_data_source_events;
+	DevaptMixinDatasoureEventsClass.add_public_method('get_items_array_classes', {}, DevaptMixinDatasoureEvents.get_items_array_classes);
+	
+	// PROPERTIES
+	
+	
+	// BUILD CLASS
+	DevaptMixinDatasoureEventsClass.build_class();
+	
+	
+	return DevaptMixinDatasoureEventsClass;
 }
 );

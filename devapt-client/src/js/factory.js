@@ -70,9 +70,10 @@ function(Devapt, DevaptTraces, DevaptTypes)
 		// SWITHC ON RESOURCE CLASS TYPE
 		switch(arg_resource_json.class_type)
 		{
+			case 'menubar':
 			case 'view':
 			{
-				DevaptTraces.trace_step(context, 'resource class_type is view', DevaptFactory.factory_trace);
+				DevaptTraces.trace_step(context, 'resource class_type is [' + arg_resource_json.class_type + ']', DevaptFactory.factory_trace);
 				DevaptTraces.trace_var(context, 'class_name', arg_resource_json.class_name, DevaptFactory.factory_trace);
 				
 				
@@ -98,7 +99,9 @@ function(Devapt, DevaptTraces, DevaptTypes)
 							// CREATE VIEW
 							var container_jqo = (arg_resource_json.class_name === 'Menubar') ? $('body header') : null; // TODO;
 							// console.log(container_jqo, 'container_jqo from factory');
-							var view = new ViewClass(view_name, container_jqo, arg_resource_json);
+							arg_resource_json.parent_jqo = container_jqo;
+							// console.log(arg_resource_json, 'arg_resource_json from factory');
+							var view = ViewClass.create(view_name, arg_resource_json);
 							
 							// RESOLVE DEFERRED
 							master_deferred.resolve(view);
@@ -128,7 +131,7 @@ function(Devapt, DevaptTraces, DevaptTypes)
 						DevaptTraces.trace_enter(context + '.dependencies are loaded', '', DevaptFactory.factory_trace);
 						
 						// CREATE MODEL
-						var model = new ModelClass(model_name, arg_resource_json);
+						var model = ModelClass.create(model_name, arg_resource_json);
 						
 						// RESOLVE DEFERRED
 						master_deferred.resolve(model);

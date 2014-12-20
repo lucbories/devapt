@@ -11,8 +11,8 @@
  */
 
 define(
-['Devapt', 'core/types', 'core/options', 'core/resources', 'core/inheritance', 'datas/model', 'core/classes'],
-function(Devapt, DevaptTypes, DevaptOptions, DevaptResources, DevaptInheritance, DevaptModel, DevaptClasses)
+['Devapt', 'core/types', 'core/resources', 'core/inheritance', 'datas/model', 'core/class'],
+function(Devapt, DevaptTypes, DevaptResources, DevaptInheritance, DevaptModel, DevaptClass)
 {
 	/**
 	 * @mixin				DevaptMixinGetModel
@@ -27,27 +27,6 @@ function(Devapt, DevaptTypes, DevaptOptions, DevaptResources, DevaptInheritance,
 		 * @desc				Enable/disable trace for mixin operations
 		 */
 		mixin_trace_get_model: false,
-		
-		
-		
-		/**
-		 * @public
-		 * @memberof			DevaptMixinGetModel
-		 * @desc				Init mixin
-		 * @return {nothing}
-		 */
-		mixin_init_get_model: function()
-		{
-			var self = this;
-			self.push_trace(self.trace, self.mixin_trace_get_model);
-			var context = 'mixin_init_get_model()';
-			self.enter(context, '');
-			
-			
-			
-			self.leave(context, '');
-			self.pop_trace();
-		},
 		
 		
 		
@@ -145,20 +124,36 @@ function(Devapt, DevaptTypes, DevaptOptions, DevaptResources, DevaptInheritance,
 			return promise;
 		}
 		
+	}
+	
+	
+	
+	/* --------------------------------------------- CREATE CLASS ------------------------------------------------ */
+	
+	// CLASS DEFINITION
+	var class_settings= {
+		'infos':{
+			'author':'Luc BORIES',
+			'created':'2014-10-15',
+			'updated':'2014-12-06',
+			'description':'Mixin methods for datas model search.'
+		}
 	};
 	
+	// CREATE CLASS
+	var DevaptMixinGetModelClass = new DevaptClass('DevaptMixinForm', null, class_settings);
 	
-	/**
-	 * @public
-	 * @memberof			DevaptMixinGetModel
-	 * @desc				Register mixin options
-	 * @return {nothing}
-	 */
-	DevaptMixinGetModel.register_options = function(arg_prototype)
-	{
-	};
+	// METHODS
+	DevaptMixinGetModelClass.add_public_method('get_model', {}, DevaptMixinGetModel.get_model);
+	
+	// PROPERTIES
 	
 	
-	return DevaptMixinGetModel;
+	// BUILD CLASS
+	DevaptMixinGetModelClass.build_class();
+	
+	
+	
+	return DevaptMixinGetModelClass;
 }
 );

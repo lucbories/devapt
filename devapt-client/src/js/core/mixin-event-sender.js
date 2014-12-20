@@ -1,6 +1,6 @@
 /**
  * @file        core/mixin-event-sender.js
- * @desc        Mixin of methods for event sender
+ * @desc        Mixin of methods for event sending
  * @see			DevaptObject
  * @ingroup     DEVAPT_CORE
  * @date        2013-06-13
@@ -10,7 +10,8 @@
  * @license		Apache License Version 2.0, January 2004; see LICENSE.txt or http://www.apache.org/licenses/
  */
 
-define(['core/types', 'core/event', 'core/events'], function(DevaptTypes, DevaptEvent, DevaptEvents)
+define(['core/types', 'core/class', 'core/event', 'core/events'],
+function(DevaptTypes, DevaptClass, DevaptEvent, DevaptEvents)
 {
 	/**
 	 * @mixin				DevaptMixinEventSender
@@ -84,7 +85,7 @@ define(['core/types', 'core/event', 'core/events'], function(DevaptTypes, Devapt
 			// BUILD EVENT IF NEEDED
 			if ( event === null )
 			{
-				event = new DevaptEvent(event_name, this, arg_operands_or_nothing);
+				event = DevaptEvent.create(event_name, { target_object:this, operands_array:arg_operands_or_nothing} );
 			}
 			
 			
@@ -106,5 +107,31 @@ define(['core/types', 'core/event', 'core/events'], function(DevaptTypes, Devapt
 	};
 	
 	
-	return DevaptMixinEventSender;
+	
+	/* --------------------------------------------- CREATE MIXIN CLASS ------------------------------------------------ */
+	
+	// MIXIN CLASS DEFINITION
+	var class_settings= {
+		'infos':{
+			'author':'Luc BORIES',
+			'created':'2013-06-13',
+			'updated':'2014-12-05',
+			'description':'Mixin methods for event sending.'
+		}
+	};
+	
+	
+	/**
+	 * @mixin				DevaptMixinEventSenderClass
+	 * @public
+	 * @desc				Mixin of methods for event sending
+	 */
+	var DevaptMixinEventSenderClass = new DevaptClass('DevaptMixinEventSender', null, class_settings);
+	
+	DevaptMixinEventSenderClass.add_public_method('fire_event', {}, DevaptMixinEventSender.fire_event);
+	
+	DevaptMixinEventSenderClass.build_class();
+	
+	
+	return DevaptMixinEventSenderClass;
 } );

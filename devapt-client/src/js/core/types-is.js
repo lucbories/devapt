@@ -18,7 +18,7 @@ define(['Devapt', 'core/traces'], function(Devapt, DevaptTraces)
 	 * @desc		Devapt types features container
 	 */
 	var DevaptTypes = function() {};
-
+	
 	/**
 	 * @memberof			DevaptTypes
 	 * @public
@@ -67,7 +67,7 @@ define(['Devapt', 'core/traces'], function(Devapt, DevaptTraces)
 		
 		DevaptTraces.error( { source: 'DevaptTypes.type_of', text: 'unknow type of [' + arg_value + ']' } );
 	}
-
+	
 	/**
 	 * @memberof			DevaptTypes
 	 * @public
@@ -81,7 +81,7 @@ define(['Devapt', 'core/traces'], function(Devapt, DevaptTraces)
 	{
 		return Object.prototype.toString.apply(arg_value) === '[object Array]';
 	}
-
+	
 	/**
 	 * @memberof			DevaptTypes
 	 * @public
@@ -170,7 +170,35 @@ define(['Devapt', 'core/traces'], function(Devapt, DevaptTraces)
 	 */
 	DevaptTypes.is_object = function(arg_value)
 	{
-		return ! DevaptTypes.is_null(arg_value) && typeof arg_value === 'object';
+		return (! DevaptTypes.is_null(arg_value) ) && typeof arg_value === 'object';
+	}
+
+	/**
+	 * @memberof			DevaptTypes
+	 * @public
+	 * @static
+	 * @method				DevaptTypes.is_empty_object(arg_value)
+	 * @desc				Test if the value is an object without members
+	 * @param {anything}	arg_value			value to test
+	 * @return {boolean}
+	 */
+	DevaptTypes.is_empty_object = function(arg_value)
+	{
+		return DevaptTypes.is_object(arg_value) && $.isEmptyObject(arg_value);
+	}
+
+	/**
+	 * @memberof			DevaptTypes
+	 * @public
+	 * @static
+	 * @method				DevaptTypes.is_plain_object(arg_value)
+	 * @desc				Test if the value is a plain object (created with {} or with new Object)
+	 * @param {anything}	arg_value			value to test
+	 * @return {boolean}
+	 */
+	DevaptTypes.is_plain_object = function(arg_value)
+	{
+		return $.isPlainObject(arg_value);
 	}
 
 	/**

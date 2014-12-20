@@ -17,8 +17,8 @@
  */
 
 define(
-['Devapt', 'core/traces', 'core/types', 'core/options', 'core/events', 'core/object', 'core/classes', 'core/inheritance', 'datas/mixin-get-model'],
-function(Devapt, DevaptTraces, DevaptTypes, DevaptOptions, DevaptEvents, DevaptObject, DevaptClasses, DevaptInheritance, DevaptMixinGetModel)
+['Devapt', 'core/types', 'core/class', 'core/events', 'core/object', 'datas/mixin-get-model'],
+function(Devapt, DevaptTypes, DevaptClass, DevaptEvents, DevaptObject, DevaptMixinGetModel)
 {
 	/**
 	 * @class				DevaptField
@@ -28,105 +28,86 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptOptions, DevaptEvents, DevaptO
 	 * @param {object|null}	arg_options		associative array of name/value options
 	 * @return {nothing}
 	 */
-	function DevaptField(arg_name, arg_options)
+	
+	
+	/**
+	 * @memberof			DevaptField
+	 * @public
+	 * @method				DevaptField.is_value_valid(value)
+	 * @desc				Test if the given value is valid
+	 * @param {string}		arg_value			value to test for field
+	 * @return {boolean}
+	 */
+	var cb_is_value_valid = function(arg_value)
 	{
-		var self = this;
+		var context = 'is_value_valid()';
+		self.enter(context, '');
 		
-		// INHERIT
-		self.inheritFrom = DevaptObject;
-		self.inheritFrom(arg_name, arg_options, false);
+		// ...
 		
-		// INIT
-		self.trace				= false;
-		self.class_name			= 'DevaptField';
-		
-		
-		/**
-		 * @memberof			DevaptField
-		 * @public
-		 * @method				DevaptField.constructor
-		 * @desc				Query class constructor
-		 * @return {nothing}
-		 */
-		self.DevaptField_constructor = function()
-		{
-			// CONSTRUCTOR BEGIN
-			var context				= self.class_name + '(' + arg_name + ')';
-			self.enter(context, 'constructor');
-			
-			
-			// INIT OPTIONS
-			var init_option_result = DevaptOptions.set_options_values(self, arg_options, false);
-			if (! init_option_result)
-			{
-				self.error(context + ': init options failure');
-			}
-			
-			
-			// CONSTRUCTOR END
-			self.leave(context, 'success');
-		}
-		
-		
-		// CALL CONSTRUCTOR
-		self.DevaptField_constructor();
-		
-		
-		
-		/**
-		 * @memberof			DevaptField
-		 * @public
-		 * @method				DevaptField.is_value_valid(value)
-		 * @desc				Test if the given value is valid
-		 * @param {string}		arg_value			value to test for field
-		 * @return {boolean}
-		 */
-		self.is_value_valid = function(arg_value)
-		{
-			var context = 'is_value_valid()';
-			self.enter(context, '');
-			
-			// ...
-			
-			self.leave(context, 'success');
-			return json_obj;
-		}
-		
-		
-		
-		/* --------------------------------------------------------------------------------------------- */
-		// APPEND MIXIN METHODS
-		self.register_mixin(DevaptMixinGetModel);
-		/* --------------------------------------------------------------------------------------------- */
+		self.leave(context, 'success');
+		return json_obj;
 	}
 	
 	
-	// INTROSPECTION : REGISTER CLASS
-	DevaptClasses.register_class(DevaptField, ['DevaptObject'], 'Luc BORIES', '2014-08-12', 'Datas field class.');
 	
+	/* --------------------------------------------- CREATE CLASS ------------------------------------------------ */
 	
-	// INTROSPECTION : REGISTER OPTIONS
-//	DevaptMixinGetModel.register_options(DevaptField);
+	// CLASS DEFINITION
+	var class_settings= {
+		'infos':{
+			'author':'Luc BORIES',
+			'created':'2014-08-12',
+			'updated':'2014-12-13',
+			'description':'Datas field class.'
+		},
+		mixins:[DevaptMixinGetModel]
+	};
 	
-	DevaptOptions.register_str_option(DevaptField, 'label',					null, false, []);
+	// CLASS CREATION
+	var parent_class = DevaptObject;
+	var DevaptFieldClass = new DevaptClass('DevaptField', parent_class, class_settings);
 	
-	DevaptOptions.register_str_option(DevaptField, 'source',				null, false, []); // model, inline
-	DevaptOptions.register_int_option(DevaptField, 'index',					null, false, []);
+	// METHODS
+	DevaptFieldClass.add_public_method('is_value_valid', {}, cb_is_value_valid);
 	
-	DevaptOptions.register_array_option(DevaptField, 'value.items',			[], false, ',', 'String', []);
-	DevaptOptions.register_str_option(DevaptField, 'value.type',			null, false, []);	// string, integer, date...
-	DevaptOptions.register_str_option(DevaptField, 'value.format',			null, false, []);	// null or %d%m...
-	DevaptOptions.register_str_option(DevaptField, 'value.default',			null, false, []);
+	// PROPERTIES
+	DevaptFieldClass.add_public_str_property('label',			'', null, false, false, []);
 	
-	DevaptOptions.register_bool_option(DevaptField, 'is_visible',			true, false, []);
-	DevaptOptions.register_bool_option(DevaptField, 'is_editable',			true, false, []);
-	DevaptOptions.register_bool_option(DevaptField, 'is_pk',				true, false, []);
-	DevaptOptions.register_bool_option(DevaptField, 'is_crud',				true, false, []);
+	DevaptFieldClass.add_public_str_property('source',			'', null, false, false, []);
+	DevaptFieldClass.add_public_str_property('hash',				'', null, false, false, []);
+	DevaptFieldClass.add_public_str_property('placeholder',		'', null, false, false, []);
+	DevaptFieldClass.add_public_int_property('index',			'', null, false, false, []);
+	
+	DevaptFieldClass.add_public_object_property('field_value',	'', null, false, false, []); // field_value.items, type, format, default
+	// DevaptOptions.register_array_option(DevaptField, 'field_value.items',			[], false, ',', 'String', []);
+	// DevaptOptions.register_str_option(DevaptField, 'field_value.type',				null, false, []);	// string, integer, date...
+	// DevaptOptions.register_str_option(DevaptField, 'field_value.format',			null, false, []);	// null or %d%m...
+	// DevaptOptions.register_str_option(DevaptField, 'field_value.default',			null, false, []);
+	
+	DevaptFieldClass.add_public_bool_property('is_visible',			'', true, false, false, []);
+	DevaptFieldClass.add_public_bool_property('is_editable',		'', true, false, false, []);
+	DevaptFieldClass.add_public_bool_property('is_pk',				'', true, false, false, []);
+	DevaptFieldClass.add_public_bool_property('is_crud',			'', true, false, false, []);
+	
+	DevaptFieldClass.add_public_str_property('type',					'', null, true, false, []);
+	DevaptFieldClass.add_public_bool_property('sql_is_primary_key',		'', false, false, false, []);
+	DevaptFieldClass.add_public_bool_property('sql_is_expression',		'', false, false, false, []);
+	
+	DevaptFieldClass.add_public_str_property('sql_db',					'', null, false, false, []);
+	DevaptFieldClass.add_public_str_property('sql_table',				'', null, false, false, []);
+	DevaptFieldClass.add_public_str_property('sql_column',				'', null, false, false, []);
+	DevaptFieldClass.add_public_str_property('sql_alias',				'', null, false, false, []);
+	
+	DevaptFieldClass.add_public_str_property('sql_foreign_db',			'', null, false, false, []);
+	DevaptFieldClass.add_public_str_property('sql_foreign_table',		'', null, false, false, []);
+	DevaptFieldClass.add_public_str_property('sql_foreign_key',			'', null, false, false, []);
+	DevaptFieldClass.add_public_str_property('sql_foreign_column',		'', null, false, false, []);
 	
 	// DevaptOptions.register_str_option(DevaptField, 'foreign_model',			null, false, []);
 	// DevaptOptions.register_str_option(DevaptField, 'foreign_key_field',		null, false, []);
 	// DevaptOptions.register_str_option(DevaptField, 'foreign_value_field',	null, false, []);
 	
 	
-	return DevaptField;
+	return DevaptFieldClass;
 } );

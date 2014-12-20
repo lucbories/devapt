@@ -11,8 +11,8 @@
  */
 
 define(
-['Devapt', 'core/types', 'core/options', 'datas/query'],
-function(Devapt, DevaptTypes, DevaptOptions, DevaptQuery)
+['Devapt', 'core/types', 'core/class', 'datas/query'],
+function(Devapt, DevaptTypes, DevaptClass, DevaptQuery)
 {
 	/**
 	 * @mixin				DevaptMixinQuery
@@ -26,15 +26,7 @@ function(Devapt, DevaptTypes, DevaptOptions, DevaptQuery)
 		 * @public
 		 * @desc				Enable/disable trace for mixin operations
 		 */
-		mixin_trace_query: false,
-		
-		
-		/**
-		 * @memberof			DevaptMixinQuery
-		 * @public
-		 * @desc				Queries instance map
-		 */
-		mixin_queries_by_name: {},
+		// mixin_trace_query: false,
 		
 		
 		/**
@@ -43,14 +35,16 @@ function(Devapt, DevaptTypes, DevaptOptions, DevaptQuery)
 		 * @desc				Init mixin
 		 * @return {nothing}
 		 */
-		mixin_init_query: function()
+		mixin_init_query: function(self)
 		{
-			var self = this;
 			self.push_trace(self.trace, self.mixin_trace_query);
 			var context = 'mixin_init_query()';
 			self.enter(context, '');
 			
-			// console.log(self.items_query, 'query init');
+			
+			self.mixin_queries_by_name = new Object();
+			// console.log(self.mixin_queries_by_name, 'mixin_init_query');
+			
 			
 			self.leave(context, '');
 			self.pop_trace();
@@ -79,7 +73,10 @@ function(Devapt, DevaptTypes, DevaptOptions, DevaptQuery)
 			if ( ! DevaptTypes.is_object( self.mixin_queries_by_name[query_name] ) )
 			{
 				self.step(context, 'build new Query');
-				self.mixin_queries_by_name[query_name] = new DevaptQuery(query_name, {});
+				self.mixin_queries_by_name[query_name] = DevaptQuery.create(query_name, {});
+				// console.log(self.name, 'self.name');
+				// console.log(query_name, 'query_name');
+				// console.log(self.mixin_queries_by_name[query_name], 'query');
 			}
 			
 			
@@ -138,14 +135,17 @@ function(Devapt, DevaptTypes, DevaptOptions, DevaptQuery)
 			self.value(context, 'arg_is_unique', arg_is_unique);
 			
 			
-			// CHECK ARGS
-			var field_name = DevaptTypes.is_string(arg_field_name) ? arg_field_name : (DevaptTypes.is_object(arg_field_name) ? arg_field_name.name : null);
-			self.assertNotEmptyString(context, 'field_name', field_name);
-			var field_filter = { combination:'and', expression: {operator: 'equals', operands: [{ value:field_name, type:'string'}, { value:arg_field_value, type:'string'}]} };
-			
 			// GET QUERY
 			var query = self.get_query_by_name(arg_query_name);
 			// console.log(query.filters, query.name + '.' + context);
+			
+			
+			// CHECK ARGS
+			var id = query.name + '.' + arg_field_name + '.' + arg_field_value;
+			var field_name = DevaptTypes.is_string(arg_field_name) ? arg_field_name : (DevaptTypes.is_object(arg_field_name) ? arg_field_name.name : null);
+			self.assertNotEmptyString(context, 'field_name', field_name);
+			var field_filter = { id: id, combination:'and', expression: {operator: 'equals', operands: [{ value:field_name, type:'string'}, { value:arg_field_value, type:'string'}]} };
+			
 			
 			// ADD FILTER
 			query.add_filter(field_name, field_filter, arg_is_unique);
@@ -163,22 +163,36 @@ function(Devapt, DevaptTypes, DevaptOptions, DevaptQuery)
 	};
 	
 	
-	/**
-	 * @public
-	 * @memberof			DevaptMixinQuery
-	 * @desc				Register mixin options
-	 * @return {nothing}
-	 */
-	DevaptMixinQuery.register_options = function(arg_prototype)
-	{
-		// DevaptOptions.register_str_option(arg_prototype, 'items_query_json',		null, false, []); // model query JSON string
-		// DevaptOptions.register_obj_option(arg_prototype, 'items_query',				null, false, []); // model query object
-		// DevaptOptions.register_obj_option(arg_prototype, 'items_queries',				null, false, []); // model query object
-		// DevaptOptions.register_str_option(arg_prototype, 'items_query_filters',		null, false, []); // model query
-		// DevaptOptions.register_str_option(arg_prototype, 'items_query_slice',		null, false, []); // model query
+	
+	/* --------------------------------------------- CREATE CLASS ------------------------------------------------ */
+	
+	// CLASS DEFINITION
+	var class_settings= {
+		'infos':{
+			'author':'Luc BORIES',
+			'created':'2014-10-15',
+			'updated':'2014-12-06',
+			'description':'Mixin methods for datas model query.'
+		}
 	};
 	
+	// CREATE CLASS
+	var DevaptMixinQueryClass = new DevaptClass('DevaptMixinQuery', null, class_settings);
 	
-	return DevaptMixinQuery;
+	
+	// METHODS
+	DevaptMixinQueryClass.infos.ctor = DevaptMixinQuery.mixin_init_query;
+	DevaptMixinQueryClass.add_public_method('get_query_by_name', {}, DevaptMixinQuery.get_query_by_name);
+	DevaptMixinQueryClass.add_public_method('get_query', {}, DevaptMixinQuery.get_query);
+	DevaptMixinQueryClass.add_public_method('add_field_value_filter', {}, DevaptMixinQuery.add_field_value_filter);
+	
+	// PROPERTIES
+	DevaptMixinQueryClass.add_public_bool_property('mixin_trace_query',	'',	false, false, false, []);
+	
+	// BUILD CLASS
+	DevaptMixinQueryClass.build_class();
+	
+	
+	return DevaptMixinQueryClass;
 }
 );

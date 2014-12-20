@@ -253,6 +253,21 @@ final class Broker
 				Trace::warning("Resources\Broker.getResourceJson: requested resource is a connexion [$arg_resource_name]");
 				return null;
 			}
+			
+			case 'model':
+			{
+				$model_object = Broker::getResourceObject($arg_resource_name);
+				if ( ! is_object($model_object) )
+				{
+					Trace::warning("Resources\Broker.getResourceJson: resource object not found [$arg_resource_name]");
+					return null;
+				}
+				$resource_record['access'] = array();
+				$resource_record['access']['create']	= $model_object->hasModelAccessCreate();
+				$resource_record['access']['read']		= $model_object->hasModelAccessRead();
+				$resource_record['access']['update']	= $model_object->hasModelAccessUpdate();
+				$resource_record['access']['delete']	= $model_object->hasModelAccessDelete();
+			}
 		}
 		
 		// FORMAT JSON STRING

@@ -11,8 +11,8 @@
  */
 
 define(
-['core/types'],
-function(DevaptTypes)
+['core/types', 'core/class'],
+function(DevaptTypes, DevaptClass)
 {
 	/**
 	 * @mixin				DevaptMixinCallback
@@ -26,7 +26,7 @@ function(DevaptTypes)
 		 * @public
 		 * @desc				Enable/disable trace for callback operations
 		 */
-		mixin_callback_trace: false,
+		mixin_callback_trace: true,
 		
 		
 		
@@ -110,5 +110,30 @@ function(DevaptTypes)
 	};
 	
 	
-	return DevaptMixinCallback;
+	
+	/* --------------------------------------------- CREATE MIXIN CLASS ------------------------------------------------ */
+	
+	// TRACE MIXIN CLASS DEFINITION
+	var class_settings= {
+		'infos':{
+			'author':'Luc BORIES',
+			'created':'2014-07-01',
+			'updated':'2014-12-05',
+			'description':'Mixin methods to run callbacks.'
+		}
+	};
+	
+	
+	/**
+	 * @mixin				DevaptMixinCallbackClass
+	 * @public
+	 * @desc				Mixin of methods for values assertion
+	 */
+	var DevaptMixinCallbackClass = new DevaptClass('DevaptMixinCallback', null, class_settings);
+	
+	DevaptMixinCallbackClass.add_public_method('do_callback', {}, DevaptMixinCallback.do_callback);
+	
+	DevaptMixinCallbackClass.build_class();
+	
+	return DevaptMixinCallbackClass;
 } );

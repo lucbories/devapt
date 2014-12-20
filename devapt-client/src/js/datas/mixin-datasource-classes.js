@@ -11,8 +11,8 @@
  */
 
 define(
-['Devapt', 'core/types', 'core/classes'],
-function(Devapt, DevaptTypes, DevaptClasses)
+['Devapt', 'core/types', 'core/class', 'core/classes'],
+function(Devapt, DevaptTypes, DevaptClass, DevaptClasses)
 {
 	/**
 	 * @mixin				DevaptMixinDatasoureClasses
@@ -27,9 +27,9 @@ function(Devapt, DevaptTypes, DevaptClasses)
 		 * @desc				Init classes data source
 		 * @return {nothing}
 		 */
-		init_data_source_classes: function()
+		init_data_source_classes: function(self)
 		{
-			var self = this;
+			// var self = this;
 			self.push_trace(self.trace, self.mixin_trace_datasource);
 			var context = 'init_data_source_classes()';
 			self.enter(context, '');
@@ -63,9 +63,10 @@ function(Devapt, DevaptTypes, DevaptClasses)
 			if ( self.items_source === 'classes' )
 			{
 				var items = [];
-				for(class_index in DevaptClasses.introspect_classes_array)
+				var classes_array = DevaptClasses.get_classes_array();
+				for(class_index in classes_array)
 				{
-					var class_record = DevaptClasses.introspect_classes_array[class_index];
+					var class_record = classes_array[class_index];
 					var record = {};
 					record['name']			= class_record.name;
 					record['author']		= class_record.author;
@@ -101,6 +102,34 @@ function(Devapt, DevaptTypes, DevaptClasses)
 	};
 	
 	
-	return DevaptMixinDatasoureClasses;
+	
+	/* --------------------------------------------- CREATE CLASS ------------------------------------------------ */
+	
+	// CLASS DEFINITION
+	var class_settings= {
+		'infos':{
+			'author':'Luc BORIES',
+			'created':'2014-10-15',
+			'updated':'2014-12-06',
+			'description':'Mixin methods for classes datas source.'
+		}
+	};
+	
+	// CREATE CLASS
+	var DevaptMixinDatasoureClassesClass = new DevaptClass('DevaptMixinDatasoureClasses', null, class_settings);
+	
+	// METHODS
+	// DevaptMixinDatasoureClassesClass.infos.ctor = DevaptMixinDatasoureClasses.init_data_source_classes;
+	DevaptMixinDatasoureClassesClass.add_public_method('init_data_source_classes', {}, DevaptMixinDatasoureClasses.init_data_source_classes);
+	DevaptMixinDatasoureClassesClass.add_public_method('get_items_array_classes', {}, DevaptMixinDatasoureClasses.get_items_array_classes);
+	
+	// PROPERTIES
+	
+	
+	// BUILD CLASS
+	DevaptMixinDatasoureClassesClass.build_class();
+	
+	
+	return DevaptMixinDatasoureClassesClass;
 }
 );

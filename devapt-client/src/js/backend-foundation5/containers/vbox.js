@@ -10,8 +10,8 @@
  */
 
 define(
-['Devapt', 'core/types', 'core/options', 'core/classes', 'views/container', 'backend-foundation5/foundation-init'],
-function(Devapt, DevaptTypes, DevaptOptions, DevaptClasses, DevaptContainer, undefined)
+['Devapt', 'core/types', 'core/class', 'views/container', 'backend-foundation5/foundation-init'],
+function(Devapt, DevaptTypes, DevaptClass, DevaptContainer, undefined)
 {
 	/**
 	 * @public
@@ -22,135 +22,135 @@ function(Devapt, DevaptTypes, DevaptOptions, DevaptClasses, DevaptContainer, und
 	 * @param {object|null}	arg_options			Associative array of options
 	 * @return {nothing}
 	 */
-	function DevaptVBox(arg_name, arg_parent_jqo, arg_options)
+	
+	
+	/**
+	 * @public
+	 * @memberof			DevaptVBox
+	 * @desc				Constructor
+	 * @return {nothing}
+	 */
+	var cb_constructor = function(self)
 	{
-		var self = this;
+		// CONSTRUCTOR BEGIN
+		var context = 'constructor(' + self.name + ')';
+		self.enter(context, '');
 		
-		// INHERIT
-		self.inheritFrom = DevaptContainer;
-		self.inheritFrom(arg_name, arg_parent_jqo, arg_options);
 		
-		// INIT
-		self.trace				= false;
-		self.class_name			= 'DevaptVBox';
-		self.is_view			= true;
+		// CALL SUPER CLASS CONSTRUCTOR
+		self._parent_class.infos.ctor(self);
 		
 		self.items_jquery_parent = null;
 		self.items_jquery_filter = 'div.row';
 		
-		
-		/**
-		 * @public
-		 * @memberof			DevaptVBox
-		 * @desc				Constructor
-		 * @return {nothing}
-		 */
-		self.DevaptVBox_contructor = function()
-		{
-			// CONSTRUCTOR BEGIN
-			var context = 'contructor(' + arg_name + ')';
-			self.enter(context, '');
-			
-			
-			// INIT OPTIONS
-			var init_option_result = DevaptOptions.set_options_values(self, arg_options, false);
-			if (! init_option_result)
-			{
-				self.error(context + ': init options failure');
-			}
-			
-			
-			// CONSTRUCTOR END
-			self.leave(context, 'success');
-		}
+		// self.add_event_callback('devapt.events.container.selected', [self, self.on_selected_item_event], false);
 		
 		
-		// CONTRUCT INSTANCE
-		self.DevaptVBox_contructor();
-		
-		
-		
-		/**
-		 * @public
-		 * @memberof			DevaptVBox
-		 * @desc				Begin the render of the container
-		 * @return {nothing}
-		 */
-		self.render_begin = function()
-		{
-			var self = this;
-			var context = 'render_begin()';
-			self.enter(context, '');
-			
-			
-			// CREATE MAIN NODE
-			self.content_jqo = $('<div>');
-			self.content_jqo.addClass('row');
-			self.parent_jqo.append(self.content_jqo);
-			
-			self.items_jquery_parent = self.content_jqo;
-			
-			
-			self.leave(context, 'success');
-		}
-		
-		
-		/**
-		 * @public
-		 * @memberof			DevaptList
-		 * @desc				Render an empty item node
-		 * @param {integer} 	arg_item_index		item index
-		 * @return {object}		jQuery object node
-		 */
-		self.render_item_node = function(arg_item_index)
-		{
-			var self = this;
-			var context = 'render_item_node(index)';
-			self.enter(context, '');
-			
-			var node_jqo = $('<div>');
-			node_jqo.addClass('row');
-			
-			self.leave(context, 'success');
-			return node_jqo;
-		}
-		
-		
-		/**
-		 * @public
-		 * @memberof			DevaptList
-		 * @desc				Render an divider item content
-		 * @param {object}		arg_deferred		deferred object
-		 * @param {object}		arg_item_jqo		
-		 * @param {string}		arg_item_content
-		 * @return {object}		jQuery object node
-		 */
-		self.render_item_divider = function(arg_deferred, arg_item_jqo, arg_item_content)
-		{
-			var self = this;
-			var context = 'render_item_divider(deferred,jqo,content)';
-			self.enter(context, '');
-			
-			if ( ! arg_item_jqo.hasClass('row') )
-			{
-				arg_item_jqo.addClass('row');
-			}
-			
-			self.leave(context, self.msg_success);
-			return arg_item_jqo;
-		}
+		// CONSTRUCTOR END
+		self.leave(context, 'success');
 	}
 	
 	
-	// INTROSPETION : REGISTER CLASS
-	DevaptClasses.register_class(DevaptVBox, ['DevaptContainer'], 'Luc BORIES', '2014-05-09', 'Simple view class to display a list of items.');
+	/**
+	 * @public
+	 * @memberof			DevaptVBox
+	 * @desc				Begin the render of the container
+	 * @return {nothing}
+	 */
+	var cb_render_begin = function()
+	{
+		var self = this;
+		var context = 'render_begin()';
+		self.enter(context, '');
+		
+		
+		// CREATE MAIN NODE
+		self.content_jqo = $('<div>');
+		self.content_jqo.addClass('row');
+		self.parent_jqo.append(self.content_jqo);
+		
+		self.items_jquery_parent = self.content_jqo;
+		
+		
+		self.leave(context, 'success');
+	}
 	
 	
-	// INTROSPETION : REGISTER OPTIONS
-	DevaptOptions.register_int_option(DevaptVBox, 'small_device_blocks', 2, false, []);
-	DevaptOptions.register_int_option(DevaptVBox, 'medium_device_blocks', 4, false, []);
-	DevaptOptions.register_int_option(DevaptVBox, 'large_device_blocks', 6, false, []);
+	/**
+	 * @public
+	 * @memberof			DevaptList
+	 * @desc				Render an empty item node
+	 * @param {integer} 	arg_item_index		item index
+	 * @return {object}		jQuery object node
+	 */
+	var cb_render_item_node = function(arg_item_index)
+	{
+		var self = this;
+		var context = 'render_item_node(index)';
+		self.enter(context, '');
+		
+		var node_jqo = $('<div>');
+		node_jqo.addClass('row');
+		
+		self.leave(context, 'success');
+		return node_jqo;
+	}
 	
 	
-	return DevaptVBox;
+	/**
+	 * @public
+	 * @memberof			DevaptList
+	 * @desc				Render an divider item content
+	 * @param {object}		arg_deferred		deferred object
+	 * @param {object}		arg_item_jqo		
+	 * @param {string}		arg_item_content
+	 * @return {object}		jQuery object node
+	 */
+	var cb_render_item_divider = function(arg_deferred, arg_item_jqo, arg_item_content)
+	{
+		var self = this;
+		var context = 'render_item_divider(deferred,jqo,content)';
+		self.enter(context, '');
+		
+		if ( ! arg_item_jqo.hasClass('row') )
+		{
+			arg_item_jqo.addClass('row');
+		}
+		
+		self.leave(context, self.msg_success);
+		return arg_item_jqo;
+	}
+	
+	
+	
+	/* --------------------------------------------- CREATE CLASS ------------------------------------------------ */
+	
+	// CLASS DEFINITION
+	var class_settings= {
+		'infos':{
+			'author':'Luc BORIES',
+			'created':'2014-05-09',
+			'updated':'2014-12-13',
+			'description':'Container view class to display a list of items.'
+		}
+	};
+	
+	// CLASS CREATION
+	var parent_class = DevaptContainer;
+	var DevaptVBoxClass = new DevaptClass('DevaptVBox', parent_class, class_settings);
+	
+	// METHODS
+	DevaptVBoxClass.infos.ctor = cb_constructor;
+	DevaptVBoxClass.add_public_method('render_begin', {}, cb_render_begin);
+	DevaptVBoxClass.add_public_method('render_item_node', {}, cb_render_item_node);
+	DevaptVBoxClass.add_public_method('render_item_divider', {}, cb_render_item_divider);
+	
+	// PROPERTIES
+	DevaptVBoxClass.add_public_int_property('small_device_blocks',	'',	2, false, false, []);
+	DevaptVBoxClass.add_public_int_property('medium_device_blocks',	'',	4, false, false, []);
+	DevaptVBoxClass.add_public_int_property('large_device_blocks',	'',	6, false, false, []);
+	
+	
+	
+	return DevaptVBoxClass;
 } );

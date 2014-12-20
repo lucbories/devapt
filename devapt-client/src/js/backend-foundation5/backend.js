@@ -228,15 +228,6 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptResources, DevaptFactory, unde
 		var promise = null;
 		
 		
-		// CHECK NODE
-		if ( ! DevaptTypes.is_object(arg_jqo_node) )
-		{
-			DevaptTraces.trace_step(context, 'set default view container', DevaptFoundation5Backend.backend_trace);
-			arg_jqo_node = $('<div class="row">');
-			$('body').append(arg_jqo_node);
-		}
-		
-		
 		// VIEW ARG IS AN OBJECT
 		if ( DevaptTypes.is_object(arg_view_name_or_object) )
 		{
@@ -263,8 +254,6 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptResources, DevaptFactory, unde
 			// RESOLVE PROMISE
 			master_deferred.resolve(view);
 		}
-		
-		
 		
 		
 		// VIEW ARG IS A STRING
@@ -297,6 +286,7 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptResources, DevaptFactory, unde
 		
 		
 		// RENDER VIEW
+		// console.log(arg_jqo_node, 'backend render view container');
 		promise.then(
 			function(view)
 			{
@@ -305,10 +295,10 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptResources, DevaptFactory, unde
 					{
 						DevaptTraces.trace_step(context, 'success: promise is resolved: then callback for [' + arg_view.name + ']', DevaptFoundation5Backend.backend_trace);
 						
+						// console.log(arg_view, 'backend render view');
+						
 						if ( ! arg_view.is_view )
 						{
-							// console.log(arg_view, 'view');
-							// console.log(node_jqo, 'node_jqo');
 							// CREATE MAIN DEFERRED OBJECT
 							var error_deferred = $.Deferred();
 							error_deferred.reject();
@@ -316,16 +306,15 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptResources, DevaptFactory, unde
 							// GET MAIN PROMISE
 							var error_promise = error_deferred.promise();
 							
-							DevaptTraces.trace_leave(context, 'failure: promise is resolved: then callback: bad view resource [' + arg_view.name + ']', DevaptFoundation5Backend.backend_trace);
+							DevaptTraces.trace_error(context, 'failure: promise is resolved: then callback: bad view resource [' + arg_view.name + ']', DevaptFoundation5Backend.backend_trace);
 							return error_promise;
 						}
 						
-						// console.log(node_jqo, 'backend.render_view.set_parent.jqo for [' + arg_view_name_or_object + ']');
-						if ( ! DevaptTypes.is_null(node_jqo) )
+						if ( DevaptTypes.is_object(node_jqo) )
 						{
+							// console.log(node_jqo, 'backend.render_view.set_parent.jqo for [' + arg_view.name + ']');
 							arg_view.set_parent(node_jqo);
 						}
-						
 						var render_promise = arg_view.render();
 						
 						DevaptTraces.trace_leave(context, 'success: promise is resolved: then callback: async render promise [' + arg_view.name + ']', DevaptFoundation5Backend.backend_trace);
@@ -423,6 +412,97 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptResources, DevaptFactory, unde
 		
 		DevaptTraces.trace_leave(context, '', DevaptFoundation5Backend.backend_trace);
 		return promise;
+	}
+	
+	
+	/**
+	 * @memberof				DevaptFoundation5Backend
+	 * @public
+	 * @static
+	 * @method					DevaptFoundation5Backend.get_input(arg_field_custom, arg_value)
+	 * @desc					Get an input tag for the given field
+	 * @param {object}			arg_field_custom		field attributes object
+	 * @param {string}			arg_value				field value
+	 * @return {object}			jQuery node object
+	 */
+	DevaptFoundation5Backend.get_input = function(arg_field_custom, arg_value)
+	{
+		var context = 'DevaptFoundation5Backend.get_input(field,value)';
+		DevaptTraces.trace_enter(context, '', DevaptFoundation5Backend.backend_trace);
+		
+		
+		// GET RESULT INPUT NODE
+		var node_jqo = null;
+		
+		
+		DevaptTraces.trace_leave(context, '', DevaptFoundation5Backend.backend_trace);
+		return node_jqo;
+	}
+	
+	
+	/**
+	 * @memberof				DevaptFoundation5Backend
+	 * @public
+	 * @static
+	 * @method					DevaptFoundation5Backend.notify_error(arg_message)
+	 * @desc					Notify user with an error message
+	 * @param {string}			arg_message			notification message
+	 * @return {nothing}
+	 */
+	DevaptFoundation5Backend.notify_error = function(arg_message)
+	{
+		var context = 'DevaptFoundation5Backend.notify_error(msg)';
+		DevaptTraces.trace_enter(context, '', DevaptFoundation5Backend.backend_trace);
+		
+		
+		alert('error:' + arg_message);
+		
+		
+		DevaptTraces.trace_leave(context, '', DevaptFoundation5Backend.backend_trace);
+	}
+	
+	
+	/**
+	 * @memberof				DevaptFoundation5Backend
+	 * @public
+	 * @static
+	 * @method					DevaptFoundation5Backend.notify_alert(arg_message)
+	 * @desc					Notify user with an alert message
+	 * @param {string}			arg_message			notification message
+	 * @return {nothing}
+	 */
+	DevaptFoundation5Backend.notify_alert = function(arg_message)
+	{
+		var context = 'DevaptFoundation5Backend.notify_alert(msg)';
+		DevaptTraces.trace_enter(context, '', DevaptFoundation5Backend.backend_trace);
+		
+		
+		alert('alert:' + arg_message);
+		
+		
+		DevaptTraces.trace_leave(context, '', DevaptFoundation5Backend.backend_trace);
+	}
+	
+	
+	/**
+	 * @memberof				DevaptFoundation5Backend
+	 * @public
+	 * @static
+	 * @method					DevaptFoundation5Backend.notify_info(arg_message)
+	 * @desc					Notify user with an information message
+	 * @param {string}			arg_message			notification message
+	 * @return {nothing}
+	 */
+	DevaptFoundation5Backend.notify_info = function(arg_message)
+	{
+		var context = 'DevaptFoundation5Backend.notify_info(msg)';
+		DevaptTraces.trace_enter(context, '', DevaptFoundation5Backend.backend_trace);
+		
+		
+		alert('info:' + arg_message);
+		
+		
+		DevaptTraces.trace_leave(context, '', DevaptFoundation5Backend.backend_trace);
 	}
 	
 	

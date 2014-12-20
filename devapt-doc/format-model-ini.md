@@ -14,3 +14,16 @@ field
 		type:local date
 		type:local time
 		type:local date time
+
+	types
+		boolean
+		integer
+		float
+		string
+		email
+		password
+		date
+		time
+		datetime
+		
+

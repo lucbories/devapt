@@ -9,102 +9,66 @@
  * @license		Apache License Version 2.0, January 2004; see LICENSE.txt or http://www.apache.org/licenses/
  */
 
-define(['Devapt', 'core/traces', 'core/types', 'core/options', 'core/classes',
+define(['Devapt', 'core/types', 'core/class',
 	'core/mixin-assertion', 'core/mixin-callback', 'core/mixin-trace'],
-function(Devapt, DevaptTrace, DevaptTypes, DevaptOptions, DevaptClasses,
+function(Devapt, DevaptTypes, DevaptClass,
 	DevaptMixinAssertion, DevaptMixinCallback, DevaptMixinTrace)
 {
 	var jQuery = Devapt.jQuery();
 	
 	
+	// var browser = window.navigator.userAgent;
 	
+	
+	
+	
+	
+	/* --------------------------------------------- CREATE OBJECT BASE CLASS ------------------------------------------------ */
+	
+	// CREATE AND REGISTER CLASS
+	var class_settings = {
+		infos:{
+			author:'Luc BORIES',
+			created:'2014-07-01',
+			updated:'2014-12-05',
+			description:'Base class for all Devapt objects.'
+		},
+		properties:{
+			
+		}
+	};
+	var parent_class = null;
+	var DevaptObjectBase = new DevaptClass('DevaptObjectBase', parent_class, class_settings);
+	
+	
+	
+	/* --------------------------------------------- ADD METHODS ------------------------------------------------ */
 	/**
+	 * @memberof				DevaptObjectBase
 	 * @public
-	 * @class				DevaptObjectBase
-	 * @desc				Devapt base class
-	 * @param {string}		arg_name				name of the object
-	 * @param {boolean}		arg_trace_constructor	enable the trace of the constructors chain
-	 * @return {nothing}
+	 * @method				is_a(arg_proto)
+	 * @desc				Test class inheritance
+	 * @param {object}		arg_proto	prototype
+	 * @return {boolean}
 	 */
-	function DevaptObjectBase(arg_name)
-	{
-		var self = this;
-		
-		// INIT
-		self.trace				= false;
-		self.class_name			= 'DevaptObjectBase';
-		self.name				= DevaptTypes.to_string(arg_name, 'no name');
-		self.uid				= DevaptObjectBase.uid_counter++;
-		
-		
-		/* --------------------------------------------- CLASS AND OBJECT ------------------------------------------------ */
-		
-		/**
-		 * @memberof				DevaptObjectBase
-		 * @public
-		 * @method				is_a(arg_proto)
-		 * @desc				Test class inheritance
-		 * @param {object}		arg_proto	prototype
-		 * @return {boolean}
-		 */
-		self.is_a = function(arg_proto)
+	DevaptObjectBase.add_public_method('is_a',
+		function(self, arg_proto)
 		{
 			return DevaptTypes.is_a(self, arg_proto);
 		}
-		
-		
-		/**
-		 * @memberof				DevaptObjectBase
-		 * @public
-		 * @method					clone_object(arg_object_to_clone)
-		 * @desc					Duplicate an existing object
-		 * @param {object}			arg_object_to_clone		Object to clone
-		 * @return {object}			Clone
-		 */
-		self.clone_object = function(arg_object_to_clone)
-		{
-			// console.log(arg_object_to_clone, 'DevaptObjectBase.arg_object_to_clone');
-			
-			// NULL OR SIMPLE TYPE (NOT OBJECT)
-			if (arg_object_to_clone == null || typeof(arg_object_to_clone) != 'object')
-			{
-				return arg_object_to_clone;
-			}
-			
-			// ARRAY
-			if ( DevaptTypes.is_array(arg_object_to_clone) )
-			{
-				var tmp = new Array();
-				for(key in arg_object_to_clone)
-				{
-					var cloned_object = DevaptObjectBase.clone_object(arg_object_to_clone[key]);
-					cloned_object.is_cloned = true;
-					tmp.push(cloned_object);
-				}
-				
-				// console.log(tmp, 'DevaptObjectBase.cloned array');
-				// console.log(arg_object_to_clone, 'DevaptObjectBase.arg array');
-				return tmp;
-			}
-			
-			// OBJECT
-			var cloned_object = jQuery.extend(true, {}, arg_object_to_clone);
-			cloned_object.is_cloned = true;
-			// console.log(cloned_object, 'DevaptObjectBase.cloned object');
-			// console.log(arg_object_to_clone, 'DevaptObjectBase.arg object');
-			return cloned_object;
-		}
-		
-		
-		/**
-		 * @public
-		 * @method				merge_object(arg_options, arg_replace)
-		 * @desc				Merge settings
-		 * @param {object}		arg_options		settings
-		 * @param {boolean}		arg_replace		should replace existing setting flag
-		 * @return {boolean}
-		 */
-		self.merge_object = function(arg_options, arg_replace)
+	);
+	
+	
+	/**
+	 * @public
+	 * @method				merge_object(arg_options, arg_replace)
+	 * @desc				Merge settings
+	 * @param {object}		arg_options		settings
+	 * @param {boolean}		arg_replace		should replace existing setting flag
+	 * @return {boolean}
+	 */
+	DevaptObjectBase.add_public_method('merge_object',
+		function(self, arg_options, arg_replace)
 		{
 			var context = 'merge_object(options,replace)';
 			self.enter(context, '');
@@ -151,42 +115,45 @@ function(Devapt, DevaptTrace, DevaptTypes, DevaptOptions, DevaptClasses,
 			self.leave(context, 'success');
 			return true;
 		}
-		
-		
-		/**
-		 * @public
-		 * @method					destroy(...)
-		 * @desc					Delete every given arguments
-		 * @param {anything}		variable arguments of any type
-		 * @return {null}
-		 */
-		self.destroy = function(/*... variable arguments*/)
+	);
+	
+	
+	/**
+	 * @public
+	 * @method					destroy(...)
+	 * @desc					Delete every given arguments
+	 * @param {anything}		variable arguments of any type
+	 * @return {null}
+	 */
+	DevaptObjectBase.add_public_method('destroy',
+		function(/*... variable arguments*/)
 		{
-			var self = this;
+			var self = arguments[0];
+			
 			var context = 'destroy(...)';
 			self.enter(context, '');
 			
 			
-            var args_count = arguments.length;
+			var args_count = arguments.length;
 			var current_arg = null;
 			
 			// LOOP ON ARGUMENTS
-            for (var i = 0 ; i < args_count ; i++)
+			for (var i = 1 ; i < args_count ; i++)
 			{
-                current_arg = arguments[i];
-                if (current_arg)
+				current_arg = arguments[i];
+				if (current_arg)
 				{
 					// DELETE ARRAY ITEMS
-                    if ( DevaptTypes.is_array(current_arg) )
+					if ( DevaptTypes.is_array(current_arg) )
 					{
-                        self.destroy.apply(self, current_arg);
-                    }
+						self.destroy.apply(self, current_arg);
+					}
 					
 					// DELETE OBJECT WITH DESTRUCTOR
 					else if ( DevaptTypes.is_function(current_arg.destroy_self) )
 					{
-                        arg.destroy_self();
-                    }
+						current_arg.destroy_self();
+					}
 					
 					// DELETE OBJECT PROPERTIES
 					else if ( DevaptTypes.is_object(current_arg) )
@@ -205,30 +172,32 @@ function(Devapt, DevaptTrace, DevaptTypes, DevaptOptions, DevaptClasses,
 							}
 						}
 					}
-                }
-            }
+				}
+			}
 			
 			
 			self.leave(context, 'success');
-            return null;
-        }
-		
-		
-		
-		/* --------------------------------------------- ASPECT ------------------------------------------------ */
-		
-		/**
-		 * @memberof				DevaptObjectBase
-		 * @public
-		 * @method					register_aspect_before(arg_method_name, arg_callback)
-		 * @desc					Register a method to be executed before the original method
-		 * @param {string}			arg_method_name			Method name
-		 * @param {function|array}	arg_callback			Before callback
-		 * @param {boolean}			arg_give_arguments		Give original method arguments to the before callback (default:true)
-		 * @param {boolean}			arg_execute_on_failed	Execute original callback if before callback failed (default:true)
-		 * @return {boolean}		true:success,false:failure
-		 */
-		self.register_aspect_before = function(arg_method_name, arg_callback, arg_give_arguments, arg_execute_on_failed)
+			return null;
+		}
+	);
+	
+	
+	
+	/* --------------------------------------------- ASPECT ------------------------------------------------ */
+	
+	/**
+	 * @memberof				DevaptObjectBase
+	 * @public
+	 * @method					register_aspect_before(arg_method_name, arg_callback)
+	 * @desc					Register a method to be executed before the original method
+	 * @param {string}			arg_method_name			Method name
+	 * @param {function|array}	arg_callback			Before callback
+	 * @param {boolean}			arg_give_arguments		Give original method arguments to the before callback (default:true)
+	 * @param {boolean}			arg_execute_on_failed	Execute original callback if before callback failed (default:true)
+	 * @return {boolean}		true:success,false:failure
+	 */
+	DevaptObjectBase.add_public_method('register_aspect_before',
+		function(self, arg_method_name, arg_callback, arg_give_arguments, arg_execute_on_failed)
 		{
 			var context = 'register_aspect_before(method name,callback,give args,on failed)';
 			self.enter(context, '');
@@ -276,22 +245,23 @@ function(Devapt, DevaptTrace, DevaptTypes, DevaptOptions, DevaptClasses,
 			self.leave(context, 'success');
 			return true;
 		}
-		
-		
-		/**
-		 * @memberof				DevaptObjectBase
-		 * @public
-		 * @method					register_aspect_after(arg_method_name, arg_callback)
-		 * @desc					Register a method to be executed after the original method
-		 * @param {string}			arg_method_name			Method name
-		 * @param {function|array}	arg_callback			After callback
-		 * @param {boolean}			arg_give_arguments		Give original method arguments to the after callback (default:true)
-		 * @param {boolean}			arg_execute_on_failed	Execute original callback if after callback failed (default:true)
-		 * @return {boolean}		true:success,false:failure
-		 */
-		self.register_aspect_after = function(arg_method_name, arg_callback, arg_give_arguments, arg_execute_on_failed)
+	);
+	
+	
+	/**
+	 * @memberof				DevaptObjectBase
+	 * @public
+	 * @method					register_aspect_after(arg_method_name, arg_callback)
+	 * @desc					Register a method to be executed after the original method
+	 * @param {string}			arg_method_name			Method name
+	 * @param {function|array}	arg_callback			After callback
+	 * @param {boolean}			arg_give_arguments		Give original method arguments to the after callback (default:true)
+	 * @param {boolean}			arg_execute_on_failed	Execute original callback if after callback failed (default:true)
+	 * @return {boolean}		true:success,false:failure
+	 */
+	DevaptObjectBase.add_public_method('register_aspect_after',
+		function(self, arg_method_name, arg_callback, arg_give_arguments, arg_execute_on_failed)
 		{
-			var self = this;
 			var context = 'register_aspect_after(method name,callback,give args,on failed)';
 			self.enter(context, '');
 			
@@ -338,23 +308,24 @@ function(Devapt, DevaptTrace, DevaptTypes, DevaptOptions, DevaptClasses,
 			self.leave(context, 'success');
 			return true;
 		}
-		
-		
-		
-		/* --------------------------------------------- MIXINS ------------------------------------------------ */
-		
-		/**
-		 * @memberof				DevaptObjectBase
-		 * @public
-		 * @method					register_mixin(arg_mixin_proto, arg_mixin_attr_names)
-		 * @desc					Enhance an existing object with attributes/methods of an other object (mixin)
-		 * @param {object}			arg_mixin_proto				Mixin object
-		 * @param {array}			arg_mixin_attr_names		Attributes names to mix
-		 * @return {boolean}		true:success,false:failure
-		 */
-		self.register_mixin = function(arg_mixin_proto, arg_mixin_attr_names)
+	);
+	
+	
+	
+	/* --------------------------------------------- MIXINS ------------------------------------------------ */
+	
+	/**
+	 * @memberof				DevaptObjectBase
+	 * @public
+	 * @method					register_mixin(arg_mixin_proto, arg_mixin_attr_names)
+	 * @desc					Enhance an existing object with attributes/methods of an other object (mixin)
+	 * @param {object}			arg_mixin_proto				Mixin object
+	 * @param {array}			arg_mixin_attr_names		Attributes names to mix
+	 * @return {boolean}		true:success,false:failure
+	 */
+	DevaptObjectBase.add_public_method('register_mixin',
+		function(self, arg_mixin_proto, arg_mixin_attr_names)
 		{
-			var self = this;
 			var context = 'register_mixin(proto,attributes names)';
 			if (self.enter)
 			{
@@ -362,8 +333,8 @@ function(Devapt, DevaptTrace, DevaptTypes, DevaptOptions, DevaptClasses,
 			}
 			else if (self.trace)
 			{
-				DevaptTrace.debug( { level:'DEBUG', step:'ENTER', context:self.class_name + '.' + context + '[' + self.name + ']', text: DevaptTypes.to_string(arg_mixin_attr_names) } );
-				DevaptTrace.log_indent();
+				DevaptTraces.debug( { level:'DEBUG', step:'ENTER', context:self.class_name + '.' + context + '[' + self.name + ']', text: DevaptTypes.to_string(arg_mixin_attr_names) } );
+				DevaptTraces.log_indent();
 			}
 			
 			if ( DevaptTypes.is_null(arg_mixin_attr_names) )
@@ -392,7 +363,9 @@ function(Devapt, DevaptTrace, DevaptTypes, DevaptOptions, DevaptClasses,
 					}
 					else
 					{
-						self[attr_name] = self.clone_object(attr_obj);
+						// console.log(self);
+						// self[attr_name] = DevaptObjectBase.prototype.clone_object.call(self, attr_obj);
+						self[attr_name] = DevaptObjectBase.clone_object(attr_obj);
 						// console.log('clone of ' + self.name + ' : ' + attr_name);
 						// console.log(self[attr_name]);
 					}
@@ -406,34 +379,40 @@ function(Devapt, DevaptTrace, DevaptTypes, DevaptOptions, DevaptClasses,
 			}
 			else if (self.trace)
 			{
-				DevaptTrace.log_unindent();
-				DevaptTrace.debug( { level:'DEBUG', step:'LEAVE', context:self.class_name + '.' + context + '[' + self.name + ']', text: DevaptTypes.to_string(arg_mixin_attr_names) } );
+				DevaptTraces.log_unindent();
+				DevaptTraces.debug( { level:'DEBUG', step:'LEAVE', context:self.class_name + '.' + context + '[' + self.name + ']', text: DevaptTypes.to_string(arg_mixin_attr_names) } );
 			}
 			return true;
 		}
-		
-		
-		/**
-		 * @memberof				DevaptObjectBase
-		 * @public
-		 * @method					register_mixin(arg_mixin_proto, arg_mixin_method_names)
-		 * @desc					Enhance an existing object with methods of an other object (mixin)
-		 * @param {object}			arg_mixin_proto				Mixin object
-		 * @param {array}			arg_mixin_method_names		Attributes names to mix
-		 * @return {boolean}		true:success,false:failure
-		 */
-		self.register_mixin_method = function(arg_mixin_proto, arg_mixin_method_names)
+	);
+	
+	
+	/**
+	 * @memberof				DevaptObjectBase
+	 * @public
+	 * @method					register_mixin(arg_mixin_proto, arg_mixin_method_names)
+	 * @desc					Enhance an existing object with methods of an other object (mixin)
+	 * @param {object}			arg_mixin_proto				Mixin object
+	 * @param {array}			arg_mixin_method_names		Attributes names to mix
+	 * @return {boolean}		true:success,false:failure
+	 */
+	DevaptObjectBase.add_public_method('register_mixin_method',
+		function(self, arg_mixin_proto, arg_mixin_method_names)
 		{
 			var self = this;
-			var context = 'register_mixin_method(method name,proto,method)';
+			var context = 'register_mixin_method(method name,proto,methods)';
+			
+			console.log(arg_mixin_proto, context + '.arg_mixin_proto');
+			console.log(arguments, context + '.arguments');
+			
 			if (self.enter)
 			{
 				self.enter(context, '');
 			}
 			else if (self.trace)
 			{
-				DevaptTrace.debug( { level:'DEBUG', step:'ENTER', context:self.class_name + '.' + context + '[' + self.name + ']', text: DevaptTypes.to_string(arg_mixin_attr_names) } );
-				DevaptTrace.log_indent();
+				DevaptTraces.debug( { level:'DEBUG', step:'ENTER', context:self.class_name + '.' + context + '[' + self.name + ']', text: DevaptTypes.to_string(arg_mixin_attr_names) } );
+				DevaptTraces.log_indent();
 			}
 			
 			if ( DevaptTypes.is_null(arg_mixin_method_names) )
@@ -467,70 +446,77 @@ function(Devapt, DevaptTrace, DevaptTypes, DevaptOptions, DevaptClasses,
 			}
 			else if (self.trace)
 			{
-				DevaptTrace.log_unindent();
-				DevaptTrace.debug( { level:'DEBUG', step:'LEAVE', context:self.class_name + '.' + context + '[' + self.name + ']', text: DevaptTypes.to_string(arg_mixin_attr_names) } );
+				DevaptTraces.log_unindent();
+				DevaptTraces.debug( { level:'DEBUG', step:'LEAVE', context:self.class_name + '.' + context + '[' + self.name + ']', text: DevaptTypes.to_string(arg_mixin_attr_names) } );
 			}
 			return true;
 		}
-		
-		
-		/**
-		 * @memberof				DevaptObjectBase
-		 * @public
-		 * @method					register_mixin_proxy_method(arg_method_name)
-		 * @desc					Unregister a proxy method
-		 * @param {string}			arg_method_name			Method name
-		 * @return {boolean}		true:success,false:failure
-		 */
-		self.unregister_mixin_proxy_method = function(arg_method_name)
+	);
+	
+	
+	/**
+	 * @memberof				DevaptObjectBase
+	 * @public
+	 * @method					register_mixin_proxy_method(arg_method_name)
+	 * @desc					Unregister a proxy method
+	 * @param {string}			arg_method_name			Method name
+	 * @return {boolean}		true:success,false:failure
+	 */
+	DevaptObjectBase.add_public_method('unregister_mixin_proxy_method',
+		function(self, arg_method_name)
 		{
 			var context = 'unregister_mixin_proxy_method(method name)';
-			self.enter(context, '');
-			
+			// self.enter(context, '');
+			console.log(arguments, context + '.arguments');
 			
 			// GET ORIGINAL METHOD CALLBACK
-			var proxied = this[arg_method_name];
-			self.assertNotNull(context, 'original callback', proxied);
+			var proxied = self[arg_method_name];
+			// self.assertNotNull(context, 'original callback', proxied);
 			
 			// REMOVE LAST PROXIED CALLBACK
-			this[arg_method_name] = this[arg_method_name].proxied;
+			self[arg_method_name] = self[arg_method_name].proxied;
 			
 			
-			self.leave(context, 'success');
+			// self.leave(context, 'success');
 			return true;
 		}
-		
-		
-		
-		/* --------------------------------------------------------------------------------------------- */
-		// APPEND MIXIN METHODS
-		self.register_mixin(DevaptMixinTrace);
-		self.register_mixin(DevaptMixinAssertion);
-		self.register_mixin(DevaptMixinCallback);
-		/* --------------------------------------------------------------------------------------------- */
-	}
+	);
+	
 	
 	
 	
 	/**
 	 * @public
-	 * @see					DevaptObjectBase
-	 * @desc				Devapt object unique id (integer)
+	 * @class				DevaptObjectBase
+	 * @desc				Devapt base class
+	 * @param {string}		arg_name				name of the object
+	 * @param {boolean}		arg_trace_constructor	enable the trace of the constructors chain
+	 * @return {nothing}
 	 */
-	DevaptObjectBase.uid_counter = 0;
+	var cb_constructor = function(self)
+	{
+		// console.log(self, 'cb_constructor.self');
+		// console.log(arg_name, 'cb_constructor.arg_name');
+		
+		// DEBUG
+		// self.trace				= false;
+		
+	};
 	
 	
 	
-	// INTROSPETION : REGISTER CLASS
-	DevaptClasses.register_class(DevaptObjectBase, [], 'Luc BORIES', '2014-07-01', 'Object base class.');
-
-
 
 	// INTROSPETION : REGISTER OPTIONS
-	DevaptOptions.register_str_option(DevaptObjectBase, 'class_name',		null, true, []);
-	DevaptOptions.register_str_option(DevaptObjectBase, 'class_type',		null, true, []);
-	DevaptOptions.register_str_option(DevaptObjectBase, 'name',				null, true, []);
-	DevaptOptions.register_bool_option(DevaptObjectBase, 'trace',			false, true, []);
+	// DevaptObjectBase.infos.ctor = cb_constructor;
+	
+	DevaptObjectBase.add_public_mixin(DevaptMixinTrace);
+	DevaptObjectBase.add_public_mixin(DevaptMixinAssertion);
+	DevaptObjectBase.add_public_mixin(DevaptMixinCallback);
+	
+	// BUILD CLASS
+	// DevaptObjectBase.build_class();
+	// console.log(DevaptObjectBase, 'DevaptObjectBase build');
+	
 	
 	
 	return DevaptObjectBase;

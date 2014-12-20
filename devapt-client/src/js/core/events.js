@@ -83,8 +83,36 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptEvent)
 	 * @desc		Callbacks to call on each new event into the repository
 	 */
 	DevaptEvents.add_event_callbacks = [];
-
-
+	
+	
+	/**
+	 * @memberof				DevaptEvents
+	 * @public
+	 * @method					DevaptEvents.get_events_array()
+	 * @desc					Get events array
+	 * @return {array}
+	 */
+	DevaptEvents.get_events_array = function()
+	{
+		return DevaptEvents.all_events;
+	}
+	
+	
+	/**
+	 * @memberof				DevaptEvents
+	 * @public
+	 * @method					DevaptEvents.get_events_array_for_target()
+	 * @desc					Get events array for a target name
+	 * @param {string}			arg_target_name
+	 * @return {array}
+	 */
+	DevaptEvents.get_events_array_for_target = function(arg_target_name)
+	{
+		var obj = DevaptEvents.target_events[arg_target_name];
+		return obj ? obj : [];
+	}
+	
+	
 	/**
 	 * @memberof				DevaptEvents
 	 * @public

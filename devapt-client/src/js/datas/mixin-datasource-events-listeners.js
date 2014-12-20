@@ -11,8 +11,8 @@
  */
 
 define(
-['Devapt', 'core/types', 'core/events'],
-function(Devapt, DevaptTypes, DevaptEvents)
+['Devapt', 'core/types', 'core/class', 'core/events'],
+function(Devapt, DevaptTypes, DevaptClass, DevaptEvents)
 {
 	/**
 	 * @mixin				DevaptMixinDatasoureEventsListeners
@@ -24,12 +24,12 @@ function(Devapt, DevaptTypes, DevaptEvents)
 		/**
 		 * @public
 		 * @memberof			DevaptMixinDatasoureEventsListeners
-		 * @desc				Init events data source
+		 * @desc				Init events listeners data source
 		 * @return {nothing}
 		 */
-		init_data_source_events: function()
+		init_data_source_events_listeners: function(self)
 		{
-			var self = this;
+			// var self = this;
 			self.push_trace(self.trace, self.mixin_trace_datasource);
 			var context = 'init_data_source_events()';
 			self.enter(context, '');
@@ -44,10 +44,10 @@ function(Devapt, DevaptTypes, DevaptEvents)
 		/**
 		 * @public
 		 * @memberof			DevaptMixinDatasoureEventsListeners
-		 * @desc				Get items array for events data source
+		 * @desc				Get items array for events listeners data source
 		 * @return {promise}
 		 */
-		get_items_array_events: function()
+		get_items_array_events_listeners: function()
 		{
 			var self = this;
 			self.push_trace(self.trace, self.mixin_trace_datasource);
@@ -103,6 +103,34 @@ function(Devapt, DevaptTypes, DevaptEvents)
 	};
 	
 	
-	return DevaptMixinDatasoureEventsListeners;
+	
+	/* --------------------------------------------- CREATE CLASS ------------------------------------------------ */
+	
+	// CLASS DEFINITION
+	var class_settings= {
+		'infos':{
+			'author':'Luc BORIES',
+			'created':'2014-10-15',
+			'updated':'2014-12-06',
+			'description':'Mixin methods for events listeners datas source.'
+		}
+	};
+	
+	// CREATE CLASS
+	var DevaptMixinDatasoureEventsListenersClass = new DevaptClass('DevaptMixinDatasoureEventsListeners', null, class_settings);
+	
+	// METHODS
+	// DevaptMixinDatasoureEventsListenersClass.infos.ctor = DevaptMixinDatasoureEventsListeners.init_data_source_events_listeners;
+	DevaptMixinDatasoureEventsListenersClass.add_public_method('init_data_source_events_listeners', {}, DevaptMixinDatasoureEventsListeners.init_data_source_events_listeners);
+	DevaptMixinDatasoureEventsListenersClass.add_public_method('get_items_array_events_listeners', {}, DevaptMixinDatasoureEventsListeners.get_items_array_events_listeners);
+	
+	// PROPERTIES
+	
+	
+	// BUILD CLASS
+	DevaptMixinDatasoureEventsListenersClass.build_class();
+	
+	
+	return DevaptMixinDatasoureEventsListenersClass;
 }
 );

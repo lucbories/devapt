@@ -10,8 +10,8 @@
  */
 
 define(
-['Devapt', 'core/traces', 'core/types', 'core/options', 'core/classes', 'core/resources', 'views/view', 'core/application', 'core/nav-history', 'backend-foundation5/foundation-init'],
-function(Devapt, DevaptTrace, DevaptTypes, DevaptOptions, DevaptClasses, DevaptResources, DevaptView, DevaptApplication, DevaptNavHistory, undefined)
+['Devapt', 'core/types', 'core/class', 'views/view', 'core/nav-history', 'backend-foundation5/foundation-init'],
+function(Devapt, DevaptTypes, DevaptClass, DevaptView, DevaptNavHistory, undefined)
 {
 	/**
 	 * @public
@@ -22,197 +22,159 @@ function(Devapt, DevaptTrace, DevaptTypes, DevaptOptions, DevaptClasses, DevaptR
 	 * @param {object|null}	arg_options			Associative array of options
 	 * @return {nothing}
 	 */
-	function DevaptBreadcrumbs(arg_name, arg_parent_jqo, arg_options)
+	
+	
+	/**
+	 * @public
+	 * @memberof			DevaptBreadcrumbs
+	 * @desc				Render view
+	 * @param {object}		arg_deferred	deferred object
+	 * @return {object}		deferred promise object
+	 */
+	var cb_render_self = function(arg_deferred)
 	{
 		var self = this;
-		
-		// INHERIT
-		self.inheritFrom = DevaptView;
-		self.inheritFrom(arg_name, arg_parent_jqo, arg_options);
-		
-		// INIT
-		self.trace				= false;
-		self.class_name			= 'DevaptBreadcrumbs';
-		self.is_view			= true;
-		self.history_labels		={};
+		var context = 'render_self(deferred)';
+		self.enter(context, '');
 		
 		
-		/**
-		 * @public
-		 * @memberof			DevaptBreadcrumbs
-		 * @desc				Constructor
-		 * @return {nothing}
-		 */
-		self.DevaptBreadcrumbs_contructor = function()
+		// CHECK DEFEREED
+		self.assertNotNull(context, 'arg_deferred', arg_deferred);
+		
+		// GET NODES
+		self.assertNotNull(context, 'parent_jqo', self.parent_jqo);
+		
+		// RENDER
+		self.content_jqo = $('<ul>');
+		self.content_jqo.addClass('breadcrumbs');
+		self.parent_jqo.append(self.content_jqo);
+		
+		
+		// LOOP ON NAV HISTORY
+		var nav_stack = DevaptNavHistory.history_stack;
+		self.value(context, 'breadcrumbs html content', nav_stack);
+		for(content_key in nav_stack)
 		{
-			// CONSTRUCTOR BEGIN
-			var context = 'contructor(' + arg_name + ')';
-			self.enter(context, '');
-			
-			
-			// INIT OPTIONS
-			var init_option_result = DevaptOptions.set_options_values(self, arg_options, false);
-			if (! init_option_result)
-			{
-				self.error(context + ': init options failure');
-			}
-			
-			
-			// CONSTRUCTOR END
-			self.leave(context, 'success');
+			var state = nav_stack[content_key];
+			self.assertNotNull(context, 'nav content at [' + content_key + ']', state);
+			self.add_history_item(state);
 		}
 		
 		
-		// CONTRUCT INSTANCE
-		self.DevaptBreadcrumbs_contructor();
+		// RESOVE RENDER
+		arg_deferred.resolve(this);
+		
+		// GET PROMISE
+		var promise = arg_deferred.promise();
 		
 		
-		
-		/**
-		 * @public
-		 * @memberof			DevaptBreadcrumbs
-		 * @desc				Render view
-		 * @param {object}		arg_deferred	deferred object
-		 * @return {object}		deferred promise object
-		 */
-		self.render_self = function(arg_deferred)
-		{
-			var self = this;
-			var context = 'render_self(deferred)';
-			self.enter(context, '');
-			
-			
-			// CHECK DEFEREED
-			self.assertNotNull(context, 'arg_deferred', arg_deferred);
-			
-			// GET NODES
-			self.assertNotNull(context, 'parent_jqo', self.parent_jqo);
-			
-			// RENDER
-			self.content_jqo = $('<ul>');
-			self.content_jqo.addClass('breadcrumbs');
-			self.parent_jqo.append(self.content_jqo);
-			
-			
-			// LOOP ON NAV HISTORY
-			var nav_stack = DevaptNavHistory.history_stack;
-			self.value(context, 'breadcrumbs html content', nav_stack);
-			for(content_key in nav_stack)
-			{
-				var state = nav_stack[content_key];
-				self.assertNotNull(context, 'nav content at [' + content_key + ']', state);
-				self.add_history_item(state);
-			}
-			
-			
-			// RESOVE RENDER
-			arg_deferred.resolve(this);
-			
-			// GET PROMISE
-			var promise = arg_deferred.promise();
-			
-			
-			self.leave(context, 'success: promise is resolved');
-			return promise;
-		}
-		
-		
-		
-		/**
-		 * @public
-		 * @memberof			DevaptBreadcrumbs
-		 * @desc				Add an history item
-		* @param {object}		arg_state		[target object, navigation history state object]
-		 * @return {nothing}
-		 */
-		self.add_history_item = function(arg_state)
-		{
-			var self = this;
-			var context = 'add_history_item(state)';
-			self.enter(context, '');
-			
-			
-			// console.log(arg_state, 'arg_state');
-			self.assertNotNull(context, 'arg_state', arg_state);
-			self.assertNotEmptyString(context, 'arg_state.content_label', arg_state.content_label);
-			if ( self.history_labels[arg_state.content_label] )
-			{
-				self.leave(context, 'success: already in history');
-				return;
-			}
-			
-			self.history_labels[arg_state.content_label] = arg_state;
-			
-			
-			var li_jqo = $('<li>');
-			self.content_jqo.append(li_jqo);
-			
-			var a_jqo = $('<a>');
-			li_jqo.append(a_jqo);
-			
-			a_jqo.attr('href', '#');
-			a_jqo.text(arg_state.content_label);
-			a_jqo.click(
-				(
-					function(state)
-					{
-						return function()
-						{
-							// console.log(state, context + '.onclick');
-							DevaptNavHistory.set_content(state, true);
-						}
-					}
-				)(arg_state)
-			);
-			
-			
-			self.leave(context, 'success');
-		}
-		
-		
-		
-		/**
-		 * @public
-		 * @memberof			DevaptBreadcrumbs
-		 * @desc				On navigation history new item
-		* @param {object}		arg_operands_array		[event object, target object, navigation history state object]
-		 * @return {nothing}
-		 */
-		self.on_nav_history_add = function(arg_operands_array)
-		{
-			var self = this;
-			var context = 'on_nav_history_add(event opds)';
-			self.enter(context, '');
-			
-			
-			var arg_state = arg_operands_array[2];
-			self.add_history_item(arg_state);
-			
-			
-			self.leave(context, 'success');
-		}
+		self.leave(context, 'success: promise is resolved');
+		return promise;
 	}
 	
 	
-	// INTROSPETION : REGISTER CLASS
-	DevaptClasses.register_class(DevaptBreadcrumbs, ['DevaptView'], 'Luc BORIES', '2014-05-09', 'Simple view class to display a breadcrumbs of items.');
 	
-	
-	// INTROSPETION : REGISTER OPTIONS
-	DevaptOptions.register_str_option(DevaptBreadcrumbs, 'list_content_type',		'text', true, []); // text, html
-	DevaptOptions.register_option(DevaptBreadcrumbs, {
-			name: 'list_contents',
-			type: 'array',
-			aliases: [],
-			default_value: [],
-			array_separator: ',',
-			array_type: 'String',
-			format: '',
-			is_required: true,
-			childs: {}
+	/**
+	 * @public
+	 * @memberof			DevaptBreadcrumbs
+	 * @desc				Add an history item
+	* @param {object}		arg_state		[target object, navigation history state object]
+	 * @return {nothing}
+	 */
+	var cb_add_history_item = function(arg_state)
+	{
+		var self = this;
+		var context = 'add_history_item(state)';
+		self.enter(context, '');
+		
+		
+		// console.log(arg_state, 'arg_state');
+		self.assertNotNull(context, 'arg_state', arg_state);
+		self.assertNotEmptyString(context, 'arg_state.content_label', arg_state.content_label);
+		if ( self.history_labels[arg_state.content_label] )
+		{
+			self.leave(context, 'success: already in history');
+			return;
 		}
-	);
+		
+		self.history_labels[arg_state.content_label] = arg_state;
+		
+		
+		var li_jqo = $('<li>');
+		self.content_jqo.append(li_jqo);
+		
+		var a_jqo = $('<a>');
+		li_jqo.append(a_jqo);
+		
+		a_jqo.attr('href', '#');
+		a_jqo.text(arg_state.content_label);
+		a_jqo.click(
+			(
+				function(state)
+				{
+					return function()
+					{
+						// console.log(state, context + '.onclick');
+						DevaptNavHistory.set_content(state, true);
+					}
+				}
+			)(arg_state)
+		);
+		
+		
+		self.leave(context, 'success');
+	}
 	
 	
-	return DevaptBreadcrumbs;
+	
+	/**
+	 * @public
+	 * @memberof			DevaptBreadcrumbs
+	 * @desc				On navigation history new item
+	* @param {object}		arg_operands_array		[event object, target object, navigation history state object]
+	 * @return {nothing}
+	 */
+	var cb_on_nav_history_add = function(arg_operands_array)
+	{
+		var self = this;
+		var context = 'on_nav_history_add(event opds)';
+		self.enter(context, '');
+		
+		// console.log(arg_operands_array, 'breadcrumbs arg_operands_array');
+		var arg_state = arg_operands_array[2];
+		self.add_history_item(arg_state);
+		
+		
+		self.leave(context, 'success');
+	}
+	
+	
+	
+	/* --------------------------------------------- CREATE OBJECT CLASS ------------------------------------------------ */
+	
+	// CREATE AND REGISTER CLASS
+	var class_settings = {
+		infos:{
+			author:'Luc BORIES',
+			created:'2014-06-28',
+			updated:'2014-12-06',
+			description:'Breadrumbs View class.'
+		},
+		properties:{
+			
+		}
+	};
+	var parent_class = DevaptView;
+	var DevaptBreadcrumbsClass = new DevaptClass('DevaptBreadcrumbs', parent_class, class_settings);
+	
+	// METHODS
+	DevaptBreadcrumbsClass.add_public_method('render_self', {}, cb_render_self);
+	DevaptBreadcrumbsClass.add_public_method('add_history_item', {}, cb_add_history_item);
+	DevaptBreadcrumbsClass.add_public_method('on_nav_history_add', {}, cb_on_nav_history_add);
+	
+	// PROPERTIES
+	DevaptBreadcrumbsClass.add_public_obj_property('history_labels',	'',		{}, true, false, []);
+	
+	
+	return DevaptBreadcrumbsClass;
 } );

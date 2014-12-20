@@ -10,8 +10,8 @@
  */
 
 define(
-['Devapt', 'core/traces', 'core/types', 'core/options', 'core/classes', 'views/view'],
-function(Devapt, DevaptTrace, DevaptTypes, DevaptOptions, DevaptClasses, DevaptView)
+['Devapt', 'core/types', 'core/class', 'views/view'],
+function(Devapt, DevaptTypes, DevaptClass, DevaptView)
 {
 	/**
 	 * @public
@@ -22,177 +22,151 @@ function(Devapt, DevaptTrace, DevaptTypes, DevaptOptions, DevaptClasses, DevaptV
 	 * @param {object|null}	arg_options			Associative array of options
 	 * @return {nothing}
 	 */
-	function DevaptInput(arg_name, arg_parent_jqo, arg_options)
+	
+	
+	/**
+	 * @public
+	 * @memberof			DevaptInput
+	 * @desc				Render view
+	 * @param {object}		arg_deferred	deferred object
+	 * @return {object}		deferred promise object
+	 */
+	var cb_render_self = function(arg_deferred)
 	{
 		var self = this;
-		
-		// INHERIT
-		self.inheritFrom = DevaptView;
-		self.inheritFrom(arg_name, arg_parent_jqo, arg_options);
-		
-		// INIT
-		self.trace				= false;
-		self.class_name			= 'DevaptInput';
-		self.is_view			= true;
+		var context = 'render_self(deferred)';
+		self.enter(context, '');
 		
 		
-		/**
-		 * @public
-		 * @memberof			DevaptInput
-		 * @desc				Constructor
-		 * @return {nothing}
-		 */
-		self.DevaptInput_contructor = function()
+		// CHECK DEFEREED
+		self.assertNotNull(context, 'arg_deferred', arg_deferred);
+		
+		// GET NODES
+		self.assertNotNull(context, 'parent_jqo', self.parent_jqo);
+		self.content_jqo = $('<div>');
+		self.parent_jqo.append(self.content_jqo);
+		self.content_jqo.attr('id', self.get_view_id());
+		self.input_jqo =  $('<input type="text">');
+		self.input_jqo.attr('id', self.get_view_id() + '_input');
+		
+		// SET LABEL
+		var label = DevaptTypes.is_not_empty_str(self.label) ? self.label : null;
+		if (label)
 		{
-			// CONSTRUCTOR BEGIN
-			var context = self.class_name + '(' + arg_name + ')';
-			self.enter(context, 'constructor');
-			
-			
-			// INIT OPTIONS
-			var init_option_result = DevaptOptions.set_options_values(self, arg_options, false);
-			if (! init_option_result)
-			{
-				self.error(context + ': init options failure');
-			}
-			
-			
-			// CONSTRUCTOR END
-			self.leave(context, 'success');
+			var label_jqo = $('<label>');
+			label_jqo.text(label);
+			label_jqo.attr('for', self.get_view_id() + '_input');
+			self.content_jqo.append(label_jqo);
+		}
+		self.content_jqo.append(self.input_jqo);
+		
+		// SET PLACEHOLDER
+		var placeholder = DevaptTypes.is_not_empty_str(self.placeholder) ? self.placeholder : null;
+		if (placeholder)
+		{
+			self.input_jqo.attr('placeholder', self.placeholder);
 		}
 		
-		
-		// CONTRUCT INSTANCE
-		self.DevaptInput_contructor();
-		
-		
-		
-		/**
-		 * @public
-		 * @memberof			DevaptInput
-		 * @desc				Render view
-		 * @param {object}		arg_deferred	deferred object
-		 * @return {object}		deferred promise object
-		 */
-		self.render_self = function(arg_deferred)
+		// SET INPUT CONTENT
+		var input_value = DevaptTypes.is_not_empty_str(self.input_value) ? self.input_value : null;
+		if (input_value)
 		{
-			var self = this;
-			var context = 'render_self(deferred)';
-			self.enter(context, '');
-			
-			
-			// CHECK DEFEREED
-			self.assertNotNull(context, 'arg_deferred', arg_deferred);
-			
-			// GET NODES
-			self.assertNotNull(context, 'parent_jqo', self.parent_jqo);
-			self.content_jqo = $('<div>');
-			self.parent_jqo.append(self.content_jqo);
-			self.content_jqo.attr('id', self.get_view_id());
-			self.input_jqo =  $('<input type="text">');
-			self.input_jqo.attr('id', self.get_view_id() + '_input');
-			
-			// SET LABEL
-			var label = DevaptTypes.is_not_empty_str(self.label) ? self.label : null;
-			if (label)
-			{
-				var label_jqo = $('<label>');
-				label_jqo.text(label);
-				label_jqo.attr('for', self.get_view_id() + '_input');
-				self.content_jqo.append(label_jqo);
-			}
-			self.content_jqo.append(self.input_jqo);
-			
-			// SET PLACEHOLDER
-			var placeholder = DevaptTypes.is_not_empty_str(self.placeholder) ? self.placeholder : null;
-			if (placeholder)
-			{
-				self.input_jqo.attr('placeholder', self.placeholder);
-			}
-			
-			// SET INPUT CONTENT
-			var input_value = DevaptTypes.is_not_empty_str(self.input_value) ? self.input_value : null;
-			if (input_value)
-			{
-				self.input_jqo.val(input_value);
-			}
-			
-			// EVENTS CALLBACK
-			var fire_cb = function(arg_event)
-			{
-				var value = self.input_jqo ? self.input_jqo.val() : '';
-				var devapt_event = arg_event.data.name;
-				// console.log(devapt_event, 'input.event');
-				
-				self.fire_event(devapt_event, [value]);
-			};
-			
-			// TRIGGER MOUSE EVENTS
-			if (self.events_click_enabled)
-			{
-				self.input_jqo.on('click',	{ name: 'devapt.input.click' }, fire_cb);
-			}
-			
-			// TRIGGER KEYS EVENTS
-			if (self.events_keydown_enabled)
-			{
-				self.input_jqo.on('keydown',	{ name: 'devapt.input.keydown' }, fire_cb);
-			}
-			if (self.events_keyup_enabled)
-			{
-				self.input_jqo.on('keyup',	{ name: 'devapt.input.changed' }, fire_cb);
-				self.input_jqo.on('keypress',	{ name: 'devapt.input.changed' }, fire_cb);
-			}
-			if (self.events_keypress_enabled)
-			{
-				self.input_jqo.on('keypress',	{ name: 'devapt.input.keypress' }, fire_cb);
-			}
-			
-			// TRIGGER CLIPBOARD EVENTS
-			if (self.events_cut_enabled)
-			{
-				self.input_jqo.on('cut',		{ name: 'devapt.input.changed' }, fire_cb);
-			}
-			if (self.events_copy_enabled)
-			{
-				self.input_jqo.on('copy',	{ name: 'devapt.input.copy' }, fire_cb);
-			}
-			if (self.events_paste_enabled)
-			{
-				self.input_jqo.on('paste',	{ name: 'devapt.input.changed' }, fire_cb);
-			}
-			
-			// RESOLVE AND GET PROMISE
-			arg_deferred.resolve();
-			var promise = arg_deferred.promise();
-			
-			
-			self.leave(context, 'success: promise is resolved');
-			return promise;
+			self.input_jqo.val(input_value);
 		}
+		
+		// EVENTS CALLBACK
+		var fire_cb = function(arg_event)
+		{
+			var value = self.input_jqo ? self.input_jqo.val() : '';
+			var devapt_event = arg_event.data.name;
+			// console.log(devapt_event, 'input.event');
+			
+			self.fire_event(devapt_event, [value]);
+		};
+		
+		// TRIGGER MOUSE EVENTS
+		if (self.events_click_enabled)
+		{
+			self.input_jqo.on('click',	{ name: 'devapt.input.click' }, fire_cb);
+		}
+		
+		// TRIGGER KEYS EVENTS
+		if (self.events_keydown_enabled)
+		{
+			self.input_jqo.on('keydown',	{ name: 'devapt.input.keydown' }, fire_cb);
+		}
+		if (self.events_keyup_enabled)
+		{
+			self.input_jqo.on('keyup',	{ name: 'devapt.input.changed' }, fire_cb);
+			self.input_jqo.on('keypress',	{ name: 'devapt.input.changed' }, fire_cb);
+		}
+		if (self.events_keypress_enabled)
+		{
+			self.input_jqo.on('keypress',	{ name: 'devapt.input.keypress' }, fire_cb);
+		}
+		
+		// TRIGGER CLIPBOARD EVENTS
+		if (self.events_cut_enabled)
+		{
+			self.input_jqo.on('cut',		{ name: 'devapt.input.changed' }, fire_cb);
+		}
+		if (self.events_copy_enabled)
+		{
+			self.input_jqo.on('copy',	{ name: 'devapt.input.copy' }, fire_cb);
+		}
+		if (self.events_paste_enabled)
+		{
+			self.input_jqo.on('paste',	{ name: 'devapt.input.changed' }, fire_cb);
+		}
+		
+		// RESOLVE AND GET PROMISE
+		arg_deferred.resolve();
+		var promise = arg_deferred.promise();
+		
+		
+		self.leave(context, 'success: promise is resolved');
+		return promise;
 	}
 	
 	
-	// INTROSPETION : REGISTER CLASS
-	DevaptClasses.register_class(DevaptInput, ['DevaptView'], 'Luc BORIES', '2013-11-02', 'Simple input view class to input a text.');
 	
+	/* --------------------------------------------- CREATE OBJECT CLASS ------------------------------------------------ */
 	
-	// INTROSPETION : REGISTER OPTIONS
-	DevaptOptions.register_str_option(DevaptInput, 'placeholder',				null, false, []);
+	// CREATE AND REGISTER CLASS
+	var class_settings = {
+		infos:{
+			author:'Luc BORIES',
+			created:'2014-05-09',
+			updated:'2014-12-06',
+			description:'Input view class.'
+		},
+		properties:{
+			
+		}
+	};
+	var parent_class = DevaptView;
+	var DevaptInputClass = new DevaptClass('DevaptInput', parent_class, class_settings);
+	
+	// METHODS
+	DevaptInputClass.add_public_method('render_self', {}, cb_render_self);
+	
+	// PROPERTIES
+		// PLACEHOLDER
+	DevaptInputClass.add_public_str_property('placeholder',					'input placeholder string', null, false, false, []);
 	
 		// MOUSE EVENTS
-	DevaptOptions.register_bool_option(DevaptInput, 'events_click_enabled',		false, false, []);
+	DevaptInputClass.add_public_bool_property('events_click_enabled',		'', false, false, false, []);
 	
 		// KEY EVENTS
-	DevaptOptions.register_bool_option(DevaptInput, 'events_keydown_enabled',	false, false, []);
-	DevaptOptions.register_bool_option(DevaptInput, 'events_keyup_enabled',		false, false, []);
-	DevaptOptions.register_bool_option(DevaptInput, 'events_keypress_enabled',	false, false, []);
+	DevaptInputClass.add_public_bool_property('events_keydown_enabled',		'', false, false, false, []);
+	DevaptInputClass.add_public_bool_property('events_keyup_enabled',		'', false, false, false, []);
+	DevaptInputClass.add_public_bool_property('events_keypress_enabled',	'', false, false, false, []);
 	
 		// CLIPBOARD EVENTS
-	DevaptOptions.register_bool_option(DevaptInput, 'events_cut_enabled',		false, false, []);
-	DevaptOptions.register_bool_option(DevaptInput, 'events_copy_enabled',		false, false, []);
-	DevaptOptions.register_bool_option(DevaptInput, 'events_paste_enabled',		false, false, []);
+	DevaptInputClass.add_public_bool_property('events_cut_enabled',			'', false, false, false, []);
+	DevaptInputClass.add_public_bool_property('events_copy_enabled',		'', false, false, false, []);
+	DevaptInputClass.add_public_bool_property('events_paste_enabled',		'', false, false, false, []);
 	
 	
-	return DevaptInput;
+	return DevaptInputClass;
 } );

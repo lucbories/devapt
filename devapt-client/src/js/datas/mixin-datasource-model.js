@@ -11,8 +11,8 @@
  */
 
 define(
-['Devapt', 'core/types'],
-function(Devapt, DevaptTypes)
+['Devapt', 'core/types', 'core/class'],
+function(Devapt, DevaptTypes, DevaptClass)
 {
 	/**
 	 * @mixin				DevaptMixinDatasoureModel
@@ -27,9 +27,8 @@ function(Devapt, DevaptTypes)
 		 * @desc				Init model data source
 		 * @return {nothing}
 		 */
-		init_data_source_model: function()
+		init_data_source_model: function(self)
 		{
-			var self = this;
 			self.push_trace(self.trace, self.mixin_trace_datasource);
 			var context = 'init_data_source_model()';
 			self.enter(context, '');
@@ -75,10 +74,11 @@ function(Devapt, DevaptTypes)
 					
 					model_promise.then(
 						function(model) {
+							// console.log(context + '[' + self.name + ':model is found');
 							self.assertNotNull(context, 'model', model);
-							self.assertNotNull(context, 'self.items_model', self.items_model);
+							self.assertNotNull(context, 'self.items_model_obj', self.items_model_obj);
 							
-							var engine_promise = self.items_model.get_engine();
+							var engine_promise = self.items_model_obj.get_engine();
 							
 							return engine_promise;
 						},
@@ -89,7 +89,7 @@ function(Devapt, DevaptTypes)
 					).then(
 						function(engine)
 						{
-							// console.log(engine, 'engine');
+							// console.log(context + '[' + self.name + ':engine is found');
 							self.assertNotNull(context, 'engine', engine);
 							
 							var query = self.get_query();
@@ -107,6 +107,7 @@ function(Devapt, DevaptTypes)
 					).then(
 						function(result)
 						{
+							// console.log(context + '[' + self.name + ':result is found');
 							var items = [];
 							
 							if ( DevaptTypes.is_object(result) )
@@ -185,6 +186,34 @@ function(Devapt, DevaptTypes)
 	};
 	
 	
-	return DevaptMixinDatasoureModel;
+	
+	/* --------------------------------------------- CREATE CLASS ------------------------------------------------ */
+	
+	// CLASS DEFINITION
+	var class_settings= {
+		'infos':{
+			'author':'Luc BORIES',
+			'created':'2014-10-15',
+			'updated':'2014-12-06',
+			'description':'Mixin methods for classes datas source.'
+		}
+	};
+	
+	// CREATE CLASS
+	var DevaptMixinDatasoureModelClass = new DevaptClass('DevaptMixinDatasoureModel', null, class_settings);
+	
+	// METHODS
+	// DevaptMixinDatasoureModelClass.infos.ctor = DevaptMixinDatasoureModel.init_data_source_model;
+	DevaptMixinDatasoureModelClass.add_public_method('init_data_source_model', {}, DevaptMixinDatasoureModel.init_data_source_model);
+	DevaptMixinDatasoureModelClass.add_public_method('get_items_array_model', {}, DevaptMixinDatasoureModel.get_items_array_model);
+	
+	// PROPERTIES
+	
+	
+	// BUILD CLASS
+	DevaptMixinDatasoureModelClass.build_class();
+	
+	
+	return DevaptMixinDatasoureModelClass;
 }
 );

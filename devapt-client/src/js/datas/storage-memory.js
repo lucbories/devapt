@@ -9,8 +9,8 @@
  * @license		Apache License Version 2.0, January 2004; see LICENSE.txt or http://www.apache.org/licenses/
  */
 
-define(['Devapt', 'core/traces', 'core/types', 'core/classes', 'core/object'],
-function(Devapt, DevaptTraces, DevaptTypes, DevaptClasses, DevaptObject)
+define(['Devapt', 'core/types', 'core/class', 'core/object'],
+function(Devapt, DevaptTypes, DevaptClass, DevaptObject)
 {
 	/**
 	 * @public

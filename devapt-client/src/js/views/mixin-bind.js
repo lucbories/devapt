@@ -11,8 +11,8 @@
  */
 
 define(
-['Devapt', 'core/types', 'core/options', 'core/resources'],
-function(Devapt, DevaptTypes, DevaptOptions, DevaptResources)
+['Devapt', 'core/types', 'core/class', 'core/resources'],
+function(Devapt, DevaptTypes, DevaptClass, DevaptResources)
 {
 	/**
 	 * @mixin				DevaptMixinBind
@@ -35,9 +35,8 @@ function(Devapt, DevaptTypes, DevaptOptions, DevaptResources)
 		 * @desc				Init mixin
 		 * @return {nothing}
 		 */
-		mixin_init_bind: function()
+		mixin_init_bind: function(self)
 		{
-			var self = this;
 			self.push_trace(self.trace, self.mixin_bind_trace);
 			var context = 'mixin_init_bind()';
 			self.enter(context, '');
@@ -84,7 +83,7 @@ function(Devapt, DevaptTypes, DevaptOptions, DevaptResources)
 					continue;
 				}
 				var source_name = source['name'];
-				var source_event = source['event'];
+				var source_events = source['event'];
 				var source_kindof = source['kindof'];
 				var source_field = source['field'];
 				var target_name = target['name'];
@@ -93,20 +92,17 @@ function(Devapt, DevaptTypes, DevaptOptions, DevaptResources)
 				var target_kindof = target['kindof'];
 				var target_field = target['field'];
 				
-				// if ( ! DevaptTypes.is_object(target) )
-				// {
-					// self.step(context, 'bad target object');
-					// continue;
-				// }
-				
 				// BIND WITH SOURCE=THIS AND TARGET FROM NAME
 				if ( DevaptTypes.is_not_empty_str(target_name) )
 				{
+					self.step(context, 'link has target name [' + target_name + ']');
+					
 					var promise = DevaptResources.get_resource_instance(target_name);
 					promise.done(
 						function(target_obj)
 						{
-							self.bind(source_event, target_action, source_kindof, source_field, target_obj, target_kindof, target_field);
+							self.step(context, 'link target object is found [' + target_obj.name + ']');
+							self.bind(source_events, target_action, source_kindof, source_field, target_obj, target_kindof, target_field);
 						}
 					);
 					
@@ -118,18 +114,25 @@ function(Devapt, DevaptTypes, DevaptOptions, DevaptResources)
 				// BIND WITH SOURCE=THIS AND TARGET FROM NAMES
 				if ( DevaptTypes.is_not_empty_str(target_names) )
 				{
+					self.step(context, 'link has target names');
+					
 					target_names = target_names.split(',');
 					for(target_name_key in target_names)
 					{
 						var target_name = target_names[target_name_key];
+						
+						self.step(context, 'loop on link target name [' + target_name + ']');
+						
 						var promise = DevaptResources.get_resource_instance(target_name);
 						promise.done(
 							function(target_obj)
 							{
-								self.bind(source_event, target_action, source_kindof, source_field, target_obj, target_kindof, target_field);
+								self.step(context, 'link target object is found  [' + target_obj.name + ']');
+								self.bind(source_events, target_action, source_kindof, source_field, target_obj, target_kindof, target_field);
 							}
 						);
 					}
+					
 					self.leave(context, self.msg_success_promise);
 					self.pop_trace();
 					return;
@@ -138,11 +141,14 @@ function(Devapt, DevaptTypes, DevaptOptions, DevaptResources)
 				// BIND WITH SOURCE FROM NAME AND TARGET=THIS
 				if ( DevaptTypes.is_not_empty_str(source_name) )
 				{
+					self.step(context, 'link has source name');
+					
 					var promise = DevaptResources.get_resource_instance(source_name);
 					promise.done(
 						function(source_obj)
 						{
-							source_obj.bind(source_event, target_action, source_kindof, source_field, self, target_kindof, target_field);
+							self.step(context, 'link source object is found');
+							source_obj.bind(source_events, target_action, source_kindof, source_field, self, target_kindof, target_field);
 						}
 					);
 					
@@ -150,7 +156,6 @@ function(Devapt, DevaptTypes, DevaptOptions, DevaptResources)
 					self.pop_trace();
 					return;
 				}
-				// self.bind(source_event, target_action, source_kindof, source_field, self, target_kindof, target_field);
 			}
 			
 			
@@ -179,6 +184,75 @@ function(Devapt, DevaptTypes, DevaptOptions, DevaptResources)
 			self.push_trace(self.trace, self.mixin_bind_trace);
 			var context = 'bind(events,action,set,item,obj,set,item)';
 			self.enter(context, '');
+			
+			
+			// TARGET FORWARDS EVENT
+			if ( DevaptTypes.is_object(arg_object_2.links_forwarder) )
+			{
+				self.step(context, 'link target object is a links forwarder');
+				
+				for(forwarder_key in arg_object_2.links_forwarder)
+				{
+					self.step(context, 'loop on target object link forward');
+					
+					var forwarder_obj = arg_object_2.links_forwarder[forwarder_key];
+					var forwarder_source_name = forwarder_obj.source.name;
+					var forwarder_target_names = forwarder_obj.target.name || forwarder_obj.target.names;
+					if ( DevaptTypes.is_string(forwarder_source_name) && DevaptTypes.is_string(forwarder_target_names) )
+					{
+						self.step(context, 'target object link forward has valid source name and target names');
+						
+						// CHECK SOURCE NAME
+						if ( ! DevaptTypes.is_not_empty_str(forwarder_source_name) )
+						{
+							self.step(context, 'source name is not a valid string');
+							self.value(context, 'forwarder_source_name', forwarder_source_name);
+							
+							self.leave(context, self.msg_failure);
+							self.pop_trace();
+							return;
+						}
+						
+						// CHECK TARGET NAMES
+						if ( DevaptTypes.is_not_empty_str(forwarder_target_names) )
+						{
+							forwarder_target_names = forwarder_target_names.split(',');
+						}
+						if ( ! DevaptTypes.is_array(forwarder_target_names) )
+						{
+							self.step(context, 'target names is not an array');
+							self.value(context, 'forwarder_target_names', forwarder_target_names);
+							
+							self.leave(context, self.msg_failure);
+							self.pop_trace();
+							return;
+						}
+						
+						// TEST SOURCE
+						if (self.name === forwarder_source_name || forwarder_source_name === '*')
+						{
+							self.step(context, 'target object bind because link self.name === target object link forward source name');
+							
+							// LOOP ON TARGETS NAMES
+							for(target_name_key in forwarder_target_names)
+							{
+								var target_name = forwarder_target_names[target_name_key];
+								
+								self.step(context, 'loop on link target name [' + target_name + ']');
+								
+								self.bind(arg_events_filter, arg_bind_action, arg_set_1, arg_item_1, target_name, arg_set_2, arg_item_2);
+							}
+							
+							self.leave(context, self.msg_success);
+							self.pop_trace();
+							return;
+						}
+					}
+				}
+			}
+			
+			
+			self.step(context, 'default self bind');
 			
 			
 			// GET EVENTS FILTER
@@ -457,12 +531,44 @@ function(Devapt, DevaptTypes, DevaptOptions, DevaptResources)
 	 * @param {object}		arg_prototype
 	 * @return {nothing}
 	 */
-	DevaptMixinBind.register_options = function(arg_prototype)
+/*	DevaptMixinBind.register_options = function(arg_prototype)
 	{
 		DevaptOptions.register_obj_option(arg_prototype, 'links', null, false, []);
+		DevaptOptions.register_obj_option(arg_prototype, 'links_forwarder', null, false, []);
+	};*/
+	
+	
+	
+	/* --------------------------------------------- CREATE MIXIN CLASS ------------------------------------------------ */
+	
+	// MIXIN CLASS DEFINITION
+	var class_settings= {
+		'infos':{
+			'author':'Luc BORIES',
+			'created':'2014-07-14',
+			'updated':'2014-12-06',
+			'description':'Mixin methods for bind feature.'
+		}
 	};
+	var DevaptMixinBindClass = new DevaptClass('DevaptMixinBind', null, class_settings);
+	
+	// METHODS
+	DevaptMixinBindClass.infos.ctor = DevaptMixinBind.mixin_init_bind;
+	DevaptMixinBindClass.add_public_method('bind', {}, DevaptMixinBind.bind);
+	DevaptMixinBindClass.add_public_method('on_binding', {}, DevaptMixinBind.on_binding);
+	DevaptMixinBindClass.add_public_method('on_binding_on_filters', {}, DevaptMixinBind.on_binding_on_filters);
+	DevaptMixinBindClass.add_public_method('on_binding_on_records', {}, DevaptMixinBind.on_binding_on_records);
+	DevaptMixinBindClass.add_public_method('on_binding_on_record', {}, DevaptMixinBind.on_binding_on_record);
+	
+	// PROPERTIES
+	DevaptMixinBindClass.add_public_bool_property('mixin_bind_trace',		'', false, false, false, []);
+	DevaptMixinBindClass.add_public_object_property('links',				'', null, false, false, []);
+	DevaptMixinBindClass.add_public_object_property('links_forwarder',		'', null, false, false, []);
+	
+	// BUID MIXIN CLASS
+	DevaptMixinBindClass.build_class();
 	
 	
-	return DevaptMixinBind;
+	return DevaptMixinBindClass;
 }
 );

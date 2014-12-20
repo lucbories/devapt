@@ -11,8 +11,8 @@
  */
 
 define(
-['core/types'],
- function(DevaptTypes)
+['core/types', 'core/class'],
+ function(DevaptTypes, DevaptClass)
 {
 	/**
 	 * @mixin				DevaptMixinEventListener
@@ -34,8 +34,21 @@ define(
 		 * @public
 		 * @desc				List of events callbacks
 		 */
-		events_callbacks: new Object(),
+		events_callbacks: null,
 		
+		
+		/**
+		 * @memberof			DevaptMixinEventListener
+		 * @public
+		 * @method				init_mixin_event_listener(self)
+		 * @desc				Init mixin
+		 * @param {object}		self		instance object
+		 * @return {nothing}
+		 */
+		init_mixin_event_listener: function(self)
+		{
+			self.events_callbacks = new Object();
+		},
 		
 		
 		/**
@@ -214,5 +227,52 @@ define(
 	};
 	
 	
-	return DevaptMixinEventListener;
+	
+	/* --------------------------------------------- CREATE MIXIN CLASS ------------------------------------------------ */
+	
+	// MIXIN CLASS DEFINITION
+	var class_settings= {
+		'infos':{
+			'author':'Luc BORIES',
+			'created':'2013-06-13',
+			'updated':'2014-12-05',
+			'description':'Mixin methods for event listening.'
+		}
+	};
+	var DevaptMixinEventListenerClass = new DevaptClass('DevaptMixinEventListener', null, class_settings);
+	
+	// METHODS
+	DevaptMixinEventListenerClass.infos.ctor = DevaptMixinEventListener.init_mixin_event_listener;
+	DevaptMixinEventListenerClass.add_public_method('has_event_callback', {}, DevaptMixinEventListener.has_event_callback);
+	DevaptMixinEventListenerClass.add_public_method('add_event_callback', {}, DevaptMixinEventListener.add_event_callback);
+	DevaptMixinEventListenerClass.add_public_method('remove_event_callback', {}, DevaptMixinEventListener.remove_event_callback);
+	
+	// PROPERTIES
+/*	DevaptMixinEventListenerClass.add_property_record(
+		{
+			name: 'events_callbacks',
+			description:'',
+			aliases: [],
+			
+			visibility:'pulic',
+			is_public:true,
+			is_initializable:false,
+			is_required: false,
+			
+			type: 'object',
+			default_value: new Object(),
+			array_separator: '',
+			array_type: '',
+			format: '',
+			
+			children: {
+			},
+		}
+	);*/
+	
+	// BUILD CLASS
+	DevaptMixinEventListenerClass.build_class();
+	
+	
+	return DevaptMixinEventListenerClass;
 } );

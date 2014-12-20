@@ -17,7 +17,7 @@ define(['Devapt', 'core/traces', 'core/types'], function(Devapt, DevaptTraces, D
 	 * @class
 	 * @desc		Devapt classes features container
 	 */
-	var DevaptClasses = function() {};
+	var DevaptClasses = {};
 	
 	
 	/**
@@ -26,7 +26,204 @@ define(['Devapt', 'core/traces', 'core/types'], function(Devapt, DevaptTraces, D
 	 * @static
 	 * @desc		Trace flag
 	 */
-	DevaptClasses.classes_trace = false;
+	DevaptClasses.classes_trace = true;
+	
+	
+	/**
+	 * @memberof	DevaptClasses
+	 * @public
+	 * @static
+	 * @desc		Array of class objects
+	 */
+	DevaptClasses.introspect_classes_array = [];
+
+
+
+	/**
+	 * @memberof	DevaptClasses
+	 * @public
+	 * @static
+	 * @desc		Associative array of class instances objects
+	 */
+	DevaptClasses.introspect_classes_by_name = {};
+	
+	
+	/**
+	 * @memberof	DevaptClasses
+	 * @public
+	 * @static
+	 * @desc		Array of class instances objects
+	 */
+	DevaptClasses.introspect_instances_array = [];
+
+
+
+	/**
+	 * @memberof	DevaptClasses
+	 * @public
+	 * @static
+	 * @desc		Associative array of class objects
+	 */
+	DevaptClasses.introspect_instances_by_name = {};
+	
+	
+	
+	/**
+	 * @memberof			DevaptClasses
+	 * @public
+	 * @static
+	 * @method				DevaptClasses.get_classes_array()
+	 * @desc				Get the classes array
+	 * @return {array}		Array of objects
+	 */
+	DevaptClasses.get_classes_array = function()
+	{
+		return DevaptClasses.introspect_classes_array;
+	}
+	
+	/**
+	 * @memberof			DevaptClasses
+	 * @public
+	 * @static
+	 * @method				DevaptClasses.get_classes_map()
+	 * @desc				Get the classes map
+	 * @return {object}		Associative array of objects
+	 */
+	DevaptClasses.get_classes_map = function()
+	{
+		return DevaptClasses.introspect_classes_by_name;
+	}
+	/**
+	 * @memberof			DevaptClasses
+	 * @public
+	 * @static
+	 * @method				DevaptClasses.get_instances_array()
+	 * @desc				Get the classes instances array
+	 * @return {array}		Array of objects
+	 */
+	DevaptClasses.get_instances_array = function()
+	{
+		return DevaptClasses.introspect_instances_array;
+	}
+	
+	/**
+	 * @memberof			DevaptClasses
+	 * @public
+	 * @static
+	 * @method				DevaptClasses.get_instances_map()
+	 * @desc				Get the classes instances map
+	 * @return {object}		Associative array of objects
+	 */
+	DevaptClasses.get_instances_map = function()
+	{
+		return DevaptClasses.introspect_instances_by_name;
+	}
+	
+	
+	/**
+	 * @memberof			DevaptClasses
+	 * @public
+	 * @static
+	 * @method				DevaptClasses.add_class(class)
+	 * @desc				Add a class object
+	 * @param {object}		arg_class_object		class object
+	 * @return {nothing}
+	 */
+	DevaptClasses.add_class = function(arg_class_object)
+	{
+		DevaptClasses.introspect_classes_by_name[arg_class_object.infos.class_name] = arg_class_object;
+		DevaptClasses.introspect_classes_array.push(arg_class_object);
+	}
+	
+	
+	/**
+	 * @memberof			DevaptClasses
+	 * @public
+	 * @static
+	 * @method				DevaptClasses.get_class(class name)
+	 * @desc				Get a class object
+	 * @param {string}		arg_class_name		class name
+	 * @return {object}		class object
+	 */
+	DevaptClasses.get_class = function(arg_class_name)
+	{
+		var obj = DevaptClasses.introspect_classes_by_name[arg_class_name];
+		return obj ? obj : null;
+	}
+	
+	
+	/**
+	 * @memberof			DevaptClasses
+	 * @public
+	 * @static
+	 * @method				DevaptClasses.add_instance(instance)
+	 * @desc				Add a class instance object
+	 * @param {object}		arg_instance_object		class instance object
+	 * @return {nothing}
+	 */
+	DevaptClasses.add_instance = function(arg_instance_object)
+	{
+		DevaptClasses.introspect_instances_by_name[arg_instance_object.name] = arg_instance_object;
+		DevaptClasses.introspect_instances_array.push(arg_instance_object);
+	}
+	
+	
+	/**
+	 * @memberof			DevaptClasses
+	 * @public
+	 * @static
+	 * @method				DevaptClasses.get_instance(instance name)
+	 * @desc				Get an instance object
+	 * @param {string}		arg_instance_name		instance name
+	 * @return {object}		instance object
+	 */
+	DevaptClasses.get_instance = function(arg_instance_name)
+	{
+		var obj = DevaptClasses.introspect_instances_by_name[arg_instance_name];
+		return obj ? obj : null;
+	}
+	
+	
+	
+	/**
+	 * @memberof				DevaptClasses
+	 * @public
+	 * @static
+	 * @method					DevaptClasses.new_class_uid()
+	 * @desc					
+	 * @return {integer}
+	 */
+	DevaptClasses.new_class_uid = function()
+	{
+		var context = 'DevaptClasses.new_class_uid()';
+		DevaptTraces.trace_enter(context, '', DevaptClasses.classes_trace);
+		
+		DevaptTraces.trace_leave(context, '', DevaptClasses.classes_trace);
+		return DevaptClasses.introspect_classes_array.length;
+	}
+	
+	
+	
+	/**
+	 * @memberof				DevaptClasses
+	 * @public
+	 * @static
+	 * @method					DevaptClasses.new_instance_uid()
+	 * @desc					
+	 * @return {integer}
+	 */
+	DevaptClasses.new_instance_uid = function()
+	{
+		var context = 'DevaptClasses.new_instance_uid()';
+		DevaptTraces.trace_enter(context, '', DevaptClasses.classes_trace);
+		
+		DevaptTraces.trace_leave(context, '', DevaptClasses.classes_trace);
+		return DevaptClasses.introspect_instances_array.length;
+	}
+	
+	
+	
+	
 	
 
 	/**
@@ -38,7 +235,7 @@ define(['Devapt', 'core/traces', 'core/types'], function(Devapt, DevaptTraces, D
 	 * @param {object|string}	arg_class_value			A class name, a class instance, a class prototype
 	 * @return {string}
 	 */
-	DevaptClasses.get_class_name = function(arg_class_value)
+/*	DevaptClasses.get_class_name = function(arg_class_value)
 	{
 		var context = 'DevaptClasses.get_class_name(class value)';
 		DevaptTraces.trace_enter(context, '', DevaptClasses.classes_trace);
@@ -105,55 +302,8 @@ define(['Devapt', 'core/traces', 'core/types'], function(Devapt, DevaptTraces, D
 		DevaptTraces.trace_leave(context, 'bad class value', DevaptClasses.classes_trace);
 		return null;
 	}
+*/
 
-
-
-	/**
-	 * @memberof	DevaptClasses
-	 * @public
-	 * @static
-	 * @desc		Classes array os class record
-	 * 				 class record is an object as :
-	 *					{
-	 * 						name: '...',
-	 * 						proto: DevaptAAA,
-	 *						parents_array: [],
-	 *						parents_by_name: {},
-	 * 						childs_array: [],
-	 * 						childs_by_name: {},
-	 *						options_array: [],
-	 * 						options_by_name: {},
-	 *						author: '...',
-	 * 						updated: '2013-08-21',
-	 *						description: '...'
-	 * 					}
-	 */
-	DevaptClasses.introspect_classes_array = [];
-
-
-
-	/**
-	 * @memberof	DevaptClasses
-	 * @public
-	 * @static
-	 * @desc		Classes associative array
-	 */
-	DevaptClasses.introspect_classes_by_name = {};
-
-
-
-	/**
-	 * @memberof			DevaptClasses
-	 * @public
-	 * @static
-	 * @method				DevaptClasses.get_classes_array()
-	 * @desc				Get the classes array
-	 * @return {array}		Array of object
-	 */
-	DevaptClasses.get_classes_array = function()
-	{
-		return DevaptClasses.introspect_classes_array;
-	}
 
 
 
@@ -166,10 +316,13 @@ define(['Devapt', 'core/traces', 'core/types'], function(Devapt, DevaptTraces, D
 	 * @param {object}		arg_classe_obj
 	 * @return {nothing}
 	 */
-	DevaptClasses.register_class_record = function(arg_class_obj)
+/*	DevaptClasses.register_class_record = function(arg_class_obj)
 	{
 		var context = 'DevaptClasses.register_class_record(class record)';
 		DevaptTraces.trace_enter(context, '', DevaptClasses.classes_trace);
+		DevaptTraces.trace_value(context, 'typeof class object', typeof arg_class_obj, DevaptClasses.classes_trace);
+		DevaptTraces.trace_value(context, 'class object', arg_class_obj, DevaptClasses.classes_trace);
+		// console.log(arg_class_obj, 'arg_class_obj');
 		
 		
 		// CHECK CLASS RECORD
@@ -201,17 +354,24 @@ define(['Devapt', 'core/traces', 'core/types'], function(Devapt, DevaptTraces, D
 		// REGISTER CLASS RECORD
 		DevaptClasses.introspect_classes_array.push(arg_class_obj);
 		DevaptClasses.introspect_classes_by_name[arg_class_obj.name] = arg_class_obj;
-		
+		DevaptTraces.trace_value(context, 'typeof arg_class_obj', typeof arg_class_obj, DevaptClasses.classes_trace);
+		DevaptTraces.trace_value(context, 'arg_class_obj', arg_class_obj, DevaptClasses.classes_trace);
+					
 		// UPDATE INHERITANCES
 		for(parent_index in arg_class_obj.parents_array)
 		{
 			var parent_value = arg_class_obj.parents_array[parent_index];
+			// console.log(parent_value, 'parent_value');
 			if ( DevaptTypes.is_string(parent_value) )
 			{
 				var class_record = DevaptClasses.introspect_classes_by_name[parent_value];
 				if ( ! DevaptTypes.is_object(class_record) )
 				{
+					DevaptClasses.classes_trace = true;
+					DevaptTraces.trace_value(context, 'typeof inherited class record', typeof class_record, DevaptClasses.classes_trace);
+					DevaptTraces.trace_value(context, 'inherited class record', class_record, DevaptClasses.classes_trace);
 					DevaptTraces.error(context + ': bad inherited class record [' + parent_value + ']');
+					DevaptClasses.classes_trace = false;
 					DevaptTraces.trace_leave(context, 'bad inherited class record', DevaptClasses.classes_trace);
 					return;
 				}
@@ -226,7 +386,7 @@ define(['Devapt', 'core/traces', 'core/types'], function(Devapt, DevaptTraces, D
 		
 		
 		DevaptTraces.trace_leave(context, 'success', DevaptClasses.classes_trace);
-	}
+	}*/
 
 
 
@@ -243,19 +403,22 @@ define(['Devapt', 'core/traces', 'core/types'], function(Devapt, DevaptTraces, D
 	 * @param {string}		arg_class_desc
 	 * @return {nothing}
 	 */
-	DevaptClasses.register_class = function(arg_class_proto, arg_class_parents, arg_class_author, arg_class_updated, arg_class_desc)
+/*	DevaptClasses.register_class = function(arg_class_proto, arg_class_parents, arg_class_author, arg_class_updated, arg_class_desc)
 	{
 		var context = 'DevaptClasses.register_class(proto,parents,author,updated,descr)';
 		DevaptTraces.trace_enter(context, '', DevaptClasses.classes_trace);
+		DevaptTraces.trace_value(context, 'typeof arg_class_proto', typeof arg_class_proto, DevaptClasses.classes_trace);
+		DevaptTraces.trace_value(context, 'arg_class_proto', arg_class_proto, DevaptClasses.classes_trace);
+		// console.log(arg_class_proto, 'arg_class_proto');
 		
 		
 		// CHECK CLASS NAME
-		if ( ! DevaptTypes.is_function(arg_class_proto) )
-		{
-			DevaptTraces.error(context + ': bad class prototype');
-			DevaptTraces.trace_leave(context, 'bad class prototype', DevaptClasses.classes_trace);
-			return;
-		}
+		// if ( ! DevaptTypes.is_function(arg_class_proto) )
+		// {
+			// DevaptTraces.error(context + ': bad class prototype');
+			// DevaptTraces.trace_leave(context, 'bad class prototype', DevaptClasses.classes_trace);
+			// return;
+		// }
 		
 		// CHECK CLASS PARENTS
 		if ( ! DevaptTypes.is_array(arg_class_parents) )
@@ -300,7 +463,7 @@ define(['Devapt', 'core/traces', 'core/types'], function(Devapt, DevaptTraces, D
 		
 		
 		DevaptTraces.trace_leave(context, 'success', DevaptClasses.classes_trace);
-	}
+	}*/
 	
 	
 	return DevaptClasses;

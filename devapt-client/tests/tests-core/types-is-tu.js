@@ -56,7 +56,7 @@ function(Devapt, DevaptTraces, DevaptTypes)
 		);
 		
 		
-		test('DevaptTypes.is/are array,object,null,undefined', 5+3+10+3+12+3+3+10+14,
+		test('DevaptTypes.is/are array,object,null,undefined', 5+3+10+3+12+3+3+5+7+10+14,
 			function()
 			{
 				// 5
@@ -115,6 +115,24 @@ function(Devapt, DevaptTraces, DevaptTypes)
 				equal(DevaptTypes.is_object(0),							false, 'DevaptTypes.is_object: 0');
 				equal(DevaptTypes.is_object({}),						true, 'DevaptTypes.is_object: {}');
 				equal(DevaptTypes.is_object({a:'a'}),					true, 'DevaptTypes.is_object: {a:\'a\'}');
+				
+				// is_empty_object: 5
+				equal(DevaptTypes.is_empty_object(0),					false, 'DevaptTypes.is_empty_object: 0');
+				equal(DevaptTypes.is_empty_object({}),					true, 'DevaptTypes.is_empty_object: {}');
+				equal(DevaptTypes.is_empty_object(new Object()),		true, 'DevaptTypes.is_empty_object: new Object');
+				equal(DevaptTypes.is_empty_object(new Object()['a']=2),	false, 'DevaptTypes.is_empty_object: new Object[a]=2');
+				equal(DevaptTypes.is_empty_object({a:'a'}),				false, 'DevaptTypes.is_empty_object: {a:a}');
+				
+				// is_plain_object: 7
+				equal(DevaptTypes.is_plain_object(0),					false, 'DevaptTypes.is_plain_object: 0');
+				equal(DevaptTypes.is_plain_object({}),					true, 'DevaptTypes.is_plain_object: {}');
+				equal(DevaptTypes.is_plain_object(new Object()),		true, 'DevaptTypes.is_plain_object: new Object');
+				var o = new Object();
+				o['a']=2;
+				equal(DevaptTypes.is_plain_object(o),					true, 'DevaptTypes.is_plain_object: new Object[a]=2');
+				equal(DevaptTypes.is_plain_object({a:'a'}),				true, 'DevaptTypes.is_plain_object: {a:a}');
+				equal(DevaptTypes.is_plain_object(document),			false, 'DevaptTypes.is_plain_object: document');
+				equal(DevaptTypes.is_plain_object(window),				false, 'DevaptTypes.is_plain_object: window');
 				
 				// are_object: 10
 				equal(DevaptTypes.are_object(0),						false, 'DevaptTypes.are_object: 0');

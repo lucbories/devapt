@@ -9,7 +9,8 @@
  * @license		Apache License Version 2.0, January 2004; see LICENSE.txt or http://www.apache.org/licenses/
  */
 
-define(['Devapt', 'core/types'], function(Devapt, DevaptTypes)
+define(['Devapt', 'core/types', 'core/class'],
+function(Devapt, DevaptTypes, DevaptClass)
 {
 	/**
 	 * @memberof			DevaptTraces
@@ -50,7 +51,6 @@ define(['Devapt', 'core/types'], function(Devapt, DevaptTypes)
 	 * @static
 	 */
 	DevaptTraces.log_indent_sep = '-';
-	
 	
 	
 	/**
@@ -569,8 +569,8 @@ define(['Devapt', 'core/types'], function(Devapt, DevaptTypes)
 		}
 		DevaptTraces.log_indent();
 	}
-
-
+	
+	
 	/**
 	 * @memberof			DevaptTraces
 	 * @public
@@ -726,6 +726,28 @@ define(['Devapt', 'core/types'], function(Devapt, DevaptTypes)
 			DevaptTraces.debug( { level:'DEBUG', step:null, context:arg_context, text:arg_label + '=[' + DevaptTypes.get_value_str(arg_value) + ']' } );
 		}
 	}
+
+
+	/**
+	 * @memberof			DevaptTraces
+	 * @public
+	 * @static
+	 * @method				DevaptTraces.trace_value(arg_context, arg_label, arg_value, arg_trace_enabled)
+	 * @desc				Trace: variable
+	 * @param {string}		arg_context			trace context
+	 * @param {string}		arg_label			trace variable label
+	 * @param {string}		arg_value			trace variable value
+	 * @param {boolean}		arg_trace_enabled	trace is enabled flag
+	 * @return				nothing
+	 */
+	DevaptTraces.trace_value = function(arg_context, arg_label, arg_value, arg_trace_enabled)
+	{
+		if (arg_trace_enabled)
+		{
+			// console.log('DevaptTraces.trace_value:'+arg_trace_enabled);
+			DevaptTraces.debug( { level:'DEBUG', step:null, context:arg_context, text:arg_label + '=[' + DevaptTypes.get_value_str(arg_value) + ']' } );
+		}
+	}
 	
 	
 	// ENABLE LOG APPENDER
@@ -733,5 +755,41 @@ define(['Devapt', 'core/types'], function(Devapt, DevaptTypes)
 	DevaptTraces.appender_memory.enable();
 	
 	
-	return DevaptTraces;
+	
+	/* --------------------------------------------- CREATE MIXIN CLASS ------------------------------------------------ */
+	
+	// TRACE MIXIN CLASS DEFINITION
+	var class_settings= {
+		'infos':{
+			'author':'Luc BORIES',
+			'created':'2014-07-01',
+			'updated':'2014-12-05',
+			'description':'Static class to log application activity (debug, info, warn, error).'
+		}
+	};
+	var DevaptTracesClass = new DevaptClass('DevaptTracesClass', null, class_settings);
+	
+	// DevaptTracesClass.add_static_property('boolean', 'throw_on_error', 'throw an exception when an error is logged', false, false, false, 'private');
+	// DevaptTracesClass.add_static_property('string', 'log_indent_str', 'indentation state string', '', false, false, 'private');
+	// DevaptTracesClass.add_static_property('string', 'log_indent_sep', 'indentation separator', '-', false, false, 'private');
+	// DevaptTracesClass.add_static_property('integer', 'log_indent_index', 'indentation state index', 0, false, false, 'private');
+	
+	DevaptTracesClass.add_static_method('trace_info', {}, DevaptTraces.trace_info);
+	DevaptTracesClass.add_static_method('trace_warn', {}, DevaptTraces.trace_warn);
+	DevaptTracesClass.add_static_method('trace_enter', {}, DevaptTraces.trace_enter);
+	DevaptTracesClass.add_static_method('trace_separator', {}, DevaptTraces.trace_separator);
+	DevaptTracesClass.add_static_method('trace_step', {}, DevaptTraces.trace_step);
+	DevaptTracesClass.add_static_method('trace_leave', {}, DevaptTraces.trace_leave);
+	DevaptTracesClass.add_static_method('trace_error', {}, DevaptTraces.trace_error);
+	DevaptTracesClass.add_static_method('error', {}, DevaptTraces.trace_error);
+	DevaptTracesClass.add_static_method('debug', {}, DevaptTraces.debug);
+	DevaptTracesClass.add_static_method('log_indent', {}, DevaptTraces.log_indent);
+	DevaptTracesClass.add_static_method('log_unindent', {}, DevaptTraces.log_unindent);
+	DevaptTracesClass.add_static_method('trace_var', {}, DevaptTraces.trace_var);
+	DevaptTracesClass.add_static_method('trace_value', {}, DevaptTraces.trace_value);
+	
+	DevaptTracesClass.build_class();
+	
+	
+	return DevaptTracesClass;
 } );

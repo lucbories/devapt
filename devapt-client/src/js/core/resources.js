@@ -10,8 +10,8 @@
  */
 
 define(
-['Devapt', 'core/traces', 'core/types', 'core/cache', 'core/application'],
-function(Devapt, DevaptTraces, DevaptTypes, DevaptCache, DevaptApplication)
+['Devapt', 'core/traces', 'core/types', 'core/classes', 'core/cache', 'core/application'],
+function(Devapt, DevaptTraces, DevaptTypes, DevaptClasses, DevaptCache, DevaptApplication)
 {
 	/**
 	 * @memberof	DevaptResources
@@ -43,7 +43,7 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptCache, DevaptApplication)
 	 * @static
 	 * @desc		Resources instances repository cache (access by name)
 	 */
-	DevaptResources.resources_instances_by_name = {};
+	// DevaptResources.resources_instances_by_name = {};
 	
 	/**
 	 * @memberof	DevaptResources
@@ -165,6 +165,7 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptCache, DevaptApplication)
 			// REJECT DEFERRED
 			master_deferred.reject();
 			
+			// console.log(arg_resource_name, 'arg_resource_name');
 			DevaptTraces.trace_error(context, 'bad resource name', DevaptResources.resources_trace);
 			return promise;
 		}
@@ -255,7 +256,7 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptCache, DevaptApplication)
 	 * @param {object}				arg_resource_instance	resource declaration (view/model/... object)
 	 * @return {boolean}			success of failure
 	 */
-	DevaptResources.add_resource_instance = function (arg_resource_instance)
+/*	DevaptResources.add_resource_instance = function (arg_resource_instance)
 	{
 		var context = 'DevaptResources.add_resource_instance(arg_resource_instance)';
 		DevaptTraces.trace_enter(context, '', DevaptResources.resources_trace);
@@ -269,12 +270,12 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptCache, DevaptApplication)
 		}
 		
 		// REGISTER RESOURCE INSTANCE
-		DevaptResources.resources_instances_by_name[arg_resource_instance.name] = arg_resource_instance;
+		// DevaptResources.resources_instances_by_name[arg_resource_instance.name] = arg_resource_instance;
 		
 		
 		DevaptTraces.trace_leave(context, 'resource instance registered for [' + arg_resource_instance.name + ']', DevaptResources.resources_trace);
 		return true;
-	}
+	}*/
 	
 	
 	
@@ -311,7 +312,8 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptCache, DevaptApplication)
 		
 		
 		// GET RESOURCE FROM REPOSITORY
-		var resource_instance = DevaptResources.resources_instances_by_name[arg_resource_name];
+		// var resource_instance = DevaptResources.resources_instances_by_name[arg_resource_name];
+		var resource_instance = DevaptClasses.get_instance(arg_resource_name);
 		if ( DevaptTypes.is_object(resource_instance) )
 		{
 			// CREATE MAIN DEFERRED OBJECT

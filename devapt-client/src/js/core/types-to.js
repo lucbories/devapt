@@ -636,6 +636,11 @@ define(['Devapt', 'core/traces', 'core/types-is'], function(Devapt, DevaptTraces
 	 */
 	DevaptTypes.convert_value = function(arg_value, arg_default_value, arg_target_type, arg_items_sep, arg_field_def)
 	{
+		if (!arg_target_type)
+		{
+			return null;
+		}
+		
 		var target_type = arg_target_type.toLocaleLowerCase();
 		var target_value = arg_default_value;
 		

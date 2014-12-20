@@ -10,7 +10,8 @@
  * @license		Apache License Version 2.0, January 2004; see LICENSE.txt or http://www.apache.org/licenses/
  */
 
-define( ['core/traces', 'core/types'], function(DevaptTraces, DevaptTypes)
+define( ['core/traces', 'core/types', 'core/class'],
+function(DevaptTraces, DevaptTypes, DevaptClass)
 {
 	/**
 	 * @mixin			DevaptMixinTrace
@@ -32,8 +33,21 @@ define( ['core/traces', 'core/types'], function(DevaptTraces, DevaptTypes)
 		 * @public
 		 * @desc				Trace stack
 		 */
-		trace_stack: new Array(),
+		trace_stack: null,
 		
+		
+		/**
+		 * @memberof			DevaptMixinTrace
+		 * @public
+		 * @method				init_mixin_trace(self)
+		 * @desc				Init mixin
+		 * @param {object}		self		instance object
+		 * @return {nothing}
+		 */
+		init_mixin_trace: function(self)
+		{
+			self.trace_stack = new Array();
+		},
 		
 		
 		/**
@@ -300,5 +314,61 @@ define( ['core/traces', 'core/types'], function(DevaptTraces, DevaptTypes)
 	};
 	
 	
-	return DevaptMixinTrace;
+	
+	/* --------------------------------------------- CREATE MIXIN CLASS ------------------------------------------------ */
+	
+	// TRACE MIXIN CLASS DEFINITION
+	var class_settings= {
+		'infos':{
+			'author':'Luc BORIES',
+			'created':'2014-07-01',
+			'updated':'2014-12-05',
+			'description':'Mixin to log application activity (debug, info, warn, error).'
+		}
+	};
+	var DevaptMixinTraceClass = new DevaptClass('DevaptMixinTraceClass', null, class_settings);
+	
+	// METHODS
+	DevaptMixinTraceClass.infos.ctor = DevaptMixinTrace.init_mixin_trace;
+	DevaptMixinTraceClass.add_public_method('enter', {}, DevaptMixinTrace.enter);
+	DevaptMixinTraceClass.add_public_method('step', {}, DevaptMixinTrace.step);
+	DevaptMixinTraceClass.add_public_method('warn', {}, DevaptMixinTrace.warn);
+	DevaptMixinTraceClass.add_public_method('info', {}, DevaptMixinTrace.info);
+	// DevaptMixinTraceClass.add_public_method('debug', {}, DevaptMixinTrace.debug);
+	DevaptMixinTraceClass.add_public_method('leave', {}, DevaptMixinTrace.leave);
+	DevaptMixinTraceClass.add_public_method('leave_or_error', {}, DevaptMixinTrace.leave_or_error);
+	DevaptMixinTraceClass.add_public_method('error', {}, DevaptMixinTrace.error);
+	DevaptMixinTraceClass.add_public_method('value', {}, DevaptMixinTrace.value);
+	DevaptMixinTraceClass.add_public_method('separator', {}, DevaptMixinTrace.separator);
+	
+	DevaptMixinTraceClass.add_public_method('push_trace', {}, DevaptMixinTrace.push_trace);
+	DevaptMixinTraceClass.add_public_method('pop_trace', {}, DevaptMixinTrace.pop_trace);
+	
+	// PROPERTIES
+/*	DevaptMixinTraceClass.add_property_record(
+		{
+			name: 'trace_stack',
+			description:'',
+			aliases: [],
+			
+			visibility:'pulic',
+			is_public:true,
+			is_required: false,
+			is_initializable:false,
+			
+			type: 'array',
+			default_value: new Array(),
+			array_separator: '',
+			array_type: '',
+			format: '',
+			
+			children: {}
+		}
+	);*/
+	
+	// BUILD
+	DevaptMixinTraceClass.build_class();
+	
+	
+	return DevaptMixinTraceClass;
 } );

@@ -90,6 +90,7 @@ namespace Devapt\Resources;
 // DEVAPT IMPORTS
 use \Devapt\Core\Trace;
 use \Devapt\Security\DbConnexions;
+use \Devapt\Security\Authorization;
 use \Devapt\Models\Sql\SqlEngine;
 
 class Model extends AbstractResource
@@ -262,6 +263,15 @@ class Model extends AbstractResource
 	 * @brief		Get model access create
 	 * @return		string
 	 */
+	public function hasModelAccessCreate()
+	{
+		return ( ! Authorization::isEnabled() ) || Authorization::hasRole($this->model_access_create);
+	}
+	
+	/**
+	 * @brief		Get model access create
+	 * @return		string
+	 */
 	public function getModelAccessCreate()
 	{
 		return $this->model_access_create;
@@ -278,6 +288,15 @@ class Model extends AbstractResource
 	}
 	
 	
+	
+	/**
+	 * @brief		Get model access read
+	 * @return		string
+	 */
+	public function hasModelAccessRead()
+	{
+		return ( ! Authorization::isEnabled() ) || Authorization::hasRole($this->model_access_read);
+	}
 	
 	/**
 	 * @brief		Get model access read
@@ -304,6 +323,15 @@ class Model extends AbstractResource
 	 * @brief		Get model access update
 	 * @return		string
 	 */
+	public function hasModelAccessUpdate()
+	{
+		return ( ! Authorization::isEnabled() ) || Authorization::hasRole($this->model_access_update);
+	}
+	
+	/**
+	 * @brief		Get model access update
+	 * @return		string
+	 */
 	public function getModelAccessUpdate()
 	{
 		return $this->model_access_update;
@@ -320,6 +348,15 @@ class Model extends AbstractResource
 	}
 	
 	
+	
+	/**
+	 * @brief		Get model access delete
+	 * @return		string
+	 */
+	public function hasModelAccessDelete()
+	{
+		return ( ! Authorization::isEnabled() ) || Authorization::hasRole($this->model_access_delete);
+	}
 	
 	/**
 	 * @brief		Get model access delete

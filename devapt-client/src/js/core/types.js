@@ -118,5 +118,84 @@ define(['Devapt', 'core/traces', 'core/types-to'], function(Devapt, DevaptTraces
 	}
 	
 	
+	/**
+	 * @memberof				DevaptTypes
+	 * @public
+	 * @method					clone_object(arg_object_to_clone)
+	 * @desc					Duplicate an existing object
+	 * @param {object}			arg_object_to_clone		Object to clone
+	 * @return {object}			Clone
+	 */
+	DevaptTypes.clone_object = function(arg_object_to_clone)
+	{
+		// console.log(arg_object_to_clone, 'DevaptTypes.arg_object_to_clone');
+		
+		// NULL OR SIMPLE TYPE (NOT OBJECT)
+		if (arg_object_to_clone === null || arg_object_to_clone === true || arg_object_to_clone === false)
+		{
+			// console.log(arg_object_to_clone, 'clone null or boolean');
+			return arg_object_to_clone;
+		}
+		
+		// EMPTY ARRAY
+		if ( DevaptTypes.is_empty_array(arg_object_to_clone) )
+		{
+			// console.log(arg_object_to_clone, 'clone empty array');
+			return new Array();
+		}
+		
+		// EMPTY OBJECT
+		if ( DevaptTypes.is_empty_object(arg_object_to_clone)  )
+		{
+			// console.log(arg_object_to_clone, 'clone empty object');
+			return new Object();
+		}
+		
+		// STRING
+		if ( DevaptTypes.is_string(arg_object_to_clone) )
+		{
+			// console.log(arg_object_to_clone, 'clone string');
+			return arg_object_to_clone;
+		}
+		
+		// DATE
+		if ( DevaptTypes.is_date(arg_object_to_clone) )
+		{
+			// console.log(arg_object_to_clone, 'clone date');
+			return new Date(arg_object_to_clone.getTime());
+		}
+		
+		// NOT EMPTY ARRAY
+		if ( DevaptTypes.is_array(arg_object_to_clone) )
+		{
+			// console.log(arg_object_to_clone, 'clone array');
+			var tmp = new Array();
+			for(key in arg_object_to_clone)
+			{
+				// console.log(arg_object_to_clone[key], 'clone array item [' + key + ']');
+				var cloned_object = DevaptTypes.clone_object(arg_object_to_clone[key]);
+				tmp.push(cloned_object);
+			}
+			return tmp;
+		}
+		
+		// NOT EMPTY OBJECT
+		if ( DevaptTypes.is_object(arg_object_to_clone) )
+		{
+			if (arg_object_to_clone.selector || (arg_object_to_clone.length > 0 && arg_object_to_clone.tagName) )
+			{
+				// console.log(arg_object_to_clone, 'clone jQuery object');
+				return arg_object_to_clone;
+			}
+			
+			// console.log(arg_object_to_clone, 'clone object');
+			var cloned_object = jQuery.extend(true, new Object(), arg_object_to_clone);
+			return cloned_object;
+		}
+		
+		// console.log(arg_object_to_clone, 'not cloned object');
+		return arg_object_to_clone;
+	}
+	
 	return DevaptTypes;
 } );

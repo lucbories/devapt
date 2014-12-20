@@ -11,8 +11,8 @@
  */
 
 define(
-['Devapt', 'core/types', 'core/resources'],
-function(Devapt, DevaptTypes, DevaptResources)
+['Devapt', 'core/types', 'core/class', 'core/resources'],
+function(Devapt, DevaptTypes, DevaptClass, DevaptResources)
 {
 	/**
 	 * @mixin				DevaptMixinDatasoureResources
@@ -27,9 +27,9 @@ function(Devapt, DevaptTypes, DevaptResources)
 		 * @desc				Init resources data source
 		 * @return {nothing}
 		 */
-		init_data_source_resources: function()
+		init_data_source_resources: function(self)
 		{
-			var self = this;
+			// var self = this;
 			self.push_trace(self.trace, self.mixin_trace_datasource);
 			var context = 'init_data_source_resources()';
 			self.enter(context, '');
@@ -100,6 +100,34 @@ function(Devapt, DevaptTypes, DevaptResources)
 	};
 	
 	
-	return DevaptMixinDatasoureResources;
+	
+	/* --------------------------------------------- CREATE CLASS ------------------------------------------------ */
+	
+	// CLASS DEFINITION
+	var class_settings= {
+		'infos':{
+			'author':'Luc BORIES',
+			'created':'2014-10-15',
+			'updated':'2014-12-06',
+			'description':'Mixin methods for resources datas source.'
+		}
+	};
+	
+	// CREATE CLASS
+	var DevaptMixinDatasoureResourcesClass = new DevaptClass('DevaptMixinDatasoureResources', null, class_settings);
+	
+	// METHODS
+	// DevaptMixinDatasoureResourcesClass.infos.ctor = DevaptMixinDatasoureResources.init_data_source_resources;
+	DevaptMixinDatasoureResourcesClass.add_public_method('init_data_source_resources', {}, DevaptMixinDatasoureResources.init_data_source_resources);
+	DevaptMixinDatasoureResourcesClass.add_public_method('get_items_array_resources', {}, DevaptMixinDatasoureResources.get_items_array_resources);
+	
+	// PROPERTIES
+	
+	
+	// BUILD CLASS
+	DevaptMixinDatasoureResourcesClass.build_class();
+	
+	
+	return DevaptMixinDatasoureResourcesClass;
 }
 );

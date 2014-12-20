@@ -11,8 +11,8 @@
  */
 
 define(
-['Devapt', 'core/types', 'core/options', 'core/classes', 'core/resources'],
-function(Devapt, DevaptTypes, DevaptOptions, DevaptClasses, DevaptResources)
+['Devapt', 'core/types', 'core/class', 'core/resources'],
+function(Devapt, DevaptTypes, DevaptClass, DevaptResources)
 {
 	/**
 	 * @mixin				DevaptMixinFiltered
@@ -45,45 +45,47 @@ function(Devapt, DevaptTypes, DevaptOptions, DevaptClasses, DevaptResources)
 		 * @desc				Init mixin
 		 * @return {nothing}
 		 */
-		mixin_init_filtered: function()
+		mixin_init_filtered: function(self)
 		{
-			var self = this;
 			self.push_trace(self.trace, self.mixin_trace_filtered);
 			var context = 'mixin_init_filtered()';
 			self.enter(context, '');
 			
 			
-			if (self.filtered && self.filtered.enabled && DevaptTypes.is_not_empty_str(self.filtered.event) && DevaptTypes.is_not_empty_str(self.filtered.source) )
+			if (self.filtered && self.filtered.enabled)
 			{
-				self.mixin_filtered_enabled = true;
-				var promise = DevaptResources.get_resource_instance(self.filtered.source);
-				
-				promise.done(
-					function(view)
-					{
-						self.filtered.view = view;
-						view.add_event_callback(self.filtered.event, [self, self.on_filtered_event], false);
-					}
-				);
-				
-				// promise.fail(
-					// function()
-					// {
-						// console.log(self.filtered_jqo, 'self.filtered_jqo');
-						// console.log(self.filtered, 'self.filtered');
-						
-						// self.leave(context, '');
-						// self.pop_trace();
-						// return;
-					// }
-				// );
-				
-				// self.value(context, 'add callback on event', self.filtered.event);
-				// self.add_event_callback(self.filtered.event, [self, self.on_filtered_event], false);
-			}
-			else
-			{
-				console.error(self.filtered, 'self.filtered');
+				if ( DevaptTypes.is_not_empty_str(self.filtered.event) && DevaptTypes.is_not_empty_str(self.filtered.source) )
+				{
+					self.mixin_filtered_enabled = true;
+					var promise = DevaptResources.get_resource_instance(self.filtered.source);
+					
+					promise.done(
+						function(view)
+						{
+							self.filtered.view = view;
+							view.add_event_callback(self.filtered.event, [self, self.on_filtered_event], false);
+						}
+					);
+					
+					// promise.fail(
+						// function()
+						// {
+							// console.log(self.filtered_jqo, 'self.filtered_jqo');
+							// console.log(self.filtered, 'self.filtered');
+							
+							// self.leave(context, '');
+							// self.pop_trace();
+							// return;
+						// }
+					// );
+					
+					// self.value(context, 'add callback on event', self.filtered.event);
+					// self.add_event_callback(self.filtered.event, [self, self.on_filtered_event], false);
+				}
+				else
+				{
+					console.error(self.filtered, 'self.filtered');
+				}
 			}
 			
 			
@@ -248,11 +250,37 @@ function(Devapt, DevaptTypes, DevaptOptions, DevaptClasses, DevaptResources)
 	 * @desc				Register mixin options
 	 * @return {nothing}
 	 */
-	DevaptMixinFiltered.register_options = function(arg_prototype)
-	{
+	// DevaptMixinFiltered.register_options = function(arg_prototype)
+	// {
+	// };
+	
+	
+	
+	/* --------------------------------------------- CREATE MIXIN CLASS ------------------------------------------------ */
+	
+	// MIXIN CLASS DEFINITION
+	var class_settings= {
+		'infos':{
+			'author':'Luc BORIES',
+			'created':'2014-08-23',
+			'updated':'2014-12-06',
+			'description':'Mixin methods for datas filtered feature for containers.'
+		}
 	};
+	var DevaptMixinFilteredClass = new DevaptClass('DevaptMixinFiltered', null, class_settings);
+	
+	// METHODS
+	DevaptMixinFilteredClass.infos.ctor = DevaptMixinFiltered.mixin_init_filtered;
+	DevaptMixinFilteredClass.add_public_method('on_filtered_event', {}, DevaptMixinFiltered.on_filtered_event);
+	DevaptMixinFilteredClass.add_public_method('apply_filtered_value', {}, DevaptMixinFiltered.apply_filtered_value);
+	
+	// PROPERTIES
+	DevaptMixinFilteredClass.add_public_obj_property('filtered',	'',	null, false, false, []);
+	
+	// BUILD MIXIN CLASS
+	DevaptMixinFilteredClass.build_class();
 	
 	
-	return DevaptMixinFiltered;
+	return DevaptMixinFilteredClass;
 }
 );

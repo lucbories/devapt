@@ -3,7 +3,7 @@
  * @desc        Mixin of template methods for view rendering
  * @see			DevaptMixinTemplate
  * @ingroup     DEVAPT_CORE
- * @date        2014-07-114
+ * @date        2014-07-14
  * @version		1.0.x
  * @author      Luc BORIES
  * @copyright	Copyright (C) 2011 Luc BORIES All rights reserved.
@@ -11,8 +11,8 @@
  */
 
 define(
-['Devapt', 'core/types', 'core/options', 'core/resources', 'core/template'],
-function(Devapt, DevaptTypes, DevaptOptions, DevaptResources, DevaptTemplate)
+['Devapt', 'core/types', 'core/class', 'core/resources', 'core/template'],
+function(Devapt, DevaptTypes, DevaptClass, DevaptResources, DevaptTemplate)
 {
 	/**
 	 * @mixin				DevaptMixinTemplate
@@ -392,7 +392,7 @@ function(Devapt, DevaptTypes, DevaptOptions, DevaptResources, DevaptTemplate)
 	 * @desc				Register mixin options
 	 * @return {nothing}
 	 */
-	DevaptMixinTemplate.register_options = function(arg_prototype)
+/*	DevaptMixinTemplate.register_options = function(arg_prototype)
 	{
 		// TEMPLATE OPTIONS
 		DevaptOptions.register_bool_option(arg_prototype, 'template_enabled',		false, false, ['view_template_enabled']);
@@ -400,9 +400,49 @@ function(Devapt, DevaptTypes, DevaptOptions, DevaptResources, DevaptTemplate)
 		DevaptOptions.register_str_option(arg_prototype, 'template_file_name',		null, false, ['view_template_file_name']);
 		DevaptOptions.register_str_option(arg_prototype, 'template_tags',			null, false, ['view_template_tags']);
 		DevaptOptions.register_str_option(arg_prototype, 'template_bindings',		null, false, ['view_template_bindings']);
+	};*/
+	
+	
+	
+	/* --------------------------------------------- CREATE MIXIN CLASS ------------------------------------------------ */
+	
+	// MIXIN CLASS DEFINITION
+	var class_settings= {
+		'infos':{
+			'author':'Luc BORIES',
+			'created':'2014-07-14',
+			'updated':'2014-12-06',
+			'description':'Mixin methods for template rendering.'
+		}
 	};
 	
 	
-	return DevaptMixinTemplate;
+	/**
+	 * @mixin				DevaptMixinTemplateClass
+	 * @public
+	 * @desc				Mixin of methods for template rendering
+	 */
+	var DevaptMixinTemplateClass = new DevaptClass('DevaptMixinTemplate', null, class_settings);
+	
+	DevaptMixinTemplateClass.add_public_method('mixin_template_init', {}, DevaptMixinTemplate.mixin_init);
+	DevaptMixinTemplateClass.add_public_method('render_template', {}, DevaptMixinTemplate.render_template);
+	DevaptMixinTemplateClass.add_public_method('get_view_tags', {}, DevaptMixinTemplate.get_view_tags);
+	DevaptMixinTemplateClass.add_public_method('get_view_tags_arrays', {}, DevaptMixinTemplate.get_view_tags_arrays);
+	DevaptMixinTemplateClass.add_public_method('get_view_bindings', {}, DevaptMixinTemplate.get_view_bindings);
+	DevaptMixinTemplateClass.add_public_method('get_this_tag', {}, DevaptMixinTemplate.get_this_tag);
+	
+	DevaptMixinTemplateClass.add_public_bool_property('template_enabled',		'', false, false, false, ['view_template_enabled']);
+	DevaptMixinTemplateClass.add_public_str_property('template_string',			'', null, false, false, ['view_template_string']);
+	DevaptMixinTemplateClass.add_public_str_property('template_file_name',		'', null, false, false, ['view_template_file_name']);
+	DevaptMixinTemplateClass.add_public_str_property('template_tags',			'', null, false, false, ['view_template_tags']);
+	DevaptMixinTemplateClass.add_public_str_property('template_bindings',		'', null, false, false, ['view_template_bindings']);
+	DevaptMixinTemplateClass.add_public_array_property('template_arrays_1',		'', null, false, false, [], 'string', ',');
+	DevaptMixinTemplateClass.add_public_array_property('template_arrays_2',		'', null, false, false, [], 'string', ',');
+	DevaptMixinTemplateClass.add_public_array_property('template_arrays_3',		'', null, false, false, [], 'string', ',');
+	
+	DevaptMixinTemplateClass.build_class();
+	
+	
+	return DevaptMixinTemplateClass;
 }
 );
