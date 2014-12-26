@@ -750,6 +750,20 @@ function(Devapt, DevaptTypes, DevaptClass)
 	}
 	
 	
+	/**
+	 * @memberof			DevaptTraces
+	 * @public
+	 * @static
+	 * @method				DevaptTraces.get_logs()
+	 * @desc				Get all log messages
+	 * @return {array}
+	 */
+	DevaptTraces.get_logs = function()
+	{
+		return DevaptTraces.appender_memory.logs;
+	}
+	
+	
 	// ENABLE LOG APPENDER
 	DevaptTraces.appender_console.enable();
 	DevaptTraces.appender_memory.enable();
@@ -787,6 +801,7 @@ function(Devapt, DevaptTypes, DevaptClass)
 	DevaptTracesClass.add_static_method('log_unindent', {}, DevaptTraces.log_unindent);
 	DevaptTracesClass.add_static_method('trace_var', {}, DevaptTraces.trace_var);
 	DevaptTracesClass.add_static_method('trace_value', {}, DevaptTraces.trace_value);
+	DevaptTracesClass.add_static_method('get_logs', {}, DevaptTraces.get_logs);
 	
 	DevaptTracesClass.build_class();
 	

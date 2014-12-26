@@ -382,6 +382,7 @@ function(Devapt, DevaptTypes, DevaptClass,
 	DevaptMixinDatasoureClass.add_public_str_property('items_source',			'', 'inline', false, false, ['view_items_source']); // inline / model / events / resources
 	DevaptMixinDatasoureClass.add_public_str_property('items_source_format',	'',	'array', false, false, ['view_items_source_format']); // json / array
 
+	DevaptMixinDatasoureClass.add_public_bool_property('items_distinct',		'',	false, false, false, []); // items are distinct ?
 	DevaptMixinDatasoureClass.add_public_str_property('items_iterator',			'', 'records', false, false, []); // items iterator : records / fields
 	DevaptMixinDatasoureClass.add_public_array_property('items_fields',			'', [], false, false, [], 'string', ','); // item fields
 	DevaptMixinDatasoureClass.add_public_str_property('items_format',			'', null, false, false, []); // item format

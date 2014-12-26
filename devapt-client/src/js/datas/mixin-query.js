@@ -89,6 +89,38 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptQuery)
 		/**
 		 * @public
 		 * @memberof				DevaptMixinQuery
+		 * @desc					Register a query object (a DevaptQuery instance)
+		 * @param {object}			arg_query		query object
+		 * @return {nothing}
+		 */
+		add_query: function(arg_query)
+		{
+			var self = this;
+			self.push_trace(self.trace, self.mixin_trace_query);
+			var context = 'add_query(query)';
+			self.enter(context, '');
+			
+			
+			// CHECK QUERY
+			if ( ! DevaptTypes.is_object(arg_query) )
+			{
+				self.leave(context, 'failure: bad query');
+				self.pop_trace();
+				return;
+			}
+			
+			// REGISTER QUERY
+			self.mixin_queries_by_name[arg_query.name] = arg_query;
+			
+			
+			self.leave(context, '');
+			self.pop_trace();
+		},
+		
+		
+		/**
+		 * @public
+		 * @memberof				DevaptMixinQuery
 		 * @desc					Get the default query (a DevaptQuery instance)
 		 * @return {object}
 		 */
@@ -183,6 +215,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptQuery)
 	// METHODS
 	DevaptMixinQueryClass.infos.ctor = DevaptMixinQuery.mixin_init_query;
 	DevaptMixinQueryClass.add_public_method('get_query_by_name', {}, DevaptMixinQuery.get_query_by_name);
+	DevaptMixinQueryClass.add_public_method('add_query', {}, DevaptMixinQuery.add_query);
 	DevaptMixinQueryClass.add_public_method('get_query', {}, DevaptMixinQuery.get_query);
 	DevaptMixinQueryClass.add_public_method('add_field_value_filter', {}, DevaptMixinQuery.add_field_value_filter);
 	

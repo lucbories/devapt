@@ -36,10 +36,16 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptResources)
 		 * @return {nothing}
 		 */
 		mixin_init_bind: function(self)
-		{
-			self.push_trace(self.trace, self.mixin_bind_trace);
+		{		
+			self.push_trace(self.trace, DevaptMixinBind.mixin_bind_trace);
 			var context = 'mixin_init_bind()';
 			self.enter(context, '');
+			
+			
+			// DEBUG
+			// console.log(self.name, 'mixin_init_bind: self.name');
+			// console.log(self, 'self');
+			// console.log(self.links, 'self.links');
 			
 			
 			// TEST IF A LINKS OPTION IS SET
@@ -60,7 +66,6 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptResources)
 					....links.selectlink.target.field=login
 			*/
 			// LOOP ON LINKS
-			// console.log(self.links, 'self.links');
 			for(link_key in self.links)
 			{
 				self.value(context, 'link_key', link_key);
@@ -181,7 +186,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptResources)
 		bind: function(arg_events_filter, arg_bind_action, arg_set_1, arg_item_1, arg_object_2, arg_set_2, arg_item_2)
 		{
 			var self = this;
-			self.push_trace(self.trace, self.mixin_bind_trace);
+			self.push_trace(self.trace, DevaptMixinBind.mixin_bind_trace);
 			var context = 'bind(events,action,set,item,obj,set,item)';
 			self.enter(context, '');
 			
@@ -326,9 +331,14 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptResources)
 		on_binding: function(arg_event_obj, arg_bind_action, arg_set_1, arg_item_1, arg_set_2, arg_item_2, arg_event_opds)
 		{
 			var self = this;
-			self.push_trace(self.trace, self.mixin_bind_trace);
+			self.push_trace(self.trace, DevaptMixinBind.mixin_bind_trace);
 			var context = 'on_bindings(event,action,set,item,opds)';
 			self.enter(context, '');
+			
+			
+			// DEBUG
+			// console.info(self, 'self');
+			// console.log(arg_event_obj, 'arg_event_obj');
 			
 			
 			switch(arg_set_1 + '-' + arg_set_2)
@@ -371,7 +381,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptResources)
 		on_binding_on_filters: function(arg_event_obj, arg_bind_action, arg_item_1, arg_item_2, arg_event_opds)
 		{
 			var self = this;
-			self.push_trace(self.trace, self.mixin_bind_trace);
+			self.push_trace(self.trace, DevaptMixinBind.mixin_bind_trace);
 			var context = 'on_binding_on_filters(event,actio,item,opds)';
 			self.enter(context, '');
 			
@@ -437,7 +447,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptResources)
 		on_binding_on_records: function(arg_event_obj, arg_bind_action, arg_item_1, arg_item_2, arg_event_opds)
 		{
 			var self = this;
-			self.push_trace(self.trace, self.mixin_bind_trace);
+			self.push_trace(self.trace, DevaptMixinBind.mixin_bind_trace);
 			var context = 'on_binding_on_records(event,actio,item,opds)';
 			self.enter(context, '');
 			
@@ -477,7 +487,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptResources)
 		on_binding_on_record: function(arg_event_obj, arg_bind_action, arg_item_1, arg_item_2, arg_event_opds)
 		{
 			var self = this;
-			self.push_trace(self.trace, self.mixin_bind_trace);
+			self.push_trace(self.trace, DevaptMixinBind.mixin_bind_trace);
 			var context = 'on_binding_on_record(event,actio,item,opds)';
 			self.enter(context, '');
 			
@@ -561,7 +571,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptResources)
 	DevaptMixinBindClass.add_public_method('on_binding_on_record', {}, DevaptMixinBind.on_binding_on_record);
 	
 	// PROPERTIES
-	DevaptMixinBindClass.add_public_bool_property('mixin_bind_trace',		'', false, false, false, []);
+	// DevaptMixinBindClass.add_public_bool_property('mixin_bind_trace',		'', false, false, false, []);
 	DevaptMixinBindClass.add_public_object_property('links',				'', null, false, false, []);
 	DevaptMixinBindClass.add_public_object_property('links_forwarder',		'', null, false, false, []);
 	

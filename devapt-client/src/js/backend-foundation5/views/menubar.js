@@ -171,6 +171,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptResources, DevaptView, DevaptAp
 				return deferred.promise();
 			}
 		);
+		// console.log(promise, 'promise');
 		
 		
 		self.leave(context, 'success: render promise is async');
@@ -290,7 +291,9 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptResources, DevaptView, DevaptAp
 			
 			var position	= DevaptTypes.to_list_item(menu_declaration['position'], ['left', 'right'], 'left');
 			var parent_jqo	= (position === 'left') ? left_jqo : right_jqo;
-			self.assertTrue(context, 'render menu', self.render_top_menubar_menu(menu_declaration, parent_jqo) );
+			var menu_render_result = self.render_top_menubar_menu(menu_declaration, parent_jqo);
+			// console.log(menu_render_result, 'menu_render_result');
+			self.assertTrue(context, 'render menu', menu_render_result);
 		}
 		
 		
@@ -370,6 +373,8 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptResources, DevaptView, DevaptAp
 		
 		// DEBUG
 		// self.value(context, 'arg_menu_declaration', arg_menu_declaration);
+		// console.log(self, 'self');
+		// console.log(arg_menu_declaration);
 		// console.log(arg_parent_menu_jqo);
 		
 		

@@ -121,8 +121,9 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptEvents)
 	var DevaptMixinDatasoureEventsClass = new DevaptClass('DevaptMixinDatasoureEvents', null, class_settings);
 	
 	// METHODS
-	DevaptMixinDatasoureEventsClass.infos.ctor = DevaptMixinDatasoureEvents.init_data_source_events;
-	DevaptMixinDatasoureEventsClass.add_public_method('get_items_array_classes', {}, DevaptMixinDatasoureEvents.get_items_array_classes);
+	// DevaptMixinDatasoureEventsClass.infos.ctor = DevaptMixinDatasoureEvents.init_data_source_events;
+	DevaptMixinDatasoureEventsClass.add_public_method('init_data_source_events', {}, DevaptMixinDatasoureEvents.init_data_source_events);
+	DevaptMixinDatasoureEventsClass.add_public_method('get_items_array_events', {}, DevaptMixinDatasoureEvents.get_items_array_events);
 	
 	// PROPERTIES
 	

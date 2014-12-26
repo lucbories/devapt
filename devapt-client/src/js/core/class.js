@@ -362,15 +362,15 @@ function(Devapt, DevaptTypes, DevaptClasses)
 		{
 			arg_method_record = {
 				name:arg_name,
-				visibility:'public',
-				callback:arg_method_cb,
+				visibility:'public'
 			};
 		}
+		
 		if (! arg_method_record.name)
 		{
 			arg_method_record.name = arg_name;
 		}
-		if (! arg_method_record.callback)
+		if (! DevaptTypes.is_function(arg_method_record.callback) && DevaptTypes.is_function(arg_method_cb) )
 		{
 			arg_method_record.callback = arg_method_cb;
 		}
@@ -417,7 +417,7 @@ function(Devapt, DevaptTypes, DevaptClasses)
 			
 			// CREATE METHOD CALLBACK
 			var cb_method = (
-				function(cb_self, arg_method_record, argclass_name)
+				function(cb_self, arg_method_record, arg_class_name)
 				{
 					return function()
 					{
@@ -429,7 +429,7 @@ function(Devapt, DevaptTypes, DevaptClasses)
 						if (method_record.visibility === 'private')
 						{
 							// CHECK PRIVATE CALL
-							if ( argclass_name !== cb_self.infos.class_name)
+							if ( arg_class_name !== cb_self.infos.class_name)
 							{
 								DevaptTraces.trace_leave(context, 'failure: bad private method call', self.trace);
 								return arg_method_record.failure_value;
@@ -445,7 +445,15 @@ function(Devapt, DevaptTypes, DevaptClasses)
 						
 						
 						// CALL METHOD
-						var result_value = arg_method_record.callback.apply(this, arguments);
+						var result_value = null;
+						if (arg_method_record.callback)
+						{
+							result_value = arg_method_record.callback.apply(this, arguments);
+						}
+						else
+						{
+							console.error(arg_method_record, 'bad callback for method record');
+						}
 						
 						// TEST CALL RESULT
 						if ( arg_method_record.result && DevaptTypes.is_function(arg_method_record.result.success) )
@@ -1738,12 +1746,14 @@ function(Devapt, DevaptTypes, DevaptClasses)
 				return null;
 			}
 			
+			
 			// NEED BUILD ?
 			DevaptTraces.trace_step(context, 'build class if needed', self.trace);
 			if (! self.is_build)
 			{
 				self.build_class();
 			}
+			
 			
 			// CREATE INSTANCE AND DECLARE PROPERTIES
 			DevaptTraces.trace_step(context, 'Object.create', self.trace);
@@ -1756,11 +1766,13 @@ function(Devapt, DevaptTypes, DevaptClasses)
 				return null;
 			}
 			
+			
 			// SET HELPERS ATTRIBUTES
 			DevaptTraces.trace_step(context, 'set helpers', self.trace);
 			instance.prototype = self.infos.proto;
 			instance._class = self;
 			instance._parent_class = self.infos.parent_class;
+			
 			
 			// APPLY SETTINGS
 			DevaptTraces.trace_step(context, 'apply settings', self.trace);
@@ -1772,8 +1784,13 @@ function(Devapt, DevaptTypes, DevaptClasses)
 			init_properties(self, instance);
 			apply_properties(self, instance, arg_instance_settings);
 			
-			// CALL MIXINS CONSTRUCTORS
-			DevaptTraces.trace_step(context, 'call mixin constructors', self.trace);
+			
+			// DEBUG INSTANCE
+			// console.log(instance, 'instance[' + instance.name + ']');
+			
+			
+			// GET ALL PARENT CLASSES
+			DevaptTraces.trace_step(context, 'get all parent classes', self.trace);
 			var class_records = [];
 			var class_record = self;
 			while (class_record)
@@ -1782,7 +1799,11 @@ function(Devapt, DevaptTypes, DevaptClasses)
 				class_records.push(class_record);
 				class_record = class_record.infos.parent_class;
 			}
-			// console.log(instance, 'instance[' + instance.name + ']');
+			
+			
+			// CALL MIXINS CONSTRUCTORS
+			DevaptTraces.trace_step(context, 'call mixin constructors', self.trace);
+			var init_mixins = {};
 			for(var class_index = class_records.length - 1 ; class_index >= 0 ; class_index--)
 			{
 				class_record = class_records[class_index];
@@ -1794,18 +1815,17 @@ function(Devapt, DevaptTypes, DevaptClasses)
 				for(mixin_key in class_record.mixins.all_ordered)
 				{
 					var mixin_class = class_record.mixins.all_ordered[mixin_key];
-					if (mixin_class)
+					if (mixin_class && ! init_mixins[mixin_class.infos.class_name])
 					{
-						// console.log(instance, 'instance');
+						// console.log(mixin_class.infos.class_name, 'mixin stack init');
 						// console.log(instance, 'mixin stack init for [' + mixin_class.infos.class_name + ']');
+						
 						mixin_class.infos.ctor(instance);
+						init_mixins[mixin_class.infos.class_name] = true;
 					}
 				}
 			}
 			
-			
-			// DEBUG INSTANCE
-			// console.log(instance, 'instance[' + instance.name + ']');
 			
 			// CALL CONSTRUCTOR
 			// TODO CALL SUPER CTOR ?

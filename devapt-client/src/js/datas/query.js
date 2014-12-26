@@ -85,6 +85,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptEvents, DevaptObject)
 		var json_obj = {
 			query_json: {
 				action: self.action,
+				query_type: self.query_type,
 				crud_db: self.crud_db,
 				crud_table: self.crud_table,
 				fields: self.fields,
@@ -284,22 +285,26 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptEvents, DevaptObject)
 	
 	var cb_set_select = function()
 	{
-		this.action = 'select';
+		this.action = 'read';
+		this.query_type = 'select';
 	}
 	
 	var cb_set_select_distinct = function()
 	{
-		this.action = 'select_distinct';
+		this.action = 'read';
+		this.query_type = 'select_distinct';
 	}
 	
 	var cb_set_select_distinct_one = function()
 	{
-		this.action = 'select_distinct_one';
+		this.action = 'read';
+		this.query_type = 'select_distinct_one';
 	}
 	
 	var cb_set_select_count = function()
 	{
-		this.action = 'select_count';
+		this.action = 'read';
+		this.query_type = 'select_count';
 	}
 	
 	

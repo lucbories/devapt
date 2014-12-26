@@ -193,6 +193,11 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptObject, DevaptResources, Devapt
 		// RENDER WITHOUT TEMPLATE
 		// console.log('render without template', context);
 		var promise = self.render_self(deferred);
+		if (! promise)
+		{
+			console.log(promise, 'promise');
+			console.error(self, 'render_self promise is bad');
+		}
 		promise.done(
 			function()
 			{

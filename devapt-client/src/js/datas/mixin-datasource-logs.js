@@ -62,11 +62,15 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptTraces)
 			// GET ITEMS FROM EVENTS SOURCE
 			if ( self.items_source === 'logs' )
 			{
+				var logs = DevaptTraces.get_logs();
+				// console.log(DevaptTraces, 'DevaptTraces');
+				// console.log(DevaptTraces.appender_memory, 'DevaptTraces.appender_memory');
+				
 				var items = [];
 				var log_index = self.items_last_index ? self.items_last_index : 0;
-				for( ; log_index < DevaptTraces.appender_memory.logs.length ; log_index++)
+				for( ; log_index < logs.length ; log_index++)
 				{
-					var log = DevaptTraces.appender_memory.logs[log_index];
+					var log = logs[log_index];
 					var record = {};
 					record['level']		= log.level;
 					record['step']		= log.step;

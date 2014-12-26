@@ -11,8 +11,8 @@
  */
 
 define(
-['Devapt', 'core/types', 'core/class'],
-function(Devapt, DevaptTypes, DevaptClass)
+['Devapt', 'core/types', 'core/class', 'datas/query'],
+function(Devapt, DevaptTypes, DevaptClass, DevaptQuery)
 {
 	/**
 	 * @mixin				DevaptMixinDatasoureModel
@@ -35,6 +35,16 @@ function(Devapt, DevaptTypes, DevaptClass)
 			
 			
 			var promise = self.get_items_model();
+			// TODO FINISH QUERY SETTINGS
+			var query_settings = {
+				fields:self.items_fields
+			};
+			var query = DevaptQuery.create(self.name + '_query', query_settings);
+			if (self.items_distinct)
+			{
+				query.set_select_distinct();
+			}
+			self.add_query(query);
 			
 			
 			self.leave(context, self.msg_success);

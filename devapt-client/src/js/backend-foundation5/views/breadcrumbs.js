@@ -62,10 +62,11 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptView, DevaptNavHistory, undefin
 		
 		
 		// RESOVE RENDER
-		arg_deferred.resolve(this);
+		arg_deferred.resolve(self);
 		
 		// GET PROMISE
 		var promise = arg_deferred.promise();
+		// console.log(promise, 'promise');
 		
 		
 		self.leave(context, 'success: promise is resolved');

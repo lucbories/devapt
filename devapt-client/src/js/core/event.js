@@ -31,7 +31,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptObjectBase, DevaptEvents)
 	 * @method				DevaptEvent.constructor
 	 * @desc				Event class constructor
 	 * @param {string}		arg_event_name				event name
-	 * @param {object}		arg_event_target_object		event target object
+	 * @param {object}		arg_event_target_object		event target object which emits the event
 	 * @param {array}		arg_event_operands			event operands
 	 * @return {nothing}
 	 */

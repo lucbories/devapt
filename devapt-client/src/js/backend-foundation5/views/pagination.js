@@ -48,22 +48,22 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptResources, DevaptView, undefine
 					{
 						self.step(context, 'link with view [' + view.name + ']');
 						
-						if (view.on_pagination_previous_event)
+						if ( DevaptTypes.is_function(view.on_pagination_previous_event) )
 						{
 							self.add_event_callback('devapt.pagination.update_previous', [view, view.on_pagination_previous_event], false);
 						}
 						
-						if (view.on_pagination_current_event)
+						if ( DevaptTypes.is_function(view.on_pagination_current_event) )
 						{
 							self.add_event_callback('devapt.pagination.update_current', [view, view.on_pagination_current_event], false);
 						}
 						
-						if (view.on_pagination_next_event)
+						if ( DevaptTypes.is_function(view.on_pagination_next_event) )
 						{
 							self.add_event_callback('devapt.pagination.update_next', [view, view.on_pagination_next_event], false);
 						}
 						
-						if (self.on_update_pagination)
+						if ( DevaptTypes.is_function(view.on_update_pagination) )
 						{
 							view.add_event_callback('devapt.pagination.update_pagination', [self, self.on_update_pagination], false);
 						}
@@ -848,7 +848,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptResources, DevaptView, undefine
 	DevaptPaginationClass.add_public_int_property('pagination_prefix_size',		'',		0, false, false, []);
 	DevaptPaginationClass.add_public_int_property('pagination_suffix_size',		'',		0, false, false, []);
 	DevaptPaginationClass.add_public_bool_property('pagination_centered',		'',		true, false, false, []);
-	DevaptPaginationClass.add_public_array_property('pagination_views',			'',		[}, false, false, [], 'string', ',');
+	DevaptPaginationClass.add_public_array_property('pagination_views',			'',		[], false, false, [], 'string', ',');
 	
 	
 	return DevaptPaginationClass;

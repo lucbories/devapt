@@ -23,7 +23,7 @@ abstract class AbstractQuery
 	// STATIC ATTRIBUTES
 	
 	/// @brief TRACE FLAG
-	static public $TRACE_ABSTRACT_QUERY		= false;
+	static public $TRACE_ABSTRACT_QUERY		= true;
 	
 	
 	/// @brief		Option : api version (string)
@@ -170,6 +170,17 @@ abstract class AbstractQuery
 	
 	
 	/**
+	 * @brief		Get query crud operation
+	 * @return		string		query crud type
+	 */
+	public function getCrudOperation()
+	{
+		return $this->query_crud_action;
+	}
+	
+	
+	
+	/**
 	 * @brief		Get query type name
 	 * @return		string		query type name
 	 */
@@ -187,6 +198,7 @@ abstract class AbstractQuery
 	{
 		$context = 'AbstractQuery.setType(type name)';
 		Trace::enter($context, '', self::$TRACE_ABSTRACT_QUERY);
+		Trace::value($context, 'arg_type_name', $arg_type_name, self::$TRACE_ABSTRACT_QUERY);
 		
 		if ( $this->checkType($this->query_crud_action, $arg_type_name) )
 		{

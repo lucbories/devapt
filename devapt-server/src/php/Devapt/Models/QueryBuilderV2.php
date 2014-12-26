@@ -148,14 +148,16 @@ final class QueryBuilderV2
 		
 		
 		// GET QUERY ACTION
-		$type = null;
-		if ( array_key_exists('action', $query_json_array) )
+		if ( array_key_exists('query_type', $query_json_array) )
 		{
-			$type = $query_json_array['action'];
-			// return Trace::leaveko($context, 'no "action" key in json query array', null, self::$TRACE_QUERY_BUILDER);
+			$type = $query_json_array['query_type'];
+		// $type = (is_string($type) && $type !== '') ? $type : $default_sql_action;
+			if (is_string($type) && $type !== '')
+			{
+				$query->setType($type);
+			}
 		}
-		$type = (is_string($type) && $type !== '') ? $type : $default_sql_action;
-		$query->setType($type);
+		
 		
 		
 		// GET FIELDS
