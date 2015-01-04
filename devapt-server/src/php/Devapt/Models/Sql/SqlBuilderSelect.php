@@ -44,7 +44,7 @@ final class SqlBuilderSelect
 	// STATIC ATTRIBUTES
 	
 	/// @brief TRACE FLAG
-	static public $TRACE_BUILDER = true;
+	static public $TRACE_BUILDER = false;
 	
 	
 	
@@ -120,7 +120,7 @@ final class SqlBuilderSelect
 				Trace::value($context, 'join record', $join_record, self::$TRACE_BUILDER);
 				
 				// CHECK JOIN RECORD
-				if ( is_array($join_record) && count($join_record) === 3 && array_key_exists('mode', $join_record)&& array_key_exists('source', $join_record) && array_key_exists('target', $join_record) )
+				if ( is_array($join_record) && (count($join_record) === 3 || count($join_record) === 4) && array_key_exists('mode', $join_record)&& array_key_exists('source', $join_record) && array_key_exists('target', $join_record) )
 				{
 					Trace::step($context, 'process current join record', self::$TRACE_BUILDER);
 					
@@ -450,7 +450,8 @@ final class SqlBuilderSelect
 		
 		// TRACE SQL
 		$sql = $select->getSqlString();
-		Trace::value($context, 'sql', $sql, true ||self::$TRACE_BUILDER);
+		// Trace::value($context, 'sql', $sql, true);
+		Trace::value($context, 'sql', $sql, self::$TRACE_BUILDER);
 		
 		
 		return Trace::leaveok($context, 'success', $select, self::$TRACE_BUILDER);

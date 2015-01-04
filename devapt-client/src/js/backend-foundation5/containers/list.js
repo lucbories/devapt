@@ -9,6 +9,7 @@
  * @license		Apache License Version 2.0, January 2004; see LICENSE.txt or http://www.apache.org/licenses/
  */
 
+'use strict'
 define(
 ['Devapt', 'core/types', 'core/class', 'views/container', 'backend-foundation5/foundation-init'],
 function(Devapt, DevaptTypes, DevaptClass, DevaptContainer, undefined)
@@ -97,11 +98,15 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptContainer, undefined)
 		self.enter(context, '');
 		
 		
-		self.content_jqo = $('<ul>');
-		self.content_jqo.addClass('side-nav');
+		self.content_jqo = $('<div>');
 		self.parent_jqo.append(self.content_jqo);
+		self.content_jqo.attr('id', self.get_view_id());
 		
-		self.items_jquery_parent = self.content_jqo;
+		self.ul_jqo = $('<ul>');
+		self.content_jqo.append(self.ul_jqo);
+		self.ul_jqo.addClass('side-nav');
+		
+		self.items_jquery_parent = self.ul_jqo;
 		
 		
 		self.leave(context, 'success');

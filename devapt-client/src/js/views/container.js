@@ -33,6 +33,7 @@
  * @license		Apache License Version 2.0, January 2004; see LICENSE.txt or http://www.apache.org/licenses/
  */
 
+ 'use strict'
 define(
 ['Devapt', 'core/types', 'core/class', 'core/template',
 	'datas/mixin-datasource', 'datas/mixin-get-model', 'datas/mixin-query',
@@ -84,6 +85,31 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptTemplate,
 	/**
 	 * @public
 	 * @memberof			DevaptContainer
+	 * @desc				Get item node
+	 * @param {integer}		arg_item_index	item index
+	 * @return {object}		node jQuery object
+	 */
+	var cb_get_item_node = function(arg_item_index)
+	{
+		var self = this;
+		
+		
+		var items_count = $(self.items_jquery_filter, self.items_jquery_parent).length;
+		if (arg_item_index < 0 || arg_item_index >= items_count)
+		{
+			return null;
+		}
+		
+		var node_jqo = $(self.items_jquery_filter, self.items_jquery_parent).eq(arg_item_index);
+		// console.log(node_jqo, 'cb_get_item_node at [' + arg_item_index + ']');
+		
+		return node_jqo;
+	}
+	
+	
+	/**
+	 * @public
+	 * @memberof			DevaptContainer
 	 * @desc				Constructor
 	 * @return {nothing}
 	 */
@@ -95,6 +121,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptTemplate,
 		self.enter(context, '');
 		
 		
+		// console.log(self.parent_jqo);
 		// self.trace = true;
 		
 		
@@ -209,6 +236,77 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptTemplate,
 	/**
 	 * @public
 	 * @memberof			DevaptContainer
+	 * @desc				Refresh of the container
+	 * @param {object}		arg_deferred	deferred object
+	 * @return {object}		rendering promise
+	 */
+	var cb_refresh = function(arg_deferred)
+	{
+		var self = this;
+		var context = 'refresh()';
+		self.enter(context, '');
+		
+		
+		// CHECK DEFREERED
+		if ( ! DevaptTypes.is_object(arg_deferred) )
+		{
+			arg_deferred = $.deferred();
+		}
+		
+		// NOTHING TO DO : ALREADY IN RENDERING PROCESS
+		if ( self.is_rendering )
+		{
+			arg_deferred.resolve();
+			
+			self.leave(context, 'already in rendering mode');
+			return arg_deferred.promise();
+		}
+		
+		
+		// REFRESH
+		self.is_rendering = true;
+		
+		if (self.items_refresh.mode !== 'append')
+		{
+			self.remove_items();
+		}
+		
+		// console.log('refresh', context);
+		var items_count_before = $(self.items_jquery_filter, self.items_jquery_parent).length;
+		var promise = self.render_items(arg_deferred);
+		promise.done(
+			function()
+			{
+				self.is_rendering = false;
+				
+				if ( DevaptTypes.is_integer(self.items_refresh.frequency) )
+				{
+					var refresh_cb = function ()
+					{
+						var deferred = $.Deferred();
+						self.refresh(deferred);
+					}
+					
+					setTimeout(refresh_cb, self.items_refresh.frequency*1000);
+				}
+				
+				var items_count = $(self.items_jquery_filter, self.items_jquery_parent).filter('.devapt-container-visible').length;
+				if (self.mixin_pagination_apply_count === 0 || items_count_before !== items_count)
+				{
+					self.fire_event('devapt.pagination.update_pagination', [0, items_count]);
+				}
+			}
+		);
+		
+		
+		self.leave(context, self.msg_success);
+		return promise
+	}
+	
+	
+	/**
+	 * @public
+	 * @memberof			DevaptContainer
 	 * @desc				End the render of the container
 	 * @return {nothing}
 	 */
@@ -252,41 +350,13 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptTemplate,
 		{
 			var refresh_cb = function ()
 			{
-				// console.log(self.name, 'refresh');
-				
-				if ( ! self.is_rendering )
-				{
-					var deferred = $.Deferred();
-					
-					self.is_rendering = true;
-					
-					if (self.items_refresh.mode !== 'append')
-					{
-						self.remove_items();
-					}
-					
-					// console.log('render_items call', context);
-					var items_count_before = $(self.items_jquery_filter, self.items_jquery_parent).length;
-					var promise = self.render_items(deferred);
-					promise.done(
-						function()
-						{
-							self.is_rendering = false;
-							
-							setTimeout(refresh_cb, self.items_refresh.frequency*1000);
-							
-							var items_count = $(self.items_jquery_filter, self.items_jquery_parent).filter('.devapt-container-visible').length;
-							if (self.mixin_pagination_apply_count === 0 || items_count_before !== items_count)
-							{
-								self.fire_event('devapt.pagination.update_pagination', [0, items_count]);
-							}
-						}
-					);
-				}
-			};
+				var deferred = $.Deferred();
+				self.refresh(deferred);
+			}
 			
 			setTimeout(refresh_cb, self.items_refresh.frequency*1000);
 		}
+		
 		
 		// UPDATE PAGINATION FOR THE FIRST RENDERING
 		if (self.renders_count === 1)
@@ -322,7 +392,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptTemplate,
 		
 		
 		self.is_rendering = true;
-		// console.log(self, 'container.' + context);
+		// console.log(self, 'render_self.self');
 		
 		// CHECK DEFEREED
 		self.assertNotNull(context, 'arg_deferred', arg_deferred);
@@ -332,15 +402,21 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptTemplate,
 		
 		
 		// SEND EVENT
+		self.step(context, 'fire:devapt.container.render.begin');
 		self.fire_event('devapt.container.render.begin');
 		
 		// RENDER BEGIN
+		self.step(context, 'render begin');
 		self.render_begin();
 		
 		// RENDER ITEMS AT FIRST TIME WITH AUTOLOAD FALSE
 		self.renders_count++;
+		self.value(context, 'renders_count', self.renders_count);
+		self.value(context, 'items_autoload', self.items_autoload);
 		if (self.renders_count === 1 && ! self.items_autoload)
 		{
+			self.step(context, 'renders_count=1 && autoload=false');
+			
 			// RENDER END
 			self.render_end();
 			arg_deferred.resolve();
@@ -350,16 +426,22 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptTemplate,
 			return arg_deferred.promise();
 		}
 		
+		self.step(context, 'not(renders_count=1 && autoload=false)');
+		
 		// RENDER ITEMS
 		var items_promise = self.render_items(arg_deferred);
 		items_promise.done(
 			function()
 			{
+				self.step(context, 'render items promise');
+				
 				// RENDER END
 				self.render_end();
 				self.is_rendering = false;
 				
 				var items_count = $(self.items_jquery_filter, self.items_jquery_parent).filter('.devapt-container-visible').length;
+				
+				self.step(context, 'fire:devapt.pagination.update_pagination');
 				self.fire_event('devapt.pagination.update_pagination', [0, items_count]);
 			}
 		);
@@ -403,7 +485,6 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptTemplate,
 				types_promise.done(
 					function(types)
 					{
-						// self.trace = true;
 						self.step(context, 'get items types promise done');
 						var types_count = types.length;
 						var default_type = null;
@@ -418,6 +499,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptTemplate,
 							// GET CURRENT ITEM
 							var item = items[item_index];
 							self.value(context, 'item at [' + item_index + ']', item);
+							// console.log(item, context + ':item');
 							
 							// GET CURRENT TYPE
 							var type = default_type;
@@ -442,6 +524,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptTemplate,
 								}
 							}
 							self.value(context, 'type at [' + item_index + ']', type);
+							// console.log(type, context + ':type');
 							
 							// RENDER CURRENT ITEM
 							if ( ! self.render_item(arg_deferred, item, item_index, type) )
@@ -518,8 +601,10 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptTemplate,
 	// METHODS
 	DevaptContainerClass.infos.ctor = cb_constructor;
 	DevaptContainerClass.add_public_method('get_items_model', {}, cb_get_items_model);
+	DevaptContainerClass.add_public_method('get_item_node', {}, cb_get_item_node);
 	DevaptContainerClass.add_public_method('on_query_event', {}, cb_on_query_event);
 	DevaptContainerClass.add_public_method('on_query_filters_event', {}, cb_on_query_filters_event);
+	DevaptContainerClass.add_public_method('refresh', {}, cb_refresh);
 	DevaptContainerClass.add_public_method('render_begin', {}, cb_render_begin);
 	DevaptContainerClass.add_public_method('render_end', {}, cb_render_end);
 	DevaptContainerClass.add_public_method('render_self', {}, cb_render_self);

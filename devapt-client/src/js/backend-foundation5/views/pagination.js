@@ -9,6 +9,7 @@
  * @license		Apache License Version 2.0, January 2004; see LICENSE.txt or http://www.apache.org/licenses/
  */
 
+'use strict'
 define(
 ['Devapt', 'core/types', 'core/class', 'core/resources', 'views/view', 'backend-foundation5/foundation-init'],
 function(Devapt, DevaptTypes, DevaptClass, DevaptResources, DevaptView, undefined)
@@ -37,6 +38,10 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptResources, DevaptView, undefine
 		self.enter(context, '');
 		
 		
+		// PARENT CONSTRUCTOR
+		self._parent_class.infos.ctor(self);
+		
+		
 		// INIT PAGINATIONS
 		var target_views = self.get_property('pagination_views');
 		target_views.forEach(
@@ -63,9 +68,9 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptResources, DevaptView, undefine
 							self.add_event_callback('devapt.pagination.update_next', [view, view.on_pagination_next_event], false);
 						}
 						
-						if ( DevaptTypes.is_function(view.on_update_pagination) )
+						if ( DevaptTypes.is_function(self.on_update_pagination) )
 						{
-							view.add_event_callback('devapt.pagination.update_pagination', [self, self.on_update_pagination], false);
+							view.add_event_callback('devapt.pagination.update_pagination', [self, self.on_update_pagination], false, [], []);
 						}
 					}
 				);
@@ -105,6 +110,9 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptResources, DevaptView, undefine
 		
 		var items_first_index = arg_event_operands[2];
 		var items_last_index = arg_event_operands[3];
+		self.value(context, 'items_first_index', items_first_index);
+		self.value(context, 'items_last_index', items_last_index);
+		self.value(context, 'self.pagination_size', self.pagination_size);
 		
 		self.pagination_first_page =  Math.floor(items_first_index / self.pagination_size);
 		if (self.pagination_first_page*self.pagination_size < items_first_index)
@@ -120,12 +128,16 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptResources, DevaptView, undefine
 		
 		self.pagination_first_page =  Math.max(self.pagination_first_page, 1);
 		self.pagination_last_page =  Math.max(self.pagination_last_page, 1);
+		self.value(context, 'self.pagination_first_page', self.pagination_first_page);
+		self.value(context, 'self.pagination_last_page', self.pagination_last_page);
 		
 		// console.log(self.pagination_first_page, context + '.pagination_first_page');
 		// console.log(self.pagination_last_page, context + '.pagination_last_page');
 		
 		self.pagination_current_page = Math.min(self.pagination_current_page, self.pagination_last_page);
 		self.pagination_current_page = Math.max(self.pagination_current_page, self.pagination_first_page);
+		self.value(context, 'self.pagination_current_page', self.pagination_current_page);
+		
 		// console.log(self.pagination_current_page, context + '.pagination_current_page');
 		// console.log(self.pagination_size, context + '.pagination_size');
 		

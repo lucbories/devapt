@@ -41,22 +41,11 @@ function(Devapt, DevaptClass, DevaptView, DevaptApplication)
 		// CHECK CONTAINER NODE
 		self.assertNotNull(context, 'arg_deferred', arg_deferred);
 		self.assertNotNull(context, 'parent_jqo', self.parent_jqo);
+		
 		self.content_jqo = $('<div>');
 		self.parent_jqo.append(self.content_jqo);
+		self.content_jqo.attr('id', self.get_view_id());
 		
-		// GET AND RENDER VIEW CONTENT
-		var promise = arg_deferred.then(
-			function(arg_url)
-			{
-				return $.get(arg_url);
-			}
-		)
-		.then(
-			function(arg_html)
-			{
-				self.content_jqo.html(arg_html);
-			}
-		);
 		
 		// GET APP BASE URL
 		var url_base	= DevaptApplication.get_url_base();
@@ -64,8 +53,18 @@ function(Devapt, DevaptClass, DevaptView, DevaptApplication)
 		// GET VIEW CONTENT URL
 		var view_content_url = url_base + 'views/' + self.name + '/html_view';
 		
+		
+		// GET AND RENDER VIEW CONTENT
+		var promise = $.get(view_content_url)
+		.then(
+			function(arg_html)
+			{
+				self.content_jqo.html(arg_html);
+			}
+		);
+		
 		// RESOLVE DEFERRED
-		arg_deferred.resolve(view_content_url);
+		arg_deferred.resolve();
 		
 		
 		self.leave(context, 'success: promise is resolved: async render');

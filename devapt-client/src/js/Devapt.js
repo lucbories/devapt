@@ -9,7 +9,8 @@
  * @license		Apache License Version 2.0, January 2004; see LICENSE.txt or http://www.apache.org/licenses/
  */
 
-define('Devapt', ['jquery', 'core/init'], function($, DevaptInit)
+'use strict';
+define('Devapt', ['jquery', 'core/init', 'md5', 'sha1'], function($, DevaptInit, CryptoMD5, CryptoSHA1)
 {
 	console.info('Loading Devapt bootstrap');
 	
@@ -233,7 +234,7 @@ define('Devapt', ['jquery', 'core/init'], function($, DevaptInit)
 			}
 			
 			// LOOP ON MODULE CSS FILES
-			for(css_file_index in css_files)
+			for(var css_file_index in css_files)
 			{
 				var url = css_files[css_file_index];
 				
@@ -250,6 +251,68 @@ define('Devapt', ['jquery', 'core/init'], function($, DevaptInit)
 			}
 		}
 	}
+	
+	
+	
+	// -------------------------------------------------- UID ---------------------------------------------------------
+	var private_uid = 1000000;
+	
+	/**
+	 * @memberof			Devapt
+	 * @public
+	 * @static
+	 * @method				Devapt.uid()
+	 * @desc				Get a unique id
+	 * @return {integer}
+	 */
+	Devapt.uid = function()
+	{
+		private_uid++;
+		return private_uid;
+	}
+	
+	
+	
+	// -------------------------------------------------- MESSAGES ---------------------------------------------------------
+	
+	// STATIC RESULT MESSAGE
+	Devapt.msg_default_empty_implementation = 'default empty implementation';
+	Devapt.msg_success = 'success';
+	Devapt.msg_failure = 'failure';
+	Devapt.msg_success_promise = 'success: returns promise';
+	Devapt.msg_success_require = 'success: a requirejs request is processing';
+	
+	
+	
+	// -------------------------------------------------- HASH ---------------------------------------------------------
+	
+	/**
+	 * @memberof			Devapt
+	 * @public
+	 * @static
+	 * @method				Devapt.hash()
+	 * @desc				Hash a value with a method
+	 * @param {string}		arg_method_name		hash method name
+	 * @param {string}		arg_value			value to hash
+	 * @return {string}
+	 */
+	Devapt.hash = function(arg_method_name, arg_value)
+	{
+		if (! arg_method_name)
+		{
+			return null;
+		}
+		
+		// console.log(CryptoJS, 'CryptoJS');
+		switch(arg_method_name.toLocaleLowerCase())
+		{
+			case 'md5':		return CryptoJS.MD5(arg_value).toString();
+			case 'sha1':	return CryptoJS.SHA1(arg_value).toString();
+		}
+		
+		return null;
+	}
+	
 	
 	return Devapt;
 } );

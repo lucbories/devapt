@@ -9,6 +9,7 @@
  * @license		Apache License Version 2.0, January 2004; see LICENSE.txt or http://www.apache.org/licenses/
  */
 
+'use strict'
 define(
 ['Devapt', 'core/types', 'core/class', 'views/container', 'backend-foundation5/foundation-init'],
 function(Devapt, DevaptTypes, DevaptClass, DevaptContainer, undefined)
@@ -167,6 +168,13 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptContainer, undefined)
 			{
 				var node_index = parseInt( node_jqo.index() );
 				self.select_item_node(node_index);
+				
+				var current_label = node_jqo.text();
+				var new_label = node_jqo.attr('devapt-label');
+				if ( DevaptTypes.is_not_empty_str(new_label) && ! DevaptTypes.is_not_empty_str(current_label) )
+				{
+					self.a_jqo.text(new_label);
+				}
 				
 				self.ul_jqo.toggle('open');
 			}

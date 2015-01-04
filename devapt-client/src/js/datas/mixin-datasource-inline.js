@@ -83,6 +83,10 @@ function(Devapt, DevaptTypes, DevaptClass)
 					items = self.items_inline;
 				}
 				
+				self.items_records = items;
+				self.items_records_count = items.length;
+				// console.log(self.items_records, 'inline items_records');
+				
 				deferred.resolve(items);
 				
 				self.leave(context, self.msg_success_promise);

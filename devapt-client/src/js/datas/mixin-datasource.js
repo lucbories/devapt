@@ -399,8 +399,8 @@ function(Devapt, DevaptTypes, DevaptClass,
 	DevaptMixinDatasoureClass.add_public_array_property('items_types',			'',	['view'], false, false, ['view_items_types'], 'string', ',');
 		// array of: view / html / callback / object (json) / record
 	
-	DevaptMixinDatasoureClass.add_public_array_property('items_records_fields_names',	'',	[], false, false, ['view_items_records_fields'], 'string', ',');
-	DevaptMixinDatasoureClass.add_public_array_property('items_records_fields_types',	'',	[], false, false, ['view_items_records_types'], 'string', ',');
+	// DevaptMixinDatasoureClass.add_public_array_property('items_records_fields_names',	'',	[], false, false, ['view_items_records_fields'], 'string', ',');
+	// DevaptMixinDatasoureClass.add_public_array_property('items_records_fields_types',	'',	[], false, false, ['view_items_records_types'], 'string', ',');
 	
 	
 	// MIXINS

@@ -59,6 +59,31 @@ function(DevaptTraces, DevaptTypes, DevaptClass)
 		 * @param {boolean}		arg_target_trace		the new trace flag
 		 * @return {nothing}
 		 */
+	/*	matches: function(arg_context, arg_class_name_pattern, arg_object_name_pattern, arg_method_name_pattern)
+		{
+			var self = this;
+			
+			arg_class_name_pattern = arg_class_name_pattern ? arg_class_name_pattern : '.*';
+			arg_object_name_pattern = arg_object_name_pattern ? arg_object_name_pattern : '.*';
+			arg_method_name_pattern = arg_method_name_pattern ? arg_method_name_pattern : '.*';
+			
+			var pattern = arg_class_name_pattern + ':' + arg_object_name_pattern + ':' + arg_method_name_pattern;
+			var regexp = new RegExp(pattern, 'i');
+			var str = self.class_name + ':' + self.name + ':' + arg_context;
+			
+			return regexp.test(str);
+		},*/
+		
+		
+		/**
+		 * @memberof			DevaptMixinTrace
+		 * @public
+		 * @method				push_trace(arg_saved_trace, arg_target_trace)
+		 * @desc				Save and switch the trace flag
+		 * @param {boolean}		arg_saved_trace			the current trace flag to save on the stack
+		 * @param {boolean}		arg_target_trace		the new trace flag
+		 * @return {nothing}
+		 */
 		push_trace: function(arg_saved_trace, arg_target_trace)
 		{
 			this.trace_stack.push(arg_saved_trace);
@@ -331,6 +356,7 @@ function(DevaptTraces, DevaptTypes, DevaptClass)
 	// METHODS
 	DevaptMixinTraceClass.infos.ctor = DevaptMixinTrace.init_mixin_trace;
 	DevaptMixinTraceClass.add_public_method('enter', {}, DevaptMixinTrace.enter);
+	DevaptMixinTraceClass.add_public_method('matches', {}, DevaptMixinTrace.matches);
 	DevaptMixinTraceClass.add_public_method('step', {}, DevaptMixinTrace.step);
 	DevaptMixinTraceClass.add_public_method('warn', {}, DevaptMixinTrace.warn);
 	DevaptMixinTraceClass.add_public_method('info', {}, DevaptMixinTrace.info);

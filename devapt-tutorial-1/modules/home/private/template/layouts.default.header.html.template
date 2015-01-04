@@ -13,6 +13,11 @@
         <!-- CSS, feeds and favicon -->
 		<link href="{{application.url.base}}{{application.favico.url}}" rel="shortcut icon" type="{{application.favico.format}}">
 		<!-- <link href="{{application.url.base}}../modules/home/public/css/app.css" rel="stylesheet" type="text/css" media="all"> SHOULD BE LOADED AFTER BACKEND CSS -->
+		<style>
+			.devapt_validate_error {
+				border:2px solid red;
+			}
+		</style>
 		
         <!-- JavaScript -->
         <script type="text/javascript" src="{{application.url.base}}../../devapt-client/lib/require-2.1.10/require.min.js"></script>
@@ -28,11 +33,10 @@
     <body>
         <!-- Header -->
         <header id="page_header_id" class="row devapt_display devapt_page_header">
+			<article id="page_breadcrumbs_id" class='devapt_display' style="margin-top:20px;">
+			</article>
         </header>
 		
 		<!-- Views container -->
-		<article id="page_breadcrumbs_id" class='row devapt_display'>
-		</article>
-		
 		<article id="page_content_id" class='row devapt_display'>
 		

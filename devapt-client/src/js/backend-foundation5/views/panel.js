@@ -9,6 +9,7 @@
  * @license		Apache License Version 2.0, January 2004; see LICENSE.txt or http://www.apache.org/licenses/
  */
 
+'use strict'
 define(
 ['Devapt', 'core/types', 'core/class', 'views/view', 'backend-foundation5/foundation-init'],
 function(Devapt, DevaptTypes, DevaptClass, DevaptView, undefined)
@@ -43,9 +44,10 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptView, undefined)
 		
 		// GET NODES
 		self.assertNotNull(context, 'parent_jqo', self.parent_jqo);
-		self.content_jqo = $('div');
+		self.content_jqo = $('<div>');
 		self.parent_jqo.append(self.content_jqo);
 		self.content_jqo.addClass('panel');
+		self.content_jqo.attr('id', self.get_view_id());
 		
 		// RESOLVE AND GET PROMISE
 		self.step(context, 'deferred.resolve()');

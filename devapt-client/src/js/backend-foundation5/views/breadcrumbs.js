@@ -9,6 +9,7 @@
  * @license		Apache License Version 2.0, January 2004; see LICENSE.txt or http://www.apache.org/licenses/
  */
 
+'use strict'
 define(
 ['Devapt', 'core/types', 'core/class', 'views/view', 'core/nav-history', 'backend-foundation5/foundation-init'],
 function(Devapt, DevaptTypes, DevaptClass, DevaptView, DevaptNavHistory, undefined)
@@ -53,7 +54,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptView, DevaptNavHistory, undefin
 		// LOOP ON NAV HISTORY
 		var nav_stack = DevaptNavHistory.history_stack;
 		self.value(context, 'breadcrumbs html content', nav_stack);
-		for(content_key in nav_stack)
+		for(var content_key in nav_stack)
 		{
 			var state = nav_stack[content_key];
 			self.assertNotNull(context, 'nav content at [' + content_key + ']', state);
@@ -141,7 +142,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptView, DevaptNavHistory, undefin
 		var context = 'on_nav_history_add(event opds)';
 		self.enter(context, '');
 		
-		// console.log(arg_operands_array, 'breadcrumbs arg_operands_array');
+		
 		var arg_state = arg_operands_array[2];
 		self.add_history_item(arg_state);
 		

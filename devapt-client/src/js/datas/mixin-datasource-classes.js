@@ -64,17 +64,18 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptClasses)
 			{
 				var items = [];
 				var classes_array = DevaptClasses.get_classes_array();
+				// console.log(classes_array, 'classes_array');
 				for(class_index in classes_array)
 				{
 					var class_record = classes_array[class_index];
 					var record = {};
-					record['name']			= class_record.name;
-					record['author']		= class_record.author;
-					record['updated']		= class_record.updated;
-					record['description']	= class_record.description;
+					record['name']			= class_record.infos.class_name;
+					record['author']		= class_record.infos.author;
+					record['updated']		= class_record.infos.updated;
+					record['description']	= class_record.infos.description;
 					items.push(record);
 				}
-				// console.log(items, 'resources');
+				// console.log(items, 'items');
 				
 				if ( self.items_source_format === 'json' )
 				{

@@ -11,8 +11,8 @@
  */
 
 define(
-['Devapt', 'core/types', 'core/resources', 'core/inheritance', 'datas/model', 'core/class'],
-function(Devapt, DevaptTypes, DevaptResources, DevaptInheritance, DevaptModel, DevaptClass)
+['Devapt', 'core/types', 'core/class', 'core/resources'],
+function(Devapt, DevaptTypes, DevaptClass, DevaptResources)
 {
 	/**
 	 * @mixin				DevaptMixinGetModel
@@ -110,9 +110,12 @@ function(Devapt, DevaptTypes, DevaptResources, DevaptInheritance, DevaptModel, D
 					self.step(context, 'model is found and model attribute is set');
 					
 					self[model_attr] = model;
+					self[model_promise_attr] = null;
 					
 					// console.log(model, 'model');
 					// console.log(self[model_attr], 'self[model_attr]');
+					
+					// return model;
 				};
 			var promise = DevaptResources.get_resource_instance(model_name);
 			promise.done(cb);
@@ -141,7 +144,7 @@ function(Devapt, DevaptTypes, DevaptResources, DevaptInheritance, DevaptModel, D
 	};
 	
 	// CREATE CLASS
-	var DevaptMixinGetModelClass = new DevaptClass('DevaptMixinForm', null, class_settings);
+	var DevaptMixinGetModelClass = new DevaptClass('DevaptMixinGetModel', null, class_settings);
 	
 	// METHODS
 	DevaptMixinGetModelClass.add_public_method('get_model', {}, DevaptMixinGetModel.get_model);

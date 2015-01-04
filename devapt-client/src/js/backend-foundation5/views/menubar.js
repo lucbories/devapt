@@ -1,6 +1,21 @@
 /**
  * @file        backend-foundation5/views/menubar.js
  * @desc        Foundation 5 menubar class
+ * 		API
+ * 			PUBLIC METHODS
+ * 				constructor(self):nothing
+ * 				render_self(arg_deferred):promise
+ * 				render_top_menubar():boolean
+ * 				render_top_menubar_title():boolean
+ * 				switch_top_menubar(arg_menubar_name):boolean
+ * 				render_top_menubar_menu(arg_menu_declaration, arg_parent_menu_jqo):boolean
+ * 				render_nav_menubar():boolean
+ * 				
+ * 			PRIVATE METHODS
+ * 				
+ * 			ATTRIBUTES
+ * 				
+ * 				
  * @ingroup     DEVAPT_FOUNDATION5
  * @date        2014-05-09
  * @version		1.0.x
@@ -9,9 +24,10 @@
  * @license		Apache License Version 2.0, January 2004; see LICENSE.txt or http://www.apache.org/licenses/
  */
 
+'use strict'
 define(
-['Devapt', 'core/types', 'core/class', 'core/resources', 'views/view', 'core/application', 'core/nav-history', 'backend-foundation5/foundation-init'],
-function(Devapt, DevaptTypes, DevaptClass, DevaptResources, DevaptView, DevaptApplication, DevaptNavHistory, undefined)
+['Devapt', 'core/types', 'core/class', 'core/classes', 'core/resources', 'views/view', 'core/application', 'core/nav-history', 'backend-foundation5/foundation-init'],
+function(Devapt, DevaptTypes, DevaptClass, DevaptClasses, DevaptResources, DevaptView, DevaptApplication, DevaptNavHistory, undefined)
 {
 	/**
 	 * @public
@@ -31,13 +47,13 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptResources, DevaptView, DevaptAp
 	 */
 	var cb_constructor = function(self)
 	{
-		// var self = this;
 		var context = self.class_name + '(' + self.name + ')';
 		self.enter(context, 'constructor');
 		
 		
 		// DEBUG
 		// self.trace = true;
+		// console.log('menubar created', context);
 		
 		self.nav_jqo = null;
 		
@@ -59,6 +75,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptResources, DevaptView, DevaptAp
 	var cb_render_self = function(arg_deferred)
 	{
 		var self = this;
+		// self.trace=true;
 		var context = 'render_self(deferred)';
 		self.enter(context, '');
 		
@@ -82,8 +99,8 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptResources, DevaptView, DevaptAp
 				}
 			);
 			
-					self.step(context, 'resolve(null)');
-					arg_deferred.resolve(null);
+			self.step(context, 'resolve(null)');
+			arg_deferred.resolve(null);
 		}
 		else
 		{
@@ -97,8 +114,9 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptResources, DevaptView, DevaptAp
 		promise = promise.then(
 			function(promise_result)
 			{
+				// self.trace=true;
 				self.enter(context, 'render_cb');
-				self.value(context, 'promise_result', promise_result);
+				// self.value(context, 'promise_result', promise_result);
 				
 				// CREATE REFERRED OBJECT
 				var deferred = $.Deferred();
@@ -136,7 +154,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptResources, DevaptView, DevaptAp
 				}
 				self.assertNotEmptyString(context, 'self.menubar_declaration', self.menubar_format);
 				
-				
+				// self.trace=false;
 				// RENDER TOP OR NAV MENUBAR
 				switch (self.menubar_format)
 				{
@@ -152,10 +170,14 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptResources, DevaptView, DevaptAp
 							// REJECT AND GET PROMISE
 							deferred.reject();
 							
+							console.error('render top menubar failure');
 							self.error(context, 'render top menubar failure');
 							self.leave(context, 'failure: promise is rejected');
 							return promise;
 						}
+						
+						self.is_rendered = true;
+						// console.info('menubar rendered', self.name);
 						
 						$(document).foundation('topbar');
 						break;
@@ -165,7 +187,6 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptResources, DevaptView, DevaptAp
 				
 				// RESOLVE AND GET PROMISE
 				deferred.resolve();
-				
 				
 				self.leave(context, 'success: promise is resolved');
 				return deferred.promise();
@@ -225,12 +246,14 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptResources, DevaptView, DevaptAp
 		
 		
 		// DEBUG DECLARATION
+		// console.log(self, 'self');
 		// console.log(self.menubar_declaration, 'menubar_declaration');
 		
 		// CREATE NAV TAG
 		self.content_jqo.attr('id', self.name + '_id');
 		self.nav_jqo.addClass('top-bar');
 		self.nav_jqo.attr('data-topbar', '');
+		self.nav_jqo.attr('role', 'navigation');
 		
 		
 		// OPTION: FIXED
@@ -279,7 +302,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptResources, DevaptView, DevaptAp
 		// self.value(context, 'menu_resources', menu_resources);
 		self.assertTrue(context, 'menu_resources is array', DevaptTypes.is_object(menu_resources) );
 		
-		for(menu_name_index in menu_names)
+		for(var menu_name_index in menu_names)
 		{
 			var menu_name = menu_names[menu_name_index];
 			self.value(context, 'loop.menu_name', menu_name);
@@ -300,6 +323,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptResources, DevaptView, DevaptAp
 		self.leave(context, 'success');
 		return true;
 	}
+	
 	
 	
 	/**
@@ -334,13 +358,177 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptResources, DevaptView, DevaptAp
 		title_h1_jqo.append(title_anchor_jqo);
 		title_name_jqo.append(title_h1_jqo);
 		
-		// TITLE ICON
-		// TODO
+		// TODO TITLE ICON
+		
+		
+		// MOBILE MENU
+		var toggle_li_jqo = $('<li class="toggle-topbar menu-icon">');
+		title_jqo.append(toggle_li_jqo);
+		toggle_li_jqo.append( $('<a href="#">').append( $('<span>').text('menu') ) );
 		
 		
 		self.leave(context, 'success');
 		return true;
 	}
+	
+	
+	
+	/**
+	 * @public
+	 * @memberof			DevaptMenubar
+	 * @desc				Switch current top menu bar with the given menubar
+	 * @param {object}		arg_menubar_object		target menubar object	
+	 * @param {boolean}		arg_render_view			render default menubar view ?	
+	 * @return {boolean}	true:success,false:failure
+	 */
+	var cb_switch_top_menubar = function(arg_menubar_object, arg_render_view)
+	{
+		var self = this;
+		// self.trace=true;
+		var context = 'cb_switch_top_menubar(menubar)';
+		self.enter(context, '');
+		
+		
+		arg_render_view = arg_render_view ? arg_render_view : false;
+		
+		
+		// DEBUG
+		// console.log(self.name, 'self.name');
+		// console.log(arg_menubar_object, 'arg_menubar_object');
+		// console.log(arg_menubar_object.name, 'arg_menubar_object.name');
+		
+		
+		// REMOVE CURRENT MENUBAR
+		self.step(context, 'hide current menubar');
+		self.content_jqo.hide();
+		
+		
+		// SET TARGET PARENT IF NEEDED
+		if ( arg_menubar_object.parent_jqo.attr('id') !== self.parent_jqo.attr('id') )
+		{
+			self.step(context, 'set menubar parent');
+			// console.log(self.parent_jqo.attr('id'), 'self.parent_jqo.id');
+			// console.log(arg_menubar_object.parent_jqo.attr('id'), 'arg_menubar_object.parent_jqo.id');
+			
+			arg_menubar_object.content_jqo = self.parent_jqo;
+			self.parent_jqo.prepend(arg_menubar_object.content_jqo);
+		}
+		
+		
+		// SHOW TARGET MENUBAR
+		self.step(context, 'show target menubar');
+		arg_menubar_object.content_jqo.show();
+		DevaptNavHistory.current_topbar_name = arg_menubar_object.name;
+		
+		
+		// RENDER DEFAULT VIEW
+		var view_name = arg_menubar_object['default_view'];
+		var content_id = arg_menubar_object['default_container'];
+		var content_label = arg_menubar_object['default_label'];
+		if ( arg_render_view && DevaptTypes.is_not_empty_str(view_name) )
+		{
+			self.step(context, 'set menubar default view');
+			
+			var url_base = DevaptApplication.get_url_base(); 
+			var display_url = url_base + 'views/' + view_name + '/html_page';
+			var force_render = false;
+			
+			var promise = DevaptNavHistory.set_page_view_content(content_label, content_id, view_name, content_label, display_url, force_render, arg_menubar_object.name);
+		}
+		
+		
+		self.leave(context, 'success');
+		// self.trace=false;
+		return true;
+	}
+	
+	
+	
+	/**
+	 * @public
+	 * @memberof			DevaptMenubar
+	 * @desc				Render top menu bar switch
+	 * @param {object}		arg_menu_declaration	menu resource declaration (json object)
+	 * @param {object}		arg_parent_menu_jqo		parent menu jQuery object	
+	 * @return {boolean}	true:success,false:failure
+	 */
+	var cb_render_top_menubar_switch = function(arg_menu_declaration, arg_parent_menu_jqo)
+	{
+		var self = this;
+		var context = 'render_top_menubar_switch(menubar name)';
+		self.enter(context, '');
+		
+		
+		// CREATE MENU NODE
+		var menubar_name	= DevaptTypes.to_string(arg_menu_declaration['name'], '');
+		var menu_id			= menubar_name + '_id';
+		var label			= DevaptTypes.to_string(arg_menu_declaration['label'], '');
+		var view_name		= DevaptTypes.to_string(arg_menu_declaration['default_view', '']);
+		var view_label		= DevaptTypes.to_string(arg_menu_declaration['default_label'], '');
+		// var page_hash		= '#view:' + view_name + ':' + view_label + ':' + view_label + ':' + menubar_name;
+		
+		var menu_jqo		= $('<li>');
+		var menu_a_jqo = $('<a>');
+		// menu_a_jqo.attr('href', page_hash);
+		menu_jqo.attr('id', menu_id);
+		menu_a_jqo.text(label);
+		menu_jqo.append(menu_a_jqo);
+		
+		// TODO : MOVE TO INDEX
+		arg_parent_menu_jqo.append(menu_jqo);
+		
+		var switch_cb = (
+			function(arg_menubar_name, arg_declaration)
+			{
+				return function()
+				{
+					// self.trace=true;
+					self.step(context, 'switch menubar callback');
+					
+					
+					// NEW MENUBAR EXISTS
+					var menubar_object = DevaptClasses.get_instance(arg_menubar_name);
+					if (menubar_object && menubar_object.is_rendered)
+					{
+						self.step(context, 'menubar already exists and is rendered');
+						
+						self.switch_top_menubar(menubar_object, true);
+						
+						self.leave(context, 'success');
+						// self.trace=false;
+						return true;
+					}
+					
+					
+					// CREATE AND RENDER NEW MENUBAR
+					self.step(context, 'create menubar and render it');
+					var backend = Devapt.get_current_backend();
+					var topmenubar_promise = backend.render_view(null, arg_menubar_name);
+					topmenubar_promise.done(
+						function()
+						{
+							self.step(context, 'menubar created and rendered');
+							
+							var menubar_object = DevaptClasses.get_instance(arg_menubar_name);
+							self.value(context, 'menubar_object.name', menubar_object.name);
+							self.value(context, 'menubar_object.is_rendered', menubar_object.is_rendered);
+							
+							self.switch_top_menubar(menubar_object, true);
+							// self.trace=false;
+						}
+					);
+				}
+			}
+		)(menubar_name, arg_menu_declaration);
+		menu_a_jqo.click(switch_cb);
+		
+		
+		self.leave(context, 'success');
+		// self.trace=false;
+		return true;
+	}
+	
+		
 	
 	/*
 		Example:
@@ -377,6 +565,15 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptResources, DevaptView, DevaptAp
 		// console.log(arg_menu_declaration);
 		// console.log(arg_parent_menu_jqo);
 		
+		// GET MENU TYPE
+		var menu_type	= DevaptTypes.to_string(arg_menu_declaration['class_type'], '');
+		if (menu_type === 'menubar')
+		{
+			var result = self.render_top_menubar_switch(arg_menu_declaration, arg_parent_menu_jqo);
+			
+			self.leave(context, 'top menubar switched');
+			return result;
+		}
 		
 		// GET MENU ATTRIBUTES
 		// var position	= DevaptTypes.to_list_item(arg_menu_declaration['position'], ['left', 'right'], 'left');
@@ -577,7 +774,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptResources, DevaptView, DevaptAp
 			
 			var menus_resources = self.menubar_declaration['items_resources'];
 			
-			for(item_key in items)
+			for(var item_key in items)
 			{
 				var item_name = items[item_key];
 				self.value(context, 'item menu at [' + item_key + ']', item_name);
@@ -598,6 +795,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptResources, DevaptView, DevaptAp
 	}
 	
 	
+	
 	/**
 	 * @public
 	 * @memberof			DevaptMenubar
@@ -614,7 +812,6 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptResources, DevaptView, DevaptAp
 		self.leave(context, 'success');
 		return true;
 	}
-	
 	
 	// TESTS
 	/*
@@ -669,48 +866,32 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptResources, DevaptView, DevaptAp
 	DevaptMenubarClass.add_public_method('render_self', {}, cb_render_self);
 	DevaptMenubarClass.add_public_method('render_top_menubar', {}, cb_render_top_menubar);
 	DevaptMenubarClass.add_public_method('render_top_menubar_title', {}, cb_render_top_menubar_title);
+	DevaptMenubarClass.add_public_method('switch_top_menubar', {}, cb_switch_top_menubar);
+	DevaptMenubarClass.add_public_method('render_top_menubar_switch', {}, cb_render_top_menubar_switch);
 	DevaptMenubarClass.add_public_method('render_top_menubar_menu', {}, cb_render_top_menubar_menu);
 	DevaptMenubarClass.add_public_method('render_nav_menubar', {}, cb_render_nav_menubar);
 	
 	// PROPERTIES
-	DevaptMenubarClass.add_public_str_property('menubar_name',		'',		null, true, false, []);
-	DevaptMenubarClass.add_public_str_property('menubar_format',	'',		null, false, false, []); // top, nav
-	DevaptMenubarClass.add_public_obj_property('menubar_declaration',	'',	null, false, false, []);
+	DevaptMenubarClass.add_public_str_property('menubar_name',			'',		null, true, false, []);
+	DevaptMenubarClass.add_public_str_property('menubar_format',		'',		null, false, false, []); // top, nav
+	DevaptMenubarClass.add_public_obj_property('menubar_declaration',	'',		null, false, false, []);
 	
-	DevaptMenubarClass.add_public_str_property('format',		'',	false, false, false, []);
-	DevaptMenubarClass.add_public_str_property('orientation',	'',	false, false, false, []);
+	DevaptMenubarClass.add_public_str_property('default_view',			'',	false, false, false, []);
+	DevaptMenubarClass.add_public_str_property('default_container',		'',	false, false, false, []);
+	DevaptMenubarClass.add_public_str_property('default_label',			'',	false, false, false, []);
+	
+	DevaptMenubarClass.add_public_str_property('format',				'',	false, false, false, []);
+	DevaptMenubarClass.add_public_str_property('orientation',			'',	false, false, false, []);
 	DevaptMenubarClass.add_public_bool_property('display_on_landscape',	'',	false, false, false, []);
 	DevaptMenubarClass.add_public_bool_property('display_on_portrait',	'',	false, false, false, []);
 	
-	DevaptMenubarClass.add_public_bool_property('fixed',	'',	false, false, false, []);
-	DevaptMenubarClass.add_public_bool_property('ongrid',	'',	false, false, false, []);
-	DevaptMenubarClass.add_public_bool_property('float',	'',	false, false, false, []);
-	DevaptMenubarClass.add_public_bool_property('clickable',	'',	false, false, false, []);
+	DevaptMenubarClass.add_public_bool_property('fixed',			'',	false, false, false, []);
+	DevaptMenubarClass.add_public_bool_property('ongrid',			'',	false, false, false, []);
+	DevaptMenubarClass.add_public_bool_property('float',			'',	false, false, false, []);
+	DevaptMenubarClass.add_public_bool_property('clickable',		'',	false, false, false, []);
 	
-	DevaptMenubarClass.add_public_obj_property('items',	'',	null, false, false, []);
+	DevaptMenubarClass.add_public_obj_property('items',				'',	null, false, false, []);
 	DevaptMenubarClass.add_public_obj_property('items_resources',	'',	null, false, false, []);
-	
-/*	DevaptMenubarClass.add_property_record(
-		{
-			name: 'items_resources',
-			description:'',
-			aliases: [],
-			
-			visibility:'public',
-			is_public:true,
-			is_required: false,
-			is_initializable: true,
-			
-			type: 'object',
-			default_value: null,
-			
-			array_separator: '',
-			array_type: '',
-			format: '',
-			
-			children: {}
-		}
-	);*/
 	
 	// MIXINS
 	

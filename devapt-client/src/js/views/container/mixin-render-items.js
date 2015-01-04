@@ -10,9 +10,10 @@
  * @license		Apache License Version 2.0, January 2004; see LICENSE.txt or http://www.apache.org/licenses/
  */
 
+'use strict'
 define(
-['Devapt', 'core/types', 'core/class', 'core/template'],
-function(Devapt, DevaptTypes, DevaptClass, DevaptTemplate)
+['Devapt', 'core/types', 'core/class', 'core/classes', 'core/template'],
+function(Devapt, DevaptTypes, DevaptClass, DevaptClasses, DevaptTemplate)
 {
 	/**
 	 * @mixin				DevaptMixinRenderItems
@@ -26,7 +27,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptTemplate)
 		 * @public
 		 * @desc				Enable/disable trace for mixin operations
 		 */
-		mixin_trace_render_items: true,
+		mixin_trace_render_items: false,
 		
 		
 		
@@ -38,8 +39,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptTemplate)
 		 */
 		mixin_init_render_items: function(self)
 		{
-			// var self = this;
-			self.push_trace(self.trace, self.mixin_trace_render_items);
+			self.push_trace(self.trace, DevaptMixinRenderItems.mixin_trace_render_items);
 			var context = 'mixin_init_render_items()';
 			self.enter(context, '');
 			
@@ -65,7 +65,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptTemplate)
 		{
 			var self = this;
 			var context = 'render_item_node(index)';
-			self.push_trace(self.trace, self.mixin_trace_render_items);
+			self.push_trace(self.trace, DevaptMixinRenderItems.mixin_trace_render_items);
 			self.enter(context, '');
 			
 			// NOT IMPLEMENTED HERE
@@ -89,7 +89,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptTemplate)
 		{
 			var self = this;
 			var context = 'render_item_divider(deferred,jqo,content)';
-			self.push_trace(self.trace, self.mixin_trace_render_items);
+			self.push_trace(self.trace, DevaptMixinRenderItems.mixin_trace_render_items);
 			self.enter(context, '');
 			
 			
@@ -113,7 +113,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptTemplate)
 		{
 			var self = this;
 			var context = 'render_item_html(deferred,jqo,content)';
-			self.push_trace(self.trace, self.mixin_trace_render_items);
+			self.push_trace(self.trace, DevaptMixinRenderItems.mixin_trace_render_items);
 			self.enter(context, '');
 			
 			arg_item_jqo.html(arg_item_content);
@@ -137,7 +137,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptTemplate)
 		{
 			var self = this;
 			var context = 'render_item_text(deferred,jqo,content)';
-			self.push_trace(self.trace, self.mixin_trace_render_items);
+			self.push_trace(self.trace, DevaptMixinRenderItems.mixin_trace_render_items);
 			self.enter(context, '');
 			
 			
@@ -166,8 +166,9 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptTemplate)
 		{
 			var self = this;
 			var context = 'render_item_view(deferred,jqo,content)';
-			self.push_trace(self.trace, self.mixin_trace_render_items);
+			self.push_trace(self.trace, DevaptMixinRenderItems.mixin_trace_render_items);
 			self.enter(context, '');
+			self.value(context, 'arg_item_content', arg_item_content);
 			
 			
 			// GET CURRENT BACKEND
@@ -175,13 +176,27 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptTemplate)
 			self.assertNotNull(context, 'backend', backend);
 			
 			// RENDER VIEW
-			arg_deferred.then( backend.render_view(arg_item_jqo, arg_item_content) );
+			arg_deferred.then(
+				function()
+				{
+					var promise = backend.render_view(arg_item_jqo, arg_item_content);
+					promise.then(
+						function()
+						{
+							var view = DevaptClasses.get_instance(arg_item_content);
+							// console.log(view.label, self.name);
+							arg_item_jqo.attr('devapt-label', view.label);
+						}
+					);
+				}
+			);
 			
 			
 			self.leave(context, self.msg_success);
 			self.pop_trace();
 			return arg_item_jqo;
 		},
+		
 		
 		
 		/**
@@ -197,137 +212,238 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptTemplate)
 		{
 			var self = this;
 			var context = 'render_item_object(deferred,jqo,content)';
-			self.push_trace(self.trace, self.mixin_trace_render_items);
+			self.push_trace(self.trace, DevaptMixinRenderItems.mixin_trace_render_items);
+			self.enter(context, '');
+			
+			
+			// ITERATOR ON FIELDS
+			if (self.items_iterator === 'fields')
+			{
+				var result_jqo = self.render_item_object_fields(arg_deferred, arg_item_jqo, arg_item_object);
+				
+				self.leave(context, self.msg_success);
+				self.pop_trace();
+				return result_jqo;
+			}
+			
+			if (self.items_iterator === 'records')
+			{
+				var result_jqo = self.render_item_object_records(arg_deferred, arg_item_jqo, arg_item_object);
+				
+				self.leave(context, self.msg_success);
+				self.pop_trace();
+				return result_jqo;
+			}
+			
+			
+			self.leave(context, self.msg_failure);
+			self.pop_trace();
+			return null;
+		},
+		
+		
+		
+		/**
+		 * @public
+		 * @memberof			DevaptMixinRenderItems
+		 * @desc				Render an item OBJECT content with records iterator
+		 * @param {object}		arg_deferred		deferred object
+		 * @param {object}		arg_item_jqo		
+		 * @param {object}		arg_item_object
+		 * @return {object}		jQuery object node
+		 */
+		render_item_object_records: function(arg_deferred, arg_item_jqo, arg_item_object)
+		{
+			var self = this;
+			var context = 'render_item_object_records(deferred,jqo,content)';
+			self.push_trace(self.trace, DevaptMixinRenderItems.mixin_trace_render_items);
 			self.enter(context, '');
 			
 			
 			// BUILD NODE CONTENT
 			var tags_object = {};
-			if (self.items_iterator === 'records')
+			for(var field_index in self.items_fields)
 			{
-				for(field_index in self.items_fields)
-				{
-					var field_name = self.items_fields[field_index];
-					tags_object[field_name] = arg_item_object[field_name];
-				}
-			}
-			else
-			{
-				tags_object = arg_item_object;
+				var field_name = self.items_fields[field_index];
+				tags_object[field_name] = arg_item_object[field_name];
 			}
 			
 			
-			// GET INPUTS
+			// GET HAS INPUTS
 			var has_input = self.has_input ? self.has_input() : false;
-			if (has_input)
+			self.value(context, 'has inputs', has_input);
+			
+			
+			// GET ACCESS
+			self.assertObject(context, 'self.items_model_obj', self.items_model_obj);
+			var access = self.items_model_obj.get_access();
+			self.value(context, 'access', access);
+			
+			
+			// SHOULD RENDER INPUTS
+			if (has_input && (access.update || access.create || access['delete']) )
 			{
 				self.step(context, 'has inputs');
 				
-				self.assertObject(context, 'self.items_model_obj', self.items_model_obj);
-				
-				var access = self.items_model_obj.get_access();
-				self.value(context, 'access', access);
-				
-				var has_create = access.create;
-				var has_read = access.read;
-				var has_update = access.update;
-				var has_delete = access['delete'];
-				
-				// TODO MODEL ACCESS
-				if (has_update)
+				for(var field_index in self.items_fields)
 				{
-					if (self.items_iterator === 'records')
+					var field_name = self.items_fields[field_index];
+					self.value(context, 'field_name', field_name);
+					self.value(context, 'self.items_input_fields', self.items_input_fields);
+				
+					if (self.items_input_fields.indexOf(field_name) < 0)
 					{
-						for(field_index in self.items_fields)
+						self.step(context, 'field is skipped');
+						continue;
+					}
+					
+					self.step(context, 'field has input');
+					
+					var field_value = tags_object[field_name];
+					var field_def_obj = self.items_model_obj.get_field(field_name);
+					
+					var uid = Devapt.uid();
+					var input_div_jqo = $('<div id="' + field_name + '_' + uid + '_input_id">');
+					var input_jqo = self.get_input(arg_deferred, field_def_obj, null, field_value, true, access);
+					if (! input_jqo)
+					{
+						// RENDER ITEM
+						if ( DevaptTypes.is_not_empty_str(self.items_format) )
 						{
-							var field_name = self.items_fields[field_index];
-							var field_value = tags_object[field_name];
-							var field_def_obj = self.items_model_obj.get_field(field_name);
+							self.step(context, 'items_format is a valid string');
 							
-							tags_object[field_name] = '<div id="' + field_name + '_input_id">';
-							tags_object[field_name + '_jqo'] = self.get_input(field_def_obj, null, field_value);
+							var content = DevaptTemplate.render(self.items_format, tags_object);
+							self.render_item_text(arg_deferred, input_div_jqo, content);
+						}
+						else
+						{
+							self.step(context, 'items_format is a not valid string');
 							
-							// console.log(field_name, self.name);
-							// console.log(field_def_obj, 'field_def_obj');
-							// console.log(tags_object[field_name], 'tags_object[field_name]');
-							// console.log(tags_object[field_name + '_jqo'], 'tags_object[field_name + _jqo]');
+							var field_value = tags_object[field_name] ? tags_object[field_name] : field_def_obj.field_value.defaults;
+							self.render_item_text(arg_deferred, input_div_jqo, field_value);
 						}
 					}
 					
-					else if (self.items_iterator === 'fields')
-					{
-						var field_name = tags_object.field_name;
-						var field_value = tags_object.field_value;
-						var field_def_obj = self.items_model_obj.get_field(field_name);
-						
-						tags_object['field_value'] = '<div id="' + field_name + '_input_id">';
-						tags_object[field_name + '_jqo'] = self.get_input(field_def_obj, null, field_value);
-						
-						// console.log(field_name, self.name);
-						// console.log(field_def_obj, 'field_def_obj');
-						// console.log(tags_object[field_name], 'tags_object[field_name]');
-						// console.log(tags_object[field_name + '_jqo'], 'tags_object[field_name + _jqo]');
-					}
+					input_div_jqo.append(input_jqo);
+					arg_item_jqo.append(input_div_jqo);
 				}
+				
+				
+				self.leave(context, self.msg_success);
+				self.pop_trace();
+				return arg_item_jqo;
 			}
 			
 			
 			// RENDER ITEM
 			if ( DevaptTypes.is_not_empty_str(self.items_format) )
 			{
+				self.step(context, 'items_format is a valid string');
+				
 				var content = DevaptTemplate.render(self.items_format, tags_object);
-				// console.log(tags_object, 'tags_object');
-				// console.log(content, 'content');
-				// console.log(arg_item_object, 'arg_item_object');
 				self.render_item_text(arg_deferred, arg_item_jqo, content);
 			}
 			else
 			{
-				// console.log(arg_item_object, 'arg_item_object');
-				self.render_item_text(arg_deferred, arg_item_jqo, 'todo');
+				self.step(context, 'items_format is a not valid string');
+				
+				var field_value = tags_object[field_name] ? tags_object[field_name] : field_def_obj.field_value.defaults;
+				self.render_item_text(arg_deferred, arg_item_jqo, field_value);
 			}
 			
 			
-			// RENDER INPUTS
-			if (has_input)
+			self.leave(context, self.msg_success);
+			self.pop_trace();
+			return arg_item_jqo;
+		},
+		
+		
+		/**
+		 * @public
+		 * @memberof			DevaptMixinRenderItems
+		 * @desc				Render an item OBJECT content with fields iterator
+		 * @param {object}		arg_deferred		deferred object
+		 * @param {object}		arg_item_jqo		
+		 * @param {object}		arg_item_object
+		 * @return {object}		jQuery object node
+		 */
+		render_item_object_fields: function(arg_deferred, arg_item_jqo, arg_item_object)
+		{
+			var self = this;
+			var context = 'render_item_object_fields(deferred,jqo,content)';
+			self.push_trace(self.trace, DevaptMixinRenderItems.mixin_trace_render_items);
+			self.enter(context, '');
+			
+			
+			// BUILD NODE CONTENT
+			var tags_object = arg_item_object;
+			
+			
+			// GET HAS INPUTS
+			var has_input = self.has_input ? self.has_input() : false;
+			self.value(context, 'has inputs', has_input);
+			
+			
+			// GET ACCESS
+			self.assertObject(context, 'self.items_model_obj', self.items_model_obj);
+			var access = self.items_model_obj.get_access();
+			self.value(context, 'access', access);
+			
+			
+			// SHOULD RENDER INPUTS
+			if (has_input && (access.update || access.create || access['delete']) )
 			{
-				if (self.items_iterator === 'records')
+				self.step(context, 'has inputs');
+				
+				var field_name = tags_object.field_name;
+				self.value(context, 'field_name', field_name);
+				self.value(context, 'self.items_input_fields', self.items_input_fields);
+				
+				if (self.items_input_fields.indexOf(field_name) >= 0)
 				{
-					self.step(context, 'render inputs for records');
+					self.step(context, 'field has input');
 					
-					for(field_index in self.items_fields)
-					{
-						var field_name = self.items_fields[field_index];
-						var input_jqo = tags_object[field_name + '_jqo'];
-						var input_div_jqo = $('#' + field_name + '_input_id', arg_item_jqo);
-						input_div_jqo.append(input_jqo);
-						// console.log(field_name, self.name);
-						// console.log(input_jqo, 'input_jqo');
-						// console.log(input_div_jqo, 'input_div_jqo');
-						// console.log(arg_item_jqo, 'arg_item_jqo');
-					}
+					var field_value = tags_object.field_value;
+					var field_def_obj = self.items_model_obj.get_field(field_name);
+					
+					var uid = Devapt.uid();
+					var input_div_html = '<div id="' + field_name + '_' + uid +  '_input_id">';
+					var input_div_jqo = $(input_div_html);
+					var input_jqo = self.get_input(arg_deferred, field_def_obj, null, field_value, true);
+					
+					input_div_jqo.append(input_jqo);
+					arg_item_jqo.append(input_div_jqo);
+					
+					tags_object['field_value'] = input_div_html;
+					tags_object[field_name + '_jqo'] = input_jqo;
 				}
 				
-				else if (self.items_iterator === 'fields')
-				{
-					self.step(context, 'render inputs for fields');
-					
-					var field_name = tags_object.field_name;
-					
-					var input_jqo = tags_object[field_name + '_jqo'];
-					var input_div_jqo = $('#' + field_name + '_input_id', arg_item_jqo);
-					input_div_jqo.append(input_jqo);
-					
-					// console.log(field_name, self.name);
-					// console.log(input_jqo, 'input_jqo');
-					// console.log(input_div_jqo, 'input_div_jqo');
-					// console.log(arg_item_jqo, 'arg_item_jqo');
-				}
+				
+				self.leave(context, self.msg_success);
+				self.pop_trace();
+				return arg_item_jqo;
 			}
 			
 			
-			// ATTACH RECORD
-			arg_item_jqo.data('record', arg_item_object);
+			// RENDER ITEM
+			if ( DevaptTypes.is_not_empty_str(self.items_format) )
+			{
+				self.step(context, 'items_format is a valid string');
+				
+				
+				
+				// TODO TEMPLATE ON FIELDS INPUTS
+				
+				
+				var content = DevaptTemplate.render(self.items_format, tags_object);
+				self.render_item_text(arg_deferred, arg_item_jqo, content);
+			}
+			else
+			{
+				self.step(context, 'items_format is a not valid string');
+				
+				self.render_item_text(arg_deferred, arg_item_jqo, 'todo');
+			}
 			
 			
 			self.leave(context, self.msg_success);
@@ -349,13 +465,13 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptTemplate)
 		{
 			var self = this;
 			var context = 'render_item_array(deferred,jqo,content)';
-			self.push_trace(self.trace, self.mixin_trace_render_items);
+			self.push_trace(self.trace, DevaptMixinRenderItems.mixin_trace_render_items);
 			self.enter(context, '');
 			
 			
 			// BUILD NODE CONTENT
 			var tags_object = {};
-			for(field_index in self.items_fields)
+			for(var field_index in self.items_fields)
 			{
 				var field_name = self.items_fields[field_index];
 				tags_object[field_index] = arg_item_object[field_name];
@@ -384,7 +500,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptTemplate)
 		{
 			var self = this;
 			var context = 'render_item_callback(deferred,jqo,content)';
-			self.push_trace(self.trace, self.mixin_trace_render_items);
+			self.push_trace(self.trace, DevaptMixinRenderItems.mixin_trace_render_items);
 			self.enter(context, '');
 			
 			// TODO render_item_object
@@ -409,7 +525,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptTemplate)
 		{
 			var self = this;
 			var context = 'render_item(deferred,content,index,type)';
-			self.push_trace(self.trace, self.mixin_trace_render_items);
+			self.push_trace(self.trace, DevaptMixinRenderItems.mixin_trace_render_items);
 			// self.trace = true
 			self.enter(context, '');
 			self.value(context, 'arg_item_content', arg_item_content);
@@ -457,6 +573,9 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptTemplate)
 				case 'object':
 				{
 					self.assertFunction(context, 'self.render_item_object', self.render_item_object);
+					arg_item_content.container_item_index = arg_item_index;
+					// arg_item_content.container_item_type = arg_item_type;
+					// arg_item_content.container_item_node = node_jqo;
 					node_jqo = self.render_item_object(arg_deferred, node_jqo, arg_item_content);
 					break;
 				}
@@ -527,8 +646,9 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptTemplate)
 		{
 			var self = this;
 			var context = 'append_item_node(item node, record)';
-			self.push_trace(self.trace, self.mixin_trace_render_items);
+			self.push_trace(self.trace, DevaptMixinRenderItems.mixin_trace_render_items);
 			self.enter(context, '');
+			
 			
 			if ( ! self.items_jquery_parent)
 			{
@@ -544,17 +664,6 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptTemplate)
 			return true;
 		}
 	}
-	
-	
-	/**
-	 * @public
-	 * @memberof			DevaptMixinRenderItems
-	 * @desc				Register mixin options
-	 * @return {nothing}
-	 */
-	// DevaptMixinRenderItems.register_options = function(arg_prototype)
-	// {
-	// };
 	
 	
 	
@@ -579,6 +688,8 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptTemplate)
 	DevaptMixinRenderItemsClass.add_public_method('render_item_text', {}, DevaptMixinRenderItems.render_item_text);
 	DevaptMixinRenderItemsClass.add_public_method('render_item_view', {}, DevaptMixinRenderItems.render_item_view);
 	DevaptMixinRenderItemsClass.add_public_method('render_item_object', {}, DevaptMixinRenderItems.render_item_object);
+	DevaptMixinRenderItemsClass.add_public_method('render_item_object_records', {}, DevaptMixinRenderItems.render_item_object_records);
+	DevaptMixinRenderItemsClass.add_public_method('render_item_object_fields', {}, DevaptMixinRenderItems.render_item_object_fields);
 	DevaptMixinRenderItemsClass.add_public_method('render_item_array', {}, DevaptMixinRenderItems.render_item_array);
 	DevaptMixinRenderItemsClass.add_public_method('render_item_callback', {}, DevaptMixinRenderItems.render_item_callback);
 	DevaptMixinRenderItemsClass.add_public_method('render_item', {}, DevaptMixinRenderItems.render_item);

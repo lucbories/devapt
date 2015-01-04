@@ -38,8 +38,7 @@ function(Devapt, DevaptTypes, DevaptClass)
 		 */
 		mixin_init_pagination: function(self)
 		{
-			// var self = this;
-			self.push_trace(self.trace, self.mixin_trace_pagination);
+			self.push_trace(self.trace, DevaptMixinPagination.mixin_trace_pagination);
 			var context = 'mixin_init_pagination()';
 			self.enter(context, '');
 			
@@ -64,7 +63,7 @@ function(Devapt, DevaptTypes, DevaptClass)
 		{
 			var self = this;
 			var context = 'on_pagination_previous_event(opds)';
-			self.push_trace(self.trace, self.mixin_trace_pagination);
+			self.push_trace(self.trace, DevaptMixinPagination.mixin_trace_pagination);
 			self.enter(context, '');
 			
 			// console.log(arg_event_operands, 'on_pagination_previous_event');
@@ -85,7 +84,7 @@ function(Devapt, DevaptTypes, DevaptClass)
 		{
 			var self = this;
 			var context = 'on_pagination_current_event(opds)';
-			self.push_trace(self.trace, self.mixin_trace_pagination);
+			self.push_trace(self.trace, DevaptMixinPagination.mixin_trace_pagination);
 			self.enter(context, '');
 			
 			
@@ -118,7 +117,7 @@ function(Devapt, DevaptTypes, DevaptClass)
 		{
 			var self = this;
 			var context = 'on_pagination_next_event(opds)';
-			self.push_trace(self.trace, self.mixin_trace_pagination);
+			self.push_trace(self.trace, DevaptMixinPagination.mixin_trace_pagination);
 			self.enter(context, '');
 			
 			// console.log(arg_event_operands, 'on_pagination_next_event');
@@ -140,7 +139,7 @@ function(Devapt, DevaptTypes, DevaptClass)
 		apply_pagination: function(arg_first_index, arg_last_index)
 		{
 			var self = this;
-			self.push_trace(self.trace, self.mixin_trace_pagination);
+			self.push_trace(self.trace, DevaptMixinPagination.mixin_trace_pagination);
 			var context = 'apply_pagination(first,last)';
 			self.enter(context, '');
 			self.value(context, 'arg_first_index', arg_first_index);
@@ -185,17 +184,6 @@ function(Devapt, DevaptTypes, DevaptClass)
 	};
 	
 	
-	/**
-	 * @public
-	 * @memberof			DevaptMixinPagination
-	 * @desc				Register mixin options
-	 * @return {nothing}
-	 */
-	// DevaptMixinPagination.register_options = function(arg_prototype)
-	// {
-	// };
-	
-	
 	
 	/* --------------------------------------------- CREATE MIXIN CLASS ------------------------------------------------ */
 	
@@ -208,21 +196,19 @@ function(Devapt, DevaptTypes, DevaptClass)
 			'description':'Mixin methods for datas pagination feature for containers.'
 		}
 	};
-	
-	
-	/**
-	 * @mixin				DevaptMixinPaginationClass
-	 * @public
-	 * @desc				Mixin of methods for datas pagination feature for containers
-	 */
 	var DevaptMixinPaginationClass = new DevaptClass('DevaptMixinPagination', null, class_settings);
 	
+	// METHODS
 	DevaptMixinPaginationClass.infos.ctor = DevaptMixinPagination.mixin_init_pagination;
 	DevaptMixinPaginationClass.add_public_method('on_pagination_previous_event', {}, DevaptMixinPagination.on_pagination_previous_event);
-	DevaptMixinPaginationClass.add_public_method('on_pagination_current_event', {}, DevaptMixinPaginationClass.on_pagination_current_event);
-	DevaptMixinPaginationClass.add_public_method('on_pagination_next_event', {}, DevaptMixinPaginationClass.on_pagination_next_event);
-	DevaptMixinPaginationClass.add_public_method('apply_pagination', {}, DevaptMixinPaginationClass.apply_pagination);
+	DevaptMixinPaginationClass.add_public_method('on_pagination_current_event', {}, DevaptMixinPagination.on_pagination_current_event);
+	DevaptMixinPaginationClass.add_public_method('on_pagination_next_event', {}, DevaptMixinPagination.on_pagination_next_event);
+	DevaptMixinPaginationClass.add_public_method('apply_pagination', {}, DevaptMixinPagination.apply_pagination);
 	
+	// PROPERTIES
+	DevaptMixinPaginationClass.add_public_int_property('mixin_pagination_apply_count',	'',		0, false, false, []);
+	
+	// BUILD CLASS
 	DevaptMixinPaginationClass.build_class();
 	
 	

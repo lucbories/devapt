@@ -504,7 +504,6 @@ final class Broker
 				}
 			}
 		}
-		// Debug::dump(Broker::$resources_records_array);
 		
 		
 		// CHECK RECORDS
@@ -585,14 +584,15 @@ final class Broker
 		{
 			// CHECK RESOURCE TO CLONE
 			$resource_to_clone_name = $arg_resource_record['resource_to_clone'];
-			if ( ! array_key_exists($resource_to_clone_name, $resources_records_array) )
+			if ( ! array_key_exists($resource_to_clone_name, Broker::$resources_records_array) )
 			{
+				Trace::warning('Resources\Broker.getCheckedResourceRecord: resource to clone not found');
 				return null;
 			}
 			unset( $arg_resource_record['resource_to_clone'] );
 			
 			// GET RESOURCE TO CLONE
-			$resource_to_clone_record = $resources_records_array[$resource_to_clone_name];
+			$resource_to_clone_record = Broker::$resources_records_array[$resource_to_clone_name];
 			
 			// CLONE OPTIONS
 			$clone_record = array();
@@ -616,6 +616,7 @@ final class Broker
 		{
 			if ( ! array_key_exists($attribute_name, $arg_resource_record) )
 			{
+				Trace::warning('Resources\Broker.getCheckedResourceRecord: cloned resource fails for required attribute ['.$attribute_name.']');
 				return null;
 			}
 		}

@@ -114,6 +114,7 @@
  * @license		Apache License Version 2.0, January 2004; see LICENSE.txt or http://www.apache.org/licenses/
  */
 
+'use strict';
 define(['Devapt', 'core/types', 'core/classes'],
 function(Devapt, DevaptTypes, DevaptClasses)
 {
@@ -171,6 +172,8 @@ function(Devapt, DevaptTypes, DevaptClasses)
 			}
 	};
 	
+	
+	
 	// ------------------------------------------------ PRIVATE FUNCTION : REGISTER METHODS ------------------------------------------------
 	/**
 	 * @memberof				DevaptClass
@@ -196,7 +199,7 @@ function(Devapt, DevaptTypes, DevaptClasses)
 		{
 			DevaptTraces.trace_step(context, 'is array or object', self.trace);
 			
-			for(method_key in arg_new_methods)
+			for(var method_key in arg_new_methods)
 			{
 				DevaptTraces.trace_step(context, 'loop at key [' + method_key + ']', self.trace);
 				
@@ -246,6 +249,54 @@ function(Devapt, DevaptTypes, DevaptClasses)
 	
 	
 	
+	// ------------------------------------------------ PRIVATE FUNCTION : REGISTER MIXINS ------------------------------------------------
+	/**
+	 * @memberof				DevaptClass
+	 * @private
+	 * @method					fill_mixins(arg_ordered_mixins, arg_map_mixins, arg_new_mixins)
+	 * @desc					Register methods records with all attributes
+	 * @param {object}			arg_class				a class object
+	 * @param {array}			arg_ordered_mixins		an array of registered mixins
+	 * @param {object}			arg_map_mixins			a map of registered mixins
+	 * @param {object|array}	arg_new_mixins			an array or an object of mixins to register
+	 * @return {nothing}
+	 */
+	function fill_mixins(self, arg_ordered_mixins, arg_map_mixins, arg_new_mixins)
+	{
+		var context = 'DevaptClass:fill_mixins(ordered_mixins,map_mixins,new_mixins)';
+		DevaptTraces.trace_enter(context, '', self.trace);
+		
+		
+		// RESET BUILD FLAG
+		self.is_build = false;
+		
+		if ( DevaptTypes.is_array(arg_new_mixins) || DevaptTypes.is_object(arg_new_mixins) )
+		{
+			DevaptTraces.trace_step(context, 'is array or object', self.trace);
+			
+			for(var mixin_key in arg_new_mixins)
+			{
+				DevaptTraces.trace_step(context, 'loop at key [' + mixin_key + ']', self.trace);
+				
+				// GET MIXIN mixin_class
+				var mixin_class = arg_new_mixins[mixin_key];
+				// console.log(mixin_class, 'fill_mixins');
+				
+				if ( DevaptTypes.is_object(mixin_class) && mixin_class.infos )
+				{
+					// REGISTER MIXIN
+					arg_ordered_mixins.push(mixin_class);
+					arg_map_mixins[mixin_class.infos.class_name] = mixin_class;
+				}
+			}
+		}
+		
+		
+		DevaptTraces.trace_leave(context, '', self.trace);
+	}
+	
+	
+	
 	// ------------------------------------------------ PRIVATE FUNCTION : REGISTER PROPERTIES ------------------------------------------------
 	/**
 	 * @memberof				DevaptClass
@@ -270,7 +321,7 @@ function(Devapt, DevaptTypes, DevaptClasses)
 		if ( DevaptTypes.is_array(arg_new_properties)|| DevaptTypes.is_object(arg_new_properties) )
 		{
 			DevaptTraces.trace_step(context, 'is array or object', self.trace);
-			for(property_key in arg_new_properties)
+			for(var property_key in arg_new_properties)
 			{
 				DevaptTraces.trace_step(context, 'loop at key [' + property_key + ']', self.trace);
 				
@@ -366,14 +417,30 @@ function(Devapt, DevaptTypes, DevaptClasses)
 			};
 		}
 		
+		// SET NAME
 		if (! arg_method_record.name)
 		{
 			arg_method_record.name = arg_name;
 		}
-		if (! DevaptTypes.is_function(arg_method_record.callback) && DevaptTypes.is_function(arg_method_cb) )
+		
+		// SET CALLBACK
+		var record_has_callback = DevaptTypes.is_function(arg_method_record.callback) || DevaptTypes.is_array(arg_method_record.callback);
+		var cb_is_function_callback = DevaptTypes.is_function(arg_method_cb);
+		var cb_is_method_callback = DevaptTypes.is_array(arg_method_cb) && arg_method_cb.length === 2 && DevaptTypes.is_function(arg_method_cb[1]);
+		if (! record_has_callback)
 		{
-			arg_method_record.callback = arg_method_cb;
+			// console.info('record has no callback');
+			if (cb_is_function_callback || cb_is_method_callback)
+			{
+				// console.info('arg is a valid callback');
+				arg_method_record.callback = arg_method_cb;
+			}
 		}
+		// else
+		// {
+			// console.log(arg_method_record, 'arg_method_record');
+			// console.log(arg_method_cb, 'arg_method_cb');
+		// }
 		
 		return arg_method_record;
 	}
@@ -417,16 +484,18 @@ function(Devapt, DevaptTypes, DevaptClasses)
 			
 			// CREATE METHOD CALLBACK
 			var cb_method = (
-				function(cb_self, arg_method_record, arg_class_name)
+				function(cb_self, index, arg_class_name)
 				{
 					return function()
 					{
+						var arg_method_record = cb_self.methods.all_ordered[index];
 						var args_count = arguments ? arguments.length : 0;
-						var cb_context = context + ': ' + method_record.name + ' callback with [' + args_count + '] args:';
+						var cb_context = context + ': ' + arg_method_record.name + ' callback with [' + args_count + '] args:';
 						// console.log(arguments, cb_context + 'arguments');
 						
+						
 						// TEST PRIVATE CALL
-						if (method_record.visibility === 'private')
+						if (arg_method_record.visibility === 'private')
 						{
 							// CHECK PRIVATE CALL
 							if ( arg_class_name !== cb_self.infos.class_name)
@@ -437,7 +506,7 @@ function(Devapt, DevaptTypes, DevaptClasses)
 						}
 						
 						// TEST PROTECTED CALL
-						if (method_record.visibility === 'protected')
+						if (arg_method_record.visibility === 'protected')
 						{
 						}
 						
@@ -452,6 +521,9 @@ function(Devapt, DevaptTypes, DevaptClasses)
 						}
 						else
 						{
+							console.log(cb_self, 'cb_self');
+							console.log(arg_class_name, 'arg_class_name');
+							console.log(arg_method_record, 'arg_method_record');
 							console.error(arg_method_record, 'bad callback for method record');
 						}
 						
@@ -468,7 +540,7 @@ function(Devapt, DevaptTypes, DevaptClasses)
 						return result_value;
 					}
 				}
-			)(self, method_record, self.infos.class_name);
+			)(self, index, self.infos.class_name);
 			
 			
 			// STATIC METHOD
@@ -624,18 +696,19 @@ function(Devapt, DevaptTypes, DevaptClasses)
 		var default_value	= arg_property_record.default_value;
 		DevaptTraces.trace_value(context, 'default value', default_value, arg_class.trace);
 		DevaptTraces.trace_value(context, 'setting value', setting_value, arg_class.trace);
-		var setting_valus_is_devapt_object = DevaptTypes.is_object(setting_value) && DevaptTypes.is_not_empty_str(setting_value.class_name);
-		if ( ! setting_valus_is_devapt_object )
+		var setting_value_is_devapt_object = DevaptTypes.is_object(setting_value) && DevaptTypes.is_not_empty_str(setting_value.class_name);
+		// var setting_value_is_array = DevaptTypes.is_not_empty_array(setting_value);
+		if ( ! setting_value_is_devapt_object )
 		{
 			setting_value = setting_value ? DevaptTypes.clone_object(setting_value) : DevaptTypes.clone_object(default_value);
 		}
 		// console.log(setting_value, 'value to clone for [' + property_name + ']');
-		if ( setting_valus_is_devapt_object )
-		{
+		// if ( setting_value_is_devapt_object )
+		// {
 			// console.info('SET DEVAPT OBJECT PROPERTY [' + property_name + '] OF OBJECT [' + arg_target_object.name + ']');
 			// console.log(arg_target_object);
 			// console.log(setting_value);
-		}
+		// }
 		
 		
 		// SHOULD REPLACE AN EXISTING NOT NULL VALUE
@@ -703,8 +776,8 @@ function(Devapt, DevaptTypes, DevaptClasses)
 									{
 										DevaptTraces.trace_step(context, 'arg_property_record.children is avalid string for [' + property_name + ']', arg_class.trace);
 										
-										arg_target_object[property_name] = {};
-										for(child_key in arg_property_record.children)
+										arg_target_object[property_name] = new Object();
+										for(var child_key in arg_property_record.children)
 										{
 											DevaptTraces.trace_step(context, 'get child at [' + child_key + '] for [' + property_name + ']', arg_class.trace);
 											
@@ -732,7 +805,7 @@ function(Devapt, DevaptTypes, DevaptClasses)
 								{
 									DevaptTraces.trace_step(context, 'setting_value is string for [' + property_name + ']', arg_class.trace);
 									
-									arg_target_object[property_name] = {};
+									arg_target_object[property_name] = new Object();
 									
 									if ( DevaptTypes.is_not_empty_array(arg_property_record.children) )
 									{
@@ -743,7 +816,7 @@ function(Devapt, DevaptTypes, DevaptClasses)
 										arg_attributes_separator	= ',';
 										arg_name_value_separator	= '=';
 										
-										var attributes_values = {};
+										var attributes_values = new Object();
 										var attributes = setting_value.split(arg_attributes_separator);
 										DevaptTraces.trace_value(context, 'attributes', attributes, arg_class.trace);
 										
@@ -769,7 +842,7 @@ function(Devapt, DevaptTypes, DevaptClasses)
 										}
 										
 										// CHECK CHILDREN SETTINGS
-										for(child_key in arg_property_record.children)
+										for(var child_key in arg_property_record.children)
 										{
 											DevaptTraces.trace_step(context, 'loop on property child [' + child_key + ']', arg_class.trace);
 											
@@ -797,7 +870,7 @@ function(Devapt, DevaptTypes, DevaptClasses)
 								var values_array = DevaptTypes.to_array(setting_value, default_value, arg_property_record.array_separator);
 								if ( DevaptTypes.is_not_empty_str(arg_property_record.array_type) )
 								{
-									for(array_key in values_array)
+									for(var array_key in values_array)
 									{
 										var value = values_array[array_key];
 										values_array[array_key] = DevaptTypes.convert_value(value, null, arg_property_record.array_type);
@@ -848,7 +921,7 @@ function(Devapt, DevaptTypes, DevaptClasses)
 		
 		
 		// LOOP ON PROPERTIES
-		for(property_name in arg_class.properties.all_map)
+		for(var property_name in arg_class.properties.all_map)
 		{
 			DevaptTraces.trace_step(context, 'loop on property name [' + property_name + ']', arg_class.trace);
 			
@@ -861,7 +934,7 @@ function(Devapt, DevaptTypes, DevaptClasses)
 			}
 			
 			// GET SETTING VALUE FOR PROPERTY NAME
-			var settings = {};
+			var settings = new Object();
 			settings[property_name] = property_record.default_value;
 			var set_result = set_property_with_settings(arg_class, arg_class_instance, property_record, settings);
 		}
@@ -909,8 +982,8 @@ function(Devapt, DevaptTypes, DevaptClasses)
 		
 		
 		// LOOP ON SETTINGS
-		var initialized_properties = {};
-		for(setting_name in arg_instance_settings)
+		var initialized_properties = new Object();
+		for(var setting_name in arg_instance_settings)
 		{
 			DevaptTraces.trace_step(context, 'loop on setting name [' + setting_name + ']', arg_class.trace);
 			
@@ -976,7 +1049,7 @@ function(Devapt, DevaptTypes, DevaptClasses)
 		// REGISTER MIXIN CLASS MIXINS
 		var sub_mixin_class = null;
 		var sub_mixin_name = null;
-		for(sub_mixin_name in mixin_class.mixins.all_map)
+		for(var sub_mixin_name in mixin_class.mixins.all_map)
 		{
 			sub_mixin_class = mixin_class.mixins.all_map[sub_mixin_name];
 			build_all_collections_for_mixin(arg_class, sub_mixin_class);
@@ -989,7 +1062,7 @@ function(Devapt, DevaptTypes, DevaptClasses)
 		
 		
 		// APPEND MIXINS METHODS
-		for(method_index in mixin_class.methods.own_ordered)
+		for(var method_index in mixin_class.methods.own_ordered)
 		{
 			// GET METHOD RECORD AND NAME
 			var method_record = mixin_class.methods.own_ordered[method_index];
@@ -1043,7 +1116,7 @@ function(Devapt, DevaptTypes, DevaptClasses)
 		
 		
 		// APPEND MIXINS PROPERTIES
-		for(property_index in mixin_class.properties.own_ordered)
+		for(var property_index in mixin_class.properties.own_ordered)
 		{
 			// GET PROPERTY RECORD AND NAME
 			var property_record = mixin_class.properties.own_ordered[property_index];
@@ -1071,7 +1144,7 @@ function(Devapt, DevaptTypes, DevaptClasses)
 			self.properties.all_ordered.push(property_record);
 			
 			// REGISTER PROPERTY ALIASES
-			for(property_alias_index in property_record.aliases)
+			for(var property_alias_index in property_record.aliases)
 			{
 				// GET PROPERTY RECORD AND NAME
 				var property_alias_name = property_record.aliases[property_alias_index];
@@ -1120,13 +1193,13 @@ function(Devapt, DevaptTypes, DevaptClasses)
 		
 		
 		// BUILD DEEP COLLECTIONS
-		for(class_index in self.infos.parent_classes)
+		for(var class_index in self.infos.parent_classes)
 		{
 			var class_record = self.infos.parent_classes[class_index];
 			var class_name = class_record.infos.class_name;
 			
 			// LOOP ON MIXINS
-			for(mixin_index in class_record.mixins.own_ordered)
+			for(var mixin_index in class_record.mixins.own_ordered)
 			{
 				// GET MIXIN CLASS
 				var mixin_class = class_record.mixins.own_ordered[mixin_index];
@@ -1151,7 +1224,7 @@ function(Devapt, DevaptTypes, DevaptClasses)
 			
 			
 			// LOOP ON METHODS
-			for(method_index in class_record.methods.own_ordered)
+			for(var method_index in class_record.methods.own_ordered)
 			{
 				// GET METHOD RECORD AND NAME
 				var method_record = class_record.methods.own_ordered[method_index];
@@ -1177,7 +1250,7 @@ function(Devapt, DevaptTypes, DevaptClasses)
 			}
 			
 			// LOOP ON DECORATORS
-			for(decorator_index in class_record.decorators.own_ordered)
+			for(var decorator_index in class_record.decorators.own_ordered)
 			{
 				// GET DECORATOR RECORD AND NAME
 				var decorator_record = class_record.decorators.own_ordered[decorator_index];
@@ -1203,7 +1276,7 @@ function(Devapt, DevaptTypes, DevaptClasses)
 			}
 			
 			// LOOP ON PROPERTIES
-			for(property_index in class_record.properties.own_ordered)
+			for(var property_index in class_record.properties.own_ordered)
 			{
 				// GET PROPERTY RECORD AND NAME
 				var property_record = class_record.properties.own_ordered[property_index];
@@ -1230,7 +1303,7 @@ function(Devapt, DevaptTypes, DevaptClasses)
 				// REGISTER PROPERTY ALIASES
 				if ( DevaptTypes.is_not_empty_array(property_record.aliases) )
 				{
-					for(alias_index in property_record.aliases)
+					for(var alias_index in property_record.aliases)
 					{
 						var alias_name = property_record.aliases[alias_index];
 						self.properties.all_alias_map[alias_name] = property_record;
@@ -1263,7 +1336,7 @@ function(Devapt, DevaptTypes, DevaptClasses)
 		
 		// INIT HELPERS
 		var parent_proto = arg_parent_class.infos.proto;
-		var child_proto = self.infos.proto ? self.infos.proto: {};
+		var child_proto = self.infos.proto ? self.infos.proto: new Object();
 		
 		
 		// DEFINE CONSTRUCTOR
@@ -1286,7 +1359,7 @@ function(Devapt, DevaptTypes, DevaptClasses)
 		var Surrogate = function() {};
 		Surrogate.prototype = parent_proto;
 		self.infos.proto = new Surrogate();
-		for(member_key in child_proto)
+		for(var member_key in child_proto)
 		{
 			self.infos.proto[member_key] = child_proto[member_key];
 		}
@@ -1316,7 +1389,7 @@ function(Devapt, DevaptTypes, DevaptClasses)
 		
 		// ------------------------------------------------ INIT INFOS ------------------------------------------------
 		// INIT INFOS OBJECT
-		self.infos = {};
+		self.infos = new Object();
 		
 		// INIT PROTOTYPE
 		self.infos.proto = null;
@@ -1327,7 +1400,7 @@ function(Devapt, DevaptTypes, DevaptClasses)
 		{
 			if (! arg_parent.infos.children_classes)
 			{
-				arg_parent.infos.children_classes = {};
+				arg_parent.infos.children_classes = new Object();
 			}
 			arg_parent.infos.children_classes[arg_name] = self;
 		}
@@ -1350,35 +1423,36 @@ function(Devapt, DevaptTypes, DevaptClasses)
 		
 		
 		// ------------------------------------------------ INIT DECORATORS ------------------------------------------------
-		self.decorators = {};
+		self.decorators = new Object();
 		self.decorators.all_ordered = [];
-		self.decorators.all_map = {};
+		self.decorators.all_map = new Object();
 		self.decorators.own_ordered = [];
-		self.decorators.own_map = {};
+		self.decorators.own_map = new Object();
 		// fill_decorators(self, self.decorators.own_ordered, self.decorators.own_map, arg_class_settings.decorators);
 		
 		// ------------------------------------------------ INIT MIXINS ------------------------------------------------
-		self.mixins = {};
+		self.mixins = new Object();
 		self.mixins.all_ordered = [];
-		self.mixins.all_map = {};
+		self.mixins.all_map = new Object();
 		self.mixins.own_ordered = [];
-		self.mixins.own_map = {};
+		self.mixins.own_map = new Object();
+		fill_mixins(self, self.mixins.own_ordered, self.mixins.own_map, arg_class_settings.mixins);
 		
 		// ------------------------------------------------ INIT METHODS ------------------------------------------------
-		self.methods = {};
+		self.methods = new Object();
 		self.methods.all_ordered = [];
-		self.methods.all_map = {};
+		self.methods.all_map = new Object();
 		self.methods.own_ordered = [];
-		self.methods.own_map = {};
+		self.methods.own_map = new Object();
 		fill_methods(self, self.methods.own_ordered, self.methods.own_map, arg_class_settings.methods);
 		
 		// ------------------------------------------------ INIT PROPERTIES ------------------------------------------------
-		self.properties = {};
+		self.properties = new Object();
 		self.properties.all_ordered = [];
-		self.properties.all_map = {};
-		self.properties.all_alias_map = {};
+		self.properties.all_map = new Object();
+		self.properties.all_alias_map = new Object();
 		self.properties.own_ordered = [];
-		self.properties.own_map = {};
+		self.properties.own_map = new Object();
 		fill_properties(self, self.properties.own_ordered, self.properties.own_map, arg_class_settings.properties);
 		
 		
@@ -1678,7 +1752,7 @@ function(Devapt, DevaptTypes, DevaptClasses)
 			}
 			else
 			{
-				self.infos.proto = {};
+				self.infos.proto = new Object();
 			}
 			if ( ! self.infos.ctor )
 			{
@@ -1722,6 +1796,7 @@ function(Devapt, DevaptTypes, DevaptClasses)
 		DevaptClass.prototype.create = function(arg_instance_name, arg_instance_settings)
 		{
 			var self = this;
+			// self.trace = self.infos.class_name === 'DevaptEvent';
 			var context = 'DevaptClass.create(settings)';
 			DevaptTraces.trace_enter(context, '', self.trace);
 			DevaptTraces.trace_value(context, 'arg_instance_name', arg_instance_name, self.trace);
@@ -1757,7 +1832,7 @@ function(Devapt, DevaptTypes, DevaptClasses)
 			
 			// CREATE INSTANCE AND DECLARE PROPERTIES
 			DevaptTraces.trace_step(context, 'Object.create', self.trace);
-			var properties = {};
+			var properties = new Object();
 			var instance = Object.create(self.infos.proto, properties);
 			if ( ! DevaptTypes.is_object(instance) )
 			{
@@ -1776,7 +1851,7 @@ function(Devapt, DevaptTypes, DevaptClasses)
 			
 			// APPLY SETTINGS
 			DevaptTraces.trace_step(context, 'apply settings', self.trace);
-			arg_instance_settings = arg_instance_settings ? arg_instance_settings : {};
+			arg_instance_settings = arg_instance_settings ? arg_instance_settings : new Object();
 			arg_instance_settings.name = arg_instance_name;
 			arg_instance_settings.trace = false;
 			arg_instance_settings.class_name = self.infos.class_name;
@@ -1803,7 +1878,7 @@ function(Devapt, DevaptTypes, DevaptClasses)
 			
 			// CALL MIXINS CONSTRUCTORS
 			DevaptTraces.trace_step(context, 'call mixin constructors', self.trace);
-			var init_mixins = {};
+			var init_mixins = new Object();
 			for(var class_index = class_records.length - 1 ; class_index >= 0 ; class_index--)
 			{
 				class_record = class_records[class_index];
@@ -1812,14 +1887,13 @@ function(Devapt, DevaptTypes, DevaptClasses)
 					class_record.build_class();
 				}
 				// console.log(class_record.infos.class_name, 'class_name');
-				for(mixin_key in class_record.mixins.all_ordered)
+				for(var mixin_key in class_record.mixins.all_ordered)
 				{
 					var mixin_class = class_record.mixins.all_ordered[mixin_key];
 					if (mixin_class && ! init_mixins[mixin_class.infos.class_name])
 					{
 						// console.log(mixin_class.infos.class_name, 'mixin stack init');
 						// console.log(instance, 'mixin stack init for [' + mixin_class.infos.class_name + ']');
-						
 						mixin_class.infos.ctor(instance);
 						init_mixins[mixin_class.infos.class_name] = true;
 					}
@@ -1833,6 +1907,42 @@ function(Devapt, DevaptTypes, DevaptClasses)
 			instance._super_ctor = instance._parent_class ? instance._parent_class.infos.ctor : null;
 			instance._ctor = self.infos.ctor;
 			instance._ctor(instance);
+			
+			
+			// APPLY TRACE SETTINGS
+			if ( DevaptTypes.is_not_empty_array(Devapt.traces_settings) )
+			{
+				for(var trace_key in Devapt.traces_settings)
+				{
+					var trace_record = Devapt.traces_settings[trace_key].split(':');
+					
+					var class_name_pattern = trace_record.length > 0 ? trace_record[0] : null;
+					var instance_name_pattern = trace_record.length > 1 ? trace_record[1] : null;
+					// var method_name_pattern = trace_record.length > 2 ? trace_record[2] : null;
+					
+					var class_name_trace = false;
+					if ( DevaptTypes.is_not_empty_str(class_name_pattern) )
+					{
+						var regexp = new RegExp(class_name_pattern, 'i');
+						class_name_trace = regexp.test(instance.class_name);
+						// console.log(class_name_trace, instance.class_name + ':class_name_trace');
+					}
+					
+					var instance_name_trace = false;
+					if ( DevaptTypes.is_not_empty_str(instance_name_pattern) )
+					{
+						var regexp = new RegExp(instance_name_pattern, 'i');
+						instance_name_trace = regexp.test(instance.name);
+						// console.log(instance_name_trace, instance.name + ':instance_name_trace');
+					}
+					
+					instance.trace = class_name_trace && instance_name_trace;
+					if (instance.trace)
+					{
+						break;
+					}
+				}
+			}
 			
 			
 			// REGISTER CLASS INSTANCE

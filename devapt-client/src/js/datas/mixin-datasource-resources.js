@@ -11,8 +11,8 @@
  */
 
 define(
-['Devapt', 'core/types', 'core/class', 'core/resources'],
-function(Devapt, DevaptTypes, DevaptClass, DevaptResources)
+['Devapt', 'core/types', 'core/class', 'core/classes'],
+function(Devapt, DevaptTypes, DevaptClass, DevaptClasses)
 {
 	/**
 	 * @mixin				DevaptMixinDatasoureResources
@@ -63,15 +63,18 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptResources)
 			if ( self.items_source === 'resources' )
 			{
 				var items = [];
-				for(resource_name in DevaptResources.resources_instances_by_name)
+				var resource_index = self.items_last_index ? self.items_last_index : 0;
+				var resources_instances = DevaptClasses.get_instances_array();
+				for( ; resource_index < resources_instances.length ; resource_index++)
 				{
-					var resource = DevaptResources.resources_instances_by_name[resource_name];
+					var resource = resources_instances[resource_index];
 					var record = {};
 					record['name']				= resource.name;
 					record['class_name']		= resource.class_name;
 					record['trace']				= resource.trace ? 'true' : 'false';
 					items.push(record);
 				}
+				self.items_last_index = resource_index;
 				// console.log(items, 'resources');
 				
 				if ( self.items_source_format === 'json' )

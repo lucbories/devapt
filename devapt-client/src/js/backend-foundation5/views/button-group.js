@@ -9,6 +9,7 @@
  * @license		Apache License Version 2.0, January 2004; see LICENSE.txt or http://www.apache.org/licenses/
  */
 
+'use strict'
 define(
 ['Devapt', 'core/types', 'core/class', 'views/view', 'backend-foundation5/foundation-init'],
 function(Devapt, DevaptTypes, DevaptClass, DevaptView, undefined)
@@ -53,7 +54,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptView, undefined)
 		
 		// LOOP ON BUTTONS VIEWS
 		self.assertNotEmptyArray(context, 'self.buttons', self.buttons);
-		for(button_key in self.buttons)
+		for(var button_key in self.buttons)
 		{
 			var button_view = self.buttons[button_key];
 			var node_jqo = $('<li>');

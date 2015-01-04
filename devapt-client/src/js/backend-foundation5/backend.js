@@ -24,6 +24,7 @@
  * @license		Apache License Version 2.0, January 2004; see LICENSE.txt or http://www.apache.org/licenses/
  */
 
+'use strict';
 define(
 ['Devapt', 'core/traces', 'core/types', 'core/resources', 'factory', 'backend-foundation5/foundation-init'],
 function(Devapt, DevaptTraces, DevaptTypes, DevaptResources, DevaptFactory, undefined)
@@ -287,11 +288,11 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptResources, DevaptFactory, unde
 		
 		// RENDER VIEW
 		// console.log(arg_jqo_node, 'backend render view container');
-		promise.then(
+		promise = promise.then(
 			function(view)
 			{
 				return (
-					function(arg_view, node_jqo)
+					function(arg_view, arg_view_parent_jqo)
 					{
 						DevaptTraces.trace_step(context, 'success: promise is resolved: then callback for [' + arg_view.name + ']', DevaptFoundation5Backend.backend_trace);
 						
@@ -310,11 +311,41 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptResources, DevaptFactory, unde
 							return error_promise;
 						}
 						
-						if ( DevaptTypes.is_object(node_jqo) )
+						if ( DevaptTypes.is_object(arg_view_parent_jqo) )
 						{
-							// console.log(node_jqo, 'backend.render_view.set_parent.jqo for [' + arg_view.name + ']');
-							arg_view.set_parent(node_jqo);
+							// console.info('backend.render_view: view has parent');
+							
+							// console.log(arg_view_parent_jqo, 'backend.render_view.set_parent.jqo for [' + arg_view.name + ']');
+							
+							if (arg_view.parent_jqo !== arg_view_parent_jqo)
+							{
+								// console.info('backend.render_view: set view parent');
+								arg_view.set_parent(arg_view_parent_jqo);
+							}
+							
+							var view_id = arg_view.get_view_id();
+							var view_jqo = $('#' + view_id);
+							
+							if (arg_view.is_rendered && view_jqo && view_jqo.length === 1)
+							{
+								// console.info('backend.render_view: view is already rendered');
+								
+								view_jqo.show();
+								// console.log(view_jqo);
+								
+								// CREATE MAIN DEFERRED OBJECT
+								var success_deferred = $.Deferred();
+								success_deferred.resolve(view);
+									
+								// GET MAIN PROMISE
+								var success_promise = success_deferred.promise();
+								
+								DevaptTraces.trace_leave(context, 'success: promise is resolved: view is already created, only "show" [' + arg_view.name + ']', DevaptFoundation5Backend.backend_trace);
+								return success_promise;
+							}
 						}
+						
+						// TODO RESOLVE NOTHING INSTEED OF THE VIEW
 						var render_promise = arg_view.render();
 						
 						DevaptTraces.trace_leave(context, 'success: promise is resolved: then callback: async render promise [' + arg_view.name + ']', DevaptFoundation5Backend.backend_trace);
@@ -421,11 +452,12 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptResources, DevaptFactory, unde
 	 * @static
 	 * @method					DevaptFoundation5Backend.get_input(arg_field_custom, arg_value)
 	 * @desc					Get an input tag for the given field
-	 * @param {object}			arg_field_custom		field attributes object
+	 * @param {object}			arg_view_object			view object
+	 * @param {object}			arg_field_obj			field attributes object
 	 * @param {string}			arg_value				field value
 	 * @return {object}			jQuery node object
 	 */
-	DevaptFoundation5Backend.get_input = function(arg_field_custom, arg_value)
+	DevaptFoundation5Backend.get_input = function(arg_view_object, arg_field_obj, arg_value)
 	{
 		var context = 'DevaptFoundation5Backend.get_input(field,value)';
 		DevaptTraces.trace_enter(context, '', DevaptFoundation5Backend.backend_trace);
@@ -433,6 +465,51 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptResources, DevaptFactory, unde
 		
 		// GET RESULT INPUT NODE
 		var node_jqo = null;
+		
+		// GET STANDARD INPUT
+/*		var field_obj = arg_field_obj;
+		var value_str = arg_value;
+		var type_str = DevaptTypes.to_string(field_obj.field_value.type, 'string').toLocaleLowerCase();
+		var node_jqo = null;
+		switch(type_str)
+		{
+			case 'password':
+				node_jqo = arg_view_object.get_password_input(field_obj, value_str);
+				break;
+			case 'string':
+				node_jqo = arg_view_object.get_simple_input(field_obj, value_str);
+				// node_jqo.addClass('');
+				break;
+			case 'integer':
+				node_jqo = arg_view_object.get_simple_input(field_obj, value_str);
+				node_jqo.addClass('integer');
+				break;
+			case 'float':
+				node_jqo = arg_view_object.get_simple_input(field_obj, value_str);
+				// node_jqo.addClass('');
+				break;
+			case 'boolean':
+				node_jqo = arg_view_object.get_simple_input(field_obj, value_str);
+				// node_jqo.addClass('');
+				break;
+			case 'email':
+				node_jqo = arg_view_object.get_simple_input(field_obj, value_str);
+				node_jqo.addClass('email');
+				node_jqo.foundation('abide');
+				break;
+			case 'date':
+				node_jqo = arg_view_object.get_simple_input(field_obj, value_str);
+				node_jqo.addClass('dateISO');
+				break;
+			case 'time':
+				node_jqo = arg_view_object.get_simple_input(field_obj, value_str);
+				node_jqo.addClass('time');
+				break;
+			case 'datetime':
+				node_jqo = arg_view_object.get_simple_input(field_obj, value_str);
+				node_jqo.addClass('datetime');
+				break;
+		}*/
 		
 		
 		DevaptTraces.trace_leave(context, '', DevaptFoundation5Backend.backend_trace);
@@ -455,7 +532,37 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptResources, DevaptFactory, unde
 		DevaptTraces.trace_enter(context, '', DevaptFoundation5Backend.backend_trace);
 		
 		
-		alert('error:' + arg_message);
+		// alert('error:' + arg_message);
+		
+		var notify_jqo = $('#notify_alert_id');
+		if ( ! notify_jqo || notify_jqo.length === 0 )
+		{
+			var div_tag = $('<div data-alert class="alert-box warning radius">');
+			var a_tag = $('<a href="#" class="close">&times;</a>');
+			
+			$('#page_breadcrumbs_id').append(div_tag);
+			div_tag.append(a_tag);
+			a_tag.click( function()
+				{
+					div_tag.children('p').remove();
+					div_tag.trigger('close').trigger('close.fndtn.alert').hide();
+					// console.info('close info box');
+				}
+			);
+			
+			notify_jqo = div_tag;
+		}
+		
+		// APPEND A MESSAGE
+		notify_jqo.append( $('<p>').text(arg_message) );
+		notify_jqo.show();
+		setTimeout( function()
+			{
+				notify_jqo.children('p').remove();
+				notify_jqo.trigger('close').trigger('close.fndtn.alert').hide();
+			},
+			2000
+		);
 		
 		
 		DevaptTraces.trace_leave(context, '', DevaptFoundation5Backend.backend_trace);
@@ -477,7 +584,37 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptResources, DevaptFactory, unde
 		DevaptTraces.trace_enter(context, '', DevaptFoundation5Backend.backend_trace);
 		
 		
-		alert('alert:' + arg_message);
+		// alert('alert:' + arg_message);
+		
+		var notify_jqo = $('#notify_alert_id');
+		if ( ! notify_jqo || notify_jqo.length === 0 )
+		{
+			var div_tag = $('<div data-alert class="alert-box alert radius">');
+			var a_tag = $('<a href="#" class="close">&times;</a>');
+			
+			$('#page_breadcrumbs_id').append(div_tag);
+			div_tag.append(a_tag);
+			a_tag.click( function()
+				{
+					div_tag.children('p').remove();
+					div_tag.trigger('close').trigger('close.fndtn.alert').hide();
+					// console.info('close info box');
+				}
+			);
+			
+			notify_jqo = div_tag;
+		}
+		
+		// APPEND A MESSAGE
+		notify_jqo.append( $('<p>').text(arg_message) );
+		notify_jqo.show();
+		setTimeout( function()
+			{
+				notify_jqo.children('p').remove();
+				notify_jqo.trigger('close').trigger('close.fndtn.alert').hide();
+			},
+			2000
+		);
 		
 		
 		DevaptTraces.trace_leave(context, '', DevaptFoundation5Backend.backend_trace);
@@ -499,7 +636,37 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptResources, DevaptFactory, unde
 		DevaptTraces.trace_enter(context, '', DevaptFoundation5Backend.backend_trace);
 		
 		
-		alert('info:' + arg_message);
+		// alert('info:' + arg_message);
+		
+		var notify_jqo = $('#notify_info_id');
+		if ( ! notify_jqo || notify_jqo.length === 0 )
+		{
+			var div_tag = $('<div id="notify_info_id" data-alert class="alert-box info radius">');
+			var a_tag = $('<a href="#" class="close">&times;</a>');
+			
+			$('#page_breadcrumbs_id').append(div_tag);
+			div_tag.append(a_tag);
+			a_tag.click( function()
+				{
+					div_tag.children('p').remove();
+					div_tag.trigger('close').trigger('close.fndtn.alert').hide();
+					// console.info('close info box');
+				}
+			);
+			
+			notify_jqo = div_tag;
+		}
+		
+		// APPEND A MESSAGE
+		notify_jqo.append( $('<p>').text(arg_message) );
+		notify_jqo.show();
+		setTimeout( function()
+			{
+				notify_jqo.children('p').remove();
+				notify_jqo.trigger('close').trigger('close.fndtn.alert').hide();
+			},
+			2000
+		);
 		
 		
 		DevaptTraces.trace_leave(context, '', DevaptFoundation5Backend.backend_trace);

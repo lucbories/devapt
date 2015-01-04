@@ -1,3 +1,4 @@
+'use strict';
 require(['Devapt', 'QUnit',
 	'backend-foundation5/foundation-init',
 	'../../tests/tests-core/types-is-tu', '../../tests/tests-core/types-to-tu', '../../tests/tests-core/types-others-tu',

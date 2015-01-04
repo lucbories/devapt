@@ -1,6 +1,28 @@
 /**
  * @file        core/mixin-event-listener.js
  * @desc        Mixin of methods for event listening
+ * 				API
+ * 			ATTRIBUTES
+ * 				self.events_callbacks:map by event name of arrays of event callback records
+ * 					example:
+ * 						self.events_callbacks['updated'] = [event_cb_record_1,event_cb_record_2,...]
+ * 
+ * 			PRIVATE METHODS
+ * 
+ * 			PUBLIC METHODS
+ * 				self.init_mixin_event_listener(self):nothing
+ * 				self.has_event_callback(arg_event_name, arg_event_cb):boolean
+ * 				self.add_event_callback(arg_event_name, arg_event_cb, arg_unique, arg_sources, arg_not_sources):boolean
+ * 				self.remove_event_callback(arg_event_name, arg_event_cb):boolean
+ * 
+ * 			EVENT CALLBACK RECORD
+ * 				{
+ * 					event_name:string,
+ * 					event_cb:function|array[object,function],
+ * 					event_sources:array of (string|regexp),
+ * 					event_not_sources:array of (string|regexp),
+ * 				}
+ * 					
  * @see			DevaptObject
  * @ingroup     DEVAPT_CORE
  * @date        2013-06-13
@@ -62,54 +84,58 @@ define(
 		 */
 		has_event_callback: function(arg_event_name, arg_event_cb)
 		{
-			this.push_trace(this.trace, this.mixin_event_listener_trace);
+			var self = this;
+			self.push_trace(self.trace, DevaptMixinEventListener.mixin_event_listener_trace);
 			var context = 'has_event_callback(' + arg_event_name + ',callback)';
-			this.enter(context, '');
+			self.enter(context, '');
 			
 			
-			var event_callbacks = this.events_callbacks[arg_event_name];
+			var event_callbacks = self.events_callbacks[arg_event_name];
 			if ( DevaptTypes.is_array(event_callbacks) )
 			{
-				this.step(context, 'object event has registered callbacks');
-				for(event_key in event_callbacks)
+				self.step(context, 'object event has registered callbacks');
+				for(record_index in event_callbacks)
 				{
-					var event_cb = event_callbacks[event_key];
+					self.step(context, 'loop on event callback record at [' + record_index + ']');
+					
+					var event_cb_record = event_callbacks[record_index];
+					var event_cb = event_cb_record.event_cb;
 					
 					if ( DevaptTypes.is_function(event_cb) )
 					{
-						this.step(context, 'object event is a function');
+						self.step(context, 'object event is a function');
 						if (event_cb === arg_event_cb)
 						{
-							this.leave(context, 'callback function found');
-							this.pop_trace();
+							self.leave(context, 'callback function found');
+							self.pop_trace();
 							return true;
 						}
 					}
 					
 					if ( DevaptTypes.is_array(event_cb) )
 					{
-						this.step(context, 'object event is an array');
+						self.step(context, 'object event is an array');
 						if ( DevaptTypes.is_array(arg_event_cb) )
 						{
-							this.step(context, 'arg event is an array');
+							self.step(context, 'arg event is an array');
 							if (event_cb.length === arg_event_cb.length)
 							{
-								this.step(context, 'object events array have the same size');
+								self.step(context, 'object events array have the same size');
 								var found = true;
 								var size = event_cb.length;
 								for(var index = 0 ; index < size ; index++)
 								{
 									if (event_cb[index] !== arg_event_cb[index])
 									{
-										this.step(context, 'object event item is not equals at index[' + index + ']');
+										self.step(context, 'object event item is not equals at index[' + index + ']');
 										found = false;
 										break;
 									}
 								}
 								if (found)
 								{
-									this.leave(context, 'callback array found');
-									this.pop_trace();
+									self.leave(context, 'callback array found');
+									self.pop_trace();
 									return true;
 								}
 							}
@@ -119,8 +145,8 @@ define(
 			}
 			
 			
-			this.leave(context, 'not found');
-			this.pop_trace();
+			self.leave(context, 'not found');
+			self.pop_trace();
 			return false;
 		},
 		
@@ -134,48 +160,57 @@ define(
 		 * @param {string}		arg_event_name		event name
 		 * @param {function}	arg_event_cb		event callback
 		 * @param {boolean}		arg_unique			has unique callback for event
+		 * @param {array}		arg_sources			list of processed event sources (emitters)
+		 * @param {array}		arg_not_sources		list of ignored event sources (emitters)
 		 * @return {boolean}	true:success,false:failure
 		 */
-		add_event_callback: function(arg_event_name, arg_event_cb, arg_unique)
+		add_event_callback: function(arg_event_name, arg_event_cb, arg_unique, arg_sources, arg_not_sources)
 		{
-			this.push_trace(this.trace, this.mixin_event_listener_trace);
+			var self = this;
+			self.push_trace(self.trace, DevaptMixinEventListener.mixin_event_listener_trace);
 			var context = 'add_event_callback(' + arg_event_name + ',callback)';
-			this.enter(context, '');
+			self.enter(context, '');
 			
 			
 			// CHECK EVENT NAME ARGUMENT
-			this.assertNotEmptyString(context, 'event name', arg_event_name);
+			self.assertNotEmptyString(context, 'event name', arg_event_name);
 			
 			// CHECK EVENT CALLBACK ARGUMENT
-			this.assertNotNull(context, 'event cb', arg_event_cb);
+			self.assertNotNull(context, 'event cb', arg_event_cb);
 			
 			// CHECK UNIQUE ARGUMENT
 			if ( DevaptTypes.is_null(arg_unique) )
 			{
 				arg_unique = true;
 			}
-			if (arg_unique && this.has_event_callback(arg_event_name, arg_event_cb) )
+			if (arg_unique && self.has_event_callback(arg_event_name, arg_event_cb) )
 			{
-				this.leave(context, 'unique event is already registered');
-				this.pop_trace();
+				self.leave(context, 'unique event is already registered');
+				self.pop_trace();
 				return true;
 			}
 			
 			// GET CALLBACKS ARRAY
-			var event_callbacks = this.events_callbacks[arg_event_name];
+			var event_callbacks = self.events_callbacks[arg_event_name];
 			if ( DevaptTypes.is_null(event_callbacks) )
 			{
 				event_callbacks = new Array();
-				this.events_callbacks[arg_event_name] = event_callbacks;
+				self.events_callbacks[arg_event_name] = event_callbacks;
 			}
 			
 			// APPEND CALLBACK
-			event_callbacks.push(arg_event_cb);
-			// console.log(arg_event_cb, arg_event_name);
+			var event_cb_record = {
+				event_name:arg_event_name,
+				event_cb:arg_event_cb,
+				event_sources:arg_sources,
+				event_sources:arg_not_sources
+			};
+			event_callbacks.push(event_cb_record);
+			// console.log(event_cb_record, 'event_cb_record for [' + arg_event_name + ']');
 			
 			
-			this.leave(context, 'success');
-			this.pop_trace();
+			self.leave(context, 'success');
+			self.pop_trace();
 			return true;
 		},
 		
@@ -192,37 +227,63 @@ define(
 		 */
 		remove_event_callback : function(arg_event_name, arg_event_cb)
 		{
-			this.push_trace(this.trace, this.mixin_event_listener_trace);
+			var self = this;
+			self.push_trace(self.trace, DevaptMixinEventListener.mixin_event_listener_trace);
 			var context = 'remove_event_callback(' + arg_event_name + ',callback)';
-			this.enter(context, '');
+			self.enter(context, '');
 			
 			
 			// GET CALLBACKS ARRAY
-			var event_callbacks = this.events_callbacks[arg_event_name];
+			var event_callbacks = self.events_callbacks[arg_event_name];
 			if ( DevaptTypes.is_null(event_callbacks) )
 			{
-				this.leave(context, 'not found');
-				this.pop_trace();
+				self.leave(context, 'not found');
+				self.pop_trace();
 				return false;
 			}
 			
 			// REMOVE GIVEN CALLBACK
-			var index = event_callbacks.lastIndexOf(arg_event_cb);
-			if (index >= 0)
+			for(record_index in event_callbacks)
 			{
-				event_callbacks.splice(index, 1);
-			}
-			else
-			{
-				this.leave(context, 'not found');
-				this.pop_trace();
-				return false;
+				self.step(context, 'loop on event callback record at [' + record_index + ']');
+				
+				var event_cb_record = event_callbacks[record_index];
+				var event_cb = event_cb_record.event_cb;
+				
+				// CALLBACK IS A FUNCTION
+				if ( DevaptTypes.is_function(event_cb) )
+				{
+					self.step(context, 'object event is a function');
+					if (event_cb === arg_event_cb)
+					{
+						event_callbacks.splice(index, 1);
+						self.leave(context, 'callback function found');
+						self.pop_trace();
+						return true;
+					}
+				}
+				
+				// CALLBACK IS A METHOD
+				if ( DevaptTypes.is_array(event_cb) )
+				{
+					self.step(context, 'object event is an array');
+					if ( DevaptTypes.is_array(arg_event_cb) && arg_event_cb.length === 2 && event_cb.length === 2 )
+					{
+						if (arg_event_cb[0] === event_cb[0] && arg_event_cb[1] === event_cb[1])
+						{
+							event_callbacks.splice(index, 1);
+							self.leave(context, 'callback function found');
+							self.pop_trace();
+							return true;
+						}
+					}
+				}
 			}
 			
 			
-			this.leave(context, 'success');
-			this.pop_trace();
-			return true;
+			self.leave(context, 'not found');
+			self.pop_trace();
+			return false;
 		}
 	};
 	
@@ -248,27 +309,6 @@ define(
 	DevaptMixinEventListenerClass.add_public_method('remove_event_callback', {}, DevaptMixinEventListener.remove_event_callback);
 	
 	// PROPERTIES
-/*	DevaptMixinEventListenerClass.add_property_record(
-		{
-			name: 'events_callbacks',
-			description:'',
-			aliases: [],
-			
-			visibility:'pulic',
-			is_public:true,
-			is_initializable:false,
-			is_required: false,
-			
-			type: 'object',
-			default_value: new Object(),
-			array_separator: '',
-			array_type: '',
-			format: '',
-			
-			children: {
-			},
-		}
-	);*/
 	
 	// BUILD CLASS
 	DevaptMixinEventListenerClass.build_class();

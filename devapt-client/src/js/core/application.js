@@ -113,6 +113,42 @@ function(Devapt, DevaptTrace, DevaptTypes, DevaptInit, /*DevaptEvents,*/ DevaptN
 		// INIT NAVIGATION HISTORY
 		DevaptNavHistory.init();
 		
+		// INIT TRACES
+		Devapt.traces_settings = DevaptApplication.get_value('application.traces.items', []);
+		
+		// LOAD ALL FILES ?
+		var load_all = DevaptApplication.get_value('application.layouts.default.backend.name', false);
+		if (load_all)
+		{
+			require(['core/all', 'datas/all', 'views/all'], function()
+				{
+					DevaptApplication.init_backend();
+				}
+			);
+		}
+		else
+		{
+			DevaptApplication.init_backend();
+		}
+		
+		
+		DevaptTrace.trace_leave(context, '', DevaptApplication.app_trace);
+	}
+	
+	
+	/**
+	 * @memberof			DevaptApplication
+	 * @public
+	 * @static
+	 * @method				DevaptApplication.init_backend()
+	 * @desc				Init application and render views
+	 * @return {nothing}
+	 */
+	DevaptApplication.init_backend = function()
+	{
+		var context = 'DevaptApplication.init_backend()';
+		DevaptTrace.trace_enter(context, '', DevaptApplication.app_trace);
+		
 		
 		// INIT BACKEND
 		if ( ! Devapt.has_current_backend() )
@@ -146,6 +182,7 @@ function(Devapt, DevaptTrace, DevaptTypes, DevaptInit, /*DevaptEvents,*/ DevaptN
 			DevaptApplication.render();
 		}
 		
+		
 		DevaptTrace.trace_leave(context, '', DevaptApplication.app_trace);
 	}
 	
@@ -168,8 +205,8 @@ function(Devapt, DevaptTrace, DevaptTypes, DevaptInit, /*DevaptEvents,*/ DevaptN
 		var backend = Devapt.get_current_backend();
 		
 		// INIT TOP MENUBAR
-		var topmenubar = DevaptApplication.get_topbar_name();
-		var topmenubar_promise = backend.render_view(null, topmenubar);
+		DevaptNavHistory.current_topbar_name = DevaptApplication.get_topbar_name();
+		var topmenubar_promise = backend.render_view(null, DevaptNavHistory.current_topbar_name);
 		topmenubar_promise.then(
 			function(view)
 			{
@@ -178,7 +215,8 @@ function(Devapt, DevaptTrace, DevaptTypes, DevaptInit, /*DevaptEvents,*/ DevaptN
 					DevaptTrace.trace_step(context, 'ERROR: resource view is not a valid object', DevaptApplication.app_trace);
 					return;
 				}
-				
+				DevaptNavHistory.current_topbar_name = view.name;
+				DevaptNavHistory.history_stack[0].menubar_name = view.name;
 				DevaptTrace.trace_step(context, 'Topbar menus render', DevaptApplication.app_trace);
 			}
 		);

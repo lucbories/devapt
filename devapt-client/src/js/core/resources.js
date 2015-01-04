@@ -1,6 +1,21 @@
 /**
  * @file        core/resources.js
  * @desc        Devapt resources loading features
+ * 		API
+ * 			STATIC PUBLIC ATTRIBUTES
+ * 				DevaptResources.resources_trace = false
+ * 				DevaptResources.resources_ajax_timeout = 5000
+ * 				DevaptResources.resources_promises_by_name = {}
+ * 				DevaptResources.resources_providers = []
+ * 				
+ * 			STATIC PUBLIC METHODS
+ * 				DevaptResources.add_cached_declaration(arg_resource_json):boolean
+ * 				DevaptResources.get_cached_declaration(arg_resource_name):object|null
+ * 				DevaptResources.get_resource_declaration(arg_resource_name):promise
+ * 				DevaptResources.get_resource_instance(arg_resource_name):promise
+ * 				DevaptResources.build_from_declaration(arg_resource_json):promise
+ * 				DevaptResources.init_default_providers():nothing
+ * 				
  * @ingroup     DEVAPT_CORE
  * @date        2014-04-21
  * @version		1.0.x
@@ -251,16 +266,17 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptClasses, DevaptCache, DevaptAp
 	 * @memberof					DevaptResources
 	 * @public
 	 * @static
-	 * @method						DevaptResources.add_resource_instance(arg_resource_instance)
-	 * @desc						Add a resource instance to the resources repository
-	 * @param {object}				arg_resource_instance	resource declaration (view/model/... object)
-	 * @return {boolean}			success of failure
+	 * @method						DevaptResources.has_resource_instance(arg_resource_instance)
+	 * @desc						Has an existing resource instance to the resources repository
+	 * @param {string}				arg_resource_name	resource dname
+	 * @return {boolean}			true:found,false:not found
 	 */
-/*	DevaptResources.add_resource_instance = function (arg_resource_instance)
+/*	DevaptResources.has_resource_instance = function (arg_resource_name)
 	{
-		var context = 'DevaptResources.add_resource_instance(arg_resource_instance)';
+		var context = 'DevaptResources.has_resource_instance(arg_resource_instance)';
 		DevaptTraces.trace_enter(context, '', DevaptResources.resources_trace);
 		
+		...
 		
 		// CHECK RESOURCE INSTANCE
 		if ( ! DevaptTypes.is_object(arg_resource_instance) || ! DevaptTypes.is_string(arg_resource_instance.name) || ! DevaptTypes.is_string(arg_resource_instance.class_name) )

@@ -9,6 +9,7 @@
  * @license		Apache License Version 2.0, January 2004; see LICENSE.txt or http://www.apache.org/licenses/
  */
 
+'use strict'
 define(
 ['Devapt', 'core/types', 'core/class', 'views/view', 'backend-foundation5/foundation-init'],
 function(Devapt, DevaptTypes, DevaptClass, DevaptView, undefined)
@@ -53,7 +54,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptView, undefined)
 		
 		// LOOP ON BUTTON GROUPS VIEWS
 		self.assertNotEmptyArray(context, 'self.buttons', self.button_groups);
-		for(group_key in self.button_groups)
+		for(var group_key in self.button_groups)
 		{
 			var group_view = self.button_groups[group_key];
 			

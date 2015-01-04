@@ -10,6 +10,7 @@
  * @license		Apache License Version 2.0, January 2004; see LICENSE.txt or http://www.apache.org/licenses/
  */
 
+'use strict'
 define(
 ['Devapt', 'core/types', 'core/class', 'core/resources'],
 function(Devapt, DevaptTypes, DevaptClass, DevaptResources)
@@ -66,7 +67,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptResources)
 					....links.selectlink.target.field=login
 			*/
 			// LOOP ON LINKS
-			for(link_key in self.links)
+			for(var link_key in self.links)
 			{
 				self.value(context, 'link_key', link_key);
 				
@@ -122,7 +123,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptResources)
 					self.step(context, 'link has target names');
 					
 					target_names = target_names.split(',');
-					for(target_name_key in target_names)
+					for(var target_name_key in target_names)
 					{
 						var target_name = target_names[target_name_key];
 						
@@ -196,7 +197,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptResources)
 			{
 				self.step(context, 'link target object is a links forwarder');
 				
-				for(forwarder_key in arg_object_2.links_forwarder)
+				for(var forwarder_key in arg_object_2.links_forwarder)
 				{
 					self.step(context, 'loop on target object link forward');
 					
@@ -239,7 +240,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptResources)
 							self.step(context, 'target object bind because link self.name === target object link forward source name');
 							
 							// LOOP ON TARGETS NAMES
-							for(target_name_key in forwarder_target_names)
+							for(var target_name_key in forwarder_target_names)
 							{
 								var target_name = forwarder_target_names[target_name_key];
 								
@@ -274,6 +275,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptResources)
 				 }
 			}
 			
+			
 			// GET OBJECT 2
 			if ( DevaptTypes.is_string(arg_object_2) )
 			{
@@ -290,22 +292,62 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptResources)
 				return;
 			}
 			
+			
 			// LOOP ON EVENTS
-			for(events_filter_index in events_filters)
+			for(var events_filter_index in events_filters)
 			{
 				var events_filter = events_filters[events_filter_index];
 				self.value(context, 'events_filter', events_filter);
 				
-				var cb = function(event_obj, source_obj, opd_record)
+				
+				var has_unique_cb = false;
+				
+				var on_event_cb = function(event_obj, source_obj, opd_record)
 					{
-						// console.log('bind.cb');
+						// console.log('bind.event.cb');
 						// console.log(arg_object_2, 'bind.cb arg_object_2');
+						
 						var operands = [source_obj, opd_record];
 						// console.log(operands, 'bind.cb.operands');
+						
 						arg_object_2.on_binding(event_obj, arg_bind_action, arg_set_1, arg_item_1, arg_set_2, arg_item_2, operands);
 					};
-				var has_unique_cb = false;
-				self.add_event_callback(events_filter, cb, has_unique_cb);
+				self.add_event_callback(events_filter, on_event_cb, has_unique_cb);
+				
+				
+				var on_change_cb = function(event_obj, source_obj, model, record, field_obj, old_value, new_value)
+					{
+						// console.log('bind.change.cb');
+						
+						// console.log(self.name, 'on_change_cb:self.name');
+						// console.log(record, 'on_change_cb:record');
+						// console.log(field_obj, 'on_change_cb:field_obj');
+						// console.log(old_value, 'on_change_cb:old_value');
+						// console.log(new_value, 'on_change_cb:new_value');
+						
+						var index = record.container_item_index;
+						var type = arg_set_1;
+						var node_jqo = self.get_item_node(index);
+						
+						// console.log('bind.change.cb:step 1');
+						if ( DevaptTypes.is_integer(index) && DevaptTypes.is_array(self.items_records) && self.items_records.length > index )
+						{
+							var record = self.items_records[index];
+							if ( DevaptTypes.is_object(record) && DevaptTypes.is_not_empty_str(field_obj.name) && record[field_obj.name] )
+							{
+								record[field_obj.name] = new_value;
+							}
+						}
+						
+						// console.log('bind.change.cb:step 2');
+						var deferred = $.Deferred();
+						if ( DevaptTypes.is_object(node_jqo) && (type === 'object' || type === 'record') )
+						{
+							node_jqo.children().remove();
+							self.render_item_object(deferred, node_jqo, record);
+						}
+					};
+				arg_object_2.add_event_callback(['devapt.container.updated'], on_change_cb, has_unique_cb);
 			}
 			
 			
@@ -393,6 +435,9 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptResources)
 			{
 				case 'update':
 				{
+					// GET SOURCE OBJECT
+					// var source_object = arg_event_opds[0];
+					
 					// GET EVENT OPERANDS MAP
 					var event_opds_map = arg_event_opds[1];
 					

@@ -38,7 +38,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptResources, DevaptTemplate)
 		mixin_init: function()
 		{
 			var self = this;
-			self.push_trace(self.trace, self.mixin_template_trace);
+			self.push_trace(self.trace, DevaptMixinTemplate.mixin_template_trace);
 			var context = 'mixin_init()';
 			self.enter(context, '');
 			
@@ -60,7 +60,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptResources, DevaptTemplate)
 		render_template: function(arg_deferred)
 		{
 			var self = this;
-			self.push_trace(self.trace, self.mixin_template_trace);
+			self.push_trace(self.trace, DevaptMixinTemplate.mixin_template_trace);
 			var context = 'render_template(deferred)';
 			self.enter(context, '');
 			
@@ -77,7 +77,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptResources, DevaptTemplate)
 			// CHECK IF TEMPLATE IS ENABLED
 			if ( ! self.template_enabled )
 			{
-				self.step(context, 'deferred.resolve()');
+				self.step(context, 'deferred.resolve(): template is disabled');
 				self.leave(context, 'template isn\'t enabled: render is resoved');
 				self.pop_trace();
 				arg_deferred.resolve();
@@ -129,8 +129,31 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptResources, DevaptTemplate)
 			
 			// RENDER TEMPLATE
 			var str = DevaptTemplate.render(self.template_string, tags_object);
-			self.parent_jqo.html(str);
+			self.step(context, 'set content jqo html');
+			self.template_jqo = $('<div>');
+			self.template_jqo.html(str);
+			// console.log(self.template_jqo, 'self.template_jqo');
 			
+			// NO THIS IN TEMPLATE
+			var this_regexp = /.*[{]this[}].*/gm;
+			if ( ! this_regexp.test(self.template_string) )
+			{
+				self.step(context, 'no {this} in template');
+				
+				var this_id = self.get_view_id();
+				var this_tag_id = 'this_' + this_id;
+				var this_tag_jqo = $('#' + this_tag_id);
+				
+				self.content_jqo.append(self.template_jqo);
+				
+				// console.log(self.parent_jqo, 'self.parent_jqo');
+				// console.log(self.content_jqo, 'self.content_jqo');
+				// console.log(self.template_jqo, 'self.template_jqo');
+			}
+			else
+			{
+				self.step(context, '{this} found in template');
+			}
 			
 			// RESOVE RENDER
 			self.step(context, 'deferred.resolve()');
@@ -153,7 +176,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptResources, DevaptTemplate)
 		get_view_tags: function()
 		{
 			var self = this;
-			self.push_trace(self.trace, self.mixin_template_trace);
+			self.push_trace(self.trace, DevaptMixinTemplate.mixin_template_trace);
 			var context = 'get_view_tags()';
 			self.enter(context, '');
 			
@@ -207,7 +230,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptResources, DevaptTemplate)
 		get_view_tags_arrays: function()
 		{
 			var self = this;
-			self.push_trace(self.trace, self.mixin_template_trace);
+			self.push_trace(self.trace, DevaptMixinTemplate.mixin_template_trace);
 			var context = 'get_view_tags_arrays()';
 			self.enter(context, '');
 			
@@ -243,7 +266,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptResources, DevaptTemplate)
 		get_view_bindings: function(arg_deferred)
 		{
 			var self = this;
-			self.push_trace(self.trace, self.mixin_template_trace);
+			self.push_trace(self.trace, DevaptMixinTemplate.mixin_template_trace);
 			var context = 'get_view_bindings()';
 			self.enter(context, '');
 			
@@ -340,39 +363,57 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptResources, DevaptTemplate)
 		get_this_tag: function(arg_deferred)
 		{
 			var self = this;
-			self.push_trace(self.trace, self.mixin_template_trace);
+			self.push_trace(self.trace, DevaptMixinTemplate.mixin_template_trace);
 			var context = 'get_this_tag()';
 			self.enter(context, '');
 			
+			
+			// console.log(context, self.name);
 			
 			var this_id = self.get_view_id();
 			var this_tag_id = 'this_' + this_id;
 			var this_tag = {
 				'this': function()
 					{
+						// console.log(context + ':this_tag');
+						
 						// CREATE RENDER CALLBACK
 						var closure_cb =
 							(
-								function(view,content_id)
+								function(view, content_id)
 								{
 									return function()
 									{
-										// REMOVE EXISTING CONTAINER
-										var parent_jqo = $('#' + content_id);
-										// if (parent_jqo && self.class_name != 'DevaptRow')
-										// {
-											// parent_jqo.attr('id', '');
-										// }
-										view.set_parent( $('#' + content_id) );
-										view.render_self(arg_deferred);
+										// console.log(context + ':this_tag:closure_cb');
+										
+										view.render_self( $.Deferred() ).then(
+											function()
+											{
+												
+												var content_children = view.content_jqo.children();
+												content_children.detach();
+												
+												view.content_jqo.append(view.template_jqo);
+												var this_tag_jqo = $('#' + content_id);
+												
+												this_tag_jqo.append(content_children);
+												
+												// console.log($(content_children[0]), 'content_children');
+												// console.log(this_tag_jqo, 'this_tag_jqo');
+												// console.log(view.template_jqo, 'view.template_jqo');
+												// console.log(view.content_jqo, 'view.content_jqo');
+												// console.log(view.parent_jqo, 'view.parent_jqo');
+											}
+										);
 									}
 								}
 							) (self,this_tag_id);
-										
-							// REGISTER RENDER CALLBACK
-							arg_deferred.then( function() { self.do_callback(closure_cb); } );
+								
+						// REGISTER RENDER CALLBACK
+						arg_deferred.then( function() { self.do_callback(closure_cb); } );
 						
 						// CREATE VIEW CONTENT TAG
+						// console.log('returns this tag');
 						return '<div id="' + this_tag_id + '"></div>';
 					}
 				};
@@ -383,24 +424,6 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptResources, DevaptTemplate)
 			return this_tag;
 		}
 	};
-	
-	
-	
-	/**
-	 * @public
-	 * @memberof			DevaptMixinTemplate
-	 * @desc				Register mixin options
-	 * @return {nothing}
-	 */
-/*	DevaptMixinTemplate.register_options = function(arg_prototype)
-	{
-		// TEMPLATE OPTIONS
-		DevaptOptions.register_bool_option(arg_prototype, 'template_enabled',		false, false, ['view_template_enabled']);
-		DevaptOptions.register_str_option(arg_prototype, 'template_string',			null, false, ['view_template_string']);
-		DevaptOptions.register_str_option(arg_prototype, 'template_file_name',		null, false, ['view_template_file_name']);
-		DevaptOptions.register_str_option(arg_prototype, 'template_tags',			null, false, ['view_template_tags']);
-		DevaptOptions.register_str_option(arg_prototype, 'template_bindings',		null, false, ['view_template_bindings']);
-	};*/
 	
 	
 	

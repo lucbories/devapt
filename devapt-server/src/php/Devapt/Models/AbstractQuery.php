@@ -23,7 +23,7 @@ abstract class AbstractQuery
 	// STATIC ATTRIBUTES
 	
 	/// @brief TRACE FLAG
-	static public $TRACE_ABSTRACT_QUERY		= true;
+	static public $TRACE_ABSTRACT_QUERY		= false;
 	
 	
 	/// @brief		Option : api version (string)

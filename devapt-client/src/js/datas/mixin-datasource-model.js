@@ -128,6 +128,9 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptQuery)
 								}
 							}
 							
+							self.items_records = items;
+							self.items_records_count = items.length;
+							
 							deferred.resolve(items);
 							
 							return items_promise;

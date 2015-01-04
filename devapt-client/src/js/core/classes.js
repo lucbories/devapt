@@ -1,6 +1,29 @@
 /**
  * @file        core/classes.js
  * @desc        Devapt static classes features
+ * 		API
+ * 			STATIC PUBLIC ATTRIBUTES
+ * 				DevaptClasses.classes_trace = true
+ * 				DevaptClasses.introspect_classes_array = []
+ * 				DevaptClasses.introspect_classes_by_name = {}
+ * 				DevaptClasses.introspect_instances_array = []
+ * 				DevaptClasses.introspect_instances_by_name = {}
+ * 				
+ * 			STATIC PUBLIC METHODS
+ * 				DevaptClasses.get_classes_array():array
+ * 				DevaptClasses.get_classes_map():object
+ * 				DevaptClasses.get_instances_array():array
+ * 				DevaptClasses.get_instances_map():object
+ * 
+ * 				DevaptClasses.add_class(arg_class_object):nothing
+ * 				DevaptClasses.get_class(arg_class_name):object|null
+ * 
+ * 				DevaptClasses.add_instance(arg_instance_object):nothing
+ * 				DevaptClasses.get_instance(arg_instance_name):object|null
+ * 
+ * 				DevaptClasses.new_class_uid():integer
+ * 				DevaptClasses.new_instance_uid():integer
+ * 			
  * @ingroup     DEVAPT_CORE
  * @date        2013-08-15
  * @version		1.0.x
@@ -143,7 +166,7 @@ define(['Devapt', 'core/traces', 'core/types'], function(Devapt, DevaptTraces, D
 	 * @method				DevaptClasses.get_class(class name)
 	 * @desc				Get a class object
 	 * @param {string}		arg_class_name		class name
-	 * @return {object}		class object
+	 * @return {object|null}	class object
 	 */
 	DevaptClasses.get_class = function(arg_class_name)
 	{
@@ -175,7 +198,7 @@ define(['Devapt', 'core/traces', 'core/types'], function(Devapt, DevaptTraces, D
 	 * @method				DevaptClasses.get_instance(instance name)
 	 * @desc				Get an instance object
 	 * @param {string}		arg_instance_name		instance name
-	 * @return {object}		instance object
+	 * @return {object|null}	instance object
 	 */
 	DevaptClasses.get_instance = function(arg_instance_name)
 	{

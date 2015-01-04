@@ -111,6 +111,34 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptEvents, DevaptObject)
 	/**
 	 * @memberof			DevaptQuery
 	 * @public
+	 * @method				DevaptQuery.get_key()
+	 * @desc				Get query version 2 key string
+	 * @return {string}
+	 */
+	var cb_get_key = function()
+	{
+		var self = this;
+		var context = 'get_key()';
+		self.enter(context, '');
+		
+		
+		var json = self.get_json();
+		var json_str = JSON.stringify(json);
+		if ( ! DevaptTypes.is_not_empty_str(json_str) )
+		{
+			self.leave(context, Devapt.msg_failure);
+			return null;
+		}
+		
+		
+		self.leave(context, Devapt.msg_success);
+		return Devapt.hash('md5', json_str);
+	}
+	
+	
+	/**
+	 * @memberof			DevaptQuery
+	 * @public
 	 * @method				DevaptQuery.remove_filters_for_field(field name)
 	 * @desc				Remove all filters for the given field from the query
 	 * @param {string}		arg_field_name
@@ -328,6 +356,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptEvents, DevaptObject)
 	// METHODS
 	DevaptQueryClass.infos.ctor = cb_constructor;
 	DevaptQueryClass.add_public_method('get_json', {}, cb_get_json);
+	DevaptQueryClass.add_public_method('get_key', {}, cb_get_key);
 	DevaptQueryClass.add_public_method('add_filter', {}, cb_add_filter);
 	DevaptQueryClass.add_public_method('remove_filters_for_field', {}, cb_remove_filters_for_field);
 	DevaptQueryClass.add_public_method('set_one_field', {}, cb_set_one_field);

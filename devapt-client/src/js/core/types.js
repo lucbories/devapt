@@ -179,6 +179,13 @@ define(['Devapt', 'core/traces', 'core/types-to'], function(Devapt, DevaptTraces
 			return tmp;
 		}
 		
+		// DEVAPT OBJECT
+		if ( DevaptTypes.is_object(arg_object_to_clone) && arg_object_to_clone._class && DevaptTypes.is_not_empty_str(arg_object_to_clone.class_name) )
+		{
+			// NOTHING TO DO
+			return arg_object_to_clone;
+		}
+		
 		// NOT EMPTY OBJECT
 		if ( DevaptTypes.is_object(arg_object_to_clone) )
 		{

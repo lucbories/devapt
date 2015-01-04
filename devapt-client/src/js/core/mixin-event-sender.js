@@ -40,9 +40,10 @@ function(DevaptTypes, DevaptClass, DevaptEvent, DevaptEvents)
 		 */
 		fire_event : function(arg_event_name_or_obj, arg_operands_or_nothing)
 		{
-			this.push_trace(this.trace, this.mixin_event_sender_trace);
+			var self = this;
+			self.push_trace(self.trace, DevaptMixinEventSender.mixin_event_sender_trace);
 			var context = 'fire_event(' + (DevaptTypes.is_string(arg_event_name_or_obj) ? arg_event_name_or_obj : arg_event_name_or_obj.name) + ',callback)';
-			this.enter(context, '');
+			self.enter(context, '');
 			
 			
 			// GET EVENT NAME
@@ -59,49 +60,49 @@ function(DevaptTypes, DevaptClass, DevaptEvent, DevaptEvents)
 			}
 			else
 			{
-				this.leave(context, 'bad event name or object of type [' + typeof arg_event_name_or_obj + ']');
-				this.pop_trace();
+				self.leave(context, 'bad event name or object of type [' + typeof arg_event_name_or_obj + ']');
+				self.pop_trace();
 				return false;
 			}
 			
 			// GET CALLBACKS ARRAY
-			var event_callbacks = this.events_callbacks[event_name];
+			if (! self.events_callbacks)
+			{
+				self.events_callbacks = new Object();
+			}
+			var event_callbacks_records = self.events_callbacks[event_name];
 			
 			// GET ALL EVENTS CALLBACK
-			var all_events_callbacks = this.events_callbacks['*'];
+			var all_events_callbacks = self.events_callbacks['*'];
 			if ( DevaptTypes.is_array(all_events_callbacks) )
 			{
-				event_callbacks = all_events_callbacks.concat(event_callbacks);
+				event_callbacks_records = all_events_callbacks.concat(event_callbacks_records);
 			}
 			
 			// TEST IF CALLBACKS EXISTS
-			if ( ! DevaptTypes.is_array(event_callbacks) || event_callbacks.length === 0 )
+			if ( ! DevaptTypes.is_array(event_callbacks_records) || event_callbacks_records.length === 0 )
 			{
-				this.leave(context, this.msg_success + ': no listeners->not fired');
-				this.pop_trace();
+				self.leave(context, 'success: no listeners->not fired');
+				self.pop_trace();
 				return true;
 			}
 			
 			// BUILD EVENT IF NEEDED
 			if ( event === null )
 			{
-				event = DevaptEvent.create(event_name, { target_object:this, operands_array:arg_operands_or_nothing} );
+				event = DevaptEvent.create(event_name, { emitter_object:self, operands_array:arg_operands_or_nothing} );
 			}
-			
-			
-			// REGISTER EVENT
-			// DevaptEvents.add(event);
 			
 			
 			// FIRE EVENT
-			if (event_callbacks)
+			if (event_callbacks_records)
 			{
-				event.fire(event_callbacks);
+				event.fire(event_callbacks_records);
 			}
 			
 			
-			this.leave(context, 'success');
-			this.pop_trace();
+			self.leave(context, 'success');
+			self.pop_trace();
 			return true;
 		}
 	};
@@ -110,7 +111,7 @@ function(DevaptTypes, DevaptClass, DevaptEvent, DevaptEvents)
 	
 	/* --------------------------------------------- CREATE MIXIN CLASS ------------------------------------------------ */
 	
-	// MIXIN CLASS DEFINITION
+	// CLASS DEFINITION
 	var class_settings= {
 		'infos':{
 			'author':'Luc BORIES',
@@ -119,17 +120,14 @@ function(DevaptTypes, DevaptClass, DevaptEvent, DevaptEvents)
 			'description':'Mixin methods for event sending.'
 		}
 	};
-	
-	
-	/**
-	 * @mixin				DevaptMixinEventSenderClass
-	 * @public
-	 * @desc				Mixin of methods for event sending
-	 */
 	var DevaptMixinEventSenderClass = new DevaptClass('DevaptMixinEventSender', null, class_settings);
 	
+	// METHODS
 	DevaptMixinEventSenderClass.add_public_method('fire_event', {}, DevaptMixinEventSender.fire_event);
 	
+	// PROPERTIES
+	
+	// BUILD MIXIN CLASS
 	DevaptMixinEventSenderClass.build_class();
 	
 	

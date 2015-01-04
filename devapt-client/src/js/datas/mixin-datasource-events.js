@@ -68,10 +68,14 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptEvents)
 				for( ; event_index < events_array.length ; event_index++)
 				{
 					var event = events_array[event_index];
+					if (event.emitter_object.name == self.name)
+					{
+						continue;
+					}
 					var record = {};
 					record['name']				= event.name;
 					record['ts']				= event.fired_ts;
-					record['target_name']		= event.target_object.name;
+					record['emitter_name']		= event.emitter_object.name;
 					record['operands_count']	= event.operands_array.length;
 					items.push(record);
 				}

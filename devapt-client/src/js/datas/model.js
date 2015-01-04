@@ -91,26 +91,26 @@ function(Devapt, DevaptTypes, DevaptEvents, DevaptObject, DevaptField, DevaptCla
 		// CHECK STORAGE ENGINE
 		if ( ! self.engine_object.is_storage )
 		{
-			self.leave(context, self.msg_failure + ': bad engine');
+			self.leave(context, Devapt.msg_failure + ': bad engine');
 			return false;
 		}
 		
 		// CHECK FIELDS
 		if ( DevaptTypes.is_not_empty_array(self.fields) )
 		{
-			self.leave(context, self.msg_failure + ': bad fields array');
+			self.leave(context, Devapt.msg_failure + ': bad fields array');
 			return false;
 		}
 		
 		// CHECK ACCESS
 		if ( ! DevaptTypes.is_object_with(self.access, ['read','create','update','delete']) )
 		{
-			self.leave(context, self.msg_failure + ': bad access object');
+			self.leave(context, Devapt.msg_failure + ': bad access object');
 			return false;
 		}
 		
 		
-		self.leave(context, self.msg_success);
+		self.leave(context, Devapt.msg_success);
 		return true;
 	}
 	
@@ -131,7 +131,7 @@ function(Devapt, DevaptTypes, DevaptEvents, DevaptObject, DevaptField, DevaptCla
 		self.enter(context, '');
 		
 		
-		self.leave(context, self.msg_success);
+		self.leave(context, Devapt.msg_success);
 		return self.fields_map[arg_field_name];
 	}
 	
@@ -151,7 +151,7 @@ function(Devapt, DevaptTypes, DevaptEvents, DevaptObject, DevaptField, DevaptCla
 		self.enter(context, '');
 		
 		
-		self.leave(context, self.msg_success);
+		self.leave(context, Devapt.msg_success);
 		return self.fields;
 	}
 	
@@ -192,6 +192,9 @@ function(Devapt, DevaptTypes, DevaptEvents, DevaptObject, DevaptField, DevaptCla
 				{
 					self.pk_field = field;
 				}
+				
+				field.model = self;
+				
 				return field;
 			};
 		
@@ -202,10 +205,14 @@ function(Devapt, DevaptTypes, DevaptEvents, DevaptObject, DevaptField, DevaptCla
 			var field_settings = arg_fields[field_name];
 			field_settings['name'] = field_name;
 			
+			
 			field_settings['field_value'] = {
 				'type': field_settings.type ? field_settings.type : 'string',
 				'items': field_settings.items ? field_settings.items : null,
-				'format': field_settings.format ? field_settings.format : null,
+				'validate': field_settings.validate ? field_settings.validate : ((field_settings.field_value && field_settings.field_value.validate) ? field_settings.field_value.validate : null),
+				'valid_label': (field_settings.field_value && field_settings.field_value.validate_valid_label) ? field_settings.field_value.validate_valid_label : null,
+				'error_label': (field_settings.field_value && field_settings.field_value.validate_valid_label) ? field_settings.field_value.validate_valid_label : null,
+				'display': field_settings.display ? field_settings.display : null,
 				'defaults': field_settings.defaults ? field_settings.defaults : null
 			};
 			
@@ -217,7 +224,7 @@ function(Devapt, DevaptTypes, DevaptEvents, DevaptObject, DevaptField, DevaptCla
 		}
 		
 		
-		self.leave(context, self.msg_success);
+		self.leave(context, Devapt.msg_success);
 		return true;
 	}
 	
@@ -238,7 +245,7 @@ function(Devapt, DevaptTypes, DevaptEvents, DevaptObject, DevaptField, DevaptCla
 		
 		self.assertNotNull(context, 'engine promise', self.engine_promise);
 		
-		self.leave(context, self.msg_success);
+		self.leave(context, Devapt.msg_success);
 		return self.engine_promise;
 	}
 	
@@ -294,13 +301,13 @@ function(Devapt, DevaptTypes, DevaptEvents, DevaptObject, DevaptField, DevaptCla
 				default:
 					self.step(context, 'BAD engine type');
 					self.engine_deferred.reject();
-					self.leave(context, self.msg_failure + ': bad source [' + arg_engine.source + ']');
+					self.leave(context, Devapt.msg_failure + ': bad source [' + arg_engine.source + ']');
 					return self.engine_promise;
 			};
 		}
 		
 		
-		self.leave(context, self.msg_success_promise);
+		self.leave(context, Devapt.msg_success_promise);
 		return self.engine_promise;
 	}
 	
@@ -321,7 +328,7 @@ function(Devapt, DevaptTypes, DevaptEvents, DevaptObject, DevaptField, DevaptCla
 		
 		self.assertNotNull(context, 'access', self.access);
 		
-		self.leave(context, self.msg_success);
+		self.leave(context, Devapt.msg_success);
 		return self.access;
 	}
 	
@@ -346,7 +353,7 @@ function(Devapt, DevaptTypes, DevaptEvents, DevaptObject, DevaptField, DevaptCla
 		self.access = $.extend(default_access, arg_access);
 		
 		
-		self.leave(context, self.msg_success);
+		self.leave(context, Devapt.msg_success);
 	}
 	
 	
@@ -375,7 +382,7 @@ function(Devapt, DevaptTypes, DevaptEvents, DevaptObject, DevaptField, DevaptCla
 		{
 			var types = self.fields.map(get_field_type_cb);
 			
-			self.leave(context, self.msg_success_require);
+			self.leave(context, Devapt.msg_success_require);
 			return types;
 		}
 		
@@ -386,7 +393,7 @@ function(Devapt, DevaptTypes, DevaptEvents, DevaptObject, DevaptField, DevaptCla
 		var types = self.fields.filter(cb_filter).map(get_field_type_cb);
 		
 		
-		self.leave(context, self.msg_success_require);
+		self.leave(context, Devapt.msg_success_require);
 		return types;
 	}
 	

@@ -47,7 +47,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptResources)
 		 */
 		mixin_init_filtered: function(self)
 		{
-			self.push_trace(self.trace, self.mixin_trace_filtered);
+			self.push_trace(self.trace, DevaptMixinFiltered.mixin_trace_filtered);
 			var context = 'mixin_init_filtered()';
 			self.enter(context, '');
 			
@@ -105,7 +105,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptResources)
 		{
 			var self = this;
 			var context = 'on_filtered_event(opds)';
-			self.push_trace(self.trace, self.mixin_trace_filtered);
+			self.push_trace(self.trace, DevaptMixinFiltered.mixin_trace_filtered);
 			self.enter(context, '');
 			
 			
@@ -142,7 +142,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptResources)
 		apply_filtered_value: function(arg_filtered_value, arg_fields_names)
 		{
 			var self = this;
-			self.push_trace(self.trace, self.mixin_trace_filtered);
+			self.push_trace(self.trace, DevaptMixinFiltered.mixin_trace_filtered);
 			var context = 'apply_filtered_value(value,fields)';
 			self.enter(context, '');
 			self.value(context, 'mixin_filtered_enabled', self.mixin_filtered_enabled);
@@ -197,7 +197,8 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptResources)
 					var loop_node_jqo = $(loop_node);
 					loop_node_jqo.show();
 					
-					var loop_record = loop_node_jqo.data('record');
+					// var loop_record = loop_node_jqo.data('record');
+					var loop_record = self.items_records[index];
 					if ( DevaptTypes.is_object(loop_record) )
 					{
 						var loop_node_filtered = true;

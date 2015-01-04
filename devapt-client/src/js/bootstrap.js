@@ -1,4 +1,6 @@
-foundation_version = '5.4.6';
+'use strict';
+
+var foundation_version = '5.4.6';
 // foundation_version = '5.3.3';
 // foundation_version = '5.0.2';
 
@@ -15,13 +17,15 @@ require.config(
 			// IE >= 9
 			'jquery':		'/devapt-client/lib/foundation-' + foundation_version + '/js/lib/jquery',
 			'modernizr':	'/devapt-client/lib/foundation-' + foundation_version + '/js/lib/modernizr',
-			'foundation':	'/devapt-client/lib/foundation-' + foundation_version + '/js/foundation.min',
+		/*	'foundation':	'/devapt-client/lib/foundation-' + foundation_version + '/js/foundation.min',*/
 			
 			// ALL
 			'QUnit':		'/devapt-client/lib/qunit-1.16.0/qunit-1.16.0',
 			'runtu':		'/devapt-client/tests/run-tests',
 			'jStorage':		'/devapt-client/lib/jstorage-0.4.3/jstorage',
 			'mustache':		'/devapt-client/lib/mustache/mustache-wrap',
+			'md5':			'/devapt-client/lib/cryptojs-3.1.2/rollups/md5',
+			'sha1':			'/devapt-client/lib/cryptojs-3.1.2/rollups/sha1',
 			
 			'foundation-min':			'/devapt-client/lib/foundation-' + foundation_version + '/js/foundation.min',
 			'foundation':				'/devapt-client/lib/foundation-' + foundation_version + '/js/foundation/foundation',
@@ -37,7 +41,6 @@ require.config(
 			'foundation.orbit':			'/devapt-client/lib/foundation-' + foundation_version + '/js/foundation/foundation.orbit',
 			'foundation.reveal':		'/devapt-client/lib/foundation-' + foundation_version + '/js/foundation/foundation.reveal',
 			'foundation.tab':			'/devapt-client/lib/foundation-' + foundation_version + '/js/foundation/foundation.tab',
-			'foundation.topbar':		'/devapt-client/lib/foundation-' + foundation_version + '/js/foundation/foundation.topbar',
 			'foundation.tooltip':		'/devapt-client/lib/foundation-' + foundation_version + '/js/foundation/foundation.tooltip',
 			'foundation.topbar':		'/devapt-client/lib/foundation-' + foundation_version + '/js/foundation/foundation.topbar'
 		},

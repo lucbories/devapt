@@ -1,6 +1,14 @@
 /**
  * @file        views/view.js
  * @desc        View base class
+ * 		API
+ * 			PUBLIC TTRIBUTES
+ * 				
+ * 				
+ * 			PUBLIC METHODS
+ * 				
+ * 				
+ * 			
  * @ingroup     DEVAPT_CORE
  * @date        2014-05-10
  * @version		1.0.x
@@ -35,53 +43,49 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptObject, DevaptResources, Devapt
 	{
 		var self = this;
 		// self.trace = true;
-		
 		var context = 'set_parent(jqo)';
 		self.enter(context, '');
 		
-		// console.log(arg_jquery_object, 'arg_jquery_object cb_set_parent');
+		
+		// DEBUG
+		if (self.trace)
+		{
+			console.log(arg_jquery_object, 'arg_jquery_object');
+			console.log(self.content_jqo, 'content_jqo');
+			console.log(self.parent_jqo, 'parent_jqo');
+		}
+		
+		
 		if ( ! DevaptTypes.is_object(arg_jquery_object) )
 		{
 			self.step(context, 'set default view container');
-			arg_jquery_object = $('<div class="row">');
+			arg_jquery_object = $('<div class="row" devapt-comment="set default parent">');
 			$('body').append(arg_jquery_object);
 		}
 		
 		// SET CONTAINER JQUERY OBJECT
 		self.parent_jqo = arg_jquery_object;
-		if ( DevaptTypes.is_null(arg_jquery_object) )
+		if ( DevaptTypes.is_object(self.content_jqo) )
 		{
-			var tag_jqo = $('#' + self.name + '_view_id');
-			if (tag_jqo.length > 0)
-			{
-				self.parent_jqo = tag_jqo;
-			}
-		}
-		
-		if (self.trace)
-		{
-			console.log(arg_jquery_object, 'arg_jquery_object');
-			console.log(self.parent_jqo, 'parent_jqo');
+			self.step(context, 'detach/attach content jqo');
+			self.content_jqo.detach();
+			
+			self.step(context, 'detach/attach content jqo');
+			self.parent_jqo.append(self.content_jqo);
 		}
 		
 		// CHECK CONTAINER JQO
+		// console.log(self.parent_jqo, 'parent_jqo');
+		// console.log(self.parent_jqo.length, 'parent_jqo.length');
 		self.assertNotNull(context, 'self.parent_jqo null ?', self.parent_jqo);
-		self.assertTrue(context, 'self.parent_jqo empty ?', self.parent_jqo.length > 0);
-		
-		// SET ID
-		// if ( ! DevaptTypes.is_object(self.parent_jqo) ||   )
-		// {
-			// if ( DevaptTypes.is_not_empty_str(self.parent_html_id) )
-			// {
-				// self.parent_jqo.attr('id', self.parent_html_id);
-			// }
-		// }
+		// self.assertTrue(context, 'self.parent_jqo empty ?', self.parent_jqo.length > 0);
 		
 		// SEND EVENT
 		self.fire_event('devapt.view.parent.changed');
 		
 		
 		self.leave(context, 'success');
+		// self.trace = false;
 		return true;
 	}
 	
@@ -99,8 +103,8 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptObject, DevaptResources, Devapt
 		self.enter(context, 'constructor');
 		
 		
+		// DEBUG
 		// self.trace=true;
-		
 		
 		
 		// SET ID
@@ -137,7 +141,8 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptObject, DevaptResources, Devapt
 	 */
 	var cb_get_view_id = function()
 	{
-		return self.view_id ? self.view_id : self.name + '_view_id';
+		var self = this;
+		return DevaptTypes.is_not_empty_str(self.view_id) ? self.view_id : self.name + '_view_id';
 	}
 	
 	
@@ -156,17 +161,27 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptObject, DevaptResources, Devapt
 		self.enter(context, '');
 		
 		
-		// SEND EVENT
-		self.fire_event('devapt.view.render.begin');
-		
-		
 		// CREATE REFERRED OBJECT
 		var deferred = $.Deferred();
 		deferred.view_name = self.name;
 		deferred.view_uid = self.uid;
+		if (self.is_rendered)
+		{
+			deferred.resolve();
+			
+			self.leave(context, 'render with template');
+			return deferred.promise();
+		}
+		
+		
+		// SEND EVENT
+		self.fire_event('devapt.view.render.begin');
+		
 		
 		// RENDER END CALLBACK
 		var render_end_cb = function() {
+			// console.log('render_end_cb');
+			
 			if ( DevaptTypes.is_function(self.applyCssOptions) )
 			{
 				self.applyCssOptions(deferred);
@@ -174,16 +189,36 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptObject, DevaptResources, Devapt
 			
 			// SEND EVENT
 			self.fire_event('devapt.view.render.end');
+			
+			self.is_rendered = true;
 		};
 		
 		
 		// RENDER WITH TEMPLATE
 		if ( self.template_enabled && DevaptTypes.is_function(self.render_template) )
 		{
-			// console.log('render with template', context);
+			// console.log('render with template');
+			
+			if ( ! DevaptTypes.is_object(self.content_jqo) )
+			{
+				// console.info('set default content jqo');
+				
+				self.content_jqo = $('<div>');
+				
+				if ( DevaptTypes.is_object(self.parent_jqo) )
+				{
+					// console.info('set parent for content jqo');
+					self.parent_jqo.append(self.content_jqo);
+				}
+				
+				self.content_jqo.attr('id', self.get_view_id());
+			}
+			
+			// console.log('call render_template(deferred)');
 			var promise = self.render_template(deferred);
 			
 			// APPLY CSS OPTIONS AND FIRE END EVENT
+			// console.log('call render_template(deferred) done');
 			promise.done(render_end_cb);
 			
 			self.leave(context, 'render with template');
@@ -201,6 +236,8 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptObject, DevaptResources, Devapt
 		promise.done(
 			function()
 			{
+				// console.log('render_self done');
+				
 				if (self.content_jqo && self.content_jqo !== {})
 				{
 					self.content_jqo.attr('id', self.get_view_id());
@@ -535,6 +572,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptObject, DevaptResources, Devapt
 	
 	// PROPERTIES
 	DevaptViewClass.add_public_bool_property('is_view',			'is a view flag', true, false, false, []);
+	DevaptViewClass.add_public_bool_property('is_rendered',		'is a view rendered', false, false, false, []);
 	DevaptViewClass.add_public_str_property('status',			'view current state', 'ready', false, false, []);
 	DevaptViewClass.add_public_str_property('access_role',		'required role to display the view', null, true, false, ['role_display']);
 	
@@ -543,9 +581,9 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptObject, DevaptResources, Devapt
 	DevaptViewClass.add_public_str_property('label',			'',		null, false, false, ['view_label']);
 	DevaptViewClass.add_public_str_property('tooltip',			'',		null, false, false, ['view_tooltip']);
 	
-	var div_jqo = jQuery('<div>');
+	// var div_jqo = jQuery('<div>');
 	DevaptViewClass.add_public_object_property('parent_jqo',	'',		null, false, false, []);
-	DevaptViewClass.add_public_object_property('content_jqo',	'',		div_jqo, false, false, []);
+	DevaptViewClass.add_public_object_property('content_jqo',	'',		null, false, false, []);
 	
 	
 	// MIXINS

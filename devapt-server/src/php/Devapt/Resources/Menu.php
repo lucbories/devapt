@@ -303,7 +303,14 @@ class Menu extends AbstractResource
 			foreach($items as $item)
 			{
 				$all_items[] = $item->getResourceName();
-				$sub_items = $item->getMenuAllItemsNames();
+				if ($item instanceof Menu)
+				{
+					$sub_items = $item->getMenuAllItemsNames();
+				}
+				else
+				{
+					$sub_items = array();
+				}
 				$all_items = array_merge($all_items, $sub_items);
 			}
 		}

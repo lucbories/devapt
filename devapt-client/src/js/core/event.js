@@ -19,7 +19,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptObjectBase, DevaptEvents)
 	 * @desc				Event class constructor
 	 * @method				DevaptEvent.constructor
 	 * @param {string}		arg_event_name				event name
-	 * @param {object}		arg_event_target_object		event target object
+	 * @param {object}		arg_event_emitter_object	event emitter object
 	 * @param {array}		arg_event_operands			event operands
 	 * @return {nothing}
 	 */
@@ -31,29 +31,23 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptObjectBase, DevaptEvents)
 	 * @method				DevaptEvent.constructor
 	 * @desc				Event class constructor
 	 * @param {string}		arg_event_name				event name
-	 * @param {object}		arg_event_target_object		event target object which emits the event
+	 * @param {object}		arg_event_emitter_object	object which emits the event
 	 * @param {array}		arg_event_operands			event operands
 	 * @return {nothing}
 	 */
 	var cb_constructor = function(self)
 	{
-		var self = self ? self : this;
 		var context				= self.class_name + '(' + self.name + ')';
 		self.enter(context, 'constructor');
 		
 		
 		// DEBUG
-		// self.value(context, 'event name', arg_event_name);
-		// self.value(context, 'event target', arg_event_target_object.to_string());
-		// console.log(self.name, 'event name')
-		// console.log(self.operands_array, 'event operands_array')
+		// self.trace = true;
 		
 		// GET TIMESTAMP
 		var now = new Date();
 		
 		// SET EVENT ATTRIBUTES
-		// self.target_object		= arg_event_target_object;
-		// self.operands_array		= DevaptTypes.is_array(arg_event_operands) ? arg_event_operands : [];
 		self.fired_ts			= now.toLocaleDateString() + ' ' + now.toLocaleTimeString();
 		
 		
@@ -64,38 +58,40 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptObjectBase, DevaptEvents)
 	/**
 	 * @memberof			DevaptEvent
 	 * @public
-	 * @method				DevaptEvent.get_target()
-	 * @desc				Get event target object
+	 * @method				DevaptEvent.get_emitter()
+	 * @desc				Get event emitter object
 	 * @return {object}
 	 */
-	var cb_get_target = function()
+	var cb_get_emitter = function()
 	{
-		var context = 'get_target()';
-		this.enter(context, '');
+		var self = this;
+		var context = 'get_emitter()';
+		self.enter(context, '');
 		
-		// console.log(this.target_object, context);
+		// console.log(self.emitter_object, context);
 		
-		this.leave(context, 'success');
-		return this.target_object;
+		self.leave(context, 'success');
+		return self.emitter_object;
 	}
 	
 	
 	/**
 	 * @memberof			DevaptEvent
 	 * @public
-	 * @method				DevaptEvent.get_target_name()
-	 * @desc				Get event target object name
+	 * @method				DevaptEvent.get_emitter_name()
+	 * @desc				Get event emitter object name
 	 * @return {string}
 	 */
-	var cb_get_target_name = function()
+	var cb_get_emitter_name = function()
 	{
-		var context = 'get_target_name()';
-		this.enter(context, '');
+		var self = this;
+		var context = 'get_emitter_name()';
+		self.enter(context, '');
 		
-		// console.log(DevaptTypes.is_null(this.target_object) ? 'null target' : this.target_object.name, 'get_target_name()');
+		// console.log(DevaptTypes.is_null(self.emitter_object) ? 'null emitter' : self.emitter_object.name, 'get_emitter_name()');
 		
-		this.leave(context, 'success');
-		return DevaptTypes.is_null(this.target_object) ? 'null target' : this.target_object.name;
+		self.leave(context, 'success');
+		return DevaptTypes.is_null(self.emitter_object) ? 'null emitter' : self.emitter_object.name;
 	}
 	
 	
@@ -104,50 +100,157 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptObjectBase, DevaptEvents)
 	 * @public
 	 * @method				DevaptEvent.fire(arg_callbacks_array)
 	 * @desc				Fire event : call all callbacks
-	 * @param {array}		arg_callbacks_array		callbacks
-	 * @return {boolean}
+	 * @param {array}		arg_callbacks_records		callbacks records
+	 * @return {boolean}	true:fired,false:skipped
 	 */
-	var cb_fire = function(arg_callbacks_array)
+	var cb_fire = function(arg_callbacks_records)
 	{
+		var self = this;
 		var context = 'fire(callbacks)';
-		this.enter(context, '');
+		self.enter(context, '');
 		
 		
 		// REGISTER EVENT
-		DevaptEvents.add(this);
+		DevaptEvents.add(self);
 		
 		// TEST CALLBACKS ARRAY
-		if ( ! DevaptTypes.is_array(arg_callbacks_array) )
+		if ( ! DevaptTypes.is_array(arg_callbacks_records) )
 		{
-			this.leave(context, 'not a callbacks array');
+			self.leave(context, 'not a callbacks array');
 			return true;
 		}
-		if ( arg_callbacks_array.length <= 0 )
+		if ( arg_callbacks_records.length <= 0 )
 		{
-			this.leave(context, 'no callbacks to fire');
+			self.leave(context, 'no callbacks to fire');
 			return true;
 		}
 		
 		// LOOP ON CALLBACKS
-		for(var cb_index = 0 ; cb_index < arg_callbacks_array.length ; cb_index++)
+		for(var cb_index = 0 ; cb_index < arg_callbacks_records.length ; cb_index++)
 		{
-			this.value(context, 'fired callback index', cb_index);
+			self.value(context, 'fired callback index', cb_index);
 			
-			// GET CALLBACK
-			var callback = arg_callbacks_array[cb_index];
+			// GET CALLBACK RECORD
+			var callback_record = arg_callbacks_records[cb_index];
+			var callback = callback_record.event_cb;
+			
+			// TEST IF EMITTER MATCHES
+			if ( ! self.matches(self.emitter_object, callback_record) )
+			{
+				self.leave(context, 'skipped for emitter');
+				return false;
+			}
 			
 			// GET CALLBACK OPERANDS
-			var operands = new Array(this);
-			operands.push(this.target_object);
-			operands = operands.concat(this.operands_array);
+			var operands = new Array(self);
+			operands.push(self.emitter_object);
+			operands = operands.concat(self.operands_array);
 			
 			// RUN CALLBACK
-			this.do_callback(callback, operands);
+			self.do_callback(callback, operands);
 		}
 		
 		
-		this.leave(context, 'success');
+		self.leave(context, 'success');
 		return true;
+	}
+	
+	
+	/**
+	 * @memberof			DevaptEvent
+	 * @public
+	 * @method				DevaptEvent.matches(emitter,records)
+	 * @desc				Test if the event emitter matches listener callbacks records
+	 * @param {array}		arg_emitter_object		event emitter object
+	 * @param {array}		arg_callbacks_records	listener callbacks records
+	 * @return {boolean}	true:emitter matches,false:emitter doesn't match
+	*/
+	var cb_matches = function(arg_emitter_object, arg_callbacks_records)
+	{
+		var self = this;
+		var context = 'matches(emitter,records)';
+		self.enter(context, '');
+		
+		
+		// NOTHING TO TEST
+		if ( ! DevaptTypes.is_not_empty_array(sources) && ! DevaptTypes.is_not_empty_array(not_sources) )
+		{
+			self.leave(context, 'matches without tests');
+			return true;
+		}
+		
+		// TEST ENABLED EMITTERS
+		var sources = arg_callbacks_records.event_sources;
+		if ( DevaptTypes.is_not_empty_array(sources) )
+		{
+			for(index in sources)
+			{
+				var item = sources[index];
+				
+				if ( DevaptTypes.is_not_empty_string(item) )
+				{
+					arg_callbacks_records.event_sources[index] = new RegExp(item, '');
+					item = arg_callbacks_records.event_sources[index];
+				}
+				
+				if ( DevaptTypes.type_of(item) === 'regexp' )
+				{
+					// TEST SOURCE REGEXP AGAIN THE EMITTER CLASS NAME
+					if ( arg_emitter_object._class && item.test(arg_emitter_object._class.infos.class_name) )
+					{
+						self.leave(context, 'matches for class name');
+						return true;
+					}
+					
+					// TEST SOURCE REGEXP AGAIN THE EMITTER INSTANCE NAME
+					if ( arg_emitter_object.name && item.test(arg_emitter_object.name) )
+					{
+						self.leave(context, 'matches for instance name');
+						return true;
+					}
+				}
+			}
+		}
+		
+		// TEST DISABLED EMITTERS
+		var not_sources = arg_callbacks_records.event_not_sources;
+		if ( DevaptTypes.is_not_empty_array(not_sources) )
+		{
+			for(index in not_sources)
+			{
+				var item = not_sources[index];
+				
+				if ( DevaptTypes.is_not_empty_string(item) )
+				{
+					arg_callbacks_records.event_not_sources[index] = new RegExp(item, '');
+					item = arg_callbacks_records.event_not_sources[index];
+				}
+				
+				if ( DevaptTypes.type_of(item) === 'regexp' )
+				{
+					// TEST SOURCE REGEXP AGAIN THE EMITTER CLASS NAME
+					if ( arg_emitter_object._class && item.test(arg_emitter_object._class.infos.class_name) )
+					{
+						self.leave(context, 'no match for class name');
+						return false;
+					}
+					
+					// TEST SOURCE REGEXP AGAIN THE EMITTER INSTANCE NAME
+					if ( arg_emitter_object.name && item.test(arg_emitter_object.name) )
+					{
+						self.leave(context, 'no match for instance name');
+						return false;
+					}
+				}
+			}
+			
+			self.leave(context, 'matches with tests');
+			return true;
+		}
+		
+		
+		self.leave(context, 'no match');
+		return false;
 	}
 	
 	
@@ -160,10 +263,11 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptObjectBase, DevaptEvents)
 	 */
 	var cb_to_string_self = function()
 	{
+		var self = this;
 		return
-			this.to_string_value('target object', DevaptTypes.is_null(this.target_object) ? 'null' : this.target_object.getName() )
-			this.to_string_value('operands_array.length', this.operands_array.length)
-			this.to_string_value('fired_ts', DevaptTypes.is_null(fired_ts) ? 'no fired' : this.fired_ts)
+			self.to_string_value('emitter object', DevaptTypes.is_null(self.emitter_object) ? 'null' : self.emitter_object.getName() )
+			self.to_string_value('operands_array.length', self.operands_array.length)
+			self.to_string_value('fired_ts', DevaptTypes.is_null(fired_ts) ? 'no fired' : self.fired_ts)
 			;
 	}
 	
@@ -184,23 +288,22 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptObjectBase, DevaptEvents)
 			description:'Event class for all event objects.'
 		},
 		properties:{
-			
 		}
 	};
-	
-	// CLASS CREATION
 	var parent_class = DevaptObjectBase;
 	var DevaptEventClass = new DevaptClass('DevaptEvent', parent_class, class_settings);
 	
 	// METHODS
 	DevaptEventClass.infos.ctor = cb_constructor;
-	DevaptEventClass.add_public_method('get_target', {}, cb_get_target);
-	DevaptEventClass.add_public_method('get_target_name', {}, cb_get_target_name);
+	DevaptEventClass.add_public_method('get_emitter', {}, cb_get_emitter);
+	DevaptEventClass.add_public_method('get_emitter_name', {}, cb_get_emitter_name);
 	DevaptEventClass.add_public_method('fire', {}, cb_fire);
+	DevaptEventClass.add_public_method('matches', {}, cb_matches);
 	DevaptEventClass.add_public_method('to_string_self', {}, cb_to_string_self);
 	
 	// PROPERTIES
-	DevaptEventClass.add_public_obj_property('target_object',	'',		null, true, false, []);
+	DevaptEventClass.add_public_obj_property('emitter_object',	'event emitter object',		null, true, false, []);
+	DevaptEventClass.add_public_int_property('fired_ts',		'event timestamp',			null, true, true, []);
 	
 	DevaptEventClass.add_property_record(
 		{

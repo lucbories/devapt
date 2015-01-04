@@ -38,7 +38,7 @@ function(Devapt, DevaptTypes, DevaptClass)
 		 */
 		mixin_init_select_item: function(self)
 		{
-			self.push_trace(self.trace, self.mixin_trace_select_item);
+			self.push_trace(self.trace, DevaptMixinSelectItem.mixin_trace_select_item);
 			var context = 'mixin_init_select_item()';
 			self.enter(context, '');
 			
@@ -64,7 +64,7 @@ function(Devapt, DevaptTypes, DevaptClass)
 		{
 			var self = this;
 			var context = 'on_query_filters_event()';
-			self.push_trace(self.trace, self.mixin_trace_select_item);
+			self.push_trace(self.trace, DevaptMixinSelectItem.mixin_trace_select_item);
 			self.enter(context, '');
 			
 			
@@ -122,7 +122,7 @@ function(Devapt, DevaptTypes, DevaptClass)
 		{
 			var self = this;
 			var context = 'select_item_node(index)';
-			self.push_trace(self.trace, self.mixin_trace_select_item);
+			self.push_trace(self.trace, DevaptMixinSelectItem.mixin_trace_select_item);
 			self.enter(context, '');
 			
 			
@@ -147,7 +147,10 @@ function(Devapt, DevaptTypes, DevaptClass)
 			// GET SELECTION ATTRIBUTES
 			var node_index = parseInt( node_jqo.index() );
 			var node_value = node_jqo.text();
-			var record = node_jqo.data('record');
+			// var record = node_jqo.data('record');
+			var record = self.items_records[node_index];
+			// console.log(self.items_records, context + ':self.items_records [' + self.name + ']');
+			// console.log(record, context + ':record [' + self.name + ']');
 			
 			// BUILD EVENT OPERANDS MAP
 			var event_opds_map = {
@@ -171,17 +174,6 @@ function(Devapt, DevaptTypes, DevaptClass)
 			self.pop_trace();
 		}
 	};
-	
-	
-	/**
-	 * @public
-	 * @memberof			DevaptMixinSelectItem
-	 * @desc				Register mixin options
-	 * @return {nothing}
-	 */
-	// DevaptMixinSelectItem.register_options = function(arg_prototype)
-	// {
-	// };
 	
 	
 	

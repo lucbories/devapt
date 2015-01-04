@@ -61,10 +61,10 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptEvent)
 	/**
 	 * @memberof	DevaptEvents
 	 * @public
-	 * @property	DevaptEvents.target_events
-	 * @desc		Fired Events repository associative array by target name (static method)
+	 * @property	DevaptEvents.emitter_events
+	 * @desc		Fired Events repository associative array by emitter name (static method)
 	 */
-	DevaptEvents.target_events = new Object();
+	DevaptEvents.emitter_events = new Object();
 
 
 	/**
@@ -101,14 +101,14 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptEvent)
 	/**
 	 * @memberof				DevaptEvents
 	 * @public
-	 * @method					DevaptEvents.get_events_array_for_target()
-	 * @desc					Get events array for a target name
-	 * @param {string}			arg_target_name
+	 * @method					DevaptEvents.get_events_array_for_emitter()
+	 * @desc					Get events array for a emitter name
+	 * @param {string}			arg_emitter_name
 	 * @return {array}
 	 */
-	DevaptEvents.get_events_array_for_target = function(arg_target_name)
+	DevaptEvents.get_events_array_for_emitter = function(arg_emitter_name)
 	{
-		var obj = DevaptEvents.target_events[arg_target_name];
+		var obj = DevaptEvents.emitter_events[arg_emitter_name];
 		return obj ? obj : [];
 	}
 	
@@ -167,7 +167,7 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptEvent)
 	DevaptEvents.add = function(arg_event)
 	{
 		DevaptEvents.all_events.push(arg_event);
-		DevaptEvents.target_events[ arg_event.get_target_name() ] = arg_event;
+		DevaptEvents.emitter_events[ arg_event.get_emitter_name() ] = arg_event;
 		DevaptEvents.kind_events[ arg_event.name ] = arg_event;
 		
 		// RUN CALLBACK ON EVENTS LISTENERS ADD
@@ -185,7 +185,7 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptEvent)
 	/**
 	 * @memberof			DevaptEvents
 	 * @public
-	 * @method				DevaptEvents.fire(arg_event, arg_target)
+	 * @method				DevaptEvents.fire(arg_event, arg_emitter)
 	 * @desc				Fire an event to the events repository (static method)
 	 * @param {object}		arg_event	event object
 	 * @return {nothing}
@@ -218,12 +218,12 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptEvent)
 		
 		
 		// GET CALLBACKS ARRAY
-		var event_callbacks = event.target_object.events_callbacks[event.name];
+		var event_callbacks_records = event.emitter_object.events_callbacks[event.name];
 		
 		// FIRE EVENT
-		if (event_callbacks)
+		if (event_callbacks_records)
 		{
-			event.fire(event_callbacks);
+			event.fire(event_callbacks_records);
 		}
 		
 		
@@ -270,7 +270,7 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptEvent)
 			
 			
 			// GET CALLBACKS ARRAY
-			var event_callbacks = event.target_object.events_callbacks[event.name];
+			var event_callbacks = event.emitter_object.events_callbacks[event.name];
 			
 			// FIRE EVENT
 			if (event_callbacks)
@@ -296,7 +296,7 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptEvent)
 	DevaptEvents.reset = function()
 	{
 		DevaptEvents.all_events = [];
-		DevaptEvents.target_events = new Object();
+		DevaptEvents.emitter_events = new Object();
 		DevaptEvents.kind_events = new Object();
 	}
 	

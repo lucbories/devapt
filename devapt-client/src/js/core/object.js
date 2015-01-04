@@ -73,7 +73,7 @@ function(Devapt, DevaptTypes, DevaptTraces, DevaptClass, DevaptObjectBase, Devap
 	 * @param {array}		arg_option_attributes	Option attributes array
 	 * @return {object|null}
 	 */
-	var cb_get_option_from_plain_object_string = function(arg_option_str, arg_option_attributes)
+/*	var cb_get_option_from_plain_object_string = function(arg_option_str, arg_option_attributes)
 	{
 		var self = this;
 		var context = 'get_option_from_plain_object_string(option_str,option_attr)';
@@ -87,7 +87,7 @@ function(Devapt, DevaptTypes, DevaptTraces, DevaptClass, DevaptObjectBase, Devap
 		// CHECK STRING FORMAT
 		var pattern = '[ \t]*\\{([\\w]+[:][\"]?[\\w]+[\"]?[,]?)+\\}[ \t]*';
 		var regexp = new RegExp(pattern, '');
-		var is_object_str = regexp.test(self.model_load_strategy);
+		var is_object_str = regexp.test(arg_option_str);
 		if (!is_object_str)
 		{
 			self.leave(context, 'bad option string format');
@@ -95,7 +95,7 @@ function(Devapt, DevaptTypes, DevaptTraces, DevaptClass, DevaptObjectBase, Devap
 		}
 		
 		// CREATE PLAIN OBJECT FROM STRING
-		var option_obj = eval('(' + self.model_load_strategy + ')');
+		var option_obj = eval('(' + arg_option_str + ')');
 		// TODO secure string to object conversion
 		// var option_obj = $.parseJSON(self.model_load_strategy);
 		for(option_key in option_obj)
@@ -110,7 +110,7 @@ function(Devapt, DevaptTypes, DevaptTraces, DevaptClass, DevaptObjectBase, Devap
 		
 		self.leave(context, 'success');
 		return option_obj;
-	}
+	}*/
 	
 	
 	/**
@@ -148,7 +148,7 @@ function(Devapt, DevaptTypes, DevaptTraces, DevaptClass, DevaptObjectBase, Devap
 	// METHODS
 	DevaptObjectClass.add_public_method('get_property', {}, cb_get_property);
 	DevaptObjectClass.add_public_method('set_property', {}, cb_set_property);
-	DevaptObjectClass.add_public_method('get_option_from_plain_object_string', {}, cb_get_option_from_plain_object_string);
+	// DevaptObjectClass.add_public_method('get_option_from_plain_object_string', {}, cb_get_option_from_plain_object_string);
 	DevaptObjectClass.add_public_method('to_string', {}, cb_to_string);
 	
 	// MIXINS
@@ -157,14 +157,6 @@ function(Devapt, DevaptTypes, DevaptTraces, DevaptClass, DevaptObjectBase, Devap
 	
 	// PROPERTIES
 	DevaptObjectClass.add_public_str_property('class_type', 'class type:view or model or ...', null, false, true);
-	
-	
-	// STATIC MESSAGE
-	DevaptObjectClass.msg_default_empty_implementation = 'default empty implementation';
-	DevaptObjectClass.msg_success = 'success';
-	DevaptObjectClass.msg_failure = 'failure';
-	DevaptObjectClass.msg_success_promise = 'success: returns promise';
-	DevaptObjectClass.msg_success_require = 'success: a requirejs request is processing';
 	
 	
 	

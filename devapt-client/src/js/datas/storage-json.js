@@ -16,6 +16,7 @@
  * @license		Apache License Version 2.0, January 2004; see LICENSE.txt or http://www.apache.org/licenses/
  */
 
+'use strict';
 define(['Devapt', 'core/types', 'core/class', 'datas/storage-api'],
 function(Devapt, DevaptTypes, DevaptClass, DevaptStorage)
 {
@@ -63,6 +64,10 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptStorage)
 		self.data_type		= 'jsonp';
 		// self.data_name		= 'json_datas';
 		
+		// QUERIES RESULTS CACHE
+		self.use_cached_queries = true;
+		self.cached_queries = {};
+		
 		
 		// CONSTRUCTOR END
 		self.leave(context, 'success');
@@ -98,8 +103,20 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptStorage)
 		self.enter(context, '');
 		
 		
+		// SEARCH CACHED QUERIES
+		var query_key = 'all';
+		if (self.use_cached_queries)
+		{
+			var query_promise = self.cached_queries[query_key];
+			if (query_promise)
+			{
+				self.leave(context, self.msg_success_promise);
+				return query_promise;
+			}
+		}
+		
+		
 		// CREATE AJAX REQUEST
-		// var url = self.url_read;
 		var url = self.url_read + '?query_api=2';
 		var ajax_settings = {
 			contentType	: self.http_format + '; charset=' + self.http_charset,
@@ -115,12 +132,41 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptStorage)
 		
 		var ajax_promise = $.ajax(ajax_settings);
 		// console.log(ajax_promise);
-		// ajax_promise.done(
-			// function(result)
-			// {
+		
+		
+		// REGISTER CACHED QUERY
+		if (self.use_cached_queries)
+		{
+			self.cached_queries[query_key] = ajax_promise;
+		}
+		
+		
+		// ON SUCCESS
+		ajax_promise.done(
+			function(result)
+			{
 				// console.log(result, 'storage-json.result');
-			// }
-		// );
+				if (self.notify_read)
+				{
+					Devapt.get_current_backend().notify_info('storage json: read all is done for [' + self.name + ']');
+				}
+			}
+		);
+		
+		
+		// ON FAILURE
+		ajax_promise.fail(
+			function(result)
+			{
+				// console.log(result, 'storage-json.result');
+				
+				self.cached_queries[query_key] = null;
+				delete self.cached_queries[query_key];
+				
+				Devapt.get_current_backend().notify_error('storage json: read all has failed for [' + self.name + ']');
+			}
+		);
+		
 		
 		self.leave(context, self.msg_success_promise);
 		return ajax_promise;
@@ -151,16 +197,23 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptStorage)
 		self.enter(context, '');
 		
 		
+		// SEARCH CACHED QUERIES
+		var query_key = DevaptTypes.is_object(arg_query) ? arg_query.get_key() : null;
+		// console.log(query_key, 'query key');
+		if (query_key && self.use_cached_queries)
+		{
+			var query_promise = self.cached_queries[query_key];
+			if (query_promise)
+			{
+				// console.log(query_key, 'cached query');
+				self.leave(context, self.msg_success_promise);
+				return query_promise;
+			}
+		}
+		
+		
 		// CREATE AJAX REQUEST
 		var json_datas = arg_query ? arg_query.get_json() : null;
-		// var json_datas = {
-			// query_json: {
-				// action: 'select_count',
-				// one_field: 'id_user',
-				// values: null,
-				// values_count: 0
-			// }
-		// };
 		var url = self.url_read + '?query_api=2';
 		var ajax_promise = $.ajax(
 			{
@@ -172,6 +225,41 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptStorage)
 				url			: url,
 				timeout		: self.http_timeout,
 				data		: json_datas
+			}
+		);
+		
+		
+		// REGISTER CACHED QUERY
+		if (query_key && self.use_cached_queries)
+		{
+			// console.log(query_key, 'save query');
+			self.cached_queries[query_key] = ajax_promise;
+		}
+		
+		
+		// ON SUCCESS
+		ajax_promise.done(
+			function(result)
+			{
+				// console.log(result, 'storage-json.result');
+				if (self.notify_read)
+				{
+					Devapt.get_current_backend().notify_info('storage json: read query is done for [' + self.name + ']');
+				}
+			}
+		);
+		
+		
+		// ON FAILURE
+		ajax_promise.fail(
+			function(result)
+			{
+				// console.error(result, 'storage-json.result');
+				
+				self.cached_queries[query_key] = null;
+				delete self.cached_queries[query_key];
+				
+				Devapt.get_current_backend().notify_error('storage json: read query has failed for [' + self.name + ']');
 			}
 		);
 		
@@ -211,6 +299,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptStorage)
 			{
 				query_json: {
 					action: 'insert',
+					query_type: 'insert',
 					values: arg_records,
 					values_count: arg_records.length
 				}
@@ -226,6 +315,25 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptStorage)
 				url			: url,
 				timeout		: self.http_timeout,
 				data		: JSON.stringify(json_datas)
+			}
+		);
+		
+		ajax_promise.done(
+			function(result)
+			{
+				// console.log(result, 'storage-json.result');
+				if (self.notify_create)
+				{
+					Devapt.get_current_backend().notify_info('storage json: create is done for [' + self.name + ']');
+				}
+			}
+		);
+		
+		ajax_promise.fail(
+			function(result)
+			{
+				// console.log(result, 'storage-json.result');
+				Devapt.get_current_backend().notify_error('storage json: create has failed for [' + self.name + ']');
 			}
 		);
 		
@@ -265,6 +373,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptStorage)
 			{
 				query_json: {
 					action: 'update',
+					query_type: 'update',
 					values: arg_records,
 					values_count: 1
 				}
@@ -280,6 +389,25 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptStorage)
 				url			: url,
 				timeout		: self.http_timeout,
 				data		: JSON.stringify(json_datas)
+			}
+		);
+		
+		ajax_promise.done(
+			function(result)
+			{
+				// console.log(result, 'storage-json.result');
+				if (self.notify_update)
+				{
+					Devapt.get_current_backend().notify_info('storage json: update is done for [' + self.name + ']');
+				}
+			}
+		);
+		
+		ajax_promise.fail(
+			function(result)
+			{
+				// console.log(result, 'storage-json.result');
+				Devapt.get_current_backend().notify_error('storage json: update has failed for [' + self.name + ']');
 			}
 		);
 		
@@ -319,6 +447,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptStorage)
 			{
 				query_json: {
 					action: 'delete',
+					query_type: 'delete',
 					values: arg_records,
 					values_count: 1
 				}
@@ -334,6 +463,25 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptStorage)
 				url			: url,
 				timeout		: self.http_timeout,
 				data		: JSON.stringify(json_datas)
+			}
+		);
+		
+		ajax_promise.done(
+			function(result)
+			{
+				// console.log(result, 'storage-json.result');
+				if (self.notify_delete)
+				{
+					Devapt.get_current_backend().notify_info('storage json: delete is done');
+				}
+			}
+		);
+		
+		ajax_promise.fail(
+			function(result)
+			{
+				// console.log(result, 'storage-json.result');
+				Devapt.get_current_backend().notify_error('storage json: delete has failed');
 			}
 		);
 		
@@ -383,6 +531,11 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptStorage)
 	
 	// PROPERTIES
 	DevaptStorageClass.add_public_str_property('source', 'source of datas', null, true, true, []);
+	
+	DevaptStorageClass.add_public_str_property('notify_create', 'notify user on create operations', true, false, false, []);
+	DevaptStorageClass.add_public_str_property('notify_read', 'notify user on read operations', false, false, false, []);
+	DevaptStorageClass.add_public_str_property('notify_update', 'notify user on update operations', true, false, false, []);
+	DevaptStorageClass.add_public_str_property('notify_delete', 'notify user on delete operations', true, false, false, []);
 	
 	DevaptStorageClass.add_public_str_property('url_create', 'url for create operation', null, true, true, []);
 	DevaptStorageClass.add_public_str_property('url_read', 'url for create operation', null, true, true, []);

@@ -191,6 +191,20 @@ define(['Devapt', 'core/traces'], function(Devapt, DevaptTraces)
 	 * @memberof			DevaptTypes
 	 * @public
 	 * @static
+	 * @method				DevaptTypes.is_not_empty_object(arg_value)
+	 * @desc				Test if the value is a not empty object without members
+	 * @param {anything}	arg_value			value to test
+	 * @return {boolean}
+	 */
+	DevaptTypes.is_not_empty_object = function(arg_value)
+	{
+		return DevaptTypes.is_object(arg_value) && ! $.isEmptyObject(arg_value);
+	}
+
+	/**
+	 * @memberof			DevaptTypes
+	 * @public
+	 * @static
 	 * @method				DevaptTypes.is_plain_object(arg_value)
 	 * @desc				Test if the value is a plain object (created with {} or with new Object)
 	 * @param {anything}	arg_value			value to test
@@ -583,7 +597,7 @@ define(['Devapt', 'core/traces'], function(Devapt, DevaptTraces)
 	 */
 	DevaptTypes.is_not_empty_str = function(arg_value)
 	{
-		return ! DevaptTypes.is_empty_str_or_null(arg_value);
+		return DevaptTypes.is_string(arg_value) && arg_value !== '' && arg_value.length > 0;
 	}
 
 	/**

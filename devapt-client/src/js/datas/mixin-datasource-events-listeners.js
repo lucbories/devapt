@@ -70,7 +70,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptEvents)
 					var record = {};
 					record['name']				= event.name;
 					record['ts']				= event.fired_ts;
-					record['target_name']		= event.target_object.name;
+					record['target_name']		= event.emitter_object.name;
 					record['operands_count']	= event.operands_array.length;
 					items.push(record);
 				}
