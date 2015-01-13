@@ -1,15 +1,23 @@
 todo
 
-event logs appender
 
-transactions
-	client
-	server
-	=>dashboard of failures analysis (root cause)
+Features
+	event logs appender
+	transactions
+		client
+		server
+		=>dashboard of failures analysis (root cause)
+	micro services ?
+	api server ?
 
-micro services
-api server
 
+
+tutorial-1
+	access
+		ajouter/supprimer un utilisateur
+	appbuilder
+		api inspector
+		api backend : tables of datas, forms of datas, dashboard
 
 
 views
@@ -41,9 +49,9 @@ plugins
 	
 
 save
-	auto en quittant un inpu
-	par formulaire
-	par user
+x	auto en quittant un input
+-	par formulaire
+-	par user
 
 users lists
 	pas de liste par défaut et attente saisie dans search

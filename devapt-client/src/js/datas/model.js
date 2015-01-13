@@ -13,8 +13,8 @@
  */
 
 define(
-['Devapt', 'core/types', 'core/events', 'core/object', 'datas/field', 'core/class'],
-function(Devapt, DevaptTypes, DevaptEvents, DevaptObject, DevaptField, DevaptClass)
+['Devapt', 'core/types', 'core/events', 'core/object', 'datas/field', 'core/class', 'core/application'],
+function(Devapt, DevaptTypes, DevaptEvents, DevaptObject, DevaptField, DevaptClass, DevaptApplication)
 {
 	/**
 	 * @class				DevaptModel
@@ -30,19 +30,19 @@ function(Devapt, DevaptTypes, DevaptEvents, DevaptObject, DevaptField, DevaptCla
 	 * @memberof			DevaptModel
 	 * @public
 	 * @method				DevaptModel.constructor
-	 * @desc				Model class constructor
+	 * @desc				Model constructor
 	 * @return {nothing}
 	 */
 	var cb_constructor = function(self)
 	{
-		// CONSTRUCTOR BEGIN
-		var context				= self.class_name + '(' + self.name + ')';
+		var context = self.class_name + '(' + self.name + ')';
 		self.enter(context, 'constructor');
 		
 		
 		// self.trace = true;
 		
 		
+		self.crud_api		 	= null;
 		self.engine_object 		= null;
 		self.engine_deferred	= $.Deferred();
 		self.engine_promise		= self.engine_deferred.promise();
@@ -69,7 +69,7 @@ function(Devapt, DevaptTypes, DevaptEvents, DevaptObject, DevaptField, DevaptCla
 			self.set_access(self.access);
 		}
 		
-		// CONSTRUCTOR END
+		
 		self.leave(context, 'success');
 	}
 	
@@ -119,8 +119,8 @@ function(Devapt, DevaptTypes, DevaptEvents, DevaptObject, DevaptField, DevaptCla
 	/**
 	 * @memberof			DevaptModel
 	 * @public
-	 * @method				DevaptModel.get_fields()
-	 * @desc				Get model fields
+	 * @method				DevaptModel.get_field(name)
+	 * @desc				Get model field for the given name
 	 * @param {string}		arg_field_name		field name
 	 * @return {object}
 	 */
@@ -134,6 +134,52 @@ function(Devapt, DevaptTypes, DevaptEvents, DevaptObject, DevaptField, DevaptCla
 		self.leave(context, Devapt.msg_success);
 		return self.fields_map[arg_field_name];
 	}
+	
+	
+	
+	/**
+	 * @memberof			DevaptModel
+	 * @public
+	 * @method				DevaptModel.get_field_for_column(column)
+	 * @desc				Get model field for the given column
+	 * @param {string}		arg_column_name		column name
+	 * @return {object}
+	 */
+	var cb_get_field_for_column = function(arg_column_name)
+	{
+		var self = this;
+		var context = 'get_field_for_column(column)';
+		self.enter(context, '');
+		
+		
+		for(field_name in self.fields_map)
+		{
+			var field = self.fields_map[field_name];
+			
+			if (field.sql_alias === arg_column_name)
+			{
+				self.leave(context, Devapt.msg_found);
+				return field;
+			}
+			
+			if (field.sql_column === arg_column_name)
+			{
+				self.leave(context, Devapt.msg_found);
+				return field;
+			}
+			
+			if (field.sql_foreign_column === arg_column_name)
+			{
+				self.leave(context, Devapt.msg_found);
+				return field;
+			}
+		}
+		
+		
+		self.leave(context, Devapt.msg_not_found);
+		return null;
+	}
+	
 	
 	
 	
@@ -250,10 +296,11 @@ function(Devapt, DevaptTypes, DevaptEvents, DevaptObject, DevaptField, DevaptCla
 	}
 	
 	
+	
 	/**
 	 * @memberof			DevaptModel
 	 * @public
-	 * @method				DevaptModel.set_engine(fields)
+	 * @method				DevaptModel.set_engine(engine)
 	 * @desc				Set model storage engine
 	 * @param {object}		arg_engine		engine instance or definition object
 	 * @return {object}		promise
@@ -280,10 +327,20 @@ function(Devapt, DevaptTypes, DevaptEvents, DevaptObject, DevaptField, DevaptCla
 					require(['datas/storage-json'], function(DevaptJsonStorage)
 						{
 							self.step(context, 'JSON engine is created');
-							arg_engine.url_read		= '/devapt-tutorial-1/public/rest/' + self.name + '/';
-							arg_engine.url_create	= '/devapt-tutorial-1/public/rest/' + self.name + '/';
-							arg_engine.url_update	= '/devapt-tutorial-1/public/rest/' + self.name + '/';
-							arg_engine.url_delete	= '/devapt-tutorial-1/public/rest/' + self.name + '/';
+							
+							var url_base = DevaptApplication.get_url_base;
+							var crud_api = self.get_crud_api();
+							
+							arg_engine.url_read		= crud_api.method_read.url + '?query_api=2';
+							arg_engine.url_create	= crud_api.method_create.url + '?query_api=2';
+							arg_engine.url_update	= crud_api.method_update.url + '?query_api=2';
+							arg_engine.url_delete	= crud_api.method_delete.url + '?query_api=2';
+							
+							// arg_engine.url_read		= '/devapt-tutorial-1/public/rest/' + self.name + '/';
+							// arg_engine.url_create	= '/devapt-tutorial-1/public/rest/' + self.name + '/';
+							// arg_engine.url_update	= '/devapt-tutorial-1/public/rest/' + self.name + '/';
+							// arg_engine.url_delete	= '/devapt-tutorial-1/public/rest/' + self.name + '/';
+							
 							self.engine_object = DevaptJsonStorage.create(arg_engine.name, arg_engine);
 							self.engine_deferred.resolve(self.engine_object);
 						}
@@ -309,6 +366,60 @@ function(Devapt, DevaptTypes, DevaptEvents, DevaptObject, DevaptField, DevaptCla
 		
 		self.leave(context, Devapt.msg_success_promise);
 		return self.engine_promise;
+	}
+	
+	
+	
+	/**
+	 * @memberof			DevaptModel
+	 * @public
+	 * @method				DevaptModel.get_crud_api()
+	 * @desc				Set model storage engine
+	 * @param {object}		arg_engine		engine instance or definition object
+	 * @return {object}		promise
+	 */
+	var cb_get_crud_api = function(arg_engine)
+	{
+		var self = this;
+		var context = 'get_crud_api()';
+		self.enter(context, '');
+		
+		
+		// TEST IF ALREADY CREATED
+		if (self.crud_api && self.crud_api.read)
+		{
+			self.leave(context, Devapt.msg_success);
+			return self.crud_api;
+		}
+		
+		// CREATE API RECORD
+		var url_base = DevaptApplication.get_url_base();
+		self.crud_api = {
+			method_create: {
+				method:'PUT',
+				url:url_base + 'rest/' + self.name + '/',
+				format:'devapt_query_api_2'
+			},
+			method_read: {
+				method:'GET',
+				url:url_base + 'rest/' + self.name + '/',
+				format:'devapt_query_api_2'
+			},
+			method_update: {
+				method:'POST',
+				url:url_base + 'rest/' + self.name + '/',
+				format:'devapt_query_api_2'
+			},
+			method_delete: {
+				method:'DELETE',
+				url:url_base + 'rest/' + self.name + '/',
+				format:'devapt_query_api_2'
+			}
+		};
+		
+		
+		self.leave(context, Devapt.msg_success);
+		return self.crud_api;
 	}
 	
 	
@@ -421,11 +532,13 @@ function(Devapt, DevaptTypes, DevaptEvents, DevaptObject, DevaptField, DevaptCla
 	DevaptModelClass.add_public_method('is_valid', {}, cb_is_valid);
 	
 	DevaptModelClass.add_public_method('get_field', {}, cb_get_field);
+	DevaptModelClass.add_public_method('get_field_for_column', {}, cb_get_field_for_column);
 	DevaptModelClass.add_public_method('get_fields', {}, cb_get_fields);
 	DevaptModelClass.add_public_method('set_fields', {}, cb_set_fields);
 	
 	DevaptModelClass.add_public_method('get_engine', {}, cb_get_engine);
 	DevaptModelClass.add_public_method('set_engine', {}, cb_set_engine);
+	DevaptModelClass.add_public_method('get_crud_api', {}, cb_get_crud_api);
 	
 	DevaptModelClass.add_public_method('get_access', {}, cb_get_access);
 	DevaptModelClass.add_public_method('set_access', {}, cb_set_access);

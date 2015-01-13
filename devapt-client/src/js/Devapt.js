@@ -279,6 +279,8 @@ define('Devapt', ['jquery', 'core/init', 'md5', 'sha1'], function($, DevaptInit,
 	Devapt.msg_default_empty_implementation = 'default empty implementation';
 	Devapt.msg_success = 'success';
 	Devapt.msg_failure = 'failure';
+	Devapt.msg_found = 'found';
+	Devapt.msg_not_found = 'not found';
 	Devapt.msg_success_promise = 'success: returns promise';
 	Devapt.msg_success_require = 'success: a requirejs request is processing';
 	

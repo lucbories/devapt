@@ -90,6 +90,9 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptEvents)
 					items = json_obj;
 				}
 				
+				self.items_records = events_array;
+				self.items_records_count = events_array.length;
+				
 				deferred.resolve(items);
 				
 				self.leave(context, self.msg_success_promise);

@@ -34,6 +34,29 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptObject, DevaptQuery, DevaptMixi
 	/**
 	 * @memberof			DevaptField
 	 * @public
+	 * @method				DevaptField.constructor
+	 * @desc				Field constructor
+	 * @return {nothing}
+	 */
+	var cb_constructor = function(self)
+	{
+		var context = self.class_name + '(' + self.name + ')';
+		self.enter(context, 'constructor');
+		
+		
+		self.association = null;
+		self.has_association_link = null;
+		self.has_foreign_link = null;
+		self.has_join_link = null;
+		
+		
+		self.leave(context, 'success');
+	}
+	
+	
+	/**
+	 * @memberof			DevaptField
+	 * @public
 	 * @method				DevaptField.is_value_valid(value)
 	 * @desc				Test if the given value is valid
 	 * @param {string}		arg_value			value to test for field
@@ -60,6 +83,287 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptObject, DevaptQuery, DevaptMixi
 	/**
 	 * @memberof			DevaptField
 	 * @public
+	 * @method				DevaptField.has_association()
+	 * @desc				Test if the given value has an association link
+	 * @return {boolean}
+	 */
+	var cb_has_association = function()
+	{
+		var self = this;
+		var context = 'has_association()';
+		self.enter(context, '');
+		
+		
+		if ( ! DevaptTypes.is_boolean(self.has_association_link) )
+		{
+			self.has_association_link = self.has_foreign() || self.has_join() || self.has_one_to_one();
+		}
+		
+		
+		self.leave(context, Devapt.msg_success);
+		return self.has_association_link;
+	}
+	
+	
+	/**
+	 * @memberof			DevaptField
+	 * @public
+	 * @method				DevaptField.get_association()
+	 * @desc				Test if the given value has a foreign link
+	 * @return {object}
+	 */
+	var cb_get_association = function()
+	{
+		var self = this;
+		var context = 'get_association()';
+		self.enter(context, '');
+		
+		
+		if ( self.has_association() && ! DevaptTypes.is_object(self.association) )
+		{
+			self.association = {min:null, max:null, model_name:null, model:null, query:null};
+			
+			if (self.has_join() && self.join)
+			{
+				/*
+					[FIELD DEFINITION]
+					type=String
+					label=User login
+					is_editable=1
+					is_visible=1
+					sql_is_primary_key=0
+					sql_is_expression=0
+					sql_column=login
+					sql_table=join_users
+					
+					[MODEL DEFINITION]
+					crud_table=groups_users
+					joins.users.mode=inner
+					joins.users.model=MODEL_AUTH_USERS
+					joins.users.source.column=id_user
+					joins.users.target.table=users
+					joins.users.target.table_alias=join_users
+				*/
+				self.association.min = 1;
+				self.association.max = null;
+				self.association.model = self.join.model_object;
+				self.association.model_name = self.join.model;
+				self.association.target_field_name = self.sql_column;
+				self.association.target_field_key = self.join.target.column;
+			}
+			
+			else if ( self.has_foreign() )
+			{
+				/*
+					[FIELD DEFINITION]
+					type=String
+					label=Role label
+					is_editable=1
+					is_visible=1
+					sql_is_primary_key=0
+					sql_is_expression=0
+					sql_column=id_role
+					sql_foreign_table=roles
+					sql_foreign_key=id_role
+					sql_foreign_column=label
+					
+					[MODEL DEFINITION]
+					crud_table=users_roles
+				*/
+				self.association.min = 1;
+				self.association.max = null;
+				if (self.foreign_model && self.sql_foreign_column && self.sql_foreign_key)
+				{
+					self.association.model = self.foreign_model;
+					self.association.model_name = self.association.model.name;
+					self.association.target_field_name = self.foreign_model.get_field_for_column(self.sql_foreign_column);
+					// self.association.target_field_key = self.foreign_model.get_field_for_column(self.sql_foreign_key);
+				}
+				else
+				{
+					self.association.model = self.model;
+					self.association.model_name = self.association.model.name;
+					self.association.target_field_name = self.name;
+					// self.association.target_field_key = self.sql_foreign_key;
+				}
+			}
+			// else if ( self.has_one_to_one() )
+			// {
+				/*
+					[FIELD DEFINITION]
+					type=String
+					label=Role label
+					is_editable=1
+					is_visible=1
+					sql_is_primary_key=0
+					sql_is_expression=0
+					sql_table=country
+					sql_column=country_label
+					sql_key=id_country
+					
+					[MODEL DEFINITION]
+					crud_table=users
+				*/
+				/*self.association.min = 1;
+				self.association.max = 1;
+				self.association.model = self.join.model_object;
+				self.association.model_name = self.join.model;
+				self.association.model_name = self.join.model;
+				self.association.target_field_name = self.name;*/
+			// }
+			else
+			{
+				self.error(context, 'bad association');
+			}
+			
+			// CREATE QUERY
+			if (self.association.target_field_name && self.association.target_field_key)
+			{
+				var order = self.association.target_field_name + '=ASC';
+				var query_settings = {
+					// fields: [self.association.target_field_key, self.association.target_field_name],
+					one_field: self.association.target_field_name,
+					orders: [order]
+				};
+				
+				self.association.query = DevaptQuery.create(self.name + '_get_values', query_settings);
+				self.association.query.set_select_distinct_one();
+			}
+		}
+		
+		
+		self.leave(context, self.association ? Devapt.msg_success : Devapt.msg_failure);
+		return self.association;
+	}
+	
+	
+	/**
+	 * @memberof			DevaptField
+	 * @public
+	 * @method				DevaptField.has_foreign()
+	 * @desc				Test if the given value has a foreign link
+	 * @return {boolean}
+	 */
+	var cb_has_foreign = function()
+	{
+		var self = this;
+		var context = 'has_foreign()';
+		self.enter(context, '');
+		
+		
+		if ( ! DevaptTypes.is_boolean(self.has_foreign_link) )
+		{
+			self.has_foreign_link = DevaptTypes.is_not_empty_str(self.sql_foreign_key);
+			self.has_foreign_link = self.has_foreign_link && DevaptTypes.is_not_empty_str(self.sql_foreign_column);
+		}
+		
+		
+		self.leave(context, Devapt.msg_success);
+		return self.has_foreign_link;
+	}
+	
+	
+	/**
+	 * @memberof			DevaptField
+	 * @public
+	 * @method				DevaptField.has_join()
+	 * @desc				Test if the given value is part of a join link
+	 * @return {boolean}
+	 */
+	var cb_has_join = function()
+	{
+		var self = this;
+		var context = 'has_join()';
+		self.enter(context, '');
+		
+		
+		if ( ! DevaptTypes.is_boolean(self.has_join_link) )
+		{
+			self.has_join_link = false;
+			var model_has_join = DevaptTypes.is_object(self.model) && DevaptTypes.is_not_empty_object(self.model.joins);
+			if (model_has_join && DevaptTypes.is_not_empty_str(self.sql_table))
+			{
+				for(var join_table in self.model.joins)
+				{
+					var join_record = self.model.joins[join_table];
+					var target_table = join_record.target.table_alias;
+					// console.log(join_record, 'join_record')
+					if (target_table === self.sql_table)
+					{
+						self.has_join_link = true;
+						self.join = join_record;
+						self.leave(context, Devapt.msg_success);
+						return true;
+					}
+				}
+			}
+		}
+		
+		
+		self.leave(context, Devapt.msg_success);
+		return self.has_join_link;
+	}
+	
+	
+	/**
+	 * @memberof			DevaptField
+	 * @public
+	 * @method				DevaptField.has_one_to_one()
+	 * @desc				Test if the given value is part of a one to one link
+	 * @return {boolean}
+	 */
+	var cb_has_one_to_one = function()
+	{
+		var self = this;
+		var context = 'has_one_to_one()';
+		self.enter(context, '');
+		
+		
+		var has_one_to_one_link = false;
+		
+		// TODO RECURSIVE CALLS TO HAS ASSOCIATION
+		// if ( self.has_association() )
+		// {
+			// var asso = self.get_association();
+			// has_one_to_one_link = asso.min === 1 && asso.max === 1;
+		// }
+		
+		
+		self.leave(context, Devapt.msg_success);
+		return has_one_to_one_link;
+	}
+	
+	
+	/**
+	 * @memberof			DevaptField
+	 * @public
+	 * @method				DevaptField.has_one_to_many()
+	 * @desc				Test if the given value is part of a one to many link
+	 * @return {boolean}
+	 */
+	var cb_has_one_to_many = function()
+	{
+		var self = this;
+		var context = 'has_one_to_many()';
+		self.enter(context, '');
+		
+		
+		var has_one_to_many_link = false;
+		if ( self.has_association() )
+		{
+			var asso = self.get_association();
+			has_one_to_many_link = asso.min >= 1 && ( ! asso.max || asso.max > 1);
+		}
+		
+		
+		self.leave(context, Devapt.msg_success);
+		return has_one_to_many_link;
+	}
+	
+	
+	/**
+	 * @memberof			DevaptField
+	 * @public
 	 * @method				DevaptField.get_available_values()
 	 * @desc				Test if the given value is valid
 	 * @return {object}		a promise
@@ -76,15 +380,26 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptObject, DevaptQuery, DevaptMixi
 		// TEST IF ALREADY CALLED
 		if ( DevaptTypes.is_object(self.get_available_values_promise) )
 		{
-			// console.log(self.get_available_values_promise.state(), 'self.get_available_values_promise');
-			
 			self.leave(context, Devapt.msg_success_promise);
 			return self.get_available_values_promise;
 		}
 		
 		
+		// HAS AN ASSOCIATION ?
+		if ( ! self.has_association() )
+		{
+			self.leave(context, Devapt.msg_failure);
+			return null;
+		}
+		
+		// GET ASSOCIATION
+		var asso = self.get_association();
+		self.value(context, 'association', asso);
+		console.log(asso, 'association');
+		
+		
 		// INIT
-		var model = null;
+/*		var model = null;
 		var query = null;
 		
 		
@@ -97,7 +412,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptObject, DevaptQuery, DevaptMixi
 			model = self.join.model_object || self.join.model;
 		}
 		
-		// MODEL HAS A JOIN AND FIELD IS A PART OF IT
+		// MODEL FIELD HAS A FOREIGN LINK
 		else if (self.has_foreign())
 		{
 			self.step(context, 'has foreign');
@@ -124,7 +439,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptObject, DevaptQuery, DevaptMixi
 		{
 			self.leave(context, Devapt.msg_failure);
 			return null;
-		}
+		}*/
 		
 		
 		// GET VALUES CALLBACK
@@ -161,103 +476,44 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptObject, DevaptQuery, DevaptMixi
 		};
 		
 		
-		// MODEL NAME IS DEFINED
-		if ( DevaptTypes.is_not_empty_str(model) )
+		
+		
+		// MODEL OBJECT IS DEFINED
+		if ( DevaptTypes.is_object(asso.model) )
 		{
-			self.step(context, 'model name is set');
+			self.step(context, 'model is an object');
 			
-			self.join_model_name = model;
-			var model_promise = self.get_model('join_model_name', 'join_model_object');
-			var results_promise = model_promise.then(
-				function(arg_model)
-				{
-					self.step(context, 'model is found');
-					
-					return cb_get_values(arg_model, query);
-				}
-			);
+			var results_promise = cb_get_values(asso.model, asso.query);
 			
 			self.leave(context, Devapt.msg_success_promise);
 			return results_promise;
 		}
-		
-		// MODEL OBJECT IS DEFINED
-		if ( DevaptTypes.is_object(model) )
+		else
 		{
-			self.step(context, 'model is an object');
-			
-			var results_promise = cb_get_values(model, query);
-			
-			self.leave(context, Devapt.msg_success_promise);
-			return results_promise;
+			// MODEL NAME IS DEFINED
+			if ( DevaptTypes.is_not_empty_str(asso.model_name) )
+			{
+				self.step(context, 'model name is set');
+				
+				self.join_model_name = asso.model_name;
+				var model_promise = self.get_model('join_model_name', 'join_model_object');
+				var results_promise = model_promise.then(
+					function(arg_model)
+					{
+						self.step(context, 'model is found');
+						
+						return cb_get_values(arg_model, asso.query);
+					}
+				);
+				
+				self.leave(context, Devapt.msg_success_promise);
+				return results_promise;
+			}
 		}
 		
 		
 		self.leave(context, Devapt.msg_failure);
 		return null;
-	}
-	
-	
-	/**
-	 * @memberof			DevaptField
-	 * @public
-	 * @method				DevaptField.has_foreign()
-	 * @desc				Test if the given value has a foreign link
-	 * @return {boolean}
-	 */
-	var cb_has_foreign = function()
-	{
-		var self = this;
-		var context = 'has_foreign()';
-		self.enter(context, '');
-		
-		// console.log(self.name, 'self.name');
-		// console.log(self.sql_foreign_key, 'self.sql_foreign_key');
-		// console.log(self.sql_foreign_column, 'self.sql_foreign_column');
-		var has_foreign = DevaptTypes.is_not_empty_str(self.sql_foreign_key);
-		has_foreign = has_foreign && DevaptTypes.is_not_empty_str(self.sql_foreign_column);
-		
-		
-		self.leave(context, Devapt.msg_success);
-		return has_foreign;
-	}
-	
-	
-	/**
-	 * @memberof			DevaptField
-	 * @public
-	 * @method				DevaptField.has_join()
-	 * @desc				Test if the given value is part of a join link
-	 * @return {boolean}
-	 */
-	var cb_has_join = function()
-	{
-		var self = this;
-		var context = 'has_join()';
-		self.enter(context, '');
-		
-		
-		var has_join = DevaptTypes.is_object(self.model) && DevaptTypes.is_not_empty_object(self.model.joins);
-		has_join = has_join && DevaptTypes.is_not_empty_str(self.sql_table);
-		if (has_join)
-		{
-			for(var join_table in self.model.joins)
-			{
-				var join_record = self.model.joins[join_table];
-				var target_table = join_record.target.table_alias;
-				// console.log(join_record, 'join_record')
-				if (target_table === self.sql_table)
-				{
-					self.join = join_record;
-					self.leave(context, Devapt.msg_success);
-					return true;
-				}
-			}
-		}
-		
-		
-		self.leave(context, Devapt.msg_success);
-		return false;
 	}
 	
 	
@@ -280,10 +536,15 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptObject, DevaptQuery, DevaptMixi
 	var DevaptFieldClass = new DevaptClass('DevaptField', parent_class, class_settings);
 	
 	// METHODS
+	DevaptFieldClass.infos.ctor = cb_constructor;
 	DevaptFieldClass.add_public_method('is_value_valid', {}, cb_is_value_valid);
 	DevaptFieldClass.add_public_method('get_available_values', {}, cb_get_available_values);
+	DevaptFieldClass.add_public_method('has_association', {}, cb_has_association);
+	DevaptFieldClass.add_public_method('get_association', {}, cb_get_association);
 	DevaptFieldClass.add_public_method('has_foreign', {}, cb_has_foreign);
 	DevaptFieldClass.add_public_method('has_join', {}, cb_has_join);
+	DevaptFieldClass.add_public_method('has_one_to_one', {}, cb_has_one_to_one);
+	DevaptFieldClass.add_public_method('has_one_to_many', {}, cb_has_one_to_many);
 	
 	// PROPERTIES
 	DevaptFieldClass.add_public_str_property('label',			'', null, false, false, []);

@@ -147,7 +147,6 @@ function(Devapt, DevaptTypes, DevaptClass)
 			// GET SELECTION ATTRIBUTES
 			var node_index = parseInt( node_jqo.index() );
 			var node_value = node_jqo.text();
-			// var record = node_jqo.data('record');
 			var record = self.items_records[node_index];
 			// console.log(self.items_records, context + ':self.items_records [' + self.name + ']');
 			// console.log(record, context + ':record [' + self.name + ']');
@@ -188,19 +187,17 @@ function(Devapt, DevaptTypes, DevaptClass)
 			'description':'Mixin methods for select feature for containers.'
 		}
 	};
-	
-	
-	/**
-	 * @mixin				DevaptMixinSelectItemClass
-	 * @public
-	 * @desc				Mixin of methods for select feature for containers
-	 */
 	var DevaptMixinSelectItemClass = new DevaptClass('DevaptMixinSelectItem', null, class_settings);
 	
+	// METHODS
 	DevaptMixinSelectItemClass.infos.ctor = DevaptMixinSelectItem.mixin_init_select_item;
 	DevaptMixinSelectItemClass.add_public_method('on_record_select', {}, DevaptMixinSelectItem.on_record_select);
 	DevaptMixinSelectItemClass.add_public_method('select_item_node', {}, DevaptMixinSelectItem.select_item_node);
-	         
+	
+	// PROPERTIES
+	DevaptMixinSelectItemClass.add_public_bool_property('items_selectable',	'', true, false, false, []);
+	
+	// BUILD MIXIN CLASS
 	DevaptMixinSelectItemClass.build_class();
 	
 	

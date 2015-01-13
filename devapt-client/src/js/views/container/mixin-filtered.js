@@ -197,8 +197,9 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptResources)
 					var loop_node_jqo = $(loop_node);
 					loop_node_jqo.show();
 					
-					// var loop_record = loop_node_jqo.data('record');
 					var loop_record = self.items_records[index];
+					// console.log(loop_record, context + '.loop_record');
+					
 					if ( DevaptTypes.is_object(loop_record) )
 					{
 						var loop_node_filtered = true;

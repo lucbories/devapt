@@ -85,6 +85,9 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptClasses)
 					items = json_obj;
 				}
 				
+				self.items_records = items;
+				self.items_records_count = items.length;
+				
 				deferred.resolve(items);
 				
 				self.leave(context, self.msg_success_promise);

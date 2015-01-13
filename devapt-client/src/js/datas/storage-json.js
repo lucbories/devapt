@@ -117,7 +117,8 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptStorage)
 		
 		
 		// CREATE AJAX REQUEST
-		var url = self.url_read + '?query_api=2';
+		// var url = self.url_read + '?query_api=2';
+		var url = self.url_read;
 		var ajax_settings = {
 			contentType	: self.http_format + '; charset=' + self.http_charset,
 			dataType	: self.data_type,
@@ -214,7 +215,8 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptStorage)
 		
 		// CREATE AJAX REQUEST
 		var json_datas = arg_query ? arg_query.get_json() : null;
-		var url = self.url_read + '?query_api=2';
+		// var url = self.url_read + '?query_api=2';
+		var url = self.url_read;
 		var ajax_promise = $.ajax(
 			{
 				contentType	: self.http_format + '; charset=' + self.http_charset,
@@ -304,7 +306,8 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptStorage)
 					values_count: arg_records.length
 				}
 			};
-		var url = self.url_create + '?query_api=2';
+		// var url = self.url_create + '?query_api=2';
+		var url = self.url_create;
 		var ajax_promise = $.ajax(
 			{
 				contentType	: self.http_format + '; charset=' + self.http_charset,
@@ -378,7 +381,8 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptStorage)
 					values_count: 1
 				}
 			};
-		var url = self.url_create + '?query_api=2';
+		// var url = self.url_update + '?query_api=2';
+		var url = self.url_update;
 		var ajax_promise = $.ajax(
 			{
 				contentType	: self.http_format + '; charset=' + self.http_charset,
@@ -452,7 +456,8 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptStorage)
 					values_count: 1
 				}
 			};
-		var url = self.url_create + '?query_api=2';
+		// var url = self.url_delete + '?query_api=2';
+		var url = self.url_delete;
 		var ajax_promise = $.ajax(
 			{
 				contentType	: self.http_format + '; charset=' + self.http_charset,

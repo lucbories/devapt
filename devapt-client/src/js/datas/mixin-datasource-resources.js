@@ -75,15 +75,21 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptClasses)
 					items.push(record);
 				}
 				self.items_last_index = resource_index;
-				// console.log(items, 'resources');
+				
+				// console.log(items, 'resources.items');
 				
 				if ( self.items_source_format === 'json' )
 				{
 					var json_str = items.join(',');
 					var json_obj = $.parseJSON(json_str);
-					// console.log(json_obj);
+					
+					// console.log(json_obj, 'resources.json_obj');
+					
 					items = json_obj;
 				}
+				
+				self.items_records = resources_instances;
+				self.items_records_count = resources_instances.length;
 				
 				deferred.resolve(items);
 				
