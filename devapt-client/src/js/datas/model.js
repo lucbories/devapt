@@ -331,10 +331,10 @@ function(Devapt, DevaptTypes, DevaptEvents, DevaptObject, DevaptField, DevaptCla
 							var url_base = DevaptApplication.get_url_base;
 							var crud_api = self.get_crud_api();
 							
-							arg_engine.url_read		= crud_api.method_read.url + '?query_api=2';
-							arg_engine.url_create	= crud_api.method_create.url + '?query_api=2';
-							arg_engine.url_update	= crud_api.method_update.url + '?query_api=2';
-							arg_engine.url_delete	= crud_api.method_delete.url + '?query_api=2';
+							arg_engine.url_read		= crud_api.action_read.url + '?query_api=2';
+							arg_engine.url_create	= crud_api.action_create.url + '?query_api=2';
+							arg_engine.url_update	= crud_api.action_update.url + '?query_api=2';
+							arg_engine.url_delete	= crud_api.action_delete.url + '?query_api=2';
 							
 							// arg_engine.url_read		= '/devapt-tutorial-1/public/rest/' + self.name + '/';
 							// arg_engine.url_create	= '/devapt-tutorial-1/public/rest/' + self.name + '/';
@@ -395,22 +395,24 @@ function(Devapt, DevaptTypes, DevaptEvents, DevaptObject, DevaptField, DevaptCla
 		// CREATE API RECORD
 		var url_base = DevaptApplication.get_url_base();
 		self.crud_api = {
-			method_create: {
+			model_name: self.name,
+			
+			action_create: {
 				method:'PUT',
 				url:url_base + 'rest/' + self.name + '/',
 				format:'devapt_query_api_2'
 			},
-			method_read: {
+			action_read: {
 				method:'GET',
 				url:url_base + 'rest/' + self.name + '/',
 				format:'devapt_query_api_2'
 			},
-			method_update: {
+			action_update: {
 				method:'POST',
 				url:url_base + 'rest/' + self.name + '/',
 				format:'devapt_query_api_2'
 			},
-			method_delete: {
+			action_delete: {
 				method:'DELETE',
 				url:url_base + 'rest/' + self.name + '/',
 				format:'devapt_query_api_2'

@@ -13,10 +13,10 @@
 define(
 ['Devapt', 'core/types', 'core/class',
 	'datas/mixin-datasource-inline', 'datas/mixin-datasource-events', 'datas/mixin-datasource-classes', 'datas/mixin-datasource-resources',
-	'datas/mixin-datasource-logs', 'datas/mixin-datasource-model'],
+	'datas/mixin-datasource-logs', 'datas/mixin-datasource-model', 'datas/mixin-datasource-crud-api'],
 function(Devapt, DevaptTypes, DevaptClass,
 	DevaptMixinDatasoureInline, DevaptMixinDatasoureEvents, DevaptMixinDatasoureClasses, DevaptMixinDatasoureResources,
-	DevaptMixinDatasoureLogs, DevaptMixinDatasoureModel)
+	DevaptMixinDatasoureLogs, DevaptMixinDatasoureModel, DevaptMixinDatasoureCrudApi)
 {
 	/**
 	 * @mixin				DevaptMixinDatasoure
@@ -112,6 +112,12 @@ function(Devapt, DevaptTypes, DevaptClass,
 					// LOAD MIXIN RESOURCES
 					// self.register_mixin(DevaptMixinDatasoureResources);
 					self.init_data_source_resources(self);
+					break;
+					
+				case 'crud-api':
+					// LOAD MIXIN RESOURCES
+					// self.register_mixin(DevaptMixinDatasoureCrudApi);
+					self.init_data_source_crud_api(self);
 					break;
 					
 				default:
@@ -241,6 +247,13 @@ function(Devapt, DevaptTypes, DevaptClass,
 					self.leave(context, self.msg_success_promise);
 					self.pop_trace();
 					return promise;
+					
+				case 'crud-api':
+					// LOAD MIXIN CRUD API ITEMS
+					promise = self.get_items_array_crud_api();
+					self.leave(context, self.msg_success_promise);
+					self.pop_trace();
+					return promise;
 			}
 			
 			
@@ -276,7 +289,9 @@ function(Devapt, DevaptTypes, DevaptClass,
 			
 			
 			// GET ITEMS TYPES FROM INLINE SOURCE
-			if ( self.items_source === 'inline' || self.items_source === 'logs' || self.items_source === 'events' || self.items_source === 'classes' || self.items_source === 'resources' || self.items_source === 'views' || self.items_source === 'models' )
+			if ( self.items_source === 'inline' || self.items_source === 'logs' || self.items_source === 'events'
+				|| self.items_source === 'classes' || self.items_source === 'resources' || self.items_source === 'views'
+				|| self.items_source === 'models' || self.items_source === 'crud-api' )
 			{
 				var types = [];
 				
@@ -356,7 +371,7 @@ function(Devapt, DevaptTypes, DevaptClass,
 		'infos':{
 			'author':'Luc BORIES',
 			'created':'2014-10-15',
-			'updated':'2014-12-06',
+			'updated':'2015-01-13',
 			'description':'Mixin methods for datas model search.'
 		}
 	};
@@ -410,6 +425,7 @@ function(Devapt, DevaptTypes, DevaptClass,
 	DevaptMixinDatasoureClass.add_public_mixin(DevaptMixinDatasoureResources);
 	DevaptMixinDatasoureClass.add_public_mixin(DevaptMixinDatasoureLogs);
 	DevaptMixinDatasoureClass.add_public_mixin(DevaptMixinDatasoureModel);
+	DevaptMixinDatasoureClass.add_public_mixin(DevaptMixinDatasoureCrudApi);
 	
 	
 	// BUILD CLASS

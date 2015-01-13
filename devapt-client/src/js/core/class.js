@@ -1422,6 +1422,10 @@ function(Devapt, DevaptTypes, DevaptClasses)
 		}
 		
 		
+		// ------------------------------------------------ INIT INFOS ------------------------------------------------
+		self.instances_array=[];
+		
+		
 		// ------------------------------------------------ INIT DECORATORS ------------------------------------------------
 		self.decorators = new Object();
 		self.decorators.all_ordered = [];
@@ -1947,6 +1951,7 @@ function(Devapt, DevaptTypes, DevaptClasses)
 			
 			// REGISTER CLASS INSTANCE
 			DevaptClasses.add_instance(instance);
+			self.instances_array.push(instance);
 			
 			
 			DevaptTraces.trace_leave(context, '', self.trace);

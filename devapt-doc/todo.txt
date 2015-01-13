@@ -16,7 +16,37 @@ tutorial-1
 	access
 		ajouter/supprimer un utilisateur
 	appbuilder
-		api inspector
+		crud api backend
+			HBOX
+				VBOX
+					INPUT (search)
+					LIST (models crud api)
+				VBOX
+					TABLE (read only)
+						action,method,url,format
+						URL CREATE
+						URL READ
+						URL UPDATE
+						URL DELETE
+						METHOD CREATE
+						METHOD READ
+						METHOD UPDATE
+						METHOD DELETE
+				VBOX
+					FORM (test)
+						API FORMAT
+						PANEL (messages)
+						PANEL (results)
+						BUTTON SEND
+					FORM (query)
+						INPUT (id)
+						INPUT (datas)
+						INPUT (filters)
+						INPUT (orders)
+						INPUT (groups)
+						INPUT (slice offset)
+						INPUT (slice length)
+					
 		api backend : tables of datas, forms of datas, dashboard
 
 
