@@ -1,6 +1,35 @@
 /**
  * @file        core/traces.js
  * @desc        Devapt static common features: Devapt static traces operations
+ * 				API
+ * 					
+ * 					STATIC METHODS
+ * 						DevaptTraces.log(log_record)
+ * 						DevaptTraces.debug(log_record)
+ * 						DevaptTraces.info(log_record)
+ * 						DevaptTraces.warn(log_record)
+ * 						DevaptTraces.error(log_record)
+ * 					
+ * 						DevaptTraces.enable(log appender class)
+ * 						DevaptTraces.disable(log appender class)
+ * 					
+ * 					LOG RECORD FORMAT
+ * 					{
+ * 						level: DEBUG, INFO, WARN, ERROR
+ * 						class_name: class name
+ * 						object_name: class instance name
+ * 						method_name: method of the trace
+ * 						context: contextual infos
+ * 						step: ENTER, LEAVE, STEP
+ * 						text: infos
+ * 					}
+ * 					
+ * 					LOG RECORD EXAMPLES
+ * 					{ level:'DEBUG', step:'STEP', context:'DevaptHBox.contructor(view_access_users)[view_access_users]', text:'set view model'}
+ * 					=> DEBUG -         DevaptHBox.contructor(view_access_users)[view_access_users] : STEP set view model
+ * 					{ level:'DEBUG', class_name:'DevaptHBox', object_name:'view_access_users', method_name:'contructor', step:'STEP', text:'set view model' }
+ * 					=> DEBUG -         DevaptHBox[view_access_users].contructor() : STEP set view model
+ * 					
  * @ingroup     DEVAPT_CORE
  * @date        2013-05-16
  * @version		1.0.x
@@ -9,8 +38,9 @@
  * @license		Apache License Version 2.0, January 2004; see LICENSE.txt or http://www.apache.org/licenses/
  */
 
-define(['Devapt', 'core/types', 'core/class'],
-function(Devapt, DevaptTypes, DevaptClass)
+'use strict';
+define(['core/types', 'object/class', 'core/traces-console', 'core/traces-memory'],
+function(DevaptTypes, DevaptClass, DevaptTracesConsoleClass, DevaptTracesMemoryClass)
 {
 	/**
 	 * @memberof			DevaptTraces
@@ -63,142 +93,21 @@ function(Devapt, DevaptTypes, DevaptClass)
 	
 	
 	
-	/* ------------------------------------------------------------------------- */
-	/* CONSOLE LOG APPENDER */
-	/* ------------------------------------------------------------------------- */
-	
-	/**
-	 * @memberof			DevaptTraces
-	 * @public
-	 * @desc				Console log appender
-	 * @static
-	 */
-	DevaptTraces.appender_console = {};
-	
-	/**
-	 * @memberof			DevaptTraces
-	 * @public
-	 * @desc				Appender is enabled ?
-	 * @static
-	 */
-	DevaptTraces.appender_console.enabled = false;
-	
-	/**
-	 * @memberof			DevaptTraces
-	 * @public
-	 * @static
-	 * @method				DevaptTraces.appender_console.log(arg_log_obj)
-	 * @desc				Trace a log message
-	 * @param {object}		arg_log_obj		log attributes	
-	 * @return {nothing}
-	 */
-	DevaptTraces.appender_console.log = function(arg_log_obj)
-	{
-		var msg = DevaptTraces.format_msg(arg_log_obj);
-		console.log(msg);
-	}
-
-	/**
-	 * @memberof			DevaptTraces
-	 * @public
-	 * @static
-	 * @method				DevaptTraces.appender_console.debug(arg_log_obj)
-	 * @desc				Trace a debug message
-	 * @param {object}		arg_log_obj		log attributes	
-	 * @return {nothing}
-	 */
-	DevaptTraces.appender_console.debug = function(arg_log_obj)
-	{
-		var msg = DevaptTraces.format_msg(arg_log_obj);
-		if ( DevaptTypes.is_function(console.debug) )
-		{
-			console.debug(msg);
-		}
-		else
-		{
-			console.log(msg);
-		}
-	}
-
-	/**
-	 * @memberof			DevaptTraces
-	 * @public
-	 * @static
-	 * @method				DevaptTraces.appender_console.warn(arg_log_obj)
-	 * @desc				Trace a warn message
-	 * @param {object}		arg_log_obj		log attributes	
-	 * @return {nothing}
-	 */
-	DevaptTraces.appender_console.warn = function(arg_log_obj)
-	{
-		var msg = DevaptTraces.format_msg(arg_log_obj);
-		console.warn(msg);
-	}
-
-	/**
-	 * @memberof			DevaptTraces
-	 * @public
-	 * @static
-	 * @method				DevaptTraces.appender_console.info(arg_log_obj)
-	 * @desc				Trace a info message
-	 * @param {object}		arg_log_obj		log attributes	
-	 * @return {nothing}
-	 */
-	DevaptTraces.appender_console.info = function(arg_log_obj)
-	{
-		var msg = DevaptTraces.format_msg(arg_log_obj);
-		console.info(msg);
-	}
-	
-	/**
-	 * @memberof			DevaptTraces
-	 * @public
-	 * @static
-	 * @method				DevaptTraces.appender_console.error(arg_error_obj)
-	 * @desc				Throw an error
-	 * @param {object}		arg_error_obj		Error attributes
-	 * @return {nothing}
-	 */
-	DevaptTraces.appender_console.error = function(arg_error_obj)
-	{
-		arg_error_obj = arg_error_obj || {};
-		
-		if ( DevaptTypes.is_string(arg_error_obj) )
-		{
-			arg_error_obj = { text: arg_error_obj };
-		}
-		
-		var context = arg_error_obj.context ? arg_error_obj.context : null;
-		var step = arg_error_obj.step ? arg_error_obj.step : null;
-		
-		// LOG THE ERROR
-		DevaptTraces.log( { level:'DEBUG', step:'',   context:'',      text:'!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!' } );
-		var msg = DevaptTraces.format_msg( { level:'ERROR', step:step, context:context, text: arg_error_obj.text, datas: arg_error_obj } );
-		console.error(msg);
-		DevaptTraces.log( { level:'DEBUG', step:'',   context:'',      text:'!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!' } );
-		
-		// THROW AN EXCEPTION
-		if (DevaptTraces.throw_on_error)
-		{
-			var error_str = 'ERROR:' + arg_error_obj;
-			throw(error_str);
-		}
-	}
-	
 	/**
 	 * @memberof			DevaptTraces
 	 * @public
 	 * @static
 	 * @method				DevaptTraces.appender_console.enable()
 	 * @desc				Enable console log appender
+	 * @param {object}		arg_appender_class	appender class
 	 * @return {nothing}
 	 */
-	DevaptTraces.appender_console.enable = function()
+	DevaptTraces.enable = function(arg_appender_class)
 	{
-		if ( ! DevaptTraces.appender_console.enabled )
+		if ( ! arg_appender_class.enabled )
 		{
-			DevaptTraces.appenders.push(DevaptTraces.appender_console);
-			DevaptTraces.appender_console.enabled = true;
+			DevaptTraces.appenders.push(arg_appender_class);
+			arg_appender_class.enable();
 		}
 	}
 	
@@ -208,11 +117,12 @@ function(Devapt, DevaptTypes, DevaptClass)
 	 * @static
 	 * @method				DevaptTraces.appender_console.disable()
 	 * @desc				Disable console log appender
+	 * @param {object}		arg_appender_class	appender class
 	 * @return {nothing}
 	 */
-	DevaptTraces.appender_console.disable = function()
+	DevaptTraces.disable = function(arg_appender_class)
 	{
-		if ( ! DevaptTraces.appender_console.enabled )
+		if ( ! arg_appender_class.enabled )
 		{
 			return;
 		}
@@ -221,175 +131,13 @@ function(Devapt, DevaptTypes, DevaptClass)
 		var tmp_array = [];
 		for(appender in DevaptTraces.appenders)
 		{
-			if ( appender !== DevaptTraces.appender_console )
+			if ( appender !== arg_appender_class )
 			{
 				tmp_array.push(appender);
 			}
 		}
 		
-		DevaptTraces.appender_console.enabled = false;
-		delete DevaptTraces.appenders;
-		DevaptTraces.appenders = tmp_array;
-	}
-	
-	
-	
-	/* ------------------------------------------------------------------------- */
-	/* MEMORY LOG APPENDER */
-	/* ------------------------------------------------------------------------- */
-	
-	/**
-	 * @memberof			DevaptTraces
-	 * @public
-	 * @desc				Memory log appender
-	 * @static
-	 */
-	DevaptTraces.appender_memory = {};
-	
-	/**
-	 * @memberof			DevaptTraces
-	 * @public
-	 * @desc				Memory logs
-	 * @static
-	 */
-	DevaptTraces.appender_memory.logs = [];
-	
-	/**
-	 * @memberof			DevaptTraces
-	 * @public
-	 * @desc				Appender is enabled ?
-	 * @static
-	 */
-	DevaptTraces.appender_memory.enabled = false;
-	
-	/**
-	 * @memberof			DevaptTraces
-	 * @public
-	 * @static
-	 * @method				DevaptTraces.appender_memory.log(arg_log_obj)
-	 * @desc				Trace a log message
-	 * @param {object}		arg_log_obj		log attributes	
-	 * @return {nothing}
-	 */
-	DevaptTraces.appender_memory.log = function(arg_log_obj)
-	{
-		DevaptTraces.appender_memory.logs.push(arg_log_obj);
-	}
-
-	/**
-	 * @memberof			DevaptTraces
-	 * @public
-	 * @static
-	 * @method				DevaptTraces.appender_memory.debug(arg_log_obj)
-	 * @desc				Trace a debug message
-	 * @param {object}		arg_log_obj		log attributes	
-	 * @return {nothing}
-	 */
-	DevaptTraces.appender_memory.debug = function(arg_log_obj)
-	{
-		DevaptTraces.appender_memory.logs.push(arg_log_obj);
-	}
-
-	/**
-	 * @memberof			DevaptTraces
-	 * @public
-	 * @static
-	 * @method				DevaptTraces.appender_memory.warn(arg_log_obj)
-	 * @desc				Trace a warn message
-	 * @param {object}		arg_log_obj		log attributes	
-	 * @return {nothing}
-	 */
-	DevaptTraces.appender_memory.warn = function(arg_log_obj)
-	{
-		DevaptTraces.appender_memory.logs.push(arg_log_obj);
-	}
-
-	/**
-	 * @memberof			DevaptTraces
-	 * @public
-	 * @static
-	 * @method				DevaptTraces.appender_memory.info(arg_log_obj)
-	 * @desc				Trace a info message
-	 * @param {object}		arg_log_obj		log attributes	
-	 * @return {nothing}
-	 */
-	DevaptTraces.appender_memory.info = function(arg_log_obj)
-	{
-		DevaptTraces.appender_memory.logs.push(arg_log_obj);
-	}
-	
-	/**
-	 * @memberof			DevaptTraces
-	 * @public
-	 * @static
-	 * @method				DevaptTraces.appender_memory.error(arg_error_obj)
-	 * @desc				Throw an error
-	 * @param {object}		arg_error_obj		Error attributes
-	 * @return {nothing}
-	 */
-	DevaptTraces.appender_memory.error = function(arg_error_obj)
-	{
-		arg_error_obj = arg_error_obj || {};
-		
-		if ( DevaptTypes.is_string(arg_error_obj) )
-		{
-			arg_error_obj = { level:'ERROR', step:null, context:null, text:arg_error_obj };
-		}
-		
-		// LOG ERROR
-		DevaptTraces.appender_memory.logs.push(arg_error_obj);
-		
-		// THROW AN EXCEPTION
-		// if (DevaptTraces.throw_on_error)
-		// {
-			// var error_str = 'ERROR:' + arg_error_obj;
-			// throw(error_str);
-		// }
-	}
-	
-	/**
-	 * @memberof			DevaptTraces
-	 * @public
-	 * @static
-	 * @method				DevaptTraces.appender_memory.enable()
-	 * @desc				Enable console log appender
-	 * @return {nothing}
-	 */
-	DevaptTraces.appender_memory.enable = function()
-	{
-		if ( ! DevaptTraces.appender_memory.enabled )
-		{
-			DevaptTraces.appenders.push(DevaptTraces.appender_memory);
-			DevaptTraces.appender_memory.enabled = true;
-		}
-	}
-	
-	/**
-	 * @memberof			DevaptTraces
-	 * @public
-	 * @static
-	 * @method				DevaptTraces.appender_memory.disable()
-	 * @desc				Disable console log appender
-	 * @return {nothing}
-	 */
-	DevaptTraces.appender_memory.disable = function()
-	{
-		if ( ! DevaptTraces.appender_memory.enabled )
-		{
-			return;
-		}
-		
-		// CREATE TMP ARRAY
-		var tmp_array = [];
-		for(appender in DevaptTraces.appenders)
-		{
-			if ( appender !== DevaptTraces.appender_memory )
-			{
-				tmp_array.push(appender);
-			}
-		}
-		
-		DevaptTraces.appender_memory.enabled = false;
+		arg_appender_class.disable();
 		delete DevaptTraces.appenders;
 		DevaptTraces.appenders = tmp_array;
 	}
@@ -411,7 +159,21 @@ function(Devapt, DevaptTypes, DevaptClass)
 	 */
 	DevaptTraces.log = function(arg_log_obj)
 	{
-		DevaptTraces.appenders.forEach( function(appender) { appender.log(arg_log_obj); } );
+		arg_log_obj = arg_log_obj || {};
+		
+		if ( DevaptTypes.is_string(arg_log_obj) )
+		{
+			arg_log_obj = { text: arg_log_obj };
+		}
+		
+		var default_record = 
+		{
+			level:'LOG',
+			text:''
+		};
+		arg_log_obj = DevaptTraces.format_log_record(arg_log_obj, default_record);
+		
+		DevaptTraces.appenders.forEach( function(appender) { appender.log(arg_log_obj, DevaptTraces); } );
 	}
 
 	/**
@@ -425,7 +187,21 @@ function(Devapt, DevaptTypes, DevaptClass)
 	 */
 	DevaptTraces.debug = function(arg_log_obj)
 	{
-		DevaptTraces.appenders.forEach( function(appender) { appender.debug(arg_log_obj); } );
+		arg_log_obj = arg_log_obj || {};
+		
+		if ( DevaptTypes.is_string(arg_log_obj) )
+		{
+			arg_log_obj = { text: arg_log_obj };
+		}
+		
+		var default_record = 
+		{
+			level:'DEBUG',
+			text:''
+		};
+		arg_log_obj = DevaptTraces.format_log_record(arg_log_obj, default_record);
+		
+		DevaptTraces.appenders.forEach( function(appender) { appender.debug(arg_log_obj, DevaptTraces); } );
 	}
 
 	/**
@@ -439,7 +215,21 @@ function(Devapt, DevaptTypes, DevaptClass)
 	 */
 	DevaptTraces.warn = function(arg_log_obj)
 	{
-		DevaptTraces.appenders.forEach( function(appender) { appender.warn(arg_log_obj); } );
+		arg_log_obj = arg_log_obj || {};
+		
+		if ( DevaptTypes.is_string(arg_log_obj) )
+		{
+			arg_log_obj = { text: arg_log_obj };
+		}
+		
+		var default_record = 
+		{
+			level:'WARN',
+			text:''
+		};
+		arg_log_obj = DevaptTraces.format_log_record(arg_log_obj, default_record);
+		
+		DevaptTraces.appenders.forEach( function(appender) { appender.warn(arg_log_obj, DevaptTraces); } );
 	}
 
 	/**
@@ -453,7 +243,21 @@ function(Devapt, DevaptTypes, DevaptClass)
 	 */
 	DevaptTraces.info = function(arg_log_obj)
 	{
-		DevaptTraces.appenders.forEach( function(appender) { appender.info(arg_log_obj); } );
+		arg_log_obj = arg_log_obj || {};
+		
+		if ( DevaptTypes.is_string(arg_log_obj) )
+		{
+			arg_log_obj = { text: arg_log_obj };
+		}
+		
+		var default_record = 
+		{
+			level:'INFO',
+			text:''
+		};
+		arg_log_obj = DevaptTraces.format_log_record(arg_log_obj, default_record);
+		
+		DevaptTraces.appenders.forEach( function(appender) { appender.info(arg_log_obj, DevaptTraces); } );
 	}
 	
 	/**
@@ -462,19 +266,33 @@ function(Devapt, DevaptTypes, DevaptClass)
 	 * @static
 	 * @method				DevaptTraces.error(arg_error_obj)
 	 * @desc				Throw an error
-	 * @param {object}		arg_error_obj		Error attributes
+	 * @param {object}		arg_log_obj		log attributes
 	 * @return {nothing}
 	 */
-	DevaptTraces.error = function(arg_error_obj)
+	DevaptTraces.error = function(arg_log_obj)
 	{
-		arg_error_obj = arg_error_obj || {};
+		arg_log_obj = arg_log_obj || {};
 		
-		if ( DevaptTypes.is_string(arg_error_obj) )
+		if ( DevaptTypes.is_string(arg_log_obj) )
 		{
-			arg_error_obj = { text: arg_error_obj };
+			arg_log_obj = { text: arg_log_obj };
 		}
 		
-		DevaptTraces.appenders.forEach( function(appender) { appender.error(arg_error_obj); } );
+		var default_record = 
+		{
+			level:'ERROR',
+			text:''
+		};
+		arg_log_obj = DevaptTraces.format_log_record(arg_log_obj, default_record);
+		
+		DevaptTraces.appenders.forEach( function(appender) { appender.error(arg_log_obj, DevaptTraces); } );
+		
+		// THROW AN EXCEPTION
+		if (DevaptTraces.throw_on_error)
+		{
+			var error_str = 'ERROR:' + arg_error_obj;
+			throw(error_str);
+		}
 	}
 	
 	
@@ -487,25 +305,35 @@ function(Devapt, DevaptTypes, DevaptClass)
 	 * @memberof			DevaptTraces
 	 * @public
 	 * @static
-	 * @method				DevaptTraces.format_msg(arg_log_obj)
-	 * @desc				Format a log message
+	 * @method				DevaptTraces.format_log_record(arg_log_obj)
+	 * @desc				Format a log record
 	 * @param {object}		arg_log_obj		log attributes	
-	 * @return {string}
+	 * @param {object}		arg_log_obj		log default (optional)	
+	 * @return {object}
 	 */
-	DevaptTraces.format_msg = function(arg_log_obj)
+	DevaptTraces.format_log_record = function(arg_log_obj, arg_default)
 	{
-		if ( ! arg_log_obj )
+		arg_default = arg_default ? arg_default : {};
+		var default_record = 
 		{
-			return null;
-		}
+			level:'DEBUG',
+			class_name:null,
+			object_name:null,
+			method_name:null,
+			step:'',
+			context:null,
+			text:''
+		};
 		
-		var level	= DevaptTypes.is_string(arg_log_obj.level)		? arg_log_obj.level + ' '		: '';
-		var context	= DevaptTypes.is_string(arg_log_obj.context)	? arg_log_obj.context + ' : '	: '';
-		var step	= DevaptTypes.is_string(arg_log_obj.step)		? arg_log_obj.step + ' '	: '';
-		var text	= DevaptTypes.is_string(arg_log_obj.text)		? arg_log_obj.text : '';
-		var indent	= DevaptTraces.log_indent_str.rpad(' ', 10);
+		var record = jQuery.extend({}, default_record, arg_default, arg_log_obj);
 		
-		return level + indent + context + step + text;
+		// DEBUG
+		// console.log(default_record, 'default_record');
+		// console.log(arg_default, 'arg_default');
+		// console.log(arg_log_obj, 'arg_log_obj');
+		// console.log(record, 'record');
+		
+		return record;
 	}
 	
 	/**
@@ -750,24 +578,11 @@ function(Devapt, DevaptTypes, DevaptClass)
 	}
 	
 	
-	/**
-	 * @memberof			DevaptTraces
-	 * @public
-	 * @static
-	 * @method				DevaptTraces.get_logs()
-	 * @desc				Get all log messages
-	 * @return {array}
-	 */
-	DevaptTraces.get_logs = function()
-	{
-		return DevaptTraces.appender_memory.logs;
-	}
-	
-	
 	// ENABLE LOG APPENDER
-	DevaptTraces.appender_console.enable();
-	DevaptTraces.appender_memory.enable();
-	
+	DevaptTraces.enable(DevaptTracesConsoleClass);
+	DevaptTraces.enable(DevaptTracesMemoryClass);
+	DevaptTraces.info('console log appender enabled');
+	DevaptTraces.info('memory log appender enabled');
 	
 	
 	/* --------------------------------------------- CREATE MIXIN CLASS ------------------------------------------------ */
@@ -783,26 +598,41 @@ function(Devapt, DevaptTypes, DevaptClass)
 	};
 	var DevaptTracesClass = new DevaptClass('DevaptTracesClass', null, class_settings);
 	
+	
+	// METHODS
+	DevaptTracesClass.add_static_method('enable', {}, DevaptTraces.enable);
+	DevaptTracesClass.add_static_method('disable', {}, DevaptTraces.disable);
+	
+	DevaptTracesClass.add_static_method('log', {}, DevaptTraces.log);
+	DevaptTracesClass.add_static_method('debug', {}, DevaptTraces.debug);
+	DevaptTracesClass.add_static_method('info', {}, DevaptTraces.info);
+	DevaptTracesClass.add_static_method('warn', {}, DevaptTraces.warn);
+	DevaptTracesClass.add_static_method('error', {}, DevaptTraces.error);
+	
+	DevaptTracesClass.add_static_method('trace_info', {}, DevaptTraces.trace_info);
+	DevaptTracesClass.add_static_method('trace_warn', {}, DevaptTraces.trace_warn);
+	DevaptTracesClass.add_static_method('trace_error', {}, DevaptTraces.trace_error);
+	
+	DevaptTracesClass.add_static_method('trace_enter', {}, DevaptTraces.trace_enter);
+	DevaptTracesClass.add_static_method('trace_step', {}, DevaptTraces.trace_step);
+	DevaptTracesClass.add_static_method('trace_leave', {}, DevaptTraces.trace_leave);
+	
+	DevaptTracesClass.add_static_method('trace_separator', {}, DevaptTraces.trace_separator);
+	DevaptTracesClass.add_static_method('trace_var', {}, DevaptTraces.trace_var);
+	DevaptTracesClass.add_static_method('trace_value', {}, DevaptTraces.trace_value);
+	
+	DevaptTracesClass.add_static_method('log_indent', {}, DevaptTraces.log_indent);
+	DevaptTracesClass.add_static_method('log_unindent', {}, DevaptTraces.log_unindent);
+	
+	
+	// PROPERTIES
 	// DevaptTracesClass.add_static_property('boolean', 'throw_on_error', 'throw an exception when an error is logged', false, false, false, 'private');
 	// DevaptTracesClass.add_static_property('string', 'log_indent_str', 'indentation state string', '', false, false, 'private');
 	// DevaptTracesClass.add_static_property('string', 'log_indent_sep', 'indentation separator', '-', false, false, 'private');
 	// DevaptTracesClass.add_static_property('integer', 'log_indent_index', 'indentation state index', 0, false, false, 'private');
 	
-	DevaptTracesClass.add_static_method('trace_info', {}, DevaptTraces.trace_info);
-	DevaptTracesClass.add_static_method('trace_warn', {}, DevaptTraces.trace_warn);
-	DevaptTracesClass.add_static_method('trace_enter', {}, DevaptTraces.trace_enter);
-	DevaptTracesClass.add_static_method('trace_separator', {}, DevaptTraces.trace_separator);
-	DevaptTracesClass.add_static_method('trace_step', {}, DevaptTraces.trace_step);
-	DevaptTracesClass.add_static_method('trace_leave', {}, DevaptTraces.trace_leave);
-	DevaptTracesClass.add_static_method('trace_error', {}, DevaptTraces.trace_error);
-	DevaptTracesClass.add_static_method('error', {}, DevaptTraces.trace_error);
-	DevaptTracesClass.add_static_method('debug', {}, DevaptTraces.debug);
-	DevaptTracesClass.add_static_method('log_indent', {}, DevaptTraces.log_indent);
-	DevaptTracesClass.add_static_method('log_unindent', {}, DevaptTraces.log_unindent);
-	DevaptTracesClass.add_static_method('trace_var', {}, DevaptTraces.trace_var);
-	DevaptTracesClass.add_static_method('trace_value', {}, DevaptTraces.trace_value);
-	DevaptTracesClass.add_static_method('get_logs', {}, DevaptTraces.get_logs);
 	
+	// BUILD CLASS
 	DevaptTracesClass.build_class();
 	
 	

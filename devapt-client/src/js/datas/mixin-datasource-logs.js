@@ -2,7 +2,7 @@
  * @file        datas/mixin-datasource-logs.js
  * @desc        Mixin for logs data source
  * @see			...
- * @ingroup     DEVAPT_CORE
+ * @ingroup     DEVAPT_DATAS
  * @date        2014-11-02
  * @version		1.0.x
  * @author      Luc BORIES
@@ -10,8 +10,9 @@
  * @license		Apache License Version 2.0, January 2004; see LICENSE.txt or http://www.apache.org/licenses/
  */
 
+'use strict';
 define(
-['Devapt', 'core/types', 'core/class', 'core/traces'],
+['Devapt', 'core/types', 'object/class', 'core/traces'],
 function(Devapt, DevaptTypes, DevaptClass, DevaptTraces)
 {
 	/**
@@ -56,8 +57,8 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptTraces)
 			
 			
 			// INIT PROMISE
-			var deferred = $.Deferred();
-			var items_promise = deferred.promise();
+			var deferred = Devapt.defer();
+			var items_promise = deferred.promise;
 			
 			// GET ITEMS FROM EVENTS SOURCE
 			if ( self.items_source === 'logs' )

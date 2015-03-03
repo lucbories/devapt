@@ -1,7 +1,7 @@
 /**
  * @file        datas/all.js
  * @desc        Load all Devapt datas classes
- * @ingroup     DEVAPT_CORE
+ * @ingroup     DEVAPT_DATAS
  * @date        2014-12-26
  * @version		1.0.x
  * @author      Luc BORIES
@@ -9,12 +9,13 @@
  * @license		Apache License Version 2.0, January 2004; see LICENSE.txt or http://www.apache.org/licenses/
  */
 
+'use strict';
 define(
-[/*'datas/field',*/ 'datas/mixin-datasource',
+['datas/field', 'datas/mixin-datasource',
 'datas/mixin-datasource-classes', 'datas/mixin-datasource-events', 'datas/mixin-datasource-events-listeners',
 'datas/mixin-datasource-inline', 'datas/mixin-datasource-logs', /*'datas/mixin-datasource-models',*/ 'datas/mixin-datasource-resources',
-'datas/mixin-get-model', 'datas/mixin-query', 'datas/model', 'datas/query',
-'datas/storage-api', 'datas/storage-json'/*, 'datas/storage-memory'*/
+'datas/model/model', 'datas/query',
+'datas/storage/storage', 'datas/storage/storage-json'/*, 'datas/storage-memory'*/
 ],
 function()
 {

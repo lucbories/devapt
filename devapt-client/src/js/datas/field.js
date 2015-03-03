@@ -7,7 +7,7 @@
  * 					//->get_stored_value(value)
  * 					//->get_displayed_value(value)
  * 					->
- * @see			datas/model.js
+ * @see			datas/model/model.js
  * @ingroup     DEVAPT_DATAS
  * @date        2014-08-12
  * @version		1.0.x
@@ -16,10 +16,10 @@
  * @license		Apache License Version 2.0, January 2004; see LICENSE.txt or http://www.apache.org/licenses/
  */
 
-'use strict'
+'use strict';
 define(
-['Devapt', 'core/types', 'core/class', 'core/object', 'datas/query', 'datas/mixin-get-model'],
-function(Devapt, DevaptTypes, DevaptClass, DevaptObject, DevaptQuery, DevaptMixinGetModel)
+['Devapt', 'core/types', 'core/resources', 'object/class', 'object/object', 'datas/query'],
+function(Devapt, DevaptTypes, DevaptResources, DevaptClass, DevaptObject, DevaptQuery)
 {
 	/**
 	 * @class				DevaptField
@@ -98,7 +98,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptObject, DevaptQuery, DevaptMixi
 		{
 			self.has_association_link = self.has_foreign() || self.has_join() || self.has_one_to_one();
 		}
-		
+		self.value(context, 'self.has_association_link', self.has_association_link);
 		
 		self.leave(context, Devapt.msg_success);
 		return self.has_association_link;
@@ -256,6 +256,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptObject, DevaptQuery, DevaptMixi
 			self.has_foreign_link = DevaptTypes.is_not_empty_str(self.sql_foreign_key);
 			self.has_foreign_link = self.has_foreign_link && DevaptTypes.is_not_empty_str(self.sql_foreign_column);
 		}
+		self.value(context, 'self.has_foreign_link', self.has_foreign_link);
 		
 		
 		self.leave(context, Devapt.msg_success);
@@ -292,15 +293,18 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptObject, DevaptQuery, DevaptMixi
 					{
 						self.has_join_link = true;
 						self.join = join_record;
+						self.value(context, 'self.has_join_link', self.has_join_link);
 						self.leave(context, Devapt.msg_success);
 						return true;
 					}
 				}
 			}
 		}
+		self.value(context, 'self.has_join_link', self.has_join_link);
 		
 		
 		self.leave(context, Devapt.msg_success);
+		// self.trace=false;
 		return self.has_join_link;
 	}
 	
@@ -327,6 +331,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptObject, DevaptQuery, DevaptMixi
 			// var asso = self.get_association();
 			// has_one_to_one_link = asso.min === 1 && asso.max === 1;
 		// }
+		self.value(context, 'self.has_one_to_one_link', has_one_to_one_link);
 		
 		
 		self.leave(context, Devapt.msg_success);
@@ -366,13 +371,12 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptObject, DevaptQuery, DevaptMixi
 	 * @public
 	 * @method				DevaptField.get_available_values()
 	 * @desc				Test if the given value is valid
-	 * @return {object}		a promise
+	 * @return {object}		a promise of a ResultSet
 	 */
 	var cb_get_available_values = function()
 	{
 		var self = this;
 		// self.trace = true;
-		// self.mixin_trace_get_model = true;
 		var context = 'get_available_values()';
 		self.enter(context, '');
 		
@@ -395,7 +399,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptObject, DevaptQuery, DevaptMixi
 		// GET ASSOCIATION
 		var asso = self.get_association();
 		self.value(context, 'association', asso);
-		console.log(asso, 'association');
+		// console.log(asso, 'association');
 		
 		
 		// INIT
@@ -477,7 +481,6 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptObject, DevaptQuery, DevaptMixi
 		
 		
 		
-		
 		// MODEL OBJECT IS DEFINED
 		if ( DevaptTypes.is_object(asso.model) )
 		{
@@ -495,13 +498,13 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptObject, DevaptQuery, DevaptMixi
 			{
 				self.step(context, 'model name is set');
 				
-				self.join_model_name = asso.model_name;
-				var model_promise = self.get_model('join_model_name', 'join_model_object');
+				var model_promise = DevaptResources.get_resource_instance(asso.model_name);
 				var results_promise = model_promise.then(
 					function(arg_model)
 					{
 						self.step(context, 'model is found');
-						
+						asso.model = arg_model;
+						// console.log(asso.model, 'set asso.model');
 						return cb_get_values(arg_model, asso.query);
 					}
 				);
@@ -528,7 +531,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptObject, DevaptQuery, DevaptMixi
 			'updated':'2014-12-13',
 			'description':'Datas field class.'
 		},
-		mixins:[DevaptMixinGetModel]
+		mixins:[]
 	};
 	
 	// CLASS CREATION
@@ -566,12 +569,14 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptObject, DevaptQuery, DevaptMixi
 	
 	DevaptFieldClass.add_public_bool_property('is_visible',			'', true, false, false, []);
 	DevaptFieldClass.add_public_bool_property('is_editable',		'', true, false, false, []);
-	DevaptFieldClass.add_public_bool_property('is_pk',				'', true, false, false, []);
 	DevaptFieldClass.add_public_bool_property('is_crud',			'', true, false, false, []);
 	
 	DevaptFieldClass.add_public_str_property('type',					'', null, true, false, []);
 	DevaptFieldClass.add_public_bool_property('sql_is_primary_key',		'', false, false, false, []);
 	DevaptFieldClass.add_public_bool_property('sql_is_expression',		'', false, false, false, []);
+	
+	DevaptFieldClass.add_public_bool_property('is_pk',					'', false, false, false, []);
+	DevaptFieldClass.add_public_bool_property('is_expression',			'', false, false, false, []);
 	
 	DevaptFieldClass.add_public_str_property('sql_db',					'', null, false, false, []);
 	DevaptFieldClass.add_public_str_property('sql_table',				'', null, false, false, []);

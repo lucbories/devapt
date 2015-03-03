@@ -17,7 +17,7 @@
  * 						joins: [],
  * 					}
  * 
- * @see			core/object.js
+ * @see			object/object.js
  * @ingroup     DEVAPT_DATAS
  * @date        2014-08-12
  * @version		1.0.x
@@ -26,8 +26,9 @@
  * @license		Apache License Version 2.0, January 2004; see LICENSE.txt or http://www.apache.org/licenses/
  */
 
+'use strict';
 define(
-['Devapt', 'core/types', 'core/class', 'core/events', 'core/object'],
+['Devapt', 'core/types', 'object/class', 'object/events', 'object/object'],
 function(Devapt, DevaptTypes, DevaptClass, DevaptEvents, DevaptObject)
 {
 	/**
@@ -105,6 +106,27 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptEvents, DevaptObject)
 		
 		self.leave(context, 'success');
 		return json_obj;
+	}
+	
+	
+	/**
+	 * @memberof			DevaptQuery
+	 * @public
+	 * @method				DevaptQuery.is_empty()
+	 * @desc				Is empty
+	 * @return {boolean}
+	 */
+	var cb_is_empty = function()
+	{
+		var self = this;
+		var context = 'is_empty()';
+		self.enter(context, '');
+		
+		var is_empty_action = (self.action === null && self.query_type === null) || (self.action === 'read' && self.query_type === 'select');
+		var is_empty = is_empty_action && self.values.length && self.slice.length && self.filters_array.length;
+		
+		self.leave(context, 'success');
+		return is_empty;
 	}
 	
 	
@@ -356,6 +378,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptEvents, DevaptObject)
 	// METHODS
 	DevaptQueryClass.infos.ctor = cb_constructor;
 	DevaptQueryClass.add_public_method('get_json', {}, cb_get_json);
+	DevaptQueryClass.add_public_method('is_empty', {}, cb_is_empty);
 	DevaptQueryClass.add_public_method('get_key', {}, cb_get_key);
 	DevaptQueryClass.add_public_method('add_filter', {}, cb_add_filter);
 	DevaptQueryClass.add_public_method('remove_filters_for_field', {}, cb_remove_filters_for_field);
@@ -367,7 +390,10 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptEvents, DevaptObject)
 	DevaptQueryClass.add_public_method('set_select_count', {}, cb_set_select_count);
 	
 	// PROPERTIES
+	DevaptQueryClass.add_public_str_property('is_query',		'object is a query', true, false, true, []);
+	
 	DevaptQueryClass.add_public_str_property('action',			'', null, true, false, []);
+	DevaptQueryClass.add_public_str_property('query_type',		'', null, true, false, []);
 	DevaptQueryClass.add_public_str_property('crud_db',			'', null, false, false, []);
 	DevaptQueryClass.add_public_str_property('crud_table',		'', null, false, false, []);
 	DevaptQueryClass.add_public_str_property('one_field',		'', null, true, false, []);

@@ -2,7 +2,7 @@
  * @file        views/mixin-input-association.js
  * @desc        Mixin for datas association input feature for containers
  * @see			DevaptContainer
- * @ingroup     DEVAPT_CORE
+ * @ingroup     DEVAPT_VIEWS
  * @date        2015-01-04
  * @version		1.0.x
  * @author      Luc BORIES
@@ -10,10 +10,10 @@
  * @license		Apache License Version 2.0, January 2004; see LICENSE.txt or http://www.apache.org/licenses/
  */
 
-'use strict'
+'use strict';
 define(
-['Devapt', 'core/types', 'core/class'],
-function(Devapt, DevaptTypes, DevaptClass)
+['Devapt', 'core/types', 'object/class', 'factory'],
+function(Devapt, DevaptTypes, DevaptClass, DevaptFactory)
 {
 	/**
 	 * @mixin				DevaptMixinInputAssociation
@@ -102,7 +102,8 @@ function(Devapt, DevaptTypes, DevaptClass)
 			var node_jqo = $('<div id="' + uid + '" style="display:block;float:none;">');
 			// console.info(node_jqo, 'get_join_input.node with uid[' + uid + ']');
 			
-			var input_jqo = self.get_association_input_set(arg_deferred, node_jqo, arg_field_obj, arg_value, arg_access);
+			// var input_jqo = self.get_association_input_set(arg_deferred, node_jqo, arg_field_obj, arg_value, arg_access);
+			var input_jqo = self.get_association_input_select(arg_deferred, node_jqo, arg_field_obj, arg_value, arg_access);
 			input_jqo.on('change', change_cb);
 			
 			
@@ -124,7 +125,7 @@ function(Devapt, DevaptTypes, DevaptClass)
 		 * @param {object}		arg_access				access object: {create:bool,read:bool,update:bool,delete:bool}
 		 * @return {object}		jQuery node object
 		 */
-		get_association_input_lll: function(arg_deferred, arg_node_jqo, arg_field_obj, arg_value, arg_access)
+		get_association_input_select: function(arg_deferred, arg_node_jqo, arg_field_obj, arg_value, arg_access)
 		{
 			var self = this;
 			var context = 'get_association_input_set(deferred,node,field,value,access)';
@@ -132,9 +133,94 @@ function(Devapt, DevaptTypes, DevaptClass)
 			self.enter(context, '');
 			
 			
+			var view_name = self.name + '_' + arg_field_obj.name + '_select';
+			var view_settings = {
+				// role_display:self.role_display,
+				// template_enabled:false,
+				name:view_name,
+				items_autoload:false,
+				items_types:'record',
+				items_labels:[arg_field_obj.label],
+				items_fields:[arg_field_obj.name],
+				items_inline:[],
+				parent_jqo:arg_node_jqo
+			};
+			// console.log(self, 'self');
+			// var view = DevaptSelect.create(view_name, view_settings);
+			var view_promise = Devapt.create('DevaptSelect', view_settings);
+			
+			
+			// GET VALUES PROMISE
+			var values_promise = arg_field_obj.get_available_values();
+			
+			
+			// FILL LIST
+			values_promise.then(
+				function(result)
+				{
+					// console.info('values_promise');
+					
+					// CHECK RESPONSE STATUS
+					if (result.is_ok() )
+					{
+						// input_jqo.text('Error during fetching');
+						console.error('Error during fetching');
+						return;
+					}
+					
+					// SET EVENTS HANDLES
+					arg_node_jqo.data('value_filled', arg_value);
+					
+					view_promise.then(
+						function(arg_view)
+						{
+							// console.log(arg_view, 'rendered select');
+							arg_view.items_inline = result.get_records();
+							arg_view.render(arg_deferred);
+						}
+					);
+					
+					// FILL ITEMS
+				/*	for(var record_index = 0 ; record_index < result.count ; record_index++)
+					{
+						var record = result.records[record_index];
+						var label = record[arg_field_obj.name];
+						var item_jqo = $('<li>');
+						
+						// APPEND ITEM
+						input_jqo.append(item_jqo);
+						
+						// SET ITEM LABEL
+						var a_jqo = $('<a href="#">');
+						a_jqo.html(label);
+						item_jqo.append(a_jqo);
+						
+						// HANDLE CLICK ON ITEM
+						item_jqo.click(
+							function()
+							{
+								var node_index = parseInt( item_jqo.index() );
+								self.on_one_to_many_select(arg_deferred, arg_node_jqo, arg_field_obj, item_jqo, node_index);
+							}
+						);
+						
+						// IS SELECTED
+						if (label === arg_value)
+						{
+							if ( item_jqo.attr('selected') )
+							{
+								item_jqo.attr('selected', '');
+							}
+						}
+					}*/
+				}
+			);
+			// console.log(arg_node_jqo, 'arg_node_jqo');
+			
+			
 			self.leave(context, self.msg_success);
 			self.pop_trace();
-			return input_jqo;
+			return arg_node_jqo;
 		},
 		
 		
@@ -209,7 +295,7 @@ function(Devapt, DevaptTypes, DevaptClass)
 						// console.info(result, 'get_join_input.promise.result');
 						
 						// CHECK RESPONSE STATUS
-						if (result.status !== 'ok')
+						if ( result.is_ok() )
 						{
 							input_jqo.text('Error during fetching');
 							return;
@@ -223,9 +309,9 @@ function(Devapt, DevaptTypes, DevaptClass)
 						select_jqo.data('value_filled', arg_value);
 						
 						// FILL ITEMS
-						for(var record_index = 0 ; record_index < result.count ; record_index++)
+						for(var record_index = 0 ; record_index < result.get_count() ; record_index++)
 						{
-							var record = result.records[record_index];
+							var record = result.get_records()[record_index];
 							var label = record[arg_field_obj.name];
 							var option = $('<option>');
 							
@@ -288,7 +374,7 @@ function(Devapt, DevaptTypes, DevaptClass)
 			
 			// CONTAINER HANDLER
 			self.select_item_node(arg_item_index);
-			console.log('on_one_to_many_select');
+			// console.log('on_one_to_many_select');
 			
 			
 			self.leave(context, self.msg_success);
@@ -317,6 +403,9 @@ function(Devapt, DevaptTypes, DevaptClass)
 			self.enter(context, '');
 			
 			
+			// CREATE SELECT
+			
+			
 			// CREATE LIST
 			var input_jqo = $('<ul>');
 			arg_node_jqo.append(self.input_jqo);
@@ -332,7 +421,7 @@ function(Devapt, DevaptTypes, DevaptClass)
 				function(result)
 				{
 					// CHECK RESPONSE STATUS
-					if (result.status !== 'ok')
+					if ( result.is_ok() )
 					{
 						input_jqo.text('Error during fetching');
 						return;
@@ -342,9 +431,9 @@ function(Devapt, DevaptTypes, DevaptClass)
 					arg_node_jqo.data('value_filled', arg_value);
 					
 					// FILL ITEMS
-					for(var record_index = 0 ; record_index < result.count ; record_index++)
+					for(var record_index = 0 ; record_index < result.get_count() ; record_index++)
 					{
-						var record = result.records[record_index];
+						var record = result.get_records()[record_index];
 						var label = record[arg_field_obj.name];
 						var item_jqo = $('<li>');
 						
@@ -408,6 +497,7 @@ function(Devapt, DevaptTypes, DevaptClass)
 	
 	// METHODS
 	DevaptMixinInputAssociationClass.add_public_method('get_association_input', {}, DevaptMixinInputAssociation.get_association_input);
+	DevaptMixinInputAssociationClass.add_public_method('get_association_input_select', {}, DevaptMixinInputAssociation.get_association_input_select);
 	DevaptMixinInputAssociationClass.add_public_method('get_association_input_set', {}, DevaptMixinInputAssociation.get_association_input_set);
 	DevaptMixinInputAssociationClass.add_public_method('on_one_to_many_select', {}, DevaptMixinInputAssociation.on_one_to_many_select);
 	

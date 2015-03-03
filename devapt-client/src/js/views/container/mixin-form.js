@@ -2,7 +2,7 @@
  * @file        views/mixin-input.js
  * @desc        Mixin for datas input feature for containers
  * @see			DevaptContainer
- * @ingroup     DEVAPT_CORE
+ * @ingroup     DEVAPT_VIEWS
  * @date        2015-01-03
  * @version		1.0.x
  * @author      Luc BORIES
@@ -10,10 +10,12 @@
  * @license		Apache License Version 2.0, January 2004; see LICENSE.txt or http://www.apache.org/licenses/
  */
 
-'use strict'
+'use strict';
 define(
-['Devapt', 'core/types', 'core/class', 'views/container/mixin-input-simple', 'views/container/mixin-input-validate', 'views/container/mixin-input-association'],
-function(Devapt, DevaptTypes, DevaptClass, DevaptMixinInputSimple, DevaptMixinInputValidation, DevaptMixinInputAssociation)
+['Devapt', 'core/types', 'object/class', 'views/container/mixin-input-simple',
+'views/container/mixin-input-validate', 'views/container/mixin-input-association'],
+function(Devapt, DevaptTypes, DevaptClass, DevaptMixinInputSimple,
+DevaptMixinInputValidation, DevaptMixinInputAssociation)
 {
 	/**
 	 * @mixin				DevaptMixinForm
@@ -124,13 +126,13 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptMixinInputSimple, DevaptMixinIn
 			self.items_current_record[arg_field_obj.name] = arg_new_value;
 			console.log(self.items_current_record, context + ':current record for [' + self.name + ']');
 			
-			self.get_items_model().done(
+			self.get_items_model().then(
 				function(model)
 				{
-					model.get_engine().done(
+					model.get_engine().then(
 						function(engine)
 						{
-							engine.update_records([self.items_current_record]).done(
+							engine.update_records([self.items_current_record]).then(
 								function()
 								{
 									// console.log('fire event', context);
@@ -188,7 +190,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptMixinInputSimple, DevaptMixinIn
 			
 			
 			// GET FIELD ATTRIBUTES OBJECT
-			self.assertObject(context, 'field definition', arg_field_orig);
+			self.assert_object(context, 'field definition', arg_field_orig);
 			var field_obj = arg_field_orig;
 			if ( DevaptTypes.is_object(arg_field_custom) )
 			{
@@ -302,7 +304,6 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptMixinInputSimple, DevaptMixinIn
 	
 	// BUILD MIXIN CLASS
 	DevaptMixinFormClass.build_class();
-	console.log(DevaptMixinFormClass);
 	
 	
 	return DevaptMixinFormClass;

@@ -2,14 +2,14 @@
  * @file        views/view.js
  * @desc        View base class
  * 		API
- * 			PUBLIC TTRIBUTES
+ * 			PUBLIC ATTRIBUTES
  * 				
  * 				
  * 			PUBLIC METHODS
  * 				
  * 				
  * 			
- * @ingroup     DEVAPT_CORE
+ * @ingroup     DEVAPT_VIEWS
  * @date        2014-05-10
  * @version		1.0.x
  * @author      Luc BORIES
@@ -17,18 +17,19 @@
  * @license		Apache License Version 2.0, January 2004; see LICENSE.txt or http://www.apache.org/licenses/
  */
 
-define(
-['Devapt', 'core/types', 'core/class', 'core/object', 'core/resources', 'views/mixin-template', 'views/mixin-bind', 'views/mixin-options-css'],
-function(Devapt, DevaptTypes, DevaptClass, DevaptObject, DevaptResources, DevaptMixinTemplate, DevaptMixinBind, DevaptMixinOptionsCSS)
+'use strict';
+define([
+	'Devapt', 'core/types', 'object/class', 'object/object', 'core/resources', 'core/application',
+	'views/view/view-mixin-renderable', 'views/view/view-mixin-template', 'views/view/view-mixin-bind', 'views/view/view-mixin-options-css'
+],
+function(
+	Devapt, DevaptTypes, DevaptClass, DevaptObject, DevaptResources, DevaptApplication,
+	DevaptMixinRenderable, DevaptMixinTemplate, DevaptMixinBind, DevaptMixinOptionsCSS)
 {
 	/**
 	 * @public
 	 * @class				DevaptView
 	 * @desc				View class
-	 * @param {string}		arg_name			View name (string)
-	 * @param {object}		arg_parent_jqo		jQuery object to attach the view to
-	 * @param {object|null}	arg_options			Associative array of options
-	 * @return {nothing}
 	 */
 	
 	
@@ -51,8 +52,8 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptObject, DevaptResources, Devapt
 		if (self.trace)
 		{
 			console.log(arg_jquery_object, 'arg_jquery_object');
-			console.log(self.content_jqo, 'content_jqo');
-			console.log(self.parent_jqo, 'parent_jqo');
+			// console.log(self.content_jqo, 'content_jqo');
+			// console.log(self.parent_jqo, 'parent_jqo');
 		}
 		
 		
@@ -73,12 +74,13 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptObject, DevaptResources, Devapt
 			self.step(context, 'detach/attach content jqo');
 			self.parent_jqo.append(self.content_jqo);
 		}
+		// console.log(self.parent_jqo, 'parent_jqo');
 		
 		// CHECK CONTAINER JQO
 		// console.log(self.parent_jqo, 'parent_jqo');
 		// console.log(self.parent_jqo.length, 'parent_jqo.length');
-		self.assertNotNull(context, 'self.parent_jqo null ?', self.parent_jqo);
-		// self.assertTrue(context, 'self.parent_jqo empty ?', self.parent_jqo.length > 0);
+		self.assert_not_null(context, 'self.parent_jqo null ?', self.parent_jqo);
+		// self.assert_true(context, 'self.parent_jqo empty ?', self.parent_jqo.length > 0);
 		
 		// SEND EVENT
 		self.fire_event('devapt.view.parent.changed');
@@ -106,6 +108,8 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptObject, DevaptResources, Devapt
 		// DEBUG
 		// self.trace=true;
 		
+		
+		self.is_view = true;
 		
 		// SET ID
 		if ( DevaptTypes.is_object(self.parent_jqo) )
@@ -162,51 +166,59 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptObject, DevaptResources, Devapt
 		
 		
 		// CREATE REFERRED OBJECT
-		var deferred = $.Deferred();
-		deferred.view_name = self.name;
-		deferred.view_uid = self.uid;
-		if (self.is_rendered)
+		var deferred = Devapt.defer();
+		// deferred.view_name = self.name;
+		// deferred.view_uid = self.uid;
+		if (self.is_render_state_rendered())
 		{
+			self.step(context, 'is rendered');
 			deferred.resolve();
 			
 			self.leave(context, 'render with template');
-			return deferred.promise();
+			return Devapt.promise(arg_deferred);
 		}
 		
 		
 		// SEND EVENT
+		self.step(context, 'fire render begin');
 		self.fire_event('devapt.view.render.begin');
 		
 		
 		// RENDER END CALLBACK
 		var render_end_cb = function() {
 			// console.log('render_end_cb');
+			self.step(context, 'render end cb');
 			
 			if ( DevaptTypes.is_function(self.applyCssOptions) )
 			{
+				self.step(context, 'apply CSS');
 				self.applyCssOptions(deferred);
 			}
 			
 			// SEND EVENT
+			self.step(context, 'fire render end');
 			self.fire_event('devapt.view.render.end');
 			
-			self.is_rendered = true;
+			// self.is_rendered = true;
 		};
 		
 		
 		// RENDER WITH TEMPLATE
 		if ( self.template_enabled && DevaptTypes.is_function(self.render_template) )
 		{
+			self.step(context, 'has template');
 			// console.log('render with template');
 			
 			if ( ! DevaptTypes.is_object(self.content_jqo) )
 			{
+				self.step(context, 'has no content node');
 				// console.info('set default content jqo');
 				
 				self.content_jqo = $('<div>');
 				
 				if ( DevaptTypes.is_object(self.parent_jqo) )
 				{
+					self.step(context, 'has parent node');
 					// console.info('set parent for content jqo');
 					self.parent_jqo.append(self.content_jqo);
 				}
@@ -214,18 +226,21 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptObject, DevaptResources, Devapt
 				self.content_jqo.attr('id', self.get_view_id());
 			}
 			
+			self.step(context, 'render template');
 			// console.log('call render_template(deferred)');
 			var promise = self.render_template(deferred);
 			
 			// APPLY CSS OPTIONS AND FIRE END EVENT
+			self.step(context, 'call render end cb');
 			// console.log('call render_template(deferred) done');
-			promise.done(render_end_cb);
+			promise = promise.then(render_end_cb);
 			
 			self.leave(context, 'render with template');
 			return promise;
 		}
 		
 		// RENDER WITHOUT TEMPLATE
+		self.step(context, 'render self');
 		// console.log('render without template', context);
 		var promise = self.render_self(deferred);
 		if (! promise)
@@ -233,20 +248,23 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptObject, DevaptResources, Devapt
 			console.log(promise, 'promise');
 			console.error(self, 'render_self promise is bad');
 		}
-		promise.done(
+		promise = promise.then(
 			function()
 			{
+				self.step(context, 'render self done');
 				// console.log('render_self done');
 				
 				if (self.content_jqo && self.content_jqo !== {})
 				{
+					self.step(context, 'has content');
 					self.content_jqo.attr('id', self.get_view_id());
 				}
 			}
 		);
 		
 		// APPLY CSS OPTIONS AND FIRE END EVENT
-		promise.done(render_end_cb);
+		self.step(context, 'call render end cb');
+		promise.then(render_end_cb);
 		
 		
 		self.leave(context, 'render without template');
@@ -278,7 +296,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptObject, DevaptResources, Devapt
 		
 		
 		self.leave(context, 'success (not implemented)');
-		return arg_deferred.promise();
+		return Devapt.promise(arg_deferred);
 	}
 	
 	
@@ -513,6 +531,51 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptObject, DevaptResources, Devapt
 	
 	
 	
+	/**
+	 * @memberof			DevaptModel
+	 * @public
+	 * @method				DevaptModel.get_server_api()
+	 * @desc				Get servetr API records
+	 * @return {object}		promise
+	 */
+	var cb_get_server_api = function()
+	{
+		var self = this;
+		var context = 'get_server_api()';
+		self.enter(context, '');
+		
+		
+		// TEST IF ALREADY CREATED
+		if (self.server_ap)
+		{
+			self.leave(context, Devapt.msg_success);
+			return self.server_api;
+		}
+		
+		// CREATE API RECORD
+		var url_base = DevaptApplication.get_url_base();
+		self.server_api = {
+			view_name: self.name,
+			
+			// action_view: {
+				// method:'GET',
+				// url:url_base + 'views/' + self.name + '/html_view',
+				// format:'devapt_view_api_2'
+			// },
+			action_page: {
+				method:'GET',
+				url:url_base + 'views/' + self.name + '/html_page',
+				format:'devapt_view_api_2'
+			}
+		};
+		
+		
+		self.leave(context, Devapt.msg_success);
+		return self.server_api;
+	}
+	
+	
+	
 	/*
 	
 	
@@ -556,8 +619,8 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptObject, DevaptResources, Devapt
 	DevaptViewClass.infos.ctor = cb_constructor;
 	DevaptViewClass.add_public_method('set_parent', {}, cb_set_parent);
 	DevaptViewClass.add_public_method('get_view_id', {}, cb_get_view_id);
-	DevaptViewClass.add_public_method('render', {}, cb_render);
-	DevaptViewClass.add_public_method('render_self', {}, cb_render_self);
+	// DevaptViewClass.add_public_method('render', {}, cb_render);
+	// DevaptViewClass.add_public_method('render_self', {}, cb_render_self);
 	DevaptViewClass.add_public_method('edit_settings', {}, cb_edit_settings);
 	DevaptViewClass.add_public_method('translate', {}, cb_translate);
 	DevaptViewClass.add_public_method('on_change', {}, cb_on_change);
@@ -568,11 +631,12 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptObject, DevaptResources, Devapt
 	DevaptViewClass.add_public_method('notify_error', {}, cb_notify_error);
 	DevaptViewClass.add_public_method('notify_alert', {}, cb_notify_alert);
 	DevaptViewClass.add_public_method('notify_info', {}, cb_notify_info);
+	DevaptViewClass.add_public_method('get_server_api', {}, cb_get_server_api);
 	
 	
 	// PROPERTIES
 	DevaptViewClass.add_public_bool_property('is_view',			'is a view flag', true, false, false, []);
-	DevaptViewClass.add_public_bool_property('is_rendered',		'is a view rendered', false, false, false, []);
+	// DevaptViewClass.add_public_bool_property('is_rendered',		'is a view rendered', false, false, false, []);
 	DevaptViewClass.add_public_str_property('status',			'view current state', 'ready', false, false, []);
 	DevaptViewClass.add_public_str_property('access_role',		'required role to display the view', null, true, false, ['role_display']);
 	
@@ -588,6 +652,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptObject, DevaptResources, Devapt
 	
 	// MIXINS
 	DevaptViewClass.add_public_mixin(DevaptMixinTemplate);
+	DevaptViewClass.add_public_mixin(DevaptMixinRenderable);
 	DevaptViewClass.add_public_mixin(DevaptMixinBind);
 	DevaptViewClass.add_public_mixin(DevaptMixinOptionsCSS);
 	

@@ -9,8 +9,9 @@
  * @license		Apache License Version 2.0, January 2004; see LICENSE.txt or http://www.apache.org/licenses/
  */
 
+'use strict';
 define(
-['Devapt', 'core/class', 'views/view', 'core/application'],
+['Devapt', 'object/class', 'views/view', 'core/application'],
 function(Devapt, DevaptClass, DevaptView, DevaptApplication)
 {
 	/**
@@ -39,8 +40,8 @@ function(Devapt, DevaptClass, DevaptView, DevaptApplication)
 		
 		
 		// CHECK CONTAINER NODE
-		self.assertNotNull(context, 'arg_deferred', arg_deferred);
-		self.assertNotNull(context, 'parent_jqo', self.parent_jqo);
+		self.assert_not_null(context, 'arg_deferred', arg_deferred);
+		self.assert_not_null(context, 'parent_jqo', self.parent_jqo);
 		
 		self.content_jqo = $('<div>');
 		self.parent_jqo.append(self.content_jqo);
@@ -55,8 +56,9 @@ function(Devapt, DevaptClass, DevaptView, DevaptApplication)
 		
 		
 		// GET AND RENDER VIEW CONTENT
-		var promise = $.get(view_content_url)
-		.then(
+		var jq_promise = $.get(view_content_url);
+		var promise = Devapt.defer(jq_promise);
+		promise.then(
 			function(arg_html)
 			{
 				self.content_jqo.html(arg_html);
@@ -64,11 +66,11 @@ function(Devapt, DevaptClass, DevaptView, DevaptApplication)
 		);
 		
 		// RESOLVE DEFERRED
-		arg_deferred.resolve();
+		arg_deferred.resolve(promise);
 		
 		
 		self.leave(context, 'success: promise is resolved: async render');
-		return promise;
+		return arg_deferred.promise;
 	}
 	
 	

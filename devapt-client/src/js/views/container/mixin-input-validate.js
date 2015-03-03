@@ -2,7 +2,7 @@
  * @file        views/mixin-input-validate.js
  * @desc        Mixin for datas input validation feature for containers
  * @see			DevaptContainer
- * @ingroup     DEVAPT_CORE
+ * @ingroup     DEVAPT_VIEWS
  * @date        2015-01-04
  * @version		1.0.x
  * @author      Luc BORIES
@@ -10,9 +10,9 @@
  * @license		Apache License Version 2.0, January 2004; see LICENSE.txt or http://www.apache.org/licenses/
  */
 
-'use strict'
+'use strict';
 define(
-['Devapt', 'core/types', 'core/class'],
+['Devapt', 'core/types', 'object/class'],
 function(Devapt, DevaptTypes, DevaptClass)
 {
 	/**

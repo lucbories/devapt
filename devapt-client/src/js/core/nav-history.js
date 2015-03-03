@@ -9,8 +9,9 @@
  * @license		Apache License Version 2.0, January 2004; see LICENSE.txt or http://www.apache.org/licenses/
  */
 
+'use strict';
 define(
-['Devapt', 'core/traces', 'core/types', 'core/classes', 'core/mixin-assertion', 'core/event', 'core/events'],
+['Devapt', 'core/traces', 'core/types', 'object/classes', 'object/mixin-assertion', 'object/event', 'object/events'],
 function(Devapt, DevaptTraces, DevaptTypes, DevaptClasses, DevaptMixinAssertion, DevaptEvent, DevaptEvents)
 {
 	/**
@@ -29,6 +30,16 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptClasses, DevaptMixinAssertion,
 	 * @desc		Trace flag
 	 */
 	DevaptNavHistory.history_trace = false;
+	
+	
+	/**
+	 * @memberof	DevaptNavHistory
+	 * @public
+	 * @static
+	 * @property	DevaptNavHistory.current_hash
+	 * @desc		... (static attribute)
+	 */
+	DevaptNavHistory.current_hash = null;
 	
 	
 	/**
@@ -104,7 +115,7 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptClasses, DevaptMixinAssertion,
 				}
 			);
 		}
-		else
+		else if (window.hashchange)
 		{
 			$(window).bind('hashchange',
 				function(e)
@@ -112,6 +123,15 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptClasses, DevaptMixinAssertion,
 					return DevaptNavHistory.on_hash_change(e);
 				}
 			);
+		}
+		else
+		{
+			// TODO start a timer (50ms) task
+			/*...
+				if (new_hash !== hash) {
+                hash = new_hash;
+                DevaptNavHistory.on_hash_change(hash);
+            }*/
 		}
 		
 		// REGISTER HOME PAGE
@@ -121,6 +141,8 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptClasses, DevaptMixinAssertion,
 		var page_title		= 'Home';
 		var page_location	= window.location.pathname;
 		DevaptNavHistory.push_url_content(content_label, content_id, content_url, page_title, page_location);
+		
+		DevaptNavHistory.current_hash = DevaptNavHistory.get_location_hash();
 	}
 	
 
@@ -138,40 +160,51 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptClasses, DevaptMixinAssertion,
 		DevaptTraces.trace_step(context, '', DevaptNavHistory.history_trace);
 		
 		DevaptTraces.trace_var(context, 'hash', window.location.hash, DevaptNavHistory.history_trace);
-		var href = window.location.hash;
-		var hash_index = href.indexOf('#');
+		// var href = window.location.hash;
+		var href = window.location.hash.substr(1);
+		// var hash_index = href.indexOf('#');
 		
-		return hash_index >= 0 ? href.substr(hash_index + 1) : null;
+		// return hash_index >= 0 ? href.substr(hash_index + 1) : null;
+		return href;
 	}
+	
 
 
 	/**
 	 * @memberof				DevaptNavHistory
 	 * @public
-	 * @method					DevaptNavHistory.on_hash_change(event)
-	 * @desc					Do actions on location hash (pathname part after the #) change
-	 * @param {object}			arg_window_event
-	 * @return {boolean}
+	 * @method					DevaptNavHistory.set_location_hash(hash)
+	 * @desc					Set location hash (pathname part after the #)
+	 * @param {string}			arg_hash		new location hash
+	 * @return {nothing}
 	 */
-	DevaptNavHistory.on_hash_change = function(arg_window_event)
+	DevaptNavHistory.set_location_hash = function(arg_hash)
 	{
-		var context = 'DevaptNavHistory.on_hash_change(event)';
-		DevaptTraces.trace_enter(context, '', DevaptNavHistory.history_trace);
+		var context = 'DevaptNavHistory.set_location_hash(hash)';
+		DevaptTraces.trace_step(context, '', DevaptNavHistory.history_trace);
+		
+		DevaptTraces.trace_var(context, 'current hash', window.location.hash, DevaptNavHistory.history_trace);
+		DevaptTraces.trace_var(context, 'new hash', arg_hash, DevaptNavHistory.history_trace);
+		
+		try {
+			window.location.hash = arg_hash;
+			DevaptNavHistory.current_hash = arg_hash;
+		}
+		catch(exception)
+		{
+			console.info(exception, context + ':untrapped exception');
+			DevaptTraces.trace_leave(context, Devapt.msg_success, DevaptNavHistory.history_trace);
+			return;
+		}
 		
 		
-		// console.error(arg_window_event);
-		
-		var state_key = DevaptNavHistory.get_location_hash();
-		DevaptTraces.trace_var(context, 'state_key', state_key, DevaptNavHistory.history_trace);
-		DevaptTraces.trace_var(context, 'hash after state key', window.location.hash, DevaptNavHistory.history_trace);
-		
-		var state = DevaptNavHistory.history_map[state_key];
+		var state = DevaptNavHistory.history_map[arg_hash];
 		DevaptTraces.trace_var(context, 'state', state, DevaptNavHistory.history_trace);
 		
-		if ( ! state && state_key && state_key.substr(0, 5) === 'view:' )
+		if ( ! state && arg_hash && arg_hash.substr(0, 5) === 'view:' )
 		{
 			DevaptTraces.trace_step(context, 'process view hash', DevaptNavHistory.history_trace);
-			var hash_parts = state_key.split(':');
+			var hash_parts = arg_hash.split(':');
 			if (hash_parts.length === 4 || hash_parts.length === 5)
 			{
 				DevaptTraces.trace_step(context, 'process view hash parts', DevaptNavHistory.history_trace);
@@ -197,13 +230,46 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptClasses, DevaptMixinAssertion,
 			var result = DevaptNavHistory.set_content(state, true);
 			if (! result)
 			{
-				DevaptTraces.trace_leave(context, 'failure', DevaptNavHistory.history_trace);
+				DevaptTraces.trace_leave(context, Devapt.msg_failure, DevaptNavHistory.history_trace);
 				return true; // do not propagate event
 			}
 		}
 		
 		
-		DevaptTraces.trace_leave(context, 'success', DevaptNavHistory.history_trace);
+		DevaptTraces.trace_leave(context, Devapt.msg_success, DevaptNavHistory.history_trace);
+	}
+	
+	
+	
+	/**
+	 * @memberof				DevaptNavHistory
+	 * @public
+	 * @method					DevaptNavHistory.on_hash_change(event)
+	 * @desc					Do actions on location hash (pathname part after the #) change
+	 * @param {object}			arg_window_event
+	 * @return {boolean}
+	 */
+	DevaptNavHistory.on_hash_change = function(arg_window_event)
+	{
+		var context = 'DevaptNavHistory.on_hash_change(event)';
+		DevaptTraces.trace_enter(context, '', DevaptNavHistory.history_trace);
+		
+		
+		// console.error(arg_window_event);
+		var state_key = DevaptNavHistory.get_location_hash();
+		DevaptTraces.trace_var(context, 'state_key', state_key, DevaptNavHistory.history_trace);
+		DevaptTraces.trace_var(context, 'hash after state key', window.location.hash, DevaptNavHistory.history_trace);
+		
+		if ( state_key === DevaptNavHistory.current_hash )
+		{
+			DevaptTraces.trace_leave(context, Devapt.msg_success + ': nothing to do', DevaptNavHistory.history_trace);
+			return true; // do not propagate event
+		}
+		
+		DevaptNavHistory.set_location_hash(state_key);
+		
+		
+		DevaptTraces.trace_leave(context, Devapt.msg_success, DevaptNavHistory.history_trace);
 		return true; // do not propagate event
 	}
 
@@ -531,7 +597,7 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptClasses, DevaptMixinAssertion,
 						else
 						{
 							var render_promise = target_menubar_object.render();
-							render_promise.done(
+							render_promise.then(
 								function()
 								{
 									DevaptTraces.trace_step(context, 'menubar exists and is now rendered', DevaptNavHistory.history_trace);
@@ -548,14 +614,14 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptClasses, DevaptMixinAssertion,
 							self.step(context, 'create menubar and render it');
 							var backend = Devapt.get_current_backend();
 							var topmenubar_promise = backend.render_view(null, menubar_name);
-							topmenubar_promise.done(
+							topmenubar_promise.then(
 								function()
 								{
 									self.step(context, 'menubar created and rendered');
 									
 									var menubar_object = DevaptClasses.get_instance(menubar_name);
 									self.value(context, 'menubar_object.name', menubar_object.name);
-									self.value(context, 'menubar_object.is_rendered', menubar_object.is_rendered);
+									// self.value(context, 'menubar_object.is_rendered', menubar_object.is_rendered);
 									
 									current_menubar_object.switch_top_menubar(menubar_object, true);
 								}
@@ -638,7 +704,7 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptClasses, DevaptMixinAssertion,
 		
 		// GET CURRENT BACKEND
 		var backend = Devapt.get_current_backend();
-		self.assertNotNull(context, 'backend', backend);
+		self.assert_not_null(context, 'backend', backend);
 		
 		// SAVE NAVIGATION
 		if (arg_force_render)
@@ -679,6 +745,8 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptClasses, DevaptMixinAssertion,
 		DevaptTraces.trace_enter(context, '', DevaptNavHistory.history_trace);
 		
 		
+		DevaptTraces.trace_var(context, 'arg_content_view_name', arg_content_view_name, DevaptNavHistory.history_trace);
+		
 		// UPDATE TITLE AND LOCATION
 		window.title = arg_page_title;
 		var new_hash = 'view:' + arg_content_view_name + ':' + arg_page_title + ':' + arg_content_label;
@@ -704,9 +772,9 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptClasses, DevaptMixinAssertion,
 		
 		// if ( ! arg_force_render )
 		// {
-			// var deferred = $.Deferred();
+			// var deferred = Devapt.defer();
 			// deferred.resolve();
-			// var promise = deferred.promise();
+			// var promise = deferred.promise;
 			
 			// DevaptTraces.trace_leave(context, 'nothing to do', DevaptNavHistory.history_trace);
 			// return promise;
@@ -717,7 +785,8 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptClasses, DevaptMixinAssertion,
 		var page_container_jqo = $('#' + arg_content_id);
 		if ( ! page_container_jqo)
 		{
-			return DevaptTraces.trace_leaveko(context, 'bad content id [' + arg_content_id + ']', false, DevaptNavHistory.history_trace);
+			var reject_promise = Devapt.promise_rejected('bad content id [' + arg_content_id + ']');
+			return DevaptTraces.trace_leaveko(context, 'bad content id [' + arg_content_id + ']', reject_promise, DevaptNavHistory.history_trace);
 		}
 		page_container_jqo.children().hide();
 		DevaptTraces.trace_var(context, 'hash after container hide', window.location.hash, DevaptNavHistory.history_trace);
@@ -731,12 +800,8 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptClasses, DevaptMixinAssertion,
 			view_object.content_jqo.show();
 			DevaptTraces.trace_var(context, 'hash after content show', window.location.hash, DevaptNavHistory.history_trace);
 			
-			var deferred = $.Deferred();
-			deferred.resolve();
-			var promise = deferred.promise();
-			
 			DevaptTraces.trace_leave(context, 'show existing view', DevaptNavHistory.history_trace);
-			return promise;
+			return Devapt.promise_resolved();
 		}
 		
 		

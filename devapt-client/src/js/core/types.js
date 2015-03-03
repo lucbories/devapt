@@ -9,7 +9,9 @@
  * @license		Apache License Version 2.0, January 2004; see LICENSE.txt or http://www.apache.org/licenses/
  */
 
-define(['Devapt', 'core/traces', 'core/types-to'], function(Devapt, DevaptTraces, DevaptTypes)
+'use strict';
+define([/*'Devapt', */'core/traces', 'core/types-to'],
+function(/*Devapt, */DevaptTraces, DevaptTypes)
 {
 	/**
 	 * @memberof			DevaptTypes
@@ -170,7 +172,7 @@ define(['Devapt', 'core/traces', 'core/types-to'], function(Devapt, DevaptTraces
 		{
 			// console.log(arg_object_to_clone, 'clone array');
 			var tmp = new Array();
-			for(key in arg_object_to_clone)
+			for(var key in arg_object_to_clone)
 			{
 				// console.log(arg_object_to_clone[key], 'clone array item [' + key + ']');
 				var cloned_object = DevaptTypes.clone_object(arg_object_to_clone[key]);

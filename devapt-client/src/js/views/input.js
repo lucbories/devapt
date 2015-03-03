@@ -1,7 +1,7 @@
 /**
- * @file        views/label.js
+ * @file        views/input.js
  * @desc        Input Class
- * @ingroup     DEVAPT_FOUNDATION5
+ * @ingroup     DEVAPT_VIEWS
  * @date        2014-05-09
  * @version		1.0.x
  * @author      Luc BORIES
@@ -9,18 +9,15 @@
  * @license		Apache License Version 2.0, January 2004; see LICENSE.txt or http://www.apache.org/licenses/
  */
 
+'use strict';
 define(
-['Devapt', 'core/types', 'core/class', 'views/view'],
+['Devapt', 'core/types', 'object/class', 'views/view'],
 function(Devapt, DevaptTypes, DevaptClass, DevaptView)
 {
 	/**
 	 * @public
 	 * @class				DevaptInput
-	 * @desc				Label view class
-	 * @param {string}		arg_name			View name (string)
-	 * @param {object}		arg_parent_jqo	jQuery object to attach the view to
-	 * @param {object|null}	arg_options			Associative array of options
-	 * @return {nothing}
+	 * @desc				Input view class
 	 */
 	
 	
@@ -39,10 +36,10 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptView)
 		
 		
 		// CHECK DEFEREED
-		self.assertNotNull(context, 'arg_deferred', arg_deferred);
+		self.assert_not_null(context, 'arg_deferred', arg_deferred);
 		
 		// GET NODES
-		self.assertNotNull(context, 'parent_jqo', self.parent_jqo);
+		self.assert_not_null(context, 'parent_jqo', self.parent_jqo);
 		self.content_jqo = $('<div>');
 		self.parent_jqo.append(self.content_jqo);
 		self.content_jqo.attr('id', self.get_view_id());
@@ -79,7 +76,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptView)
 		{
 			var value = self.input_jqo ? self.input_jqo.val() : '';
 			var devapt_event = arg_event.data.name;
-			// console.log(devapt_event, 'input.event');
+			console.log(devapt_event, 'input.event');
 			
 			self.fire_event(devapt_event, [value]);
 		};
@@ -121,11 +118,10 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptView)
 		
 		// RESOLVE AND GET PROMISE
 		arg_deferred.resolve();
-		var promise = arg_deferred.promise();
 		
 		
 		self.leave(context, 'success: promise is resolved');
-		return promise;
+		return Devapt.promise(arg_deferred);
 	}
 	
 	

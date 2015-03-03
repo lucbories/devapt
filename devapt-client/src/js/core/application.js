@@ -9,9 +9,16 @@
  * @license		Apache License Version 2.0, January 2004; see LICENSE.txt or http://www.apache.org/licenses/
  */
 
+'use strict';
 define(
-['Devapt', 'core/traces', 'core/types', 'core/init', /*'core/events',*/ 'core/nav-history'],
-function(Devapt, DevaptTrace, DevaptTypes, DevaptInit, /*DevaptEvents,*/ DevaptNavHistory)
+['Devapt',
+	'core/traces', 'core/types', 'core/init', 'core/nav-history',
+	'object/classes', 'object/plugin-manager'
+],
+function(Devapt,
+	DevaptTrace, DevaptTypes, DevaptInit, DevaptNavHistory,
+	DevaptClasses, DevaptPluginManager
+)
 {
 	/**
 	 * @memberof	DevaptApplication
@@ -102,7 +109,7 @@ function(Devapt, DevaptTrace, DevaptTypes, DevaptInit, /*DevaptEvents,*/ DevaptN
 	 * @static
 	 * @method				DevaptApplication.run()
 	 * @desc				Init application and render views
-	 * @return {nothing}
+	 * @return {object}		A promise
 	 */
 	DevaptApplication.run = function()
 	{
@@ -114,25 +121,115 @@ function(Devapt, DevaptTrace, DevaptTypes, DevaptInit, /*DevaptEvents,*/ DevaptN
 		DevaptNavHistory.init();
 		
 		// INIT TRACES
-		Devapt.traces_settings = DevaptApplication.get_value('application.traces.items', []);
+		DevaptClasses.traces_settings = DevaptApplication.get_value('application.traces.items', []);
 		
 		// LOAD ALL FILES ?
-		var load_all = DevaptApplication.get_value('application.layouts.default.backend.name', false);
+		var init_plugins_promise = null;
+		var load_all = DevaptApplication.get_value('application.status.load_all_classes', false);
 		if (load_all)
 		{
-			require(['core/all', 'datas/all', 'views/all'], function()
+			var requires_promise = Devapt.require(['core/all', 'datas/all', 'views/all'])
+			init_plugins_promise = requires_promise.then(
+				function()
 				{
-					DevaptApplication.init_backend();
+					return DevaptApplication.init_plugins();
 				}
 			);
 		}
 		else
 		{
-			DevaptApplication.init_backend();
+			init_plugins_promise = DevaptApplication.init_plugins();
 		}
 		
 		
 		DevaptTrace.trace_leave(context, '', DevaptApplication.app_trace);
+		return init_plugins_promise;
+	}
+	
+	
+	/**
+	 * @memberof			DevaptApplication
+	 * @public
+	 * @static
+	 * @method				DevaptApplication.init_plugins()
+	 * @desc				Load application plugins
+	 * @return {object}		A promise
+	 */
+	DevaptApplication.init_plugins = function()
+	{
+		var context = 'DevaptApplication.init_plugins()';
+		DevaptTrace.trace_enter(context, '', DevaptApplication.app_trace);
+		
+		
+		var promises_array = [];
+		Devapt.plugin_manager = DevaptPluginManager.create('plugin_manager');
+		
+		// INIT PLUGINS DECLARATION
+		DevaptTrace.trace_step(context, 'INIT PLUGINS DECLARATION', DevaptApplication.app_trace);
+		var plugins_declarations = DevaptApplication.get_value('application.client.plugins', []);
+		for(var plugin_declaration_key in plugins_declarations)
+		{
+			DevaptTrace.trace_step(context, 'loop on [' + plugin_declaration_key + ']', DevaptApplication.app_trace);
+			
+			var defer = Devapt.defer();
+			promises_array.push( Devapt.promise(defer) );
+			
+			var plugin_declaration = plugins_declarations[plugin_declaration_key];
+			var plugin_declaration_name = ('name' in plugin_declaration) ? plugin_declaration['name'] : null;
+			var plugin_declaration_url = ('url' in plugin_declaration) ? plugin_declaration['url'] : null;
+			var plugin_declaration_autoload = ('autoload' in plugin_declaration) ? plugin_declaration['autoload'] : false;
+			
+			if (plugin_declaration_url)
+			{
+				DevaptTrace.trace_step(context, 'PLUGIN DECLARATION WITH URL', DevaptApplication.app_trace);
+				
+				var load_url_promise = require([plugin_declaration_url],
+					function(plugins_names)
+					{
+						DevaptTrace.trace_step(context, 'PLUGIN DECLARATION URL IS LOADING', DevaptApplication.app_trace);
+						
+						if (plugin_declaration_autoload)
+						{
+							DevaptTrace.trace_step(context, 'PLUGIN DECLARATION WITH AUTOLOAD', DevaptApplication.app_trace);
+							
+							for(var key in plugins_names)
+							{
+								var plugin_name = plugins_names[key];
+								DevaptTrace.trace_step(context, 'loop on plugin name [' + plugin_name + ']', DevaptApplication.app_trace);
+								
+								var load_plugin_promise = Devapt.plugin_manager.load_plugin(plugin_name);
+								promises_array.push(load_plugin_promise);
+							}
+						}
+						
+						defer.resolve(plugins_names);
+					}
+				);
+			}
+			
+			if (plugin_declaration_name && plugin_declaration_autoload)
+			{
+				DevaptTrace.trace_step(context, 'PLUGIN DECLARATION WITH NAME AND AUTOLOAD', DevaptApplication.app_trace);
+				
+				var load_plugin_promise = Devapt.plugin_manager.load_plugin(plugin_declaration_name);
+				promises_array.push(load_plugin_promise);
+			}
+		}
+		
+		
+		// LAUNCH INIT BACKEND
+		var promise_all = Devapt.promise_all(promises_array);
+		promise_all.then(
+			function()
+			{
+				DevaptTrace.trace_step(context, 'ALL PROMISES ARE RESOLVED', DevaptApplication.app_trace);
+				DevaptApplication.init_backend();
+			}
+		);
+		
+		
+		DevaptTrace.trace_leave(context, Devapt.msg_success_promise, DevaptApplication.app_trace);
+		return promise_all;
 	}
 	
 	
@@ -155,35 +252,52 @@ function(Devapt, DevaptTrace, DevaptTypes, DevaptInit, /*DevaptEvents,*/ DevaptN
 		{
 			DevaptTrace.trace_step(context, 'no current backend', DevaptApplication.app_trace);
 			
+			// GET BACKEND NAME
 			var backend_name = DevaptApplication.get_value('application.layouts.default.backend.name');
 			if ( ! DevaptTypes.is_not_empty_str(backend_name) )
 			{
 				DevaptTrace.trace_error(context, 'bad default backend name for configuration value [application.layouts.default.backend.name]', true);
-				return;
+				return Deavapt.promise_rejected('bad default backend name');
 			}
 			
-			require([backend_name], function(default_backend)
-			{
-				DevaptTrace.trace_step(context, 'set current backend', DevaptApplication.app_trace);
-				
-				// SET CURRENT BACKEND
-				var result = Devapt.set_current_backend(default_backend);
-				if ( ! result)
+			// LOAD PLUGIN
+			var backend_plugin_promise = Devapt.get_plugin_manager().load_plugin(backend_name);
+			
+			// SET CURRENT BACKEND
+			var set_backend_promise = backend_plugin_promise.then(
+				function(default_backend_plugin)
 				{
-					DevaptTrace.trace_error(context, 'init backend failed', true);
-					return;
+					DevaptTrace.trace_step(context, 'set current backend', DevaptApplication.app_trace);
+					
+					// GET DEFAULT BACKEND
+					var default_backend = default_backend_plugin.get_backend();
+					if ( ! default_backend || ! default_backend.render_view)
+					{
+						DevaptTrace.trace_error(context, 'backend plugin has no valid backend', true);
+						return Devapt.promise_rejected('backend plugin has no valid backend');
+					}
+					
+					// SET CURRENT BACKEND
+					var result = Devapt.set_current_backend(default_backend);
+					if ( ! result)
+					{
+						DevaptTrace.trace_error(context, 'init backend failed', true);
+						return Devapt.promise_rejected('init backend failed');
+					}
+					
+					// RENDER VIEW
+					return DevaptApplication.render();
 				}
-				
-				DevaptApplication.render();
-			} );
-		}
-		else
-		{
-			DevaptApplication.render();
+			);
+			
+			DevaptTrace.trace_leave(context, Devapt.msg_success_promise, DevaptApplication.app_trace);
+			return set_backend_promise;
 		}
 		
 		
-		DevaptTrace.trace_leave(context, '', DevaptApplication.app_trace);
+		// RENDER VIEW WITH AN EXISTING CURRENT BACKEND
+		DevaptTrace.trace_leave(context, Devapt.msg_success_promise, DevaptApplication.app_trace);
+		return DevaptApplication.render();
 	}
 	
 	
@@ -206,7 +320,7 @@ function(Devapt, DevaptTrace, DevaptTypes, DevaptInit, /*DevaptEvents,*/ DevaptN
 		
 		// INIT TOP MENUBAR
 		DevaptNavHistory.current_topbar_name = DevaptApplication.get_topbar_name();
-		var topmenubar_promise = backend.render_view(null, DevaptNavHistory.current_topbar_name);
+		var topmenubar_promise = backend.render_view($('body header'), DevaptNavHistory.current_topbar_name);
 		topmenubar_promise.then(
 			function(view)
 			{
@@ -229,7 +343,7 @@ function(Devapt, DevaptTrace, DevaptTypes, DevaptInit, /*DevaptEvents,*/ DevaptN
 		if ( DevaptTypes.is_not_empty_str(hash) )
 		{
 			DevaptTrace.trace_step(context, 'Process location hash', DevaptApplication.app_trace);
-			DevaptNavHistory.on_hash_change(null);
+			DevaptNavHistory.set_location_hash(hash);
 		}
 		
 		// INIT BREADCRUMBS
@@ -287,7 +401,7 @@ function(Devapt, DevaptTrace, DevaptTypes, DevaptInit, /*DevaptEvents,*/ DevaptN
 		
 		var path_array = arg_value_path.split('.');
 		var path_node = DevaptApplication.app_config;
-		for(path_node_index in path_array)
+		for(var path_node_index in path_array)
 		{
 			var path_node_value = path_array[path_node_index];
 			if ( path_node_index == 0 && path_node_value === 'application' )
@@ -498,6 +612,27 @@ function(Devapt, DevaptTrace, DevaptTypes, DevaptInit, /*DevaptEvents,*/ DevaptN
 		
 		var value = DevaptApplication.get_value('layouts.default.breadcrumbs.name', null);
 		DevaptTrace.trace_var(context, 'breadcrumbs.name', value, DevaptApplication.app_trace);
+		
+		DevaptTrace.trace_leave(context, '', DevaptApplication.app_trace);
+		return value;
+	}
+	
+	
+	/**
+	 * @memberof			DevaptApplication
+	 * @public
+	 * @static
+	 * @method				DevaptApplication.get_client_plugins()
+	 * @desc				Get application configuration "application.plugins.client"
+	 * @return {array}		Application client plugins
+	 */
+	DevaptApplication.get_client_plugins = function()
+	{
+		var context = 'DevaptApplication.get_client_plugins()';
+		DevaptTrace.trace_enter(context, '', DevaptApplication.app_trace);
+		
+		var value = DevaptApplication.get_value('plugins.client', {});
+		DevaptTrace.trace_var(context, 'client plugins', value, DevaptApplication.app_trace);
 		
 		DevaptTrace.trace_leave(context, '', DevaptApplication.app_trace);
 		return value;

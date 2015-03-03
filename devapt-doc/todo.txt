@@ -1,7 +1,14 @@
 todo
-
+FOSRest
+JMSSerializer
+NelmioAPIDoc
+JSON-LD
+HYDRA
 
 Features
+	Billing
+		Server: counters on requests, logins, records, errors
+		Client: stats on counters, billings
 	event logs appender
 	transactions
 		client
@@ -9,6 +16,9 @@ Features
 		=>dashboard of failures analysis (root cause)
 	micro services ?
 	api server ?
+		Portal: security, billing, repository
+		Gateway: in/out
+		Analysis: stats, load
 
 
 

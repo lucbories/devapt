@@ -9,7 +9,8 @@
  * @license		Apache License Version 2.0, January 2004; see LICENSE.txt or http://www.apache.org/licenses/
  */
 
-define(['Devapt', 'core/traces', 'core/types-is'], function(Devapt, DevaptTraces, DevaptTypes)
+'use strict';
+define([/*'Devapt', */'core/traces', 'core/types-is'], function(/*Devapt, */DevaptTraces, DevaptTypes)
 {
 	/**
 	 * @memberof			DevaptTypes
@@ -53,7 +54,7 @@ define(['Devapt', 'core/traces', 'core/types-is'], function(Devapt, DevaptTraces
 		if ( DevaptTypes.is_array(arg_value) )
 		{
 			var str = '[';
-			for(key in arg_value)
+			for(var key in arg_value)
 			{
 				str += (str === '[' ? '' : ',') + key + '=' + DevaptTypes.get_value_str( arg_value[key], arg_stack_count + 1);
 			}
@@ -71,7 +72,7 @@ define(['Devapt', 'core/traces', 'core/types-is'], function(Devapt, DevaptTraces
 				return str;
 			}
 			
-			for(key in arg_value)
+			for(var key in arg_value)
 			{
 				var right_4 = key.substring(key.length - 4, key.length);
 				if ( right_4 === '_jqo' )
@@ -497,7 +498,7 @@ define(['Devapt', 'core/traces', 'core/types-is'], function(Devapt, DevaptTraces
 			// value = Object.values(arg_value);
 			// TODO Object.values()
 			var values_array = [];
-			for(attr_key in arg_value)
+			for(var attr_key in arg_value)
 			{
 				values_array.push( arg_value[attr_key] );
 			}
@@ -566,7 +567,7 @@ define(['Devapt', 'core/traces', 'core/types-is'], function(Devapt, DevaptTraces
 		// APPEND MISSING ATTRIBUTES
 		if ( DevaptTypes.is_object(value) && DevaptTypes.is_object(default_value) && value !== default_value )
 		{
-			for(loop_key in default_value)
+			for(var loop_key in default_value)
 			{
 				var loop_default_value = default_value[loop_key];
 				var loop_value = value[loop_key];

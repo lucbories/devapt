@@ -2,7 +2,7 @@
  * @file        datas/mixin-datasource-classes.js
  * @desc        Mixin for classes data source
  * @see			...
- * @ingroup     DEVAPT_CORE
+ * @ingroup     DEVAPT_DATAS
  * @date        2014-11-02
  * @version		1.0.x
  * @author      Luc BORIES
@@ -10,8 +10,9 @@
  * @license		Apache License Version 2.0, January 2004; see LICENSE.txt or http://www.apache.org/licenses/
  */
 
+'use strict';
 define(
-['Devapt', 'core/types', 'core/class', 'core/classes'],
+['Devapt', 'core/types', 'object/class', 'object/classes'],
 function(Devapt, DevaptTypes, DevaptClass, DevaptClasses)
 {
 	/**
@@ -56,8 +57,8 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptClasses)
 			
 			
 			// INIT PROMISE
-			var deferred = $.Deferred();
-			var items_promise = deferred.promise();
+			var deferred = Devapt.defer();
+			var items_promise = deferred.promise;
 			
 			// GET ITEMS FROM CLASSES SOURCE
 			if ( self.items_source === 'classes' )
@@ -65,7 +66,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptClasses)
 				var items = [];
 				var classes_array = DevaptClasses.get_classes_array();
 				// console.log(classes_array, 'classes_array');
-				for(class_index in classes_array)
+				for(var class_index in classes_array)
 				{
 					var class_record = classes_array[class_index];
 					var record = {};

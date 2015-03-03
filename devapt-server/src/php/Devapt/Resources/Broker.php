@@ -256,12 +256,19 @@ final class Broker
 			
 			case 'model':
 			{
+				// GET MODEL OBJECT
 				$model_object = Broker::getResourceObject($arg_resource_name);
 				if ( ! is_object($model_object) )
 				{
 					Trace::warning("Resources\Broker.getResourceJson: resource object not found [$arg_resource_name]");
 					return null;
 				}
+				
+				// SET PRIMARY KEY FIELD NAME
+				$pk_field_name = $model_object->getModelPKFieldName();
+				$resource_record['pk_field_name'] = $pk_field_name;
+				
+				// SET ACCESSES
 				$resource_record['access'] = array();
 				$resource_record['access']['create']	= $model_object->hasModelAccessCreate();
 				$resource_record['access']['read']		= $model_object->hasModelAccessRead();

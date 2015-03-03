@@ -1,6 +1,6 @@
 /**
- * @file        datas/all.js
- * @desc        Load all Devapt datas classes
+ * @file        views/all.js
+ * @desc        Load all Devapt view classes
  * @ingroup     DEVAPT_CORE
  * @date        2014-12-26
  * @version		1.0.x
@@ -10,7 +10,8 @@
  */
 
 define(
-['views/container', 'views/input', 'views/mixin-bind', 'views/mixin-options-css', 'views/mixin-template', 'views/remote', 'views/view'
+['views/container', 'views/input', 'views/remote', 'views/select', 'views/view',
+	'views/view/all', 'views/container/all'
 ],
 function()
 {

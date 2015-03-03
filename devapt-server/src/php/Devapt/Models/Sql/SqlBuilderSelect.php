@@ -199,21 +199,30 @@ final class SqlBuilderSelect
 			$one_field_sql_db			= $field_has_foreign_link ? $one_field_record['sql_foreign_db'] : $one_field_record['sql_db'];
 			$one_field_sql_table		= $field_has_foreign_link ? $one_field_record['sql_foreign_table'] : $one_field_record['sql_table'];
 			$one_field_sql_column		= $field_has_foreign_link ? $one_field_record['sql_foreign_column'] : $one_field_record['sql_column'];
-			$one_field_sql_alias		= array_key_exists('sql_alias', $one_field_record) ? $one_field_record['sql_alias'] : $one_field_sql_table.'_'.$one_field_sql_column;
+			// $one_field_sql_alias		= array_key_exists('sql_alias', $one_field_record) ? $one_field_record['sql_alias'] : $one_field_sql_table.'_'.$one_field_sql_column;
+			$one_field_sql_alias		= $query_one_field;
+			
+			Trace::value($context, 'one_field_sql_column', $one_field_sql_column, self::$TRACE_BUILDER);
+			Trace::value($context, 'one_field_sql_alias', $one_field_sql_alias, self::$TRACE_BUILDER);
 			
 			// FILL SELECT COLUMNS WITH A JOIN
 			if ( array_key_exists($one_field_sql_table, $joins_tables) )
 			{
+				Trace::step($context, 'one_field_sql_table is part of joins tables', self::$TRACE_BUILDER);
+				
 				if ( ! array_key_exists($one_field_sql_table, $joins_columns) || ! is_array($joins_columns[$one_field_sql_table]) )
 				{
+					Trace::step($context, 'create joins columns for one field sql table', self::$TRACE_BUILDER);
 					$joins_columns[$one_field_sql_table] = array();
 				}
+				
 				$joins_columns[$one_field_sql_table][$one_field_sql_alias] = $one_field_sql_column;
 			}
 			// FILL SELECT COLUMNS WITH A REGULAR COLUMN
 			else
 			{
-				$columns[$one_field_sql_alias] =$one_field_sql_column; // ZF2 doesn't accept a table.column scheme
+				Trace::step($context, 'one_field_sql_table is NOT part of joins tables', self::$TRACE_BUILDER);
+				$columns[$one_field_sql_alias] = $one_field_sql_column; // ZF2 doesn't accept a table.column scheme
 			}
 			
 			// CHECK FIELD TABLE
@@ -246,7 +255,6 @@ final class SqlBuilderSelect
 				$field_sql_db			= $field_record['sql_db'];
 				$field_sql_table		= $field_record['sql_table'];
 				$field_sql_column		= $field_record['sql_column'];
-				// $field_sql_alias		= array_key_exists('sql_alias', $field_record) ? $field_record['sql_alias'] : $field_sql_column;
 				$field_sql_alias		= $field_name;
 				$field_sql_is_expr		= $field_record['sql_is_expression'];
 				$field_sql_is_pk		= $field_record['sql_is_primary_key'];
@@ -296,6 +304,7 @@ final class SqlBuilderSelect
 					
 					if ( ! array_key_exists($field_sql_table, $joins_columns) || ! is_array($joins_columns[$field_sql_table]) )
 					{
+						Trace::step($context, 'sql table is part of joins columns', self::$TRACE_BUILDER);
 						$joins_columns[$field_sql_table] = array();
 					}
 					$joins_columns[$field_sql_table][$field_sql_alias] = $field_sql_column;
@@ -324,6 +333,7 @@ final class SqlBuilderSelect
 		// SELECT COUNT(*) FROM ... WHERE ... GROUP BY ... ORDER BY ...
 		if ($query_type === Query::$TYPE_SELECT_COUNT)
 		{
+			Trace::step($context, 'query type is SELECT COUNT', self::$TRACE_BUILDER);
 			$columns = array('count' => new Expression('count(' . $one_field_sql_column . ')') );
 			$froms = array($one_field_sql_table=>$one_field_sql_table);
 		}
@@ -340,8 +350,32 @@ final class SqlBuilderSelect
 				Trace::value($context, 'join record', $join_record, self::$TRACE_BUILDER);
 				
 				$join_table_right = $join_record['right_table'];
-				$join_columns = array_key_exists($join_table_right, $joins_columns) ? $joins_columns[$join_table_right] : $select::SQL_STAR;
+				
+				if ($has_distinct_one_field)
+				{
+					Trace::step($context, 'loop on join record ['.$join_table_right.'] and query is one field', self::$TRACE_BUILDER);
+					
+					$one_field_sql_table = $field_has_foreign_link ? $one_field_record['sql_foreign_table'] : $one_field_record['sql_table'];
+					
+					if ($one_field_sql_table === $join_table_right)
+					{
+						Trace::step($context, 'one field is part of a join for right table ['.$join_table_right.']', self::$TRACE_BUILDER);
+						$join_columns = $joins_columns[$join_table_right];
+					}
+					else
+					{
+						Trace::step($context, 'skip join record because query is a one field query', self::$TRACE_BUILDER);
+						continue;
+					}
+				}
+				else
+				{
+					Trace::step($context, 'loop on join record ['.$join_table_right.'] and query is NOT one field', self::$TRACE_BUILDER);
+					$join_columns = array_key_exists($join_table_right, $joins_columns) ? $joins_columns[$join_table_right] : $select::SQL_STAR;
+				}
+				
 				// var_dump($join_columns);
+				
 				$select->join(
 					$join_record['right'],
 					$join_record['on'],
@@ -353,6 +387,12 @@ final class SqlBuilderSelect
 		
 		
 		// FILL COLUMNS
+		// if ( is_array($joins_columns) )
+		// {
+			// for()
+			// {
+			// }
+		// }
 		$has_columns = ( is_array($joins_columns) || is_array($columns) ) && ( count($columns) + count($joins_columns) ) >= 1;
 		if ( ! $has_columns)
 		{

@@ -2,7 +2,7 @@
  * @file        views/mixin-get nodes.js
  * @desc        Mixin for container get nodes feature for containers
  * @see			DevaptContainer
- * @ingroup     DEVAPT_CORE
+ * @ingroup     DEVAPT_VIEWS
  * @date        2014-11-15
  * @version		1.0.x
  * @author      Luc BORIES
@@ -10,8 +10,9 @@
  * @license		Apache License Version 2.0, January 2004; see LICENSE.txt or http://www.apache.org/licenses/
  */
 
+'use strict';
 define(
-['Devapt', 'core/types', 'core/class'],
+['Devapt', 'core/types', 'object/class'],
 function(Devapt, DevaptTypes, DevaptClass)
 {
 	/**
@@ -47,7 +48,7 @@ function(Devapt, DevaptTypes, DevaptClass)
 		 */
 		mixin_init_get_nodes: function(self)
 		{
-			self.push_trace(self.trace, self.mixin_trace_get_nodes);
+			self.push_trace(self.trace, DevaptMixinGetNodes.mixin_trace_get_nodes);
 			var context = 'mixin_init_get_nodes()';
 			self.enter(context, '');
 			
@@ -70,7 +71,7 @@ function(Devapt, DevaptTypes, DevaptClass)
 		{
 			var self = this;
 			var context = 'get_all_nodes()';
-			self.push_trace(self.trace, self.mixin_trace_get_nodes);
+			self.push_trace(self.trace, DevaptMixinGetNodes.mixin_trace_get_nodes);
 			self.enter(context, '');
 			
 			
@@ -94,7 +95,7 @@ function(Devapt, DevaptTypes, DevaptClass)
 		{
 			var self = this;
 			var context = 'get_node_by_content(text)';
-			self.push_trace(self.trace, self.mixin_trace_get_nodes);
+			self.push_trace(self.trace, DevaptMixinGetNodes.mixin_trace_get_nodes);
 			self.enter(context, '');
 			
 			
@@ -118,7 +119,7 @@ function(Devapt, DevaptTypes, DevaptClass)
 		{
 			var self = this;
 			var context = 'get_node_by_content(text)';
-			self.push_trace(self.trace, self.mixin_trace_get_nodes);
+			self.push_trace(self.trace, DevaptMixinGetNodes.mixin_trace_get_nodes);
 			self.enter(context, '');
 			
 			
@@ -142,26 +143,48 @@ function(Devapt, DevaptTypes, DevaptClass)
 		get_node_by_field_value: function(arg_field_name, arg_field_value)
 		{
 			var self = this;
-			var context = 'get_node_by_content(field name, field value)';
-			self.push_trace(self.trace, self.mixin_trace_get_nodes);
+			var context = 'get_node_by_field_value(field name, field value)';
+			self.push_trace(self.trace, DevaptMixinGetNodes.mixin_trace_get_nodes);
 			self.enter(context, '');
 			
 			
 			var node_jqo = null;
 			var nodes_jqo = self.get_all_nodes();
-			for(node_index in nodes_jqo)
+			if ( DevaptTypes.is_not_empty_object(nodes_jqo) )
 			{
-				var loop_node_jqo = $( nodes_jqo[node_index] );
-				var loop_record = loop_node_jqo.data('record');
-				if ( DevaptTypes.is_object(loop_record) )
+				self.step(context, 'all nodes is an array');
+				self.value(context, 'nodes_jqo.length', nodes_jqo.length);
+				
+				for(var node_index = 0 ; node_index < nodes_jqo.length ; node_index++)
 				{
-					var field_value = loop_record[arg_field_name];
-					if (field_value === arg_field_value)
+					self.value(context, 'loop on node index', node_index);
+					
+					// var loop_node_jqo = $( nodes_jqo[node_index] );
+					// var loop_record = loop_node_jqo.data('record');
+					var loop_record = self.items_records[node_index];
+					self.value(context, 'loop_record', loop_record);
+					if ( DevaptTypes.is_object(loop_record) )
 					{
-						node_jqo = loop_node_jqo;
-						break;
+						self.step(context, 'loop record is an object');
+						var field_value = loop_record[arg_field_name];
+						if (field_value === arg_field_value)
+						{
+							self.step(context, 'record field value = arg field value');
+							var loop_node_jqo = $( nodes_jqo[node_index] );
+							node_jqo = loop_node_jqo;
+							break;
+						}
+					}
+					else
+					{
+						self.step(context, 'loop record is not an object');
 					}
 				}
+			}
+			else
+			{
+				self.step(context, 'all nodes is not an array');
+				console.error(nodes_jqo);
 			}
 			
 			
@@ -170,17 +193,6 @@ function(Devapt, DevaptTypes, DevaptClass)
 			return node_jqo;
 		}
 	};
-	
-	
-	/**
-	 * @public
-	 * @memberof			DevaptMixinGetNodes
-	 * @desc				Register mixin options
-	 * @return {nothing}
-	 */
-	// DevaptMixinGetNodes.register_options = function(arg_prototype)
-	// {
-	// };
 	
 	
 	

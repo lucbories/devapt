@@ -2,7 +2,7 @@
  * @file        datas/mixin-datasource.js
  * @desc        Mixin for data source use
  * @see			DevaptModel, DevaptStorage
- * @ingroup     DEVAPT_CORE
+ * @ingroup     DEVAPT_DATAS
  * @date        2014-10-11
  * @version		1.0.x
  * @author      Luc BORIES
@@ -10,13 +10,14 @@
  * @license		Apache License Version 2.0, January 2004; see LICENSE.txt or http://www.apache.org/licenses/
  */
 
+'use strict';
 define(
-['Devapt', 'core/types', 'core/class',
+['Devapt', 'core/types', 'object/class',
 	'datas/mixin-datasource-inline', 'datas/mixin-datasource-events', 'datas/mixin-datasource-classes', 'datas/mixin-datasource-resources',
-	'datas/mixin-datasource-logs', 'datas/mixin-datasource-model', 'datas/mixin-datasource-crud-api'],
+	'datas/mixin-datasource-logs', 'datas/mixin-datasource-model', 'datas/mixin-datasource-server-api'],
 function(Devapt, DevaptTypes, DevaptClass,
 	DevaptMixinDatasoureInline, DevaptMixinDatasoureEvents, DevaptMixinDatasoureClasses, DevaptMixinDatasoureResources,
-	DevaptMixinDatasoureLogs, DevaptMixinDatasoureModel, DevaptMixinDatasoureCrudApi)
+	DevaptMixinDatasoureLogs, DevaptMixinDatasoureModel, DevaptMixinDatasoureServerApi)
 {
 	/**
 	 * @mixin				DevaptMixinDatasoure
@@ -41,7 +42,6 @@ function(Devapt, DevaptTypes, DevaptClass,
 		 */
 		mixin_init_datasource: function(self)
 		{
-			// var self = this;
 			self.push_trace(self.trace, DevaptMixinDatasoure.mixin_trace_datasource);
 			var context = 'mixin_init_datasource()';
 			self.enter(context, '');
@@ -75,7 +75,7 @@ function(Devapt, DevaptTypes, DevaptClass,
 			self.items_last_index = null;
 			
 			// PROCESS CUSTOM INIT
-			self.assertNotEmptyString(context, 'source', self.items_source);
+			self.assert_not_empty_string(context, 'source', self.items_source);
 			switch(self.items_source)
 			{
 				case 'inline':
@@ -114,10 +114,13 @@ function(Devapt, DevaptTypes, DevaptClass,
 					self.init_data_source_resources(self);
 					break;
 					
+				case 'server-api':
+				case 'resource-api':
+				case 'view-api':
 				case 'crud-api':
 					// LOAD MIXIN RESOURCES
 					// self.register_mixin(DevaptMixinDatasoureCrudApi);
-					self.init_data_source_crud_api(self);
+					self.init_data_source_server_api(self);
 					break;
 					
 				default:
@@ -202,7 +205,7 @@ function(Devapt, DevaptTypes, DevaptClass,
 			// console.log(self.items_source, context + '[' + self.name + ']:source');
 			
 			// SWITCH ON DATA SOURCE
-			self.assertNotEmptyString(context, 'source', self.items_source);
+			self.assert_not_empty_string(context, 'source', self.items_source);
 			var promise = null;
 			switch(self.items_source)
 			{
@@ -248,9 +251,12 @@ function(Devapt, DevaptTypes, DevaptClass,
 					self.pop_trace();
 					return promise;
 					
+				case 'server-api':
+				case 'resource-api':
+				case 'view-api':
 				case 'crud-api':
 					// LOAD MIXIN CRUD API ITEMS
-					promise = self.get_items_array_crud_api();
+					promise = self.get_items_array_server_api();
 					self.leave(context, self.msg_success_promise);
 					self.pop_trace();
 					return promise;
@@ -258,8 +264,8 @@ function(Devapt, DevaptTypes, DevaptClass,
 			
 			
 			// BAD DATA SOURCE
-			var deferred = $.Deferred();
-			var items_promise = deferred.promise();
+			var deferred = Devapt.defer();
+			var items_promise = deferred.promise;
 			
 			deferred.reject();
 			
@@ -284,14 +290,15 @@ function(Devapt, DevaptTypes, DevaptClass,
 			self.enter(context, '');
 			
 			
-			var deferred = $.Deferred();
-			var types_promise = deferred.promise();
+			var deferred = Devapt.defer();
+			var types_promise = Devapt.promise(deferred);
 			
 			
 			// GET ITEMS TYPES FROM INLINE SOURCE
 			if ( self.items_source === 'inline' || self.items_source === 'logs' || self.items_source === 'events'
 				|| self.items_source === 'classes' || self.items_source === 'resources' || self.items_source === 'views'
-				|| self.items_source === 'models' || self.items_source === 'crud-api' )
+				|| self.items_source === 'models' || self.items_source === 'resource-api'
+				|| self.items_source === 'server-api' || self.items_source === 'view-api' || self.items_source === 'crud-api' )
 			{
 				var types = [];
 				
@@ -316,6 +323,17 @@ function(Devapt, DevaptTypes, DevaptClass,
 					function(model)
 					{
 						self.step(context, 'model found');
+						
+						// ITERATE ON ONE FIELD RECORDS
+						if (self.items_iterator === 'field_editor')
+						{
+							self.step(context, 'iterator is field_editor');
+							
+							var types = ['object'];
+							
+							deferred.resolve(types);
+							return types_promise;
+						}
 						
 						// ITERATE ON RECORDS
 						if (self.items_iterator === 'records')
@@ -398,9 +416,13 @@ function(Devapt, DevaptTypes, DevaptClass,
 	DevaptMixinDatasoureClass.add_public_str_property('items_source_format',	'',	'array', false, false, ['view_items_source_format']); // json / array
 
 	DevaptMixinDatasoureClass.add_public_bool_property('items_distinct',		'',	false, false, false, []); // items are distinct ?
+	DevaptMixinDatasoureClass.add_public_str_property('items_distinct_field',	'',	null, false, false, []); // items are distinct with given field name
 	DevaptMixinDatasoureClass.add_public_str_property('items_iterator',			'', 'records', false, false, []); // items iterator : records / fields
 	DevaptMixinDatasoureClass.add_public_array_property('items_fields',			'', [], false, false, [], 'string', ','); // item fields
+	
 	DevaptMixinDatasoureClass.add_public_str_property('items_format',			'', null, false, false, []); // item format
+	DevaptMixinDatasoureClass.add_public_array_property('items_formats',		'', null, false, false, [], 'string', ','); // item format
+	
 	DevaptMixinDatasoureClass.add_public_obj_property('items_current_record',	'', null, false, false, []);
 	DevaptMixinDatasoureClass.add_public_obj_property('items_refresh',			'', null, false, false, []);
 	
@@ -425,7 +447,7 @@ function(Devapt, DevaptTypes, DevaptClass,
 	DevaptMixinDatasoureClass.add_public_mixin(DevaptMixinDatasoureResources);
 	DevaptMixinDatasoureClass.add_public_mixin(DevaptMixinDatasoureLogs);
 	DevaptMixinDatasoureClass.add_public_mixin(DevaptMixinDatasoureModel);
-	DevaptMixinDatasoureClass.add_public_mixin(DevaptMixinDatasoureCrudApi);
+	DevaptMixinDatasoureClass.add_public_mixin(DevaptMixinDatasoureServerApi);
 	
 	
 	// BUILD CLASS

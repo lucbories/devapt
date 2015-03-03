@@ -1,6 +1,11 @@
 /**
  * @file        core/types-is.js
  * @desc        Devapt static common features: Devapt static types operations
+ * 				API
+ * 					...
+ * 					is_not_empty_array_or_object(value): (boolean)
+ * 					...
+ * 					
  * @ingroup     DEVAPT_CORE
  * @date        2013-05-16
  * @version		1.0.x
@@ -9,7 +14,8 @@
  * @license		Apache License Version 2.0, January 2004; see LICENSE.txt or http://www.apache.org/licenses/
  */
 
-define(['Devapt', 'core/traces'], function(Devapt, DevaptTraces)
+'use strict';
+define([/*'Devapt', */'core/traces'], function(/*Devapt, */DevaptTraces)
 {
 	/**
 	 * @memberof	DevaptTypes
@@ -556,6 +562,21 @@ define(['Devapt', 'core/traces'], function(Devapt, DevaptTraces)
 	DevaptTypes.is_not_empty_array = function(arg_value)
 	{
 		return DevaptTypes.is_array(arg_value) && (arg_value.length > 0);
+	}
+
+	/**
+	 * @memberof			DevaptTypes
+	 * @public
+	 * @static
+	 * @method				DevaptTypes.is_not_empty_array_or_object(arg_value)
+	 * @desc				Test if the value is a not empty array
+	 * @param {anything}	arg_value			value to test
+	 * @return {boolean}
+	 */
+	DevaptTypes.is_not_empty_array_or_object = function(arg_value)
+	{
+		return DevaptTypes.is_not_empty_array(arg_value)
+			|| DevaptTypes.is_not_empty_object(arg_value);
 	}
 
 	/**

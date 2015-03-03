@@ -2,7 +2,7 @@
  * @file        datas/mixin-datasource-inline.js
  * @desc        Mixin for inline data source
  * @see			...
- * @ingroup     DEVAPT_CORE
+ * @ingroup     DEVAPT_DATAS
  * @date        2014-11-02
  * @version		1.0.x
  * @author      Luc BORIES
@@ -10,8 +10,9 @@
  * @license		Apache License Version 2.0, January 2004; see LICENSE.txt or http://www.apache.org/licenses/
  */
 
+'use strict';
 define(
-['Devapt', 'core/types', 'core/class'],
+['Devapt', 'core/types', 'object/class'],
 function(Devapt, DevaptTypes, DevaptClass)
 {
 	/**
@@ -64,8 +65,8 @@ function(Devapt, DevaptTypes, DevaptClass)
 			
 			
 			// INIT PROMISE
-			var deferred = $.Deferred();
-			var items_promise = deferred.promise();
+			var deferred = Devapt.defer();
+			var items_promise = deferred.promise;
 			
 			// GET ITEMS FROM INLINE SOURCE
 			if ( self.items_source === 'inline' )

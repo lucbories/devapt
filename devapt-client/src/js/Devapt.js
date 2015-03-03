@@ -1,6 +1,42 @@
 /**
  * @file     	Devapt.js
  * @desc     	Devapt static common features: Devapt static class, traces, errors, types, inheritance, modules, resources, utils
+ * 				API
+ * 					Devapt.trace:(boolean)
+ * 					Devapt.jQuery:(object)
+ * 					
+ * 					PLUGINS
+ * 						Devapt.plugins_requires: (array)
+ * 						Devapt.plugins_map: (object)
+ * 						Devapt.get_plugins(): (object)
+ * 						Devapt.set_plugins(plugins): (object)
+ * 						Devapt.add_plugin(plugin): (nothing)
+ * 						Devapt.get_plugin(name): (object)
+ * 						
+ * 					BACKEND
+ * 						Devapt.current_backend
+ * 						Devapt.get_current_backend
+ * 						Devapt.has_current_backend
+ * 						Devapt.set_current_backend
+ * 						Devapt.is_valid_backend
+ * 						Devapt.get_current_backend
+ * 						
+ * 					UTILS
+ * 						Devapt.get_prototype_name()
+ * 						Devapt.use_css(url)
+ * 						Devapt.use_assets(urls)
+ * 						
+ * 					UID
+ * 						Devapt.uid()
+ * 						Devapt.get_unique_name(arg_prefix)
+ * 						 
+ * 					HASH
+ * 						Devapt.hash(arg_method_name, arg_value)
+ * 						
+ * 					GARBAGE COLLECTOR
+ * 						Devapt.gc_use(arg_using_object, arg_used_object)
+ * 						
+ * 						
  * @ingroup     DEVAPT_CORE
  * @date        2013-05-16
  * @version		1.0.x
@@ -10,7 +46,8 @@
  */
 
 'use strict';
-define('Devapt', ['jquery', 'core/init', 'md5', 'sha1'], function($, DevaptInit, CryptoMD5, CryptoSHA1)
+define('Devapt', ['jquery', 'core/init', 'md5', 'sha1', 'Q', 'factory'],
+function($, DevaptInit, CryptoMD5, CryptoSHA1, Q, DevaptFactory)
 {
 	console.info('Loading Devapt bootstrap');
 	
@@ -48,6 +85,71 @@ define('Devapt', ['jquery', 'core/init', 'md5', 'sha1'], function($, DevaptInit,
 	Devapt.jQuery = function()
 	{
 		return $;
+	}
+	
+	
+	
+	// -------------------------------------------------- MESSAGES ---------------------------------------------------------
+	
+	// STATIC RESULT MESSAGE
+	Devapt.msg_default_empty_implementation = 'default empty implementation';
+	
+	Devapt.msg_success = 'success';
+	Devapt.msg_failure = 'failure';
+	
+	Devapt.msg_found = 'found';
+	Devapt.msg_not_found = 'not found';
+	
+	Devapt.msg_default_promise = 'default implementation: returns promise';
+	Devapt.msg_success_promise = 'success: returns promise';
+	Devapt.msg_failure_promise = 'failure: returns promise';
+	
+	Devapt.msg_success_require = 'success: a requirejs request is processing';
+	Devapt.msg_failure_require = 'failure: a requirejs request is processing';
+	
+	// TASK STATES LABELS
+	// CREATED -> STARTED -> RUNNING -> SUSPENDED -> RUNNING
+	// CREATED -> STARTED -> RUNNING -> STOPPED -> DESTROYED
+	// CREATED -> STARTED -> RUNNING -> STOPPED -> STARTED
+	Devapt.STATE_CREATED = 'CREATED';
+	Devapt.STATE_READY = 'READY';
+	Devapt.STATE_STARTED = 'STARTED';
+	Devapt.STATE_SUSPENDED = 'SUSPENDED';
+	Devapt.STATE_RUNNING = 'RUNNING';
+	Devapt.STATE_STOPPED = 'STOPPED';
+	Devapt.STATE_DESTROYED = 'DESTROYED';
+	
+	// RENDERING PROCESS STATES LABELS
+	Devapt.STATE_NOT_RENDERED = 'not_rendered';
+	Devapt.STATE_BEFORE_RENDERING = 'before_rendering';
+	Devapt.STATE_RENDERING = 'rendering';
+	Devapt.STATE_AFTER_RENDERING = 'after_rendering';
+	Devapt.STATE_RENDERED = 'rendered';
+	
+	
+	
+	// -------------------------------------------------- PLUGINS ---------------------------------------------------------
+	
+	/**
+	 * @memberof			Devapt
+	 * @public
+	 * @static
+	 * @desc				Application manager
+	 */
+	Devapt.plugin_manager = null;
+	
+	
+	/**
+	 * @memberof  			Devapt
+	 * @public
+	 * @static
+	 * @method				Devapt.get_plugins()
+	 * @desc				Get application plugins
+	 * @return {object}		Plugins map
+	 */
+	Devapt.get_plugin_manager = function()
+	{
+		return Devapt.plugin_manager;
 	}
 	
 	
@@ -130,11 +232,11 @@ define('Devapt', ['jquery', 'core/init', 'md5', 'sha1'], function($, DevaptInit,
 			return false;
 		}
 		
-		if ( ! arg_backend.build_from_declaration )
-		{
-			console.log('Devapt.is_valid_backend: no "build_from_declaration" function');
-			return false;
-		}
+		// if ( ! arg_backend.build_from_declaration )
+		// {
+			// console.log('Devapt.is_valid_backend: no "build_from_declaration" function');
+			// return false;
+		// }
 		
 		if ( ! arg_backend.render_page )
 		{
@@ -215,7 +317,7 @@ define('Devapt', ['jquery', 'core/init', 'md5', 'sha1'], function($, DevaptInit,
 	 * @static
 	 * @method				Devapt.use_css(arg_css_files)
 	 * @desc				Register a list of css files
-	 * @param {object}		arg_css_files	css files array
+	 * @param {array}		arg_css_files	css files array
 	 * @return {nothing}
 	 */
 	Devapt.use_css = function(arg_css_files)
@@ -252,6 +354,47 @@ define('Devapt', ['jquery', 'core/init', 'md5', 'sha1'], function($, DevaptInit,
 		}
 	}
 	
+	/**
+	 * @memberof			Devapt
+	 * @public
+	 * @static
+	 * @method				Devapt.use_assets(arg_assets_urls)
+	 * @desc				Register a list of assets url
+	 * @param {array}		arg_assets_urls		assets url array
+	 * @return {nothing}
+	 */
+	Devapt.use_assets = function(arg_assets_urls)
+	{
+		console.info('Devapt.use_assets:', arg_assets_urls);
+		
+		// LOAD MODULE CSS FILES
+		if (arg_assets_urls)
+		{
+			// CHECK ARRAY
+			var is_string = typeof arg_css_files == 'string' || typeof arg_css_files == 'String';
+			if (is_string)
+			{
+				arg_assets_urls = [ arg_assets_urls ];
+			}
+			
+			// LOOP ON MODULE CSS FILES
+			for(var asset_index in arg_assets_urls)
+			{
+				var url = arg_assets_urls[asset_index];
+				
+				var link_jqo = $('<link>');
+				$('head').append(link_jqo);
+				link_jqo.attr(
+					{
+						rel:  "import",
+						type: "unknow",
+						href: url,
+						media: 'all'
+					}
+				);
+			}
+		}
+	}
 	
 	
 	// -------------------------------------------------- UID ---------------------------------------------------------
@@ -271,18 +414,45 @@ define('Devapt', ['jquery', 'core/init', 'md5', 'sha1'], function($, DevaptInit,
 		return private_uid;
 	}
 	
+	/**
+	 * @memberof			Devapt
+	 * @public
+	 * @static
+	 * @method				Devapt.get_unique_name()
+	 * @desc				Get a unique name
+	 * @param {string}		arg_prefix		name begin
+	 * @return {integer}
+	 */
+	Devapt.get_unique_name = function(arg_prefix)
+	{
+		return arg_prefix + '_' + Devapt.uid();
+	}
 	
 	
-	// -------------------------------------------------- MESSAGES ---------------------------------------------------------
 	
-	// STATIC RESULT MESSAGE
-	Devapt.msg_default_empty_implementation = 'default empty implementation';
-	Devapt.msg_success = 'success';
-	Devapt.msg_failure = 'failure';
-	Devapt.msg_found = 'found';
-	Devapt.msg_not_found = 'not found';
-	Devapt.msg_success_promise = 'success: returns promise';
-	Devapt.msg_success_require = 'success: a requirejs request is processing';
+	// -------------------------------------------------- GARBAGE COLLECTOR ---------------------------------------------------------
+	
+	/**
+	 * @memberof			Devapt
+	 * @public
+	 * @static
+	 * @method				Devapt.gc_use(using,used)
+	 * @desc				Register a used object by a using object
+	 * @param {object}		arg_using_object		using object
+	 * @param {object}		arg_used_object			used object
+	 * @return {boolean}
+	 */
+	Devapt.gc_use = function(arg_using_object, arg_used_object)
+	{
+		if (! arg_using_object || ! arg_used_object || ! arg_using_object.gc_use || ! arg_used_object.gc_uses_counter)
+		{
+			return false;
+		}
+		
+		arg_using_object.gc_use(arg_used_object);
+		
+		return null;
+	}
 	
 	
 	
@@ -313,6 +483,294 @@ define('Devapt', ['jquery', 'core/init', 'md5', 'sha1'], function($, DevaptInit,
 		}
 		
 		return null;
+	}
+	
+	
+	
+	// -------------------------------------------------- PROMISE ---------------------------------------------------------
+	
+	/**
+	 * @memberof			Devapt
+	 * @public
+	 * @static
+	 * @method				Devapt.is_defer(value)
+	 * @desc				Test if a value is a deferred object
+	 * @param {object}		arg_value		value to test
+	 * @return {boolean}
+	 */
+	Devapt.is_defer = function(arg_value)
+	{
+		return arg_value ? !!arg_value.resolve : false;
+	}
+	
+	/**
+	 * @memberof			Devapt
+	 * @public
+	 * @static
+	 * @method				Devapt.is_promise(value)
+	 * @desc				Test if a value is a promise object
+	 * @param {object}		arg_value		value to test
+	 * @return {boolean}
+	 */
+	Devapt.is_promise = function(arg_value)
+	{
+		return Q.isPromise(arg_value);
+	}
+	
+	/**
+	 * @memberof			Devapt
+	 * @public
+	 * @static
+	 * @method				Devapt.defer()
+	 * @desc				Create a deferred object
+	 * @param {object}		arg_value		external deferred
+	 * @return {object}
+	 */
+	Devapt.defer = function(arg_value)
+	{
+		if(arg_value)
+		{
+			return Q(arg_value);
+		}
+		return Q.defer();
+	}
+	
+	/**
+	 * @memberof			Devapt
+	 * @public
+	 * @static
+	 * @method				Devapt.defer()
+	 * @desc				Create a deferred object
+	 * @param {object}		arg_value		external deferred
+	 * @return {object}
+	 */
+	Devapt.promise = function(arg_value)
+	{
+		if (arg_value.makeNodeResolver && arg_value.promise)
+		{
+			return arg_value.promise;
+		}
+		return Q(arg_value);
+	}
+	
+	/**
+	 * @memberof			Devapt
+	 * @public
+	 * @static
+	 * @method				Devapt.promise_resolved(arg_resolved_value)
+	 * @desc				Create a resolved promise object with a resolved value
+	 * @param {anything}	arg_resolved_value		resolved value
+	 * @return {promise}
+	 */
+	Devapt.promise_resolved = function(arg_resolved_value)
+	{
+		var defer = Q.defer();
+		defer.resolve(arg_resolved_value);
+		return defer.promise;
+	}
+	
+	/**
+	 * @memberof			Devapt
+	 * @public
+	 * @static
+	 * @method				Devapt.promise_resolved(arg_resolved_value)
+	 * @desc				Create a rejected promise object with a reason
+	 * @param {anything}	arg_reject_reason		reject reason
+	 * @return {promise}
+	 */
+	Devapt.promise_rejected = function(arg_reject_reason)
+	{
+		var defer = Q.defer();
+		defer.reject(arg_reject_reason);
+		return defer.promise;
+	}
+	
+	/**
+	 * @memberof			Devapt
+	 * @public
+	 * @static
+	 * @method				Devapt.defer()
+	 * @desc				Create a deferred object which is resolved when all given promises are resolved or rejected
+	 * @param {array}		arg_promises		all promises
+	 * @return {object}
+	 */
+	Devapt.promise_all = function(arg_promises)
+	{
+		return Q.all(arg_promises);
+	}
+	
+	
+	
+	// -------------------------------------------------- FACTORY ---------------------------------------------------------
+	
+	/**
+	 * @memberof			Devapt
+	 * @public
+	 * @static
+	 * @method				Devapt.require(arg_required_urls)
+	 * @desc				Load all required urls
+	 * @param {array}		arg_required_urls		required urls
+	 * @return {object}		A promise which is resolved when all dependancies are loaded
+	 */
+	Devapt.require = function(arg_required_urls)
+	{
+		// CHECK DEPENDANCIES
+		if ( ! (arg_required_urls && arg_required_urls.length > 0) )
+		{
+			return Devapt.promise_rejected('Devapt.require: bad given dependancies array');
+		}
+		
+		// INIT PROMISE
+		var defer = Devapt.defer();
+		
+		// LOAD REQUIRED URLS WITH COMMONJS
+		if ( typeof require === 'function' && typeof define === 'function')
+		{
+			require(arg_required_urls,
+				function() 
+				{
+					defer.resolve(arguments);
+				}
+			);
+		}
+		else
+		{
+			defer.reject('Devapt.require: module loader not found');
+		}
+		
+		return Devapt.promise(defer);
+	}
+	
+	
+	/**
+	 * @memberof			Devapt
+	 * @public
+	 * @static
+	 * @method				Devapt.get_requires(arg_class_name)
+	 * @desc				Get class dependancies path names
+	 * @param {string}		arg_class_name		class name to instanciate
+	 * @return {object}		A promise of class urls dependancies array
+	 */
+	Devapt.get_requires = function(arg_class_name)
+	{
+		var dependancies = [];
+		
+		
+		// LOOKUP DEPENDANCIES
+		var plugins_promise = Devapt.get_plugin_manager().get_class_requires(arg_class_name);
+		var lookup_promise = plugins_promise.then(
+			function(depds)
+			{
+				// console.info('Devapt.get_requires: plugins promise is resolved', depds);
+				
+				// LOOKUP CLASS DEPENDANCIES IN PLUGINS
+				if ( depds && depds.length > 0 )
+				{
+					// console.info('Devapt.get_requires: dependancies found in plugins for ', arg_class_name);
+					return depds;
+				}
+
+				// LOOKUP CLASS DEPENDANCIES IN DEFAULT FACTORY
+				// console.info('Devapt.get_requires: lookup in default factory');
+				var dependancies = DevaptFactory.get_class_require(arg_class_name, '');
+				if ( dependancies && dependancies.length > 0 )
+				{
+					// console.info('Devapt.get_requires: dependancies found in default factory for ', arg_class_name);
+					return dependancies;
+				}
+				
+				// NOT FOUND
+				// console.info('Devapt.get_requires: dependancies not found for ', arg_class_name);
+				return [];
+			},
+			
+			function()
+			{
+				console.error('Devapt.get_requires: dependancies not found for ', arg_class_name);
+				return [];
+			}
+		);
+		
+		// console.info('Devapt.get_requires: lookup_promise');
+		return lookup_promise;
+	}
+	
+	
+	/**
+	 * @memberof			Devapt
+	 * @public
+	 * @static
+	 * @method				Devapt.create(arg_class_name, arg_settings)
+	 * @desc				Create an object from a class name and a settings map
+	 * @param {string}		arg_class_name		class name to instanciate
+	 * @param {object}		arg_settings		class instance settings
+	 * @return {promise}
+	 */
+	Devapt.create = function(arg_class_name, arg_settings)
+	{
+		// console.log(arg_class_name, 'Devapt.create enter');
+		
+		// CHECK CLASS NAME
+		if (! arg_class_name || arg_class_name.length === 0)
+		{
+			console.error(arg_class_name, 'Devapt.create: bad class name');
+			return Devapt.promise_rejected('bad class name');
+		}
+		
+		// CHECK CLASS SETTINGS
+		if (! arg_settings || arg_settings.length === 0)
+		{
+			console.error(arg_settings, 'Devapt.create: bad class settings');
+			return Devapt.promise_rejected('bad class settings');
+		}
+		
+		
+		// GET CLASS DEPENDANCIES
+		// console.log('Devapt.create get class depds');
+		var depds_promise = Devapt.get_requires(arg_class_name);
+		
+		var create_promise = depds_promise.then(
+			function(dependancies)
+			{
+				// console.log('Devapt.create depds found', dependancies);
+				
+				// CREATE INSTANCE
+				if (dependancies && dependancies.length > 0)
+				{
+					var require_promise = Devapt.require(dependancies);
+					
+					var create_promise = require_promise.then(
+						function(args)
+						{
+							var ObjectClass = args[0];
+							
+							// CREATE MODEL
+							var instance = ObjectClass.create(arg_settings);
+							
+							// RESOLVE DEFERRED
+							if (instance)
+							{
+								// console.info(instance, 'instance creation success');
+								return instance;
+							}
+							else
+							{
+								console.error(ObjectClass, 'instance creation failure');
+								return null;
+							}
+						}
+					);
+					
+					return create_promise;
+				}
+				
+				defer.reject('class dependancies failure');
+				return Devapt.promise(defer);
+			}
+		);
+		
+		
+		return create_promise;
 	}
 	
 	
