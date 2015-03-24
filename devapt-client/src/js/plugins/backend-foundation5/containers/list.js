@@ -48,7 +48,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptContainer, undefined)
 		
 		
 		// CONSTRUCTOR END
-		self.leave(context, 'success');
+		self.leave(context, Devapt.msg_success);
 	}
 	
 	
@@ -70,7 +70,9 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptContainer, undefined)
 		var a_jqo = $('li>a:contains("' + arg_node_item_text + '"):eq(0)', self.items_jquery_parent);
 		if ( ! a_jqo)
 		{
-			self.leave(context, self.msg_failure);
+			console.error(arg_node_item_text, context + ':arg_node_item_text');
+			console.error(self.items_jquery_parent, context + ':items_jquery_parent');
+			self.leave(context, Devapt.msg_failure);
 			return null;
 		}
 		
@@ -78,7 +80,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptContainer, undefined)
 		var node_jqo = a_jqo.parent();
 		
 		
-		self.leave(context, self.msg_success);
+		self.leave(context, Devapt.msg_success);
 		return node_jqo;
 	}
 	
@@ -107,7 +109,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptContainer, undefined)
 		self.items_jquery_parent = self.ul_jqo;
 		
 		
-		self.leave(context, 'success');
+		self.leave(context, Devapt.msg_success);
 	}
 	
 	
@@ -135,7 +137,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptContainer, undefined)
 		);
 		
 		
-		self.leave(context, 'success');
+		self.leave(context, Devapt.msg_success);
 		return node_jqo;
 	}
 	
@@ -157,7 +159,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptContainer, undefined)
 		
 		arg_item_jqo.addClass('divider');
 		
-		self.leave(context, self.msg_success);
+		self.leave(context, Devapt.msg_success);
 		return arg_item_jqo;
 	}
 	
@@ -182,7 +184,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptContainer, undefined)
 		a_jqo.html(arg_item_content);
 		arg_item_jqo.append(a_jqo);
 		
-		self.leave(context, self.msg_success);
+		self.leave(context, Devapt.msg_success);
 		return arg_item_jqo;
 	}
 	

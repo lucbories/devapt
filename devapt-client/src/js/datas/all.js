@@ -11,9 +11,10 @@
 
 'use strict';
 define(
-['datas/field', 'datas/mixin-datasource',
+['datas/field',
+/*'datas/mixin-datasource',
 'datas/mixin-datasource-classes', 'datas/mixin-datasource-events', 'datas/mixin-datasource-events-listeners',
-'datas/mixin-datasource-inline', 'datas/mixin-datasource-logs', /*'datas/mixin-datasource-models',*/ 'datas/mixin-datasource-resources',
+'datas/mixin-datasource-inline', 'datas/mixin-datasource-logs', 'datas/mixin-datasource-models', 'datas/mixin-datasource-resources',*/
 'datas/model/model', 'datas/query',
 'datas/storage/storage', 'datas/storage/storage-json'/*, 'datas/storage-memory'*/
 ],

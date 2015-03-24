@@ -132,4 +132,10 @@ class ResourceController extends AbstractController
 		Trace::step('ResourceController::doGetAction', 'get action success ['.$arg_resource_name.']', self::$TRACE_RESOURCE_CONTROLLER);
 		return true;
 	}
+	
+	public function doPostAction($arg_resource_name, $arg_action_name, $arg_id, $arg_request, $arg_response)
+	{
+		Trace::warning('ResourceController: Dummy post action');
+		return true;
+	}
 }

@@ -149,12 +149,14 @@ class AuthenticationDbAdapter implements AuthenticationAdapterInterface
 		// CHECK IF AUTHENTICATION IS ENABLED
 		if ( ! Authentication::isEnabled() )
 		{
+			Trace::notice('Authentication::login: not enabled');
 			return false;
 		}
 		
 		// CHECK IF INIT IS NEEDED
 		if ( is_null($this->auth_adapter) )
 		{
+			Trace::notice('Authentication::login: no adapter');
 			return false;
 		}
 		
@@ -173,6 +175,7 @@ class AuthenticationDbAdapter implements AuthenticationAdapterInterface
 			return $this->auth_token->isValid();
 		}
 		
+		Trace::notice('Authentication::login: bad auth token');
 		return false;
 	}
 	

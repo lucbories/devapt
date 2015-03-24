@@ -13,11 +13,11 @@
 define(
 ['Devapt',
 	'core/traces', 'core/types', 'core/init', 'core/nav-history',
-	'object/classes', 'object/plugin-manager'
+	'object/classes', 'object/plugin-manager', 'core/security'
 ],
 function(Devapt,
 	DevaptTrace, DevaptTypes, DevaptInit, DevaptNavHistory,
-	DevaptClasses, DevaptPluginManager
+	DevaptClasses, DevaptPluginManager, DevaptSecurity
 )
 {
 	/**
@@ -45,6 +45,7 @@ function(Devapt,
 	 * @desc		Application configuration
 	 */
 	DevaptApplication.app_config = null;
+	
 	
 	
 	/**
@@ -117,28 +118,36 @@ function(Devapt,
 		DevaptTrace.trace_enter(context, '', DevaptApplication.app_trace);
 		
 		
-		// INIT NAVIGATION HISTORY
-		DevaptNavHistory.init();
-		
-		// INIT TRACES
-		DevaptClasses.traces_settings = DevaptApplication.get_value('application.traces.items', []);
-		
-		// LOAD ALL FILES ?
 		var init_plugins_promise = null;
-		var load_all = DevaptApplication.get_value('application.status.load_all_classes', false);
-		if (load_all)
+		
+		try
 		{
-			var requires_promise = Devapt.require(['core/all', 'datas/all', 'views/all'])
-			init_plugins_promise = requires_promise.then(
-				function()
-				{
-					return DevaptApplication.init_plugins();
-				}
-			);
+			// INIT NAVIGATION HISTORY
+			DevaptNavHistory.init();
+			
+			// INIT TRACES
+			DevaptClasses.traces_settings = DevaptApplication.get_value('application.traces.items', []);
+			
+			// LOAD ALL FILES ?
+			var load_all = DevaptApplication.get_value('application.status.load_all_classes', false);
+			if (load_all)
+			{
+				var requires_promise = Devapt.require(['core/all', 'datas/all', 'views/all'])
+				init_plugins_promise = requires_promise.then(
+					function()
+					{
+						return DevaptApplication.init_plugins();
+					}
+				);
+			}
+			else
+			{
+				init_plugins_promise = DevaptApplication.init_plugins();
+			}
 		}
-		else
+		catch(e)
 		{
-			init_plugins_promise = DevaptApplication.init_plugins();
+			console.error(context, e);
 		}
 		
 		
@@ -239,7 +248,7 @@ function(Devapt,
 	 * @static
 	 * @method				DevaptApplication.init_backend()
 	 * @desc				Init application and render views
-	 * @return {nothing}
+	 * @return {object}		A promise
 	 */
 	DevaptApplication.init_backend = function()
 	{
@@ -307,7 +316,7 @@ function(Devapt,
 	 * @static
 	 * @method				DevaptApplication.render()
 	 * @desc				Render views
-	 * @return {nothing}
+	 * @return {object}		A promise
 	 */
 	DevaptApplication.render = function()
 	{
@@ -318,25 +327,44 @@ function(Devapt,
 		// GET CURRENT BACKEND
 		var backend = Devapt.get_current_backend();
 		
+		
+		// CHECK AUTHENTICATION
+		if ( ! DevaptApplication.check_authentication() )
+		{
+			var login_promise = backend.render_login();
+			DevaptTrace.trace_leave(context, Devapt.msg_success_promise, DevaptApplication.app_trace);
+			return login_promise;
+		}
+		
+		
 		// INIT TOP MENUBAR
+		var topmenubar_promise = null;
+		DevaptTrace.trace_step(context, 'INIT TOP MENUBAR', DevaptApplication.app_trace);
+		
 		DevaptNavHistory.current_topbar_name = DevaptApplication.get_topbar_name();
-		var topmenubar_promise = backend.render_view($('body header'), DevaptNavHistory.current_topbar_name);
-		topmenubar_promise.then(
+		
+		topmenubar_promise = backend.render_view($('body header'), DevaptNavHistory.current_topbar_name);
+		topmenubar_promise = topmenubar_promise.then(
 			function(view)
 			{
+				DevaptTrace.trace_step(context, 'INIT TOP MENUBAR: resource found', DevaptApplication.app_trace);
+				
 				if ( ! DevaptTypes.is_object(view) || ! view.is_view )
 				{
 					DevaptTrace.trace_step(context, 'ERROR: resource view is not a valid object', DevaptApplication.app_trace);
 					return;
 				}
 				DevaptNavHistory.current_topbar_name = view.name;
+				DevaptNavHistory.current_topbar_object = view;
 				DevaptNavHistory.history_stack[0].menubar_name = view.name;
 				DevaptTrace.trace_step(context, 'Topbar menus render', DevaptApplication.app_trace);
 			}
 		);
 		
+		
 		// INIT DEFAULT VIEW
 		DevaptInit.init();
+		
 		
 		// RENDER PAGE
 		var hash = DevaptNavHistory.get_location_hash();
@@ -345,8 +373,20 @@ function(Devapt,
 			DevaptTrace.trace_step(context, 'Process location hash', DevaptApplication.app_trace);
 			DevaptNavHistory.set_location_hash(hash);
 		}
+		else
+		{
+			var content_id = 'page_content_id';
+			var content_jqo = $('#' + content_id);
+			var view_name = 'VIEW_HOME';
+			content_jqo.children().hide();
+			var view_promise = backend.render_view(content_jqo, view_name);
+		}
+		
 		
 		// INIT BREADCRUMBS
+		var breadcrumbs_promise = null;
+		DevaptTrace.trace_step(context, 'INIT BREADCRUMBS', DevaptApplication.app_trace);
+		
 		var breadcrumbs = DevaptApplication.get_breadcrumbs_name();
 		if ( DevaptTypes.is_not_empty_str(breadcrumbs) )
 		{
@@ -359,7 +399,7 @@ function(Devapt,
 				
 				var render_promise = backend.render_view(container_jqo, breadcrumbs);
 				
-				render_promise.then(
+				breadcrumbs_promise = render_promise.then(
 					function(view)
 					{
 						if ( ! DevaptTypes.is_object(view) || ! view.is_view )
@@ -379,7 +419,18 @@ function(Devapt,
 		}
 		
 		
-		DevaptTrace.trace_leave(context, '', DevaptApplication.app_trace);
+		var all_promise = [];
+		if (topmenubar_promise)
+		{
+			all_promise.push(topmenubar_promise);
+		}
+		if (breadcrumbs_promise)
+		{
+			all_promise.push(breadcrumbs_promise);
+		}
+		
+		DevaptTrace.trace_leave(context, Devapt.msg_success_promise, DevaptApplication.app_trace);
+		return Devapt.promise_all([topmenubar_promise, breadcrumbs_promise]);
 	}
 	
 	
@@ -580,6 +631,26 @@ function(Devapt,
 	 * @memberof			DevaptApplication
 	 * @public
 	 * @static
+	 * @method				DevaptApplication.get_login_view_url()
+	 * @desc				Get application configuration login url "application.url.login"
+	 * @return {string}		Application base url
+	 */
+	DevaptApplication.get_login_view_url = function(arg_)
+	{
+		var context = 'DevaptApplication.get_login_view_url()';
+		DevaptTrace.trace_enter(context, '', DevaptApplication.app_trace);
+		
+		var value = DevaptApplication.get_value('url.login', null);
+		
+		DevaptTrace.trace_leave(context, '', DevaptApplication.app_trace);
+		return value;
+	}
+	
+	
+	/**
+	 * @memberof			DevaptApplication
+	 * @public
+	 * @static
 	 * @method				DevaptApplication.get_topbar_name()
 	 * @desc				Get application configuration "application.layouts.default.topbar.name"
 	 * @return {string}		Application topbar name
@@ -637,6 +708,103 @@ function(Devapt,
 		DevaptTrace.trace_leave(context, '', DevaptApplication.app_trace);
 		return value;
 	}
+	
+	
+	/**
+	 * @memberof			DevaptApplication
+	 * @public
+	 * @static
+	 * @method				DevaptApplication.get_logged_user()
+	 * @desc				Get logged user record
+	 * @return {object}
+	 */
+	DevaptApplication.get_logged_user = function()
+	{
+		var context = 'DevaptApplication.get_logged_user()';
+		DevaptTrace.trace_enter(context, '', DevaptApplication.app_trace);
+		
+		
+		var record = DevaptSecurity.get_logged_user();
+		DevaptTrace.trace_var(context, 'logged_user', record, DevaptApplication.app_trace);
+		
+		
+		DevaptTrace.trace_leave(context, Devapt.msg_success, DevaptApplication.app_trace);
+		return record;
+	}
+	
+	
+	/**
+	 * @memberof			DevaptApplication
+	 * @public
+	 * @static
+	 * @method				DevaptApplication.get_security_token()
+	 * @desc				Get security user
+	 * @return {string}
+	 */
+	DevaptApplication.get_security_token = function()
+	{
+		var context = 'DevaptApplication.get_security_token()';
+		DevaptTrace.trace_enter(context, '', DevaptApplication.app_trace);
+		
+		
+		var record = DevaptApplication.get_logged_user();
+		if ( ! record || ! record.token )
+		{
+			DevaptTrace.trace_leave(context, Devapt.msg_failure, DevaptApplication.app_trace);
+			return null;
+		}
+		DevaptTrace.trace_var(context, 'security token', record.token, DevaptApplication.app_trace);
+		
+		
+		DevaptTrace.trace_leave(context, '', DevaptApplication.app_trace);
+		return record.token;
+	}
+	
+	
+	/**
+	 * @memberof			DevaptApplication
+	 * @public
+	 * @static
+	 * @method				DevaptApplication.check_authentication()
+	 * @desc				Test if a user is logged
+	 * @return {boolean}
+	 */
+	DevaptApplication.check_authentication = function()
+	{
+		var context = 'DevaptApplication.check_authentication()';
+		DevaptTrace.trace_enter(context, '', DevaptApplication.app_trace);
+		
+		
+		// TEST IF AUTHENTICATION IS ENABLED 
+		var value = DevaptApplication.get_value('security.authentication.enabled', true);
+		if (value)
+		{
+			// GET LOGGED USER RECORD
+			var record = DevaptApplication.get_logged_user();
+			if ( ! record || ! record.token )
+			{
+				DevaptTrace.trace_leave(context, Devapt.msg_failure, DevaptApplication.app_trace);
+				return false;
+			}
+			
+			// CHECK RECORD IS OK AND HAS TOKEN
+			value = record.status === 'ok' && DevaptTypes.is_not_empty_str(record.token);
+			DevaptTrace.trace_var(context, 'check authentication status and token', value, DevaptApplication.app_trace);
+			
+			// CHECK EXPIRATION
+			var ts = Date.now();
+			value = value && record.expire*1000 > ts;
+			DevaptTrace.trace_var(context, 'check authentication expiration', record.expire < ts, DevaptApplication.app_trace);
+		}
+		DevaptTrace.trace_var(context, 'check expire', !!value, DevaptApplication.app_trace);
+		
+		
+		DevaptTrace.trace_leave(context, '', DevaptApplication.app_trace);
+		return !!value;
+	}
+	
+	
+	Devapt.app = DevaptApplication;
 	
 	
 	return DevaptApplication;

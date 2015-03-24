@@ -5,6 +5,12 @@
  * 					Devapt.trace:(boolean)
  * 					Devapt.jQuery:(object)
  * 					
+ * 					AJAX
+ * 						Devapt.ajax_get(url,datas,options): (promise)
+ * 						Devapt.ajax_post(url,datas,options): (promise)
+ * 						Devapt.ajax_put(url,datas,options): (promise)
+ * 						Devapt.ajax_delete(url,datas,options): (promise)
+ * 						
  * 					PLUGINS
  * 						Devapt.plugins_requires: (array)
  * 						Devapt.plugins_map: (object)
@@ -88,6 +94,15 @@ function($, DevaptInit, CryptoMD5, CryptoSHA1, Q, DevaptFactory)
 	}
 	
 	
+	/**
+	 * @memberof			Devapt
+	 * @public
+	 * @static
+	 * @desc				Application static class
+	 */
+	Devapt.app = null;
+	
+	
 	
 	// -------------------------------------------------- MESSAGES ---------------------------------------------------------
 	
@@ -125,6 +140,168 @@ function($, DevaptInit, CryptoMD5, CryptoSHA1, Q, DevaptFactory)
 	Devapt.STATE_RENDERING = 'rendering';
 	Devapt.STATE_AFTER_RENDERING = 'after_rendering';
 	Devapt.STATE_RENDERED = 'rendered';
+	
+	
+	
+	// -------------------------------------------------- AJAX ---------------------------------------------------------
+	
+	/**
+	 * @memberof  			Devapt
+	 * @public
+	 * @static
+	 * @method				Devapt.url(url,token)
+	 * @desc				Check and format URL
+	 * @param {string}		arg_url			URL string
+	 * @param {string}		arg_token		security token string
+	 * @return {object}		A promise
+	 */
+	Devapt.url = function(arg_url, arg_token)
+	{
+		if (arg_url)
+		{
+			if ( ! arg_token)
+			{
+				return arg_url;
+			}
+			
+			if ( arg_url.indexOf('?') > 0 )
+			{
+				return arg_url + '&security_token=' + arg_token;
+			}
+			
+			return arg_url + '?security_token=' + arg_token;
+		}
+		
+		return null;
+	}
+	
+	/**
+	 * @memberof  			Devapt
+	 * @public
+	 * @static
+	 * @method				Devapt.ajax(method,url,datas,options)
+	 * @desc				Send an ajax request
+	 * @param {string}		arg_method		GET, PUT, POST, DELETE
+	 * @param {string}		arg_url			URL string
+	 * @param {object}		arg_datas		request datas
+	 * @param {object}		arg_options		AJAX options
+	 * @param {string}		arg_token		security token string
+	 * @return {object}		A promise
+	 */
+	Devapt.ajax = function(arg_method, arg_url, arg_datas, arg_options, arg_token)
+	{
+		// CHECK AJAX METHOD
+		if (arg_method !== 'GET' & arg_method !== 'PUT' && arg_method !== 'POST' && arg_method !== 'DELETE')
+		{
+			console.error(arg_method, 'Devapt.ajax failure: bad method');
+			return Devapt.promise_rejected();
+		}
+		
+		// APPEND SECURITY TOKEN
+		if (arg_token)
+		{
+			arg_url = Devapt.url(arg_url, arg_token);
+		}
+		
+		// DEFAULT AJAX OPTIONS
+		var default_options = {
+			async		: true,
+			cache		: true,
+			type		: arg_method,
+			dataType	: 'json',
+			url			: arg_url,
+			timeout		: 5000,
+			data		: arg_datas,
+			
+			success: function(datas, textStatus, jqXHR)
+				{
+					return datas;
+				},
+			
+			error: function(jqXHR, textStatus, errorThrown)
+				{
+					console.log(arg_options, 'Devapt.ajax failure: arg_options');
+					console.error(errorThrown, 'Devapt.ajax failure: errorThrown');
+					return null;
+				}
+		};
+		
+		// MERGE AJAX OPTIONS
+		var options = jQuery.extend(default_options, arg_options);
+		// console.log(options, 'Devapt.ajax: options');
+		
+		// SEND AJAX REQUEST
+		var jq_promise = $.ajax(options);
+		
+		return Devapt.promise(jq_promise);
+	}
+	
+	/**
+	 * @memberof  			Devapt
+	 * @public
+	 * @static
+	 * @method				Devapt.ajax_get(url,datas,options)
+	 * @desc				Send a GET ajax request
+	 * @param {string}		arg_url			URL string
+	 * @param {object}		arg_datas		request datas
+	 * @param {object}		arg_options		AJAX options
+	 * @param {string}		arg_token		security token string
+	 * @return {object}		A promise
+	 */
+	Devapt.ajax_get = function(arg_url, arg_datas, arg_options, arg_token)
+	{
+		return Devapt.ajax('GET', arg_url, arg_datas, arg_options, arg_token);
+	}
+	
+	/**
+	 * @memberof  			Devapt
+	 * @public
+	 * @static
+	 * @method				Devapt.ajax_put(url,datas,options)
+	 * @desc				Send a PUT ajax request
+	 * @param {string}		arg_url			URL string
+	 * @param {object}		arg_datas		request datas
+	 * @param {object}		arg_options		AJAX options
+	 * @param {string}		arg_token		security token string
+	 * @return {object}		A promise
+	 */
+	Devapt.ajax_put = function(arg_url, arg_datas, arg_options, arg_token)
+	{
+		return Devapt.ajax('PUT', arg_url, arg_datas, arg_options, arg_token);
+	}
+	
+	/**
+	 * @memberof  			Devapt
+	 * @public
+	 * @static
+	 * @method				Devapt.ajax_post(url,datas,options)
+	 * @desc				Send a POST ajax request
+	 * @param {string}		arg_url			URL string
+	 * @param {object}		arg_datas		request datas
+	 * @param {object}		arg_options		AJAX options
+	 * @param {string}		arg_token		security token string
+	 * @return {object}		A promise
+	 */
+	Devapt.ajax_post = function(arg_url, arg_datas, arg_options, arg_token)
+	{
+		return Devapt.ajax('POST', arg_url, arg_datas, arg_options, arg_token);
+	}
+	
+	/**
+	 * @memberof  			Devapt
+	 * @public
+	 * @static
+	 * @method				Devapt.ajax_delete(url,datas,options)
+	 * @desc				Send a DELETE ajax request
+	 * @param {string}		arg_url			URL string
+	 * @param {object}		arg_datas		request datas
+	 * @param {object}		arg_options		AJAX options
+	 * @return {object}		A promise
+	 */
+	Devapt.ajax_delete = function(arg_url, arg_datas, arg_options, arg_token)
+	{
+		return Devapt.ajax('DELETE', arg_url, arg_datas, arg_options, arg_token);
+	}
 	
 	
 	

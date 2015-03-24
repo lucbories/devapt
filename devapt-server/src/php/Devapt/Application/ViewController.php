@@ -31,7 +31,7 @@ class ViewController extends AbstractController
 	// STATIC ATTRIBUTES
 	
 	/// @brief TRACE FLAG
-	static public $TRACE_VIEW_CONTROLLER = false;
+	static public $TRACE_VIEW_CONTROLLER = true;
 	
 	
     /**
@@ -102,6 +102,12 @@ class ViewController extends AbstractController
 		$arg_response->send();
 		
 		Trace::step('ViewController::doGetAction', 'Render view success ['.$arg_resource_name.']', self::$TRACE_VIEW_CONTROLLER);
+		return true;
+	}
+	
+	public function doPostAction($arg_resource_name, $arg_action_name, $arg_id, $arg_request, $arg_response)
+	{
+		Trace::warning('ViewController: Dummy post action');
 		return true;
 	}
 }

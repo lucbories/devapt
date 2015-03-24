@@ -1,6 +1,7 @@
 'use strict';
 
-var foundation_version = '5.4.6';
+var foundation_version = '5.5.1';
+// var foundation_version = '5.4.6';
 // foundation_version = '5.3.3';
 // foundation_version = '5.0.2';
 
@@ -15,15 +16,15 @@ require.config(
 			/*'jquery':		'/devapt-client/lib/jquery-1.10.2/jquery-1.10.2.min',*/
 			
 			// IE >= 9
-			'jquery':		'/devapt-client/lib/foundation-' + foundation_version + '/js/lib/jquery',
-			'modernizr':	'/devapt-client/lib/foundation-' + foundation_version + '/js/lib/modernizr',
+			'jquery':		'/devapt-client/lib/foundation-' + foundation_version + '/js/vendor/jquery',
+			'modernizr':	'/devapt-client/lib/foundation-' + foundation_version + '/js/vendor/modernizr',
 		/*	'foundation':	'/devapt-client/lib/foundation-' + foundation_version + '/js/foundation.min',*/
 			
 			// ALL
 			'QUnit':		'/devapt-client/lib/qunit-1.16.0/qunit-1.16.0',
 			'runtu':		'/devapt-client/tests/run-tests',
 			'Q':			'/devapt-client/lib/q-20150130/q',
-			'jStorage':		'/devapt-client/lib/jstorage-0.4.3/jstorage',
+			'jStorage':		'/devapt-client/lib/jstorage-0.4.12/jstorage-wrap',
 			'mustache':		'/devapt-client/lib/mustache/mustache-wrap',
 			'md5':			'/devapt-client/lib/cryptojs-3.1.2/rollups/md5',
 			'sha1':			'/devapt-client/lib/cryptojs-3.1.2/rollups/sha1',

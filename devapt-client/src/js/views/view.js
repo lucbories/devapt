@@ -86,7 +86,7 @@ function(
 		self.fire_event('devapt.view.parent.changed');
 		
 		
-		self.leave(context, 'success');
+		self.leave(context, Devapt.msg_success);
 		// self.trace = false;
 		return true;
 	}
@@ -133,7 +133,7 @@ function(
 		}
 		
 		
-		self.leave(context, 'success');
+		self.leave(context, Devapt.msg_success);
 	}
 	
 	
@@ -321,7 +321,59 @@ function(
 		self.fire_event('devapt.view.settings.changed');
 		
 		
-		self.leave(context, 'success');
+		self.leave(context, Devapt.msg_success);
+		return true;
+	}
+	
+	
+	
+	/**
+	 * @public
+	 * @memberof			DevaptView
+	 * @desc				Edit view settings
+	 * @return {boolean}	true:success,false:failure
+	 */
+	var cb_show = function()
+	{
+		var self = this;
+		var context = 'show()';
+		self.enter(context, '');
+		
+		if ( ! self.content_jqo || self.content_jqo === {})
+		{
+			self.leave(context, Devapt.msg_failure);
+			return false;
+		}
+		
+		self.content_jqo.show();
+		
+		self.leave(context, Devapt.msg_success);
+		return true;
+	}
+	
+	
+	
+	/**
+	 * @public
+	 * @memberof			DevaptView
+	 * @desc				Edit view settings
+	 * @return {boolean}	true:success,false:failure
+	 */
+	var cb_hide = function()
+	{
+		var self = this;
+		var context = 'hide()';
+		self.enter(context, '');
+		
+		if ( ! self.content_jqo || self.content_jqo === {})
+		{
+			self.leave(context, Devapt.msg_failure);
+			return false;
+		}
+		
+		self.content_jqo.hide();
+		
+		self.leave(context, Devapt.msg_success);
 		return true;
 	}
 	
@@ -343,7 +395,7 @@ function(
 		
 		self.step(context, 'not yet implemented');
 		
-		self.leave(context, 'success');
+		self.leave(context, Devapt.msg_success);
 		return arg_sentance_str;
 	}
 	
@@ -367,7 +419,7 @@ function(
 			eval(self.js_on_change);
 		}
 		
-		self.leave(context, 'success');
+		self.leave(context, Devapt.msg_success);
 		return true;
 	}
 	
@@ -391,7 +443,7 @@ function(
 			eval(self.js_on_refresh);
 		}
 		
-		self.leave(context, 'success');
+		self.leave(context, Devapt.msg_success);
 		return true;
 	}
 	
@@ -415,7 +467,7 @@ function(
 			eval(self.js_on_filled);
 		}
 		
-		self.leave(context, 'success');
+		self.leave(context, Devapt.msg_success);
 		return true;
 	}
 	
@@ -439,7 +491,7 @@ function(
 			eval(self.js_on_ready);
 		}
 		
-		self.leave(context, 'success');
+		self.leave(context, Devapt.msg_success);
 		return true;
 	}
 	
@@ -622,6 +674,10 @@ function(
 	// DevaptViewClass.add_public_method('render', {}, cb_render);
 	// DevaptViewClass.add_public_method('render_self', {}, cb_render_self);
 	DevaptViewClass.add_public_method('edit_settings', {}, cb_edit_settings);
+	
+	DevaptViewClass.add_public_method('show', {}, cb_show);
+	DevaptViewClass.add_public_method('hide', {}, cb_hide);
+	
 	DevaptViewClass.add_public_method('translate', {}, cb_translate);
 	DevaptViewClass.add_public_method('on_change', {}, cb_on_change);
 	DevaptViewClass.add_public_method('on_refresh', {}, cb_on_refresh);

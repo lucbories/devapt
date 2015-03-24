@@ -121,10 +121,12 @@ function(Devapt, DevaptTypes, DevaptResources, DevaptClass, DevaptObject, Devapt
 		
 		if ( self.has_association() && ! DevaptTypes.is_object(self.association) )
 		{
+			self.step(context, 'SHOULD CREATE ASSOCIATION');
 			self.association = {min:null, max:null, model_name:null, model:null, query:null};
 			
 			if (self.has_join() && self.join)
 			{
+				self.step(context, 'HAS HOIN');
 				/*
 					[FIELD DEFINITION]
 					type=String
@@ -154,6 +156,7 @@ function(Devapt, DevaptTypes, DevaptResources, DevaptClass, DevaptObject, Devapt
 			
 			else if ( self.has_foreign() )
 			{
+				self.step(context, 'HAS FOREIGN');
 				/*
 					[FIELD DEFINITION]
 					type=String
@@ -174,6 +177,7 @@ function(Devapt, DevaptTypes, DevaptResources, DevaptClass, DevaptObject, Devapt
 				self.association.max = null;
 				if (self.foreign_model && self.sql_foreign_column && self.sql_foreign_key)
 				{
+					self.step(context, 'HAS FOREIGN MODEL AND KEY');
 					self.association.model = self.foreign_model;
 					self.association.model_name = self.association.model.name;
 					self.association.target_field_name = self.foreign_model.get_field_for_column(self.sql_foreign_column);
@@ -181,6 +185,7 @@ function(Devapt, DevaptTypes, DevaptResources, DevaptClass, DevaptObject, Devapt
 				}
 				else
 				{
+					self.step(context, 'HAS NOT FOREIGN MODEL NOR KEY');
 					self.association.model = self.model;
 					self.association.model_name = self.association.model.name;
 					self.association.target_field_name = self.name;
@@ -219,6 +224,8 @@ function(Devapt, DevaptTypes, DevaptResources, DevaptClass, DevaptObject, Devapt
 			// CREATE QUERY
 			if (self.association.target_field_name && self.association.target_field_key)
 			{
+				self.step(context, 'HAS TARGET FIELD');
+				
 				var order = self.association.target_field_name + '=ASC';
 				var query_settings = {
 					// fields: [self.association.target_field_key, self.association.target_field_name],
@@ -398,7 +405,7 @@ function(Devapt, DevaptTypes, DevaptResources, DevaptClass, DevaptObject, Devapt
 		
 		// GET ASSOCIATION
 		var asso = self.get_association();
-		self.value(context, 'association', asso);
+		// self.value(context, 'association', asso);
 		// console.log(asso, 'association');
 		
 		

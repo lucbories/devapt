@@ -169,7 +169,7 @@ function(
 		promise.then(
 			function(recordset)
 			{
-				self.step('read()', 'read success');
+				self.step('read()', 'recordset is found');
 				// console.log(recordset, self.name + '.' + 'read()' + '.recordset');
 				self.recordset = recordset;
 				
@@ -447,6 +447,12 @@ function(
 		
 		// GET FIELD VALUES
 		var items_promise = field_obj.get_available_values();
+		items_promise.then(
+			function(recordset)
+			{
+				self.value(context, 'items', recordset.get_records());
+			}
+		);
 		
 		
 		self.leave(context, Devapt.msg_success_promise);

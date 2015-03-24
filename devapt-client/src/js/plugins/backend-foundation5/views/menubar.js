@@ -317,7 +317,8 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptClasses, DevaptResources, Devap
 		title_name_jqo.addClass('name');
 		title_jqo.append(title_name_jqo);
 		
-		var title_anchor_jqo = $('<a href="' + DevaptApplication.get_url_base() + '">');
+		var url = Devapt.url( DevaptApplication.get_url_base(), DevaptApplication.get_security_token() );
+		var title_anchor_jqo = $('<a href="' + url + '">');
 		title_anchor_jqo.text(title);
 		
 		var title_h1_jqo = $('<h1>');
@@ -700,7 +701,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptClasses, DevaptResources, Devap
 						return function()
 						{
 							var url_base	= DevaptApplication.get_url_base(); 
-							display_url = url_base + 'views/' + view_name + '/html_page';
+							display_url = url_base + 'views/' + view_name + '/html_page' + '?security_token=' + DevaptApplication.get_security_token();
 							DevaptNavHistory.set_page_view_content(content_label, content_id, view_name, content_label, display_url, false);
 						}
 					}
@@ -712,7 +713,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptClasses, DevaptResources, Devap
 		{
 			self.step(context, 'menu has page');
 			var url_base	= DevaptApplication.get_url_base(); 
-			display_url = url_base + 'views/' + display_page + '/html_page';
+			display_url = url_base + 'views/' + display_page + '/html_page' + '?security_token=' + DevaptApplication.get_security_token();
 			menu_a_jqo.attr('href', display_url);
 		}
 		else

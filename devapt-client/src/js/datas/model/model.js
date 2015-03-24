@@ -434,7 +434,8 @@ function(Devapt, DevaptTypes, DevaptEvents, DevaptObject, DevaptField, DevaptCla
 			switch(arg_engine.source)
 			{
 				case 'json':
-					require(['datas/storage/storage-json'], function(DevaptJsonStorage)
+					require(['datas/storage/storage-json'],
+						function(DevaptJsonStorage)
 						{
 							self.step(context, 'JSON engine is created');
 							
@@ -446,18 +447,14 @@ function(Devapt, DevaptTypes, DevaptEvents, DevaptObject, DevaptField, DevaptCla
 							arg_engine.url_update	= crud_api.action_update.url + '?query_api=2';
 							arg_engine.url_delete	= crud_api.action_delete.url + '?query_api=2';
 							
-							// arg_engine.url_read		= '/devapt-tutorial-1/public/rest/' + self.name + '/';
-							// arg_engine.url_create	= '/devapt-tutorial-1/public/rest/' + self.name + '/';
-							// arg_engine.url_update	= '/devapt-tutorial-1/public/rest/' + self.name + '/';
-							// arg_engine.url_delete	= '/devapt-tutorial-1/public/rest/' + self.name + '/';
-							
 							self.engine_object = DevaptJsonStorage.create(arg_engine.name, arg_engine);
 							self.engine_deferred.resolve(self.engine_object);
 						}
 					);
 					break;
 				case 'memory':
-					require(['datas/storage/storage-memory'], function(DevaptMemoryStorage)
+					require(['datas/storage/storage-memory'],
+						function(DevaptMemoryStorage)
 						{
 							self.step(context, 'MEMORY engine is created');
 							self.engine_object = DevaptMemoryStorage.create(arg_engine.name, arg_engine);

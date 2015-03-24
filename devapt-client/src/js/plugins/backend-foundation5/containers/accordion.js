@@ -38,7 +38,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptContainer, undefined)
 		self.enter(context, '');
 		
 		
-		self.content_jqo = $('<dl>');
+		self.content_jqo = $('<ul>');
 		self.parent_jqo.append(self.content_jqo);
 		self.content_jqo.addClass('accordion');
 		self.content_jqo.attr('data-accordion', '');
@@ -64,7 +64,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptContainer, undefined)
 		// INIT FOUNDATION
 		self.content_jqo.parent().foundation();
 		
-		// HANDLE EVENT
+		// HANulE EVENT
 		if ( DevaptTypes.is_function(self.on_accordion_changed) )
 		{
 			// self.content_jqo.on('toggled', [self, self.on_accordion_changed] );
@@ -163,7 +163,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptContainer, undefined)
 		var item_label = item_options.label;
 		
 		self.step(context, 'init node');
-		var node_jqo = $('<dd>');
+		var node_jqo = $('<li>');
 		node_jqo.addClass('accordion-navigation');
 		if (item_options.active)
 		{
@@ -175,7 +175,11 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptContainer, undefined)
 		a_jqo.html(item_label);
 		node_jqo.append(a_jqo);
 		
-		node_jqo.append(arg_item_jqo);
+		var div_jqo = $('<div>');
+		div_jqo.addClass('content');
+		div_jqo.append(arg_item_jqo);
+		
+		node_jqo.append(div_jqo);
 		self.content_jqo.append(node_jqo);
 		// console.log(self.content_jqo, context + ':accordion.content_jqo:' + self.name);
 		

@@ -79,6 +79,9 @@ function(
 		self.enter(context, (arg_selected_items ? arg_selected_items.length : 0) + ' items');
 		
 		
+		// DEBUG
+		// console.log(arg_selected_items, context);
+		
 		// LOOP ON SELECTED ITEMS
 		// var promise = self.ready_promise.then(
 			// function()

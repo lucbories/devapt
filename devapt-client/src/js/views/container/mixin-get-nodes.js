@@ -78,7 +78,7 @@ function(Devapt, DevaptTypes, DevaptClass)
 			var nodes_jqo = $(self.items_jquery_filter, self.items_jquery_parent);
 			
 			
-			self.leave(context, self.msg_success);
+			self.leave(context, Devapt.msg_success);
 			self.pop_trace();
 			return nodes_jqo;
 		},
@@ -94,7 +94,7 @@ function(Devapt, DevaptTypes, DevaptClass)
 		get_node_by_index: function(arg_node_item_index)
 		{
 			var self = this;
-			var context = 'get_node_by_content(text)';
+			var context = 'get_node_by_index(index)';
 			self.push_trace(self.trace, DevaptMixinGetNodes.mixin_trace_get_nodes);
 			self.enter(context, '');
 			
@@ -102,7 +102,7 @@ function(Devapt, DevaptTypes, DevaptClass)
 			var node_jqo = $(self.items_jquery_filter, self.items_jquery_parent).eq(arg_node_item_index);
 			
 			
-			self.leave(context, self.msg_success);
+			self.leave(context, Devapt.msg_success);
 			self.pop_trace();
 			return node_jqo;
 		},
@@ -126,7 +126,7 @@ function(Devapt, DevaptTypes, DevaptClass)
 			var node_jqo = null;
 			
 			
-			self.leave(context, self.msg_default_empty_implementation);
+			self.leave(context, Devapt.msg_default_empty_implementation);
 			self.pop_trace();
 			return node_jqo;
 		},

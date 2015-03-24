@@ -99,7 +99,7 @@ function(
 	{
 		// DEBUG
 		// console.log(self.parent_jqo, self.name + ':parent_jqo');
-		// self.trace = true;
+		self.trace = true;
 		
 		// CONSTRUCTOR BEGIN
 		var context = 'contructor(' + self.name + ')';

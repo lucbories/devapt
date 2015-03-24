@@ -100,8 +100,9 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptWorker)
 		// CREATE TIMER
 		var timer_cb = function()
 			{
+				// self.step(context, 'timer callback');
 				arg_worker_cb(self.timer_delay);
-				window.setTimeout(timer_cb, self.timer_delay);
+				self.timer_object = window.setTimeout(timer_cb, self.timer_delay);
 			};
 		self.timer_object = window.setTimeout(timer_cb, self.timer_delay);
 		

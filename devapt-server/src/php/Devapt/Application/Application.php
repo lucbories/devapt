@@ -190,7 +190,6 @@ class Application extends AbstractApplication implements ApplicationInterface
 				Trace::error('Application: Init sessions failed.');
 				return;
 			}
-			$this->getSessionManager()->start();
 			
 			// INIT MODULES
 			if ( ! $this->initModules() )

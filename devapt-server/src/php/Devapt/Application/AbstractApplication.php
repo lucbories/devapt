@@ -35,6 +35,7 @@ use Devapt\Security\PermissionArrayAdapter;
 
 // IMPORT RESOURCES
 use Devapt\Resources\Broker as ResourcesBroker;
+use Devapt\Resources\Logger as ResourceLogger;
 
 abstract class AbstractApplication
 {
@@ -90,6 +91,8 @@ abstract class AbstractApplication
      */
     public function initTraces()
 	{
+		$context = 'AbstractApplication::initTraces: ';
+		
 		// TEST IF TRACES ARE ENABLED
 		$traces_enabled = $this->getConfig()->getBooleanAttribute('application.traces.enabled', true);
 		if ( ! $traces_enabled )
@@ -97,57 +100,185 @@ abstract class AbstractApplication
 			return true;
 		}
 		
-		$traces_std_enabled = $this->getConfig()->getBooleanAttribute('application.traces.std.enabled', true);
-		$traces_file_enabled = $this->getConfig()->getBooleanAttribute('application.traces.file.enabled', true);
-		$traces_db_enabled = $this->getConfig()->getBooleanAttribute('application.traces.db.enabled', true);
 		
-		// INIT FILE CONFIG
-		$file_path_name = null;
-		if ( $traces_file_enabled )
+		// LOAD CONFIGS
+		$traces_loggers = $this->getConfig()->getAttributesCollection('application.loggers');
+		// \Zend\Debug\Debug::dump($traces_loggers, 'loggers');
+		
+		
+		// INIT TRACE
+		if (! Trace::init('default') )
 		{
-			$file_path_name = $this->getConfig()->getAttribute('application.traces.file.path', null);
-			if ( is_string($file_path_name) && ! file_exists($file_path_name) )
-			{
-				$file_path_name = DEVAPT_APP_PRIVATE_ROOT.$file_path_name;
-			}
+			\Zend\Debug\Debug::dump($context.'Trace init failed');
+			return false;
 		}
 		
-		// INIT DB CONFIG
-		$db_config = null;
-		if ( $traces_db_enabled )
+		
+		// SET DEFAULT TRACE LEVEL FOR LOG WRITERS
+		$default_trace_level = 'INFO';
+		
+		
+		// LOOP ON LOGGERS
+		foreach($traces_loggers as $logger_name => $logger_config)
 		{
-			$db_connexion = $this->getConfig()->getAttribute('application.traces.db.connexion', null);
-			
-			$db_adapter = null;
-			if ( ! is_null($db_connexion) )
+			if ($logger_name === 'enabled')
 			{
-				// TODO
-				// $db_adapter = ...
+				continue;
 			}
 			
-			if ( is_object($db_adapter) )
+			// \Zend\Debug\Debug::dump($logger_name, $context.'loop: logger name');
+			// \Zend\Debug\Debug::dump($logger_config, $context.'loop: logger config');
+			
+			if ( ! Trace::has_logger($logger_name) )
 			{
-				$db_table = $this->getConfig()->getAttribute('application.traces.db.table', null);
-				$db_fields_timestamp = $this->getConfig()->getAttribute('application.traces.db.fields.timestamp', null);
-				$db_fields_priority = $this->getConfig()->getAttribute('application.traces.db.fields.priority', null);
-				$db_fields_message = $this->getConfig()->getAttribute('application.traces.db.fields.message', null);
-				
-				if ( is_string($db_table) )
+				if ( ! Trace::add_logger($logger_name) )
 				{
-					$db_config = array();
-					$db_config['adapter'] = $db_adapter;
-					$db_config['table'] = $db_table;
-					$db_config['fields'] = null;
-					if ( is_string($db_fields_timestamp) && is_string($db_fields_timestamp) && is_string($db_fields_timestamp) )
+					Trace::warning('Application: Init trace - add logger failed.');
+					return false;
+				}
+			}
+			
+			foreach($logger_config as $appender_type => $appender_config)
+			{
+				$prefix = 'application.loggers.'.$logger_name.'.'.$appender_type;
+				// \Zend\Debug\Debug::dump($appender_type, $context.'loop: appender type');
+				
+				// ENABLE REMOTE TRACES
+				if ($appender_type === 'remote')
+				{
+					$remote = $this->getConfig()->getBooleanAttribute($prefix.'.enabled', false);
+					// \Zend\Debug\Debug::dump($remote, $context.'loop: remote enabled ['.$logger_name.']');
+					
+					$access = $this->getConfig()->getAttribute($prefix.'.access', 'ROLE_LOGGER');
+					// \Zend\Debug\Debug::dump($access, $context.'loop: remote access ['.$logger_name.']');
+					
+					// ENABLE LOG CONTROLLER PERMISSIONS
+					if ($remote)
 					{
-						$db_config['fields'] = array('timestamp' => $db_fields_timestamp, 'priority' => $db_fields_priority, 'message' => $db_fields_message);
+						// REGISTER RESOURCE LOGGER
+						$logger_resource_record = array();
+						$logger_resource_record['name'] = $logger_name;
+						$logger_resource_record['class_type'] = 'logger';
+						$logger_resource_record['class_name'] = 'Logger';
+						$logger_resource_record['access_role'] = $access;
+						$logger = ResourcesBroker::buildResourceObjectFromRecord($logger_resource_record);
+						
+						// \Zend\Debug\Debug::dump($logger->getResourceName(), $context.'loop: remote logger');
+						// \Zend\Debug\Debug::dump(ResourcesBroker::hasResourceObject($logger_name), $context.'loop: has logger');
+						// \Zend\Debug\Debug::dump(ResourcesBroker::getResourceObject($logger_name)->getResourceName(), $context.'loop: get logger name');
+					}
+					
+					continue;
+				}
+				
+				// GET TRACE LEVEL
+				$level = $this->getConfig()->getAttribute($prefix.'.level', $default_trace_level);
+				// \Zend\Debug\Debug::dump($level, $context.'loop: appender level');
+				
+				// ENABLED
+				$appender_is_enabled = $this->getConfig()->getBooleanAttribute($prefix.'.enabled', true);
+				// \Zend\Debug\Debug::dump($appender_is_enabled, $context.'loop: appender enabled');
+				if ($appender_is_enabled)
+				{
+					switch($appender_type)
+					{
+						case 'console':
+						case 'std':
+						{
+							// CREATE APPENDER
+							if ( ! Trace::add_console_appender($logger_name, $level) )
+							{
+								\Zend\Debug\Debug::dump('Application: Init trace - create console appender failed.');
+								// Trace::warning('Application: Init trace - create console appender failed.');
+								return false;
+							}
+							
+							break;
+						}
+						
+						case 'file':
+						{
+							// GET AND CHECK FILE PATH NAME
+							$file_path_name = $this->getConfig()->getAttribute($prefix.'.path', null);
+							if ( ! is_string($file_path_name) )
+							{
+								\Zend\Debug\Debug::dump('Application: Init trace - bad file appender path ['.$file_path_name.'].');
+								// Trace::warning('Application: Init trace - bad file appender path ['.$file_path_name.'].');
+								return false;
+							}
+							
+							// CHECK FILE
+							// TODO CHECK SECURITY FOR FILE (DIRECTORY...)
+							if (! file_exists($file_path_name) )
+							{
+								$file_path_name = DEVAPT_APP_PRIVATE_ROOT.$file_path_name;
+							}
+							
+							// CREATE APPENDER
+							if ( ! Trace::add_file_appender($logger_name, $file_path_name, $level) )
+							{
+								\Zend\Debug\Debug::dump('Application: Init trace - create file appender failed.');
+								// Trace::warning('Application: Init trace - create file appender failed.');
+								return false;
+							}
+							
+							break;
+						}
+						
+						case 'db':
+						{
+							$db_connexion = $this->getConfig()->getAttribute($prefix.'.connexion', null);
+							
+							// TODO LOG DB ADAPTER
+							$db_adapter = null;
+							if ( ! is_null($db_connexion) )
+							{
+								// TODO
+								// $db_adapter = ...
+							}
+							
+							if ( is_object($db_adapter) )
+							{
+								$db_table = $this->getConfig()->getAttribute($prefix.'.table', null);
+								$db_fields_timestamp = $this->getConfig()->getAttribute($prefix.'.fields.timestamp', null);
+								$db_fields_priority = $this->getConfig()->getAttribute($prefix.'.fields.priority', null);
+								$db_fields_message = $this->getConfig()->getAttribute($prefix.'.fields.message', null);
+								
+								if ( is_string($db_table) )
+								{
+									$db_config = array();
+									$db_config['adapter'] = $db_adapter;
+									$db_config['table'] = $db_table;
+									$db_config['fields'] = null;
+									if ( is_string($db_fields_timestamp) && is_string($db_fields_timestamp) && is_string($db_fields_timestamp) )
+									{
+										$db_config['fields'] = array('timestamp' => $db_fields_timestamp, 'priority' => $db_fields_priority, 'message' => $db_fields_message);
+									}
+								}
+							}
+							
+							// CREATE APPENDER
+							if ( ! Trace::add_db_appender($logger_name, $db_config, $level) )
+							{
+								\Zend\Debug\Debug::dump('Application: Init trace - create db appender failed.');
+								// Trace::warning('Application: Init trace - create db appender failed.');
+								return false;
+							}
+							
+							break;
+						}
+						
+						default:
+							\Zend\Debug\Debug::dump('Application: Init trace - bad appender type.');
+							// Trace::warning('Application: Init trace - bad appender type.');
+							return false;
 					}
 				}
 			}
 		}
 		
-		// INIT TRACES
-		return Trace::init($traces_std_enabled, $file_path_name, $db_config);
+		
+		return true;
 	}
 	
 	
@@ -258,7 +389,22 @@ abstract class AbstractApplication
 		$config = null;
 		switch($sessions_mode)
 		{
+			case 'disabled' :
+			{
+				// TODO DISABLE PHPSESSID ?
+				// setcookie(  
+					// 'PHPSESSID',
+					// 'xxx',
+					// -1,
+					// '',
+					// '/',
+					// true
+				// );
+				return true;
+			}
+			
 			case 'standard' :
+			{
 				/*
 					GET APPLICATION CONFIGURATION IN
 						application.sessions.standard.cache_expire
@@ -314,12 +460,14 @@ abstract class AbstractApplication
 				$config = new StandardConfig();
 				$config->setOptions($standard_config);
 				break;
+			}
 		}
 		
 		if ( ! is_null($config) )
 		{
 			$this->session_manager = new SessionManager($config);
 			Container::setDefaultManager($this->session_manager);
+			$this->getSessionManager()->start();
 			return true;
 		}
 		
@@ -450,6 +598,13 @@ abstract class AbstractApplication
      */
     public function initDispatcher()
 	{
+		// REGISTER SECURITY CONTROLLER
+		if ( ! Dispatcher::registerController('security', new SecurityController() ) )
+		{
+			Debug::dump('Application: Security controller registration failed.');
+			return false;
+		}
+		
 		// REGISTER MODELS CONTROLLER
 		if ( ! Dispatcher::registerController('models', new ModelController() ) )
 		{
@@ -475,6 +630,13 @@ abstract class AbstractApplication
 		if ( ! Dispatcher::registerController('resources', new ResourceController() ) )
 		{
 			Debug::dump('Application: Resources controller registration failed.');
+			return false;
+		}
+		
+		// REGISTER LOG CONTROLLER
+		if ( ! Dispatcher::registerController('loggers', new LogController() ) )
+		{
+			Debug::dump('Application: Log controller registration failed.');
 			return false;
 		}
 		

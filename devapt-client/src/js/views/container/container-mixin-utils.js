@@ -377,6 +377,7 @@ function(Devapt, DevaptTypes, DevaptClass)
 			self.enter(context, '');
 			
 			
+			// console.log(arg_node_jqo, 'arg_node_jqo');
 			arg_node_jqo.toggleClass(arg_css_class);
 			
 			

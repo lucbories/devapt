@@ -209,8 +209,6 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptContainer)
 	};
 	var parent_class = DevaptContainer;
 	var DevaptSelectClass = new DevaptClass('DevaptSelect', parent_class, class_settings);
-	console.log(DevaptContainer, 'DevaptContainer');
-	console.log(DevaptSelectClass, 'DevaptSelectClass');
 	
 	// METHODS
 	DevaptSelectClass.infos.ctor = cb_constructor;

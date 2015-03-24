@@ -171,8 +171,8 @@ function(DevaptTypes, DevaptClasses)
 			{
 				if (trace)
 				{
-					console.log(context + ' VALUE:');
-					console.log(value, msg);
+					console.log(context + ' VALUE:' + msg, value);
+					// console.log(value, msg);
 				}
 			},
 		trace_error: function(context, msg, trace)
@@ -291,7 +291,7 @@ function(DevaptTypes, DevaptClasses)
 	function fill_mixins(self, arg_ordered_mixins, arg_map_mixins, arg_new_mixins)
 	{
 		var context = 'DevaptClass:fill_mixins(ordered_mixins,map_mixins,new_mixins)';
-		DevaptTraces.trace_enter(context, '', self.trace);
+		DevaptTraces.trace_enter(context, self.infos.class_name, self.trace);
 		
 		
 		// RESET BUILD FLAG
@@ -308,6 +308,7 @@ function(DevaptTypes, DevaptClasses)
 				// GET MIXIN mixin_class
 				var mixin_class = arg_new_mixins[mixin_key];
 				// console.log(mixin_class, 'fill_mixins');
+				DevaptTraces.trace_value(context, 'loop mixin name', mixin_class.infos.class_name, self.trace);
 				
 				if ( DevaptTypes.is_object(mixin_class) && mixin_class.infos )
 				{
@@ -1078,6 +1079,7 @@ function(DevaptTypes, DevaptClasses)
 		var sub_mixin_name = null;
 		for(var sub_mixin_name in mixin_class.mixins.all_map)
 		{
+			DevaptTraces.trace_value(context, 'sub_mixin_name', sub_mixin_name, self.trace);
 			sub_mixin_class = mixin_class.mixins.all_map[sub_mixin_name];
 			build_all_collections_for_mixin(arg_class, sub_mixin_class);
 		}
@@ -1763,7 +1765,7 @@ function(DevaptTypes, DevaptClasses)
 		 */
 		DevaptClass.prototype.build_class = function()
 		{
-			var self = this;
+			var self = this; // self.trace = self.infos.class_name === 'DevaptContainerMixinSelectable';
 			var context = 'DevaptClass.build_class()';
 			DevaptTraces.trace_enter(context, '', self.trace);
 			

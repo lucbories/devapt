@@ -142,8 +142,8 @@ function(DevaptTraces, DevaptTypes, DevaptClass, DevaptClasses)
 						var regexp = new RegExp(class_name_pattern, 'i');
 						var class_name_trace = regexp.test(instance.class_name);
 						// console.log(class_name_trace, instance.class_name + ':class_name_trace');
-						instance.trace = true;
-						continue;
+						instance.trace = class_name_trace;
+						// continue;
 					}
 					
 					
@@ -184,7 +184,7 @@ function(DevaptTraces, DevaptTypes, DevaptClass, DevaptClasses)
 							var regexp = new RegExp(instance_name_pattern, 'i');
 							var instance_name_trace = regexp.test(instance.name);
 							// console.log(instance_name_trace, instance.name + ':instance_name_trace');
-							instance.trace = true;
+							instance.trace = instance_name_trace;
 							continue;
 						}
 					}

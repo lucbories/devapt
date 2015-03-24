@@ -90,21 +90,42 @@ function(
 		self.enter(context, '');
 		
 		
+		// INIT WORKERS
+		if ( ! DevaptTypes.is_object(self.workers_promises) )
+		{
+			self.workers_promises = {};
+		}
+		
 		// CREATE TASKS WORKER
 		var worker_name = arg_worker_name && arg_worker_name.length > 0 ? arg_worker_name : self.name + '_worker';
-		var worker_delay = self.worker_default_delay ? self.worker_default_delay : 500;
-		self.worker_promise = Devapt.create('Timer', { name:worker_name, timer_delay:worker_delay });
-		self.worker_promise = self.worker_promise.then(
-			function(worker)
-			{
-				self.worker = worker;
-				self.worker.start();
-			}
-		);
+		var worker_delay = self.worker_default_delay ? self.worker_default_delay : 200;
+		
+		
+		// GET OR CREATE WORKER
+		var worker_promise = null;
+		if (arg_worker_name in self.workers_promises)
+		{
+			worker_promise = self.workers_promises[worker_name];
+		}
+		else
+		{
+			worker_promise = Devapt.create('DevaptTimer', { name:worker_name, timer_delay:worker_delay });
+			self.workers_promises[worker_name] = worker_promise;
+			
+			worker_promise = worker_promise.then(
+				function(worker)
+				{
+					// console.log(worker, 'start worker');
+					worker.start();
+					// console.log(worker, 'started worker');
+					return worker;
+				}
+			);
+		}
 		
 		
 		self.leave(context, Devapt.msg_success_promise);
-		return self.worker_promise;
+		return worker_promise;
 	}
 	
 	

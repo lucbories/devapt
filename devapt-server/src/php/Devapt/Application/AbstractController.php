@@ -16,14 +16,12 @@
 
 namespace Devapt\Application;
 
-// DEBUG
+// ZF2 IMPORTS
 // use Zend\Debug\Debug;
+
+// DEVAPT IMPORTS
 use Devapt\Core\Trace;
-
-// RESOURCES
 use Devapt\Resources\Broker as ResourcesBroker;
-
-// SECURITY
 use Devapt\Security\Authentication;
 use Devapt\Security\Authorization;
 
@@ -36,6 +34,8 @@ abstract class AbstractController implements ControllerInterface
 	
 	/// @brief Controller need an action attribute ?
 	protected $has_action_attribute			= true;
+	
+	/// @brief Controller authorization is already checked
 	protected $authorization_is_cheched		= false;
 	
 	
@@ -48,12 +48,23 @@ abstract class AbstractController implements ControllerInterface
 	
 	
 	
-	public function dispatch($arg_resource_name, $arg_action_name, $arg_id, $arg_request, $arg_response)
+	/**
+     * Check permission and dispatch the request to the corresponding method
+     * @param[in]	arg_resource_name	resource name (string)
+     * @param[in]	arg_action_name		action name (string)
+     * @param[in]	arg_id				optional record id (string)
+     * @param[in]	arg_request			ZF2 request object (object)
+     * @param[in]	arg_response		ZF2 response object (object)
+     * @param[in]	arg_bypass_security	do not check security (is it a login resource) (boolean)
+     * @return		boolean
+     */
+	public function dispatch($arg_resource_name, $arg_action_name, $arg_id, $arg_request, $arg_response, $arg_bypass_security = false)
 	{
 		$context = "AbstractController.dispatch";
+		Trace::warning("AbstractController: bypass security [$arg_bypass_security] for resource [$arg_resource_name]");
 		
 		// RESET AUTHORIZATION FLAG
-		$this->authorization_is_cheched = false;
+		$this->authorization_is_cheched = false || $arg_bypass_security;
 		
 		// SEARCH RESOURCE OBJECT
 		if ( ! ResourcesBroker::searchResource($arg_resource_name) )
@@ -70,10 +81,13 @@ abstract class AbstractController implements ControllerInterface
 		}
 		
 		// CHECK AUTHORIZATION
-		if ( is_string($arg_action_name) && ! $this->checkAuthorization($arg_resource_name, $arg_action_name) )
+		if (! $arg_bypass_security)
 		{
-			Trace::warning("AbstractController: Controller authorization failed for action [$arg_action_name] on resource [$arg_resource_name]");
-			return false;
+			if ( is_string($arg_action_name) && ! $this->checkAuthorization($arg_resource_name, $arg_action_name) )
+			{
+				Trace::warning("AbstractController: Controller authorization failed for action [$arg_action_name] on resource [$arg_resource_name]");
+				return false;
+			}
 		}
 		
 		// DO ACTION
@@ -102,6 +116,7 @@ abstract class AbstractController implements ControllerInterface
 	protected function checkAuthorization($arg_resource_name, $arg_access_name)
 	{
 		$context = "AbstractController.checkAuthorization";
+		Trace::step($context, "access method [$arg_access_name] on resource [$arg_resource_name]", self::$TRACE_ABSTRACT_CONTROLLER);
 		
 		$this->authorization_is_cheched = true;
 		
@@ -113,6 +128,7 @@ abstract class AbstractController implements ControllerInterface
 		}
 		
 		// TEST IF A USER IS LOGGED
+		Trace::step($context, "TEST IF A USER IS LOGGED", self::$TRACE_ABSTRACT_CONTROLLER);
 		if ( ! Authentication::isLogged() )
 		{
 			Trace::warning('AbstractController: Authentication is enabled but no user is logged');
@@ -120,6 +136,7 @@ abstract class AbstractController implements ControllerInterface
 		}
 		
 		// TEST IF AUTHORIZATION IS ENABLED
+		Trace::step($context, "TEST IF AUTHORIZATION IS ENABLED", self::$TRACE_ABSTRACT_CONTROLLER);
 		if ( ! Authorization::isEnabled() )
 		{
 			Trace::warning('AbstractController: Authorization is disabled');
@@ -127,6 +144,7 @@ abstract class AbstractController implements ControllerInterface
 		}
 		
 		// CHECK AUTHORIZATION FOR THE LOGGED USER
+		Trace::step($context, "CHECK AUTHORIZATION FOR THE LOGGED USER", self::$TRACE_ABSTRACT_CONTROLLER);
 		$result = Authorization::checkLogged($arg_resource_name, $arg_access_name);
 		if ($result == true)
 		{
@@ -163,11 +181,12 @@ abstract class AbstractController implements ControllerInterface
 	}
 	
 	
-	public function doPostAction($arg_resource_name, $arg_action_name, $arg_id, $arg_request, $arg_response)
-	{
-		Trace::warning('AbstractController: Dummy post action');
-		return true;
-	}
+	abstract public function doPostAction($arg_resource_name, $arg_action_name, $arg_id, $arg_request, $arg_response);
+	// public function doPostAction($arg_resource_name, $arg_action_name, $arg_id, $arg_request, $arg_response)
+	// {
+		// Trace::warning('AbstractController: Dummy post action');
+		// return true;
+	// }
 	
 	
 	public function doPutAction($arg_resource_name, $arg_action_name, $arg_id, $arg_request, $arg_response)

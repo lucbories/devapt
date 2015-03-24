@@ -200,7 +200,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptQuery)
 				// ITERATE ON ONE RECORD FIELDS
 				if (self.items_iterator === 'fields')
 				{
-					self.step(context, 'iterator is records');
+					self.step(context, 'iterator is fields');
 					
 					// GET ITEMS RECORDS
 					var items_promise = self.get_items_array_model_with_iterator_fields(model_promise);

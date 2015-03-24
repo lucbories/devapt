@@ -23,11 +23,8 @@
  *  			PRIVATE API:
  *  				->cb_select_items(self,array)               : loop on items, get selected item object, call select_item(obj) for each one.
  *  				->cb_select_item(self,selected object)      : call view model select and call view select
- *  				->cb_get_select_item_by_index(self,index)   : get a selected item object from an index
- *  				->cb_get_select_item_by_label(self,label)   : get a selected item object from a label
- *  				->cb_get_select_item_by_record(self,record) : get a selected item object from a record
  *  			
- * @ingroup     DEVAPT_DATAS
+ * @ingroup     DEVAPT_VIEWS
  * @date        2015-02-08
  * @version		1.0.x
  * @author      Luc BORIES
@@ -38,11 +35,13 @@
 'use strict';
 define([
 	'Devapt', 'core/types',
-	'object/class', 'object/object'
+	'object/class', 'object/object',
+	'views/container/container-mixin-lookupable'
 	],
 function(
 	Devapt, DevaptTypes,
-	DevaptClass, DevaptObject)
+	DevaptClass, DevaptObject,
+	DevaptContainerMixinLookupable)
 {
 	/**
 	 * @public
@@ -109,7 +108,7 @@ function(
 					self.step(context, 'on ready');
 					try
 					{
-						return cb_select_items(self, arg_selection);
+						return self.select_items(arg_selection);
 					} catch(e)
 					{
 						console.error(e, context);
@@ -123,7 +122,7 @@ function(
 		}
 		
 		
-		self.leave(context, '');
+		self.leave(context, Devapt.msg_success_promise);
 		return promise;
 	};
 	
@@ -133,117 +132,202 @@ function(
 	 * @private
 	 * @method					cb_select_items(args)
 	 * @desc					Select one or more records into the view with args is one ore more indices or records or labels
-	 * @param {object}			self			view object
 	 * @param {array}			arg_selection	selected items array (record, label or index)
 	 * @return {object}			Promise of the operation with selected items attributes
 	 */
-	var cb_select_items = function (self, arg_selection)
+	var cb_select_items = function (arg_selection)
 	{
-		var context = 'cb_select_items(args)';
+		var self = this;
+		var context = 'select_items(args)';
 		self.enter(context, '');
 		
 		
 		// DEBUG
-		console.log(arg_selection, 'arg_selection');
-		
+		// console.log('arg_selection', arg_selection);
 		
 		// NORMALIZE ITEMS
 		self.step(context, 'NORMALIZE ITEMS');
 		var selected_items = [];
+		var selected_items_promises = [];
 		for(var selected_index in arg_selection)
 		{
 			self.value(context, 'loop on selected_index', selected_index);
 			
 			var selected_value = arg_selection[selected_index];
-			var selected_item = null;
+			var selected_item_promise = null;
 			
+			// FIELD EDITOR
+			if (self.items_iterator === 'field_editor')
+			{
+				self.step(context, 'VIEW IS A VIEW EDITOR');
+				
+				// REMOVE PREVIOUS SELECTED ITEM
+				self.step(context, 'remove all css selected');
+				self.remove_items_css_class('selected');
+				
+				// GET ITEMS PROMISE
+				self.step(context, 'GET ITEMS PROMISE');
+				var items_promise = self.view_model.get('ready_promise').invoke('get_items_array_model_with_iterator_records');
+				selected_item_promise = items_promise.then(
+					function(recordset)
+					{
+						try
+						{
+							self.step(context, 'ITEMS ARE FOUND');
+							
+							// GET ALL ITEMS
+							self.step(context, 'GET ALL ITEMS');
+							var items_records = recordset.get_records();
+							var items_records_count = recordset.get_count();
+							self.value(context, 'items_records', items_records);
+							self.value(context, 'items_records_count', items_records_count);
+							
+							// GET SELECTION FIELD NAME
+							self.step(context, 'GET SELECTION FIELD NAME');
+							var field_name = self.items_fields[0];
+							self.assert_not_null(context, 'field_name', field_name);
+							self.value(context, 'field_name', field_name);
+							
+							// LOOP ON ITEMS RECORDS
+							self.step(context, 'LOOP ON ITEMS RECORDS');
+							var all_selected_promise = [];
+							for(var values_index = 0 ; values_index < items_records_count ; values_index++)
+							{
+								self.value(context, 'loop on values index', values_index);
+								var loop_value_record = items_records[values_index];
+								var loop_value_field = loop_value_record[field_name];
+								self.value(context, 'loop on value for field name', loop_value_field);
+								var node_by_label_promise = self.get_select_item_by_label(loop_value_field);
+								all_selected_promise.push(node_by_label_promise);
+							}
+							
+							return Devapt.promise_all(all_selected_promise);
+						}
+						catch(e)
+						{
+							console.error(context, e);
+							return e;
+						}
+					}
+				);
+			}
 			// GET SELECTED ITEM BY ITS INDEX
-			if ( DevaptTypes.to_integer(selected_value, -1) >= 0 )
+			else if ( DevaptTypes.to_integer(selected_value, -1) >= 0 )
 			{
 				self.value(context, 'selected_value is integer', selected_value);
-				selected_item = cb_get_select_item_by_index(self, selected_value);
+				selected_item_promise = self.get_select_item_by_index(selected_value);
 			}
 			
 			// GET SELECTED ITEM BY ITS LABEL
 			else if ( DevaptTypes.is_string(selected_value) )
 			{
 				self.value(context, 'selected_value is string', selected_value);
-				selected_item = cb_get_select_item_by_label(self, selected_value);
+				selected_item_promise = self.get_select_item_by_label(selected_value);
 			}
 			
 			// GET SELECTED ITEM BY ITS RECORD
 			else if ( DevaptTypes.is_object(selected_value) )
 			{
 				self.value(context, 'selected_value is object', selected_value);
-				selected_item = cb_get_select_item_by_record(self, selected_value); // RETURNS A PROMISE ?
+				selected_item_promise = self.get_select_item_by_record(selected_value); // RETURNS A PROMISE ?
 			}
 			
 			// CHECK AND APPEND SELECTED ITEM
-			if (selected_item)
+			// console.log(selected_items, context + ':CHECK AND APPEND SELECTED ITEM');
+			if (selected_item_promise)
 			{
-				self.step(context, 'selected_value is valid');
-				selected_items.push(selected_item);
+				self.step(context, 'selected_value promise is valid');
+				
+				var selected_item_added_promise = selected_item_promise.then(
+					function(selected_item)
+					{
+						self.step(context, 'selected_value is added');
+						if ( DevaptTypes.is_array(selected_item) )
+						{
+							for(var index in selected_item)
+							{
+								selected_items.push( selected_item[index] );
+							}
+						}
+						else
+						{
+							selected_items.push(selected_item);
+						}
+					}
+				);
+				selected_items_promises.push(selected_item_added_promise);
 			}
 			else
 			{
 				self.error(context, 'selected item not found');
-				self.value(context, 'selected item', selected_item);
+				self.value(context, 'selected value', selected_value);
 			}
 		}
 		
 		
-		// DO SELECT OPERATION ON VIEW MODEL
-		var promise = null;
-		if (self.view_model && self.view_model.then && selected_items.length > 0)
+		// CHECK VIEW MODEL PROMISE AND SELECTED VALUES
+		// console.log(selected_items, context + ':CHECK VIEW MODEL PROMISE AND SELECTED VALUES');
+		if ( ! self.view_model || ! self.view_model.then || selected_items_promises.length === 0)
 		{
-			self.step(context, 'view_model and selected_items exist');
-			promise = self.view_model.get('ready_promise').then(
-				function()
-				{
-					self.step(context, 'view_model is ready');
-					
-					// REMOVE PREVIOUS SELECTED ITEM
-					if (! self.has_multiple_selection)
-					{
-						self.step(context, 'remove all css selected');
-						self.remove_items_css_class('selected');
-					}
-					
-					
-					// PROCESS VIEW MODEL SELECT OPERATIONS
-					self.step(context, 'PROCESS VIEW MODEL SELECT OPERATIONS');
-					// console.log(selected_items, context + ':PROCESS VIEW MODEL SELECT OPERATIONS');
-					
-					var view_model_promise = self.view_model.invoke('select', selected_items);
-					
-					
-					// PROCESS VIEW OPERATIONS
-					self.step(context, 'PROCESS VIEW OPERATIONS');
-					view_model_promise.then(
-						function(valid_selected_items)
-						{
-							self.step(context, 'PROCESS VIEW OPERATIONS: promise is resolved');
-							// console.log(selected_items, context + ':PROCESS VIEW OPERATIONS');
-							
-							for(var selected_index in valid_selected_items)
-							{
-								var selected_item = valid_selected_items[selected_index];
-								self.value(context, 'loop on selected item at [' + selected_index + ']', selected_item);
-								
-								cb_select_item(self, selected_item);
-							}
-						}
-					);
-					
-					return view_model_promise;
-				}
-			);
-		}
-		else
-		{
-			self.step(context, 'view_model and selected_items doesn t exist');
+			self.step(context, 'view_model and selected_items_promises doesn t exist');
 			promise = Devapt.promise_rejected(context + ':nothing to select');
+			
+			self.leave(context, Devapt.msg_failure_promise);
+			return promise;
 		}
+		
+		
+		// DO SELECT OPERATION ON VIEW MODEL
+		selected_items_promises.push(self.view_model);
+		var selected_items_resolved_promise = Devapt.promise_all(selected_items_promises);
+		var promise = selected_items_resolved_promise.then(
+			function()
+			{
+				self.step(context, 'view_model and selected_items exist');
+				return self.view_model.get('ready_promise').then(
+					function(view_model)
+					{
+						self.step(context, 'view_model is ready');
+						
+						// REMOVE PREVIOUS SELECTED ITEM
+						if (! self.has_multiple_selection)
+						{
+							self.step(context, 'remove all css selected');
+							self.remove_items_css_class('selected');
+						}
+						
+						
+						// PROCESS VIEW MODEL SELECT OPERATIONS
+						self.step(context, 'PROCESS VIEW MODEL SELECT OPERATIONS');
+						// console.log(selected_items, context + ':PROCESS VIEW MODEL SELECT OPERATIONS');
+						
+						// var view_model_promise = self.view_model.invoke('select', selected_items);
+						var view_model_promise = view_model.select(selected_items);
+						
+						
+						// PROCESS VIEW OPERATIONS
+						self.step(context, 'PROCESS VIEW OPERATIONS');
+						view_model_promise.then(
+							function(valid_selected_items)
+							{
+								self.step(context, 'PROCESS VIEW OPERATIONS: promise is resolved');
+								// console.log(selected_items, context + ':PROCESS VIEW OPERATIONS');
+								
+								for(var selected_index in valid_selected_items)
+								{
+									var selected_item = valid_selected_items[selected_index];
+									self.value(context, 'loop on selected item at [' + selected_index + ']', selected_item);
+									
+									self.select_item(selected_item);
+								}
+							}
+						);
+						
+						return view_model_promise;
+					}
+				);
+			}
+		);
 		
 		
 		self.leave(context, Devapt.msg_success_promise);
@@ -255,18 +339,21 @@ function(
 	/**
 	 * @memberof				DevaptContainerMixinSelectable
 	 * @private
-	 * @method					cb_get_select_item_by_index(view object, index)
-	 * @desc					Select one item by its index
-	 * @param {object}			self				view object
+	 * @method					cb_select_item(item)
+	 * @desc					Select an item
 	 * @param {integer}			arg_selected_item	A selected item record { index:..., node_jqo:..., record:..., label:..., already_selected:... }
 	 * @return {nothing}			
 	 */
-	var cb_select_item = function (self, arg_selected_item)
+	var cb_select_item = function (arg_selected_item)
 	{
-		// var self = this;
-		var context = 'cb_select_item(self,item)';
+		var self = this;
+		var context = 'select_item(item)';
 		self.enter(context, '');
 		
+		
+		// DEBUG
+		// console.log(arg_selected_item, 'arg_selected_item');
+		// console.log(arg_selected_item.node_jqo, 'arg_selected_item.node_jqo');
 		
 		// ENABLE SELECTED NODE
 		self.step(context, 'toggle css class "selected"');
@@ -295,14 +382,13 @@ function(
 	 * @private
 	 * @method					cb_get_select_item_by_index(view object, index)
 	 * @desc					Get selected item attributes by its index
-	 * @param {object}			self			view object
 	 * @param {integer}			arg_index		selected item index
-	 * @return {object}			A selected item record { index:..., node_jqo:..., record:..., label:..., already_selected:... }
+	 * @return {object}			A promise of a selected item record { index:..., node_jqo:..., record:..., label:..., already_selected:... }
 	 */
-	var cb_get_select_item_by_index = function (self, arg_index)
+/*	var cb_get_select_item_by_index = function (arg_index)
 	{
-		// var self = this;
-		var context = 'cb_get_select_item_by_index(self, index)';
+		var self = this;
+		var context = 'get_select_item_by_index(index)';
 		self.enter(context, arg_index);
 		
 		
@@ -320,7 +406,7 @@ function(
 		{
 			self.error(context + ':node not found');
 			self.leave(context, Devapt.msg_failure);
-			return null;
+			return Devapt.promise_rejected(context + ':node not found');
 		}
 		// console.log(selected_item.node_jqo, context + ':node_jqo [' + self.name + '] at index [' + arg_index + ']');
 		
@@ -342,8 +428,8 @@ function(
 		
 		
 		self.leave(context, Devapt.msg_success);
-		return selected_item;
-	};
+		return Devapt.promise_resolved(selected_item);
+	};*/
 	
 	
 	/**
@@ -351,14 +437,13 @@ function(
 	 * @private
 	 * @method					cb_get_select_item_by_label(view object, label)
 	 * @desc					Get selected item attributes by its index
-	 * @param {object}			self			view object
 	 * @param {string}			arg_label		selected item node label
-	 * @return {object}			A selected item record { index:..., node_jqo:..., record:..., label:... }
+	 * @return {object}			A promise of a selected item record { index:..., node_jqo:..., record:..., label:... }
 	 */
-	var cb_get_select_item_by_label = function (self, arg_label)
+/*	var cb_get_select_item_by_label = function (arg_label)
 	{
-		// var self = this;
-		var context = 'cb_get_select_item_by_label(self, label)';
+		var self = this;
+		var context = 'get_select_item_by_label(label)';
 		self.enter(context, arg_label);
 		
 		
@@ -373,7 +458,7 @@ function(
 		{
 			self.error(context + ':node not found');
 			self.leave(context, Devapt.msg_failure);
-			return null;
+			return Devapt.promise_rejected(context + ':node not found');
 		}
 		// console.log(selected_item.node_jqo, context + ':node_jqo [' + self.name + '] with label [' + arg_label + ']');
 		
@@ -387,7 +472,7 @@ function(
 		{
 			self.error(context + ':bad node index');
 			self.leave(context, Devapt.msg_failure);
-			return null;
+			return Devapt.promise_rejected(context + ':bad node index');
 		}
 		
 		
@@ -409,8 +494,8 @@ function(
 		
 		
 		self.leave(context, Devapt.msg_success);
-		return selected_item;
-	};
+		return Devapt.promise_resolved(selected_item);
+	};*/
 	
 	
 	/**
@@ -418,57 +503,60 @@ function(
 	 * @private
 	 * @method					cb_get_select_item_by_record(view object, record)
 	 * @desc					Get selected item attributes by its record
-	 * @param {object}			self			view object
 	 * @param {object}			arg_record		selected item node record
-	 * @return {object}			A selected item record { index:..., node_jqo:..., record:..., label:... }
+	 * @return {object}			A promise of a selected item record { index:..., node_jqo:..., record:..., label:... }
 	 */
-	var cb_get_select_item_by_record = function (self, arg_record)
+/*	var cb_get_select_item_by_record = function (arg_record)
 	{
-		// var self = this;
-		var context = 'cb_get_select_item_by_record(self, record)';
+		var self = this;
+		var context = 'get_select_item_by_record(record)';
 		self.enter(context, '');
 		
 		
-		// INIT SELECTED ITEM
-		var selected_item = { index:null, node_jqo:null, record:null, label:null, already_selected:false };
-		
 		// GET ITEMS PROMISE
-		var items_promise = (model_promise);
-		
-		self.view_model.invoke('read').then(
+		self.step(context, 'GET ITEMS PROMISE');
+		var items_promise = self.view_model.invoke('read').then(
 			function(recordset)
 			{
 				self.step(context, 'items are found');
-				// console.log(items, context + ':field_editor[' + self.name + ']:items are found');
-				
-				
-				// INIT SELECTED ITEM
-				var selected_item = { index:null, node_jqo:null, record:null, label:null, already_selected:false };
-				
-				
+				console.log(recordset, context + ':GET ITEMS PROMISE');
+				try
+				{
 				// GET ALL ITEMS
-				var items_records = recordset.get_records_array();
+				self.step(context, 'GET ALL ITEMS');
+				var items_records = recordset.get_records();
 				var items_records_count = recordset.get_count();
 				self.value(context, 'items_records', items_records);
 				self.value(context, 'items_records_count', items_records_count);
 				
-				
-				// GET FIELD OBJECT
+				// GET SELECTION FIELD NAME
+				self.step(context, 'GET SELECTION FIELD NAME');
 				var field_name = self.items_fields[0];
 				self.assert_not_null(context, 'field_name', field_name);
 				self.value(context, 'field_name', field_name);
 				
+				// GET SELECTION FIELD VALUE
+				self.step(context, 'GET SELECTION FIELD VALUE');
+				var field_value = field_name in arg_record ? arg_record[field_name] : null;
+				self.assert_not_null(context, 'field_value', field_value);
+				self.value(context, 'field_value', field_value);
+				
+				// GET SELECTION FIELD OBJECT
+				self.step(context, 'GET SELECTION FIELD OBJECT');
 				var field_obj_promise = self.view_model.invoke('get_field', field_name);
 				if ( ! DevaptTypes.is_object(field_obj) )
 				{
 					console.error('bad field object', context);
-					deferred.reject();
-					return null;
+					return Devapt.promise_rejected(context + ':bad field object');
+				}
+				}catch(e)
+				{
+					console.error(e);
 				}
 				
-				
-				// LOOP ON FIELD VALUES RECORDS
-				field_obj_promise.then(
+				// LOOP ON ITEMS RECORDS
+				self.step(context, 'LOOP ON ITEMS RECORDS');
+				var selected_record_promise = field_obj_promise.then(
 					function()
 					{
 						self.step(context, 'loop on field values records');
@@ -477,40 +565,34 @@ function(
 							self.value(context, 'loop on values indes', values_index);
 							var loop_value_record = items_records[values_index];
 							
-							// LOOP ON SELECTED VALUES
-							self.step(context, 'loop on selected records');
-							for(var selected_items_index = 0 ; selected_items_index < items.length ; selected_items_index++)
+							// TEST IF CURRENT ITEM FIELD VALUE IS THE SAME AS THE SELECTION FIELD VALUE
+							if (loop_value_record[field_name] === field_value)
 							{
-								var loop_selected_record = items[selected_items_index];
-								if (loop_value_record[field_name] === loop_selected_record[field_name])
+								self.step(context, 'selected item is found for field name [' + field_name + '] and value [' + field_value + ']');
+								var node_jqo = self.get_node_by_index(values_index);
+								
+								// CHECK NODE
+								if (! node_jqo)
 								{
-									self.step(context, 'loop records are equals for field[' + field_name + '] with [' + loop_value_record[field_name] + ']');
-									var node_jqo = self.get_node_by_index(values_index);
-									
-									// CHECK NODE
-									if (! node_jqo)
-									{
-										self.leave(context, Devapt.msg_failure);
-										// self.pop_trace();
-										return null;
-									}
-									
-									// SAVE SELECTION RECORD
-									self.items_selected_records[values_index] = loop_selected_record;
-									
-									var operands_map = {
-										field_value:loop_value_record[field_name],
-										field_name:field_name
-									};
-									
-									self.select_item_node(values_index, operands_map, false);
+									self.step(context, 'jqo node not found');
+									return Devapt.promise_rejected(context + ':jqo node not found');
 								}
+								
+								// UPDATE SELECTED RECORD RESULT
+								var selected_item = { index:null, node_jqo:null, record:null, label:null, already_selected:false };
+								
+								self.step(context, 'SELECTED RECORD RESULT');
+								return selected_item;
 							}
 						}
+						
+						self.step(context, 'selected record not found');
+						return Devapt.promise_rejected(context + ':selected record not found');
 					}
 				);
 				
-				return items_promise;
+				self.step(context, 'LOOP ON ITEMS RECORDS: returns promise');
+				return selected_record_promise;
 			},
 			
 			function()
@@ -520,9 +602,9 @@ function(
 		);
 		
 		
-		self.leave(context, Devapt.msg_success);
-		return selected_item;
-	};
+		self.leave(context, Devapt.msg_success_promise);
+		return items_promise;
+	};*/
 	
 	
 	
@@ -597,9 +679,10 @@ function(
 		infos:{
 			author:'Luc BORIES',
 			created:'2015-02-02',
-			updated:'2015-02-08',
+			updated:'2015-03-06',
 			description:'Mixin for SELECT/UNSELECT operation on a view.'
-		}
+		},
+		mixins:[DevaptContainerMixinLookupable]
 	};
 	var parent_class = null;
 	var DevaptContainerMixinSelectableClass = new DevaptClass('DevaptContainerMixinSelectable', parent_class, class_settings);
@@ -609,12 +692,22 @@ function(
 	DevaptContainerMixinSelectableClass.infos.ctor = cb_constructor;
 	
 	DevaptContainerMixinSelectableClass.add_public_method('select', {}, cb_select);
+	DevaptContainerMixinSelectableClass.add_public_method('select_items', {}, cb_select_items);
+	DevaptContainerMixinSelectableClass.add_public_method('select_item', {}, cb_select_item);
+	// DevaptContainerMixinSelectableClass.add_public_method('get_select_item_by_index', {}, cb_get_select_item_by_index);
+	// DevaptContainerMixinSelectableClass.add_public_method('get_select_item_by_label', {}, cb_get_select_item_by_label);
+	// DevaptContainerMixinSelectableClass.add_public_method('get_select_item_by_record', {}, cb_get_select_item_by_record);
+	
 	DevaptContainerMixinSelectableClass.add_public_method('select_all', {}, cb_select_all);
+	
 	DevaptContainerMixinSelectableClass.add_public_method('unselect', {}, cb_unselect);
 	DevaptContainerMixinSelectableClass.add_public_method('unselect_all', {}, cb_unselect_all);
 	
 	
 	// PROPERTIES
+	
+	// BUILD CLASS
+	DevaptContainerMixinSelectableClass.build_class();
 	
 	
 	return DevaptContainerMixinSelectableClass;

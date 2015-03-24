@@ -144,7 +144,10 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptTemplate,
 				case 'view':
 				{
 					self.assert_function(context, 'self.render_item_view', self.render_item_view);
+					
+					self.append_item_node(node_jqo);
 					// console.log(node_jqo, context + ':node_jqo view before:' + self.name + ' for ' + arg_item_content);
+					
 					var view_promise = self.render_item_view(arg_deferred, node_jqo, arg_item_content);
 					// console.log(node_jqo, context + ':node_jqo view after:' + self.name + ' for ' + arg_item_content);
 					
@@ -162,7 +165,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptTemplate,
 								node: node_jqo
 							};
 							// console.log(record, context + ':record:' + self.name);
-							self.append_item_node(node_jqo, record);
+							
 							self.items_objects.push(record);
 							// self.items_jquery_nodes.push(node_jqo);
 						}
@@ -227,7 +230,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptTemplate,
 				node: node_jqo
 			};
 			// console.log(record, context + ':record:' + self.name);
-			self.append_item_node(node_jqo, record);
+			self.append_item_node(node_jqo);
 			self.items_objects.push(record);
 			// self.items_jquery_nodes.push(node_jqo);
 			
@@ -242,13 +245,12 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptTemplate,
 		 * @memberof			DevaptMixinRenderItem
 		 * @desc				Append an item to the view
 		 * @param {object}		arg_item_jqo		item jQuery object
-		 * @param {object}		arg_item_record		item record
 		 * @return {nothing}
 		 */
-		append_item_node: function(arg_item_jqo, arg_item_record)
+		append_item_node: function(arg_item_jqo)
 		{
 			var self = this;
-			var context = 'append_item_node(item node, record)';
+			var context = 'append_item_node(item node)';
 			self.enter(context, '');
 			
 			

@@ -52,7 +52,7 @@ function(Devapt, DevaptClass, DevaptView, DevaptApplication)
 		var url_base	= DevaptApplication.get_url_base();
 		
 		// GET VIEW CONTENT URL
-		var view_content_url = url_base + 'views/' + self.name + '/html_view';
+		var view_content_url = url_base + 'views/' + self.name + '/html_view' + '?security_token=' + DevaptApplication.get_security_token();
 		
 		
 		// GET AND RENDER VIEW CONTENT

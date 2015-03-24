@@ -46,10 +46,20 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptClasses, DevaptMixinAssertion,
 	 * @memberof	DevaptNavHistory
 	 * @public
 	 * @static
-	 * @property	DevaptNavHistory.current_topbar_object
+	 * @property	DevaptNavHistory.current_topbar_name
 	 * @desc		... (static attribute)
 	 */
 	DevaptNavHistory.current_topbar_name = null;
+	
+	
+	/**
+	 * @memberof	DevaptNavHistory
+	 * @public
+	 * @static
+	 * @property	DevaptNavHistory.current_topbar_object
+	 * @desc		... (static attribute)
+	 */
+	DevaptNavHistory.current_topbar_object = null;
 	
 	
 	/**
@@ -138,8 +148,9 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptClasses, DevaptMixinAssertion,
 		var content_label	= 'Home';
 		var content_id		= null;
 		var content_url		= window.location.pathname;
+		// var content_url		= Devapt.url(window.location.pathname, Devapt.app.get_security_token());
 		var page_title		= 'Home';
-		var page_location	= window.location.pathname;
+		var page_location	= content_url;
 		DevaptNavHistory.push_url_content(content_label, content_id, content_url, page_title, page_location);
 		
 		DevaptNavHistory.current_hash = DevaptNavHistory.get_location_hash();
@@ -160,11 +171,8 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptClasses, DevaptMixinAssertion,
 		DevaptTraces.trace_step(context, '', DevaptNavHistory.history_trace);
 		
 		DevaptTraces.trace_var(context, 'hash', window.location.hash, DevaptNavHistory.history_trace);
-		// var href = window.location.hash;
 		var href = window.location.hash.substr(1);
-		// var hash_index = href.indexOf('#');
 		
-		// return hash_index >= 0 ? href.substr(hash_index + 1) : null;
 		return href;
 	}
 	
@@ -584,6 +592,7 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptClasses, DevaptMixinAssertion,
 				
 				var current_menubar_object = DevaptClasses.get_instance(DevaptNavHistory.current_topbar_name);
 				var target_menubar_object = DevaptClasses.get_instance(menubar_name);
+				DevaptNavHistory.current_topbar_object = target_menubar_object;
 				
 				if (current_menubar_object)
 				{
@@ -658,7 +667,8 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptClasses, DevaptMixinAssertion,
 		{
 			// console.log('content_url', context);
 			window.title = page_title;
-			window.location = page_location;
+			// window.location = page_location;
+			window.location = Devapt.url(page_location, Devapt.app.get_security_token());
 			
 			// SAVE NAVIGATION
 			if (arg_force_render)
@@ -680,7 +690,7 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptClasses, DevaptMixinAssertion,
 	 * @memberof			DevaptNavHistory
 	 * @public
 	 * @method				DevaptNavHistory.set_page_html_content(label, id, html, title, location)
-	 * @desc				Go forward in navigation history (static method)
+	 * @desc				Set HTML content (static method)
 	 * @param {string}		arg_content_label
 	 * @param {string}		arg_content_id
 	 * @param {string}		arg_content_html
@@ -703,8 +713,8 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptClasses, DevaptMixinAssertion,
 		}
 		
 		// GET CURRENT BACKEND
-		var backend = Devapt.get_current_backend();
-		self.assert_not_null(context, 'backend', backend);
+		// var backend = Devapt.get_current_backend();
+		// self.assert_not_null(context, 'backend', backend);
 		
 		// SAVE NAVIGATION
 		if (arg_force_render)
@@ -717,7 +727,8 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptClasses, DevaptMixinAssertion,
 		page_container_jqo.append(div_jqo);
 		
 		window.title = arg_page_title;
-		window.location = arg_page_location;
+		// window.location = arg_page_location;
+		window.location = Devapt.url(arg_page_location, Devapt.app.get_security_token());
 		
 		
 		DevaptTraces.trace_leve(context, '', DevaptNavHistory.history_trace);
@@ -729,7 +740,7 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptClasses, DevaptMixinAssertion,
 	 * @memberof	DevaptNavHistory
 	 * @public
 	 * @method		DevaptNavHistory.set_page_view_content(label, id, view, title, location)
-	 * @desc		Go forward in navigation history (static method)
+	 * @desc		Set the page view (static method)
 	 * @param {string}		arg_content_label
 	 * @param {string}		arg_content_id
 	 * @param {string}		arg_content_html

@@ -9,7 +9,7 @@
  *                  ->get_query()             : Query object (query corresponding to the datas)
  *                  ->get_model()             : Model object
  *  
- *                  ->get_records_array()     : array of records objects
+ *                  ->get_records()   		  : array of records objects
  *                  ->get_count()             : integer (records count)
  *  
  *                  ->reload()                : Reload all query model records and refresh the view

@@ -101,58 +101,65 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptStorage, DevaptResultSet)
 		self.enter(context, '');
 		
 		
-		// CREATE AJAX REQUEST
-		var url = self.url_read;
-		var ajax_settings = {
-			contentType	: self.http_format + '; charset=' + self.http_charset,
-			dataType	: self.http_data_type,
-			async		: ! self.is_sync,
-			cache		: self.is_cached,
-			type		: (! self.http_method_read || self.is_cached) ? 'GET' : self.http_method_read,
-			url			: url,
-			timeout		: self.http_timeout,
-			data		: null
-		};
-		console.log(ajax_settings);
-		
-		var jq_ajax_promise = $.ajax(ajax_settings);
-		var ajax_promise = Devapt.promise(jq_ajax_promise);
-		// console.log(ajax_promise);
-		
-		
-		// ON SUCCESS
-		if (self.notify_read)
+		try
 		{
-			ajax_promise.then(
+			// INIT URL AND DATAS
+			var url = self.url_read;
+			var json_datas = {};
+			var token = Devapt.app.get_security_token();
+			
+			// INIT REQUEST SETTINGS
+			var ajax_settings = {
+				contentType	: self.http_format + '; charset=' + self.http_charset,
+				dataType	: self.http_data_type,
+				async		: ! self.is_sync,
+				cache		: self.is_cached,
+				timeout		: self.http_timeout
+			};
+			var method = (! self.http_method_read || self.is_cached) ? 'GET' : self.http_method_read;
+			self.value(context, 'method', method);
+			
+			// SEND REQUEST
+			var ajax_promise = Devapt.ajax(method, url, JSON.stringify(json_datas), ajax_settings, token);
+			
+			// ON SUCCESS
+			if (self.notify_read)
+			{
+				ajax_promise.then(
+					function(result)
+					{
+						// console.log(result, 'storage-json.result');
+						Devapt.get_current_backend().notify_info('storage json: read all is done for [' + self.name + ']');
+					}
+				);
+			}
+			
+			
+			// ON FAILURE
+			ajax_promise.fail(
 				function(result)
 				{
 					// console.log(result, 'storage-json.result');
-					Devapt.get_current_backend().notify_info('storage json: read all is done for [' + self.name + ']');
+					
+					self.cached_queries[query_key] = null;
+					delete self.cached_queries[query_key];
+					
+					Devapt.get_current_backend().notify_error('storage json: read all has failed for [' + self.name + ']');
+				}
+			);
+			
+			// RETURN A RESULT SET
+			var resultset_promise = ajax_promise.then(
+				function(result)
+				{
+					return DevaptResultSet.create(self.name + '_result_read_all', result);
 				}
 			);
 		}
-		
-		
-		// ON FAILURE
-		ajax_promise.fail(
-			function(result)
-			{
-				// console.log(result, 'storage-json.result');
-				
-				self.cached_queries[query_key] = null;
-				delete self.cached_queries[query_key];
-				
-				Devapt.get_current_backend().notify_error('storage json: read all has failed for [' + self.name + ']');
-			}
-		);
-		
-		// RETURN A RESULT SET
-		var resultset_promise = ajax_promise.then(
-			function(result)
-			{
-				return DevaptResultSet.create(self.name + '_result_read_all', result);
-			}
-		);
+		catch(e)
+		{
+			console.error(e, context);
+		}
 		
 		
 		self.leave(context, self.msg_success_promise);
@@ -195,59 +202,64 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptStorage, DevaptResultSet)
 		// console.log(arg_query, 'jsonstorage.arg_query');
 		
 		
-		// CREATE AJAX REQUEST
-		var json_datas = arg_query ? arg_query.get_json() : null;
-		var url = self.url_read;
-		var jq_ajax_promise = $.ajax(
-			{
+		try
+		{
+			// CREATE AJAX REQUEST
+			var json_datas = arg_query ? arg_query.get_json() : null;
+			var token = Devapt.app.get_security_token();
+			
+			var url = self.url_read;
+			
+			var ajax_settings = {
 				contentType	: self.http_format + '; charset=' + self.http_charset,
 				dataType	: self.http_data_type,
 				async		: ! self.is_sync,
 				cache		: self.is_cached,
-				type		: (! self.http_method_read || self.is_cached) ? 'GET' : self.http_method_read,
-				url			: url,
-				timeout		: self.http_timeout,
-				data		: json_datas
+				timeout		: self.http_timeout
+			};
+			var method = (! self.http_method_read || self.is_cached) ? 'GET' : self.http_method_read;
+			var ajax_promise = Devapt.ajax(method, url, JSON.stringify(json_datas), ajax_settings, token);
+			
+			// ON SUCCESS
+			if (self.notify_read)
+			{
+				ajax_promise.then(
+					function(result)
+					{
+						// console.log(result, 'storage-json.result');
+						
+						Devapt.get_current_backend().notify_info('storage json: read query is done for [' + self.name + ']');
+					}
+				);
 			}
-		);
-		var ajax_promise = Devapt.promise(jq_ajax_promise);
-		// console.log(ajax_promise);
-		
-		// ON SUCCESS
-		if (self.notify_read)
-		{
-			ajax_promise.then(
+			
+			
+			// ON FAILURE
+			ajax_promise.fail(
 				function(result)
 				{
-					// console.log(result, 'storage-json.result');
+					// console.error(result, 'storage-json.result');
+					var query_key = 'all';
+					self.cached_queries[query_key] = null;
+					delete self.cached_queries[query_key];
 					
-					Devapt.get_current_backend().notify_info('storage json: read query is done for [' + self.name + ']');
+					Devapt.get_current_backend().notify_error('storage json: read query has failed for [' + self.name + ']');
+				}
+			);
+			
+			// RETURN A RESULT SET
+			var resultset_promise = ajax_promise.then(
+				function(result)
+				{
+					// console.log(result);
+					return DevaptResultSet.create(self.name + '_result_read_' + arg_query.name, result);
 				}
 			);
 		}
-		
-		
-		// ON FAILURE
-		ajax_promise.fail(
-			function(result)
-			{
-				// console.error(result, 'storage-json.result');
-				var query_key = 'all';
-				self.cached_queries[query_key] = null;
-				delete self.cached_queries[query_key];
-				
-				Devapt.get_current_backend().notify_error('storage json: read query has failed for [' + self.name + ']');
-			}
-		);
-		
-		// RETURN A RESULT SET
-		var resultset_promise = ajax_promise.then(
-			function(result)
-			{
-				// console.log(result);
-				return DevaptResultSet.create(self.name + '_result_read_' + arg_query.name, result);
-			}
-		);
+		catch(e)
+		{
+			console.error(e, context);
+		}
 		
 		
 		self.leave(context, self.msg_success_promise);
@@ -298,20 +310,18 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptStorage, DevaptResultSet)
 					values_count: arg_records.length
 				}
 			};
+		var token = Devapt.app.get_security_token();
+		
 		var url = self.url_create;
-		var jq_ajax_promise = $.ajax(
-			{
-				contentType	: self.http_format + '; charset=' + self.http_charset,
-				dataType	: 'json',
-				async		: ! self.is_sync,
-				cache		: false,
-				type		: self.http_method_create,
-				url			: url,
-				timeout		: self.http_timeout,
-				data		: JSON.stringify(json_datas)
-			}
-		);
-		var ajax_promise = Devapt.promise(jq_ajax_promise);
+		var ajax_settings = {
+			contentType	: self.http_format + '; charset=' + self.http_charset,
+			dataType	: 'json',
+			async		: ! self.is_sync,
+			cache		: false,
+			timeout		: self.http_timeout
+		};
+		var method = self.http_method_create;
+		var ajax_promise = Devapt.ajax(method, url, JSON.stringify(json_datas), ajax_settings, token);
 		
 		ajax_promise.done(
 			function(result)
@@ -384,14 +394,16 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptStorage, DevaptResultSet)
 		
 		// CREATE AJAX REQUEST
 		var json_datas =
-			{
-				query_json: {
-					action: 'update',
-					query_type: 'update',
-					values: arg_records,
-					values_count: 1
-				}
-			};
+		{
+			query_json: {
+				action: 'update',
+				query_type: 'update',
+				values: arg_records,
+				values_count: 1
+			}
+		};
+		var token = Devapt.app.get_security_token();
+		
 		var url = self.url_update;
 		var jq_ajax_promise = $.ajax(
 			{
@@ -478,14 +490,16 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptStorage, DevaptResultSet)
 		
 		// CREATE AJAX REQUEST
 		var json_datas =
-			{
-				query_json: {
-					action: 'delete',
-					query_type: 'delete',
-					values: arg_records,
-					values_count: 1
-				}
-			};
+		{
+			query_json: {
+				action: 'delete',
+				query_type: 'delete',
+				values: arg_records,
+				values_count: 1
+			}
+		};
+		var token = Devapt.app.get_security_token();
+		
 		var url = self.url_delete;
 		var jq_ajax_promise = $.ajax(
 			{

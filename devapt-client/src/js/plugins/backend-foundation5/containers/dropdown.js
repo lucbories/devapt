@@ -11,8 +11,8 @@
 
 'use strict';
 define(
-['Devapt', 'core/types', 'object/class', 'views/container', 'plugins/backend-foundation5/foundation-init'],
-function(Devapt, DevaptTypes, DevaptClass, DevaptContainer, undefined)
+['Devapt', 'core/types', 'object/class', 'views/container', 'worker/timer', 'plugins/backend-foundation5/foundation-init'],
+function(Devapt, DevaptTypes, DevaptClass, DevaptContainer, DevaptTimerWorker, undefined)
 {
 	/**
 	 * @public
@@ -115,6 +115,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptContainer, undefined)
 		self.ul_jqo = $('<ul>');
 		self.content_jqo.append(self.ul_jqo);
 		self.ul_jqo.attr('id', ul_id);
+		self.ul_jqo.attr('aria-autoclose', true);
 		self.ul_jqo.attr('data-dropdown-content', '');
 		self.ul_jqo.addClass('f-dropdown');
 		
@@ -166,17 +167,51 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptContainer, undefined)
 		node_jqo.click(
 			function()
 			{
-				var node_index = parseInt( node_jqo.index() );
-				self.select_item_node(node_index);
+				self.step(context, 'on click');
 				
-				var current_label = node_jqo.text();
-				var new_label = node_jqo.attr('devapt-label');
-				if ( DevaptTypes.is_not_empty_str(new_label) && ! DevaptTypes.is_not_empty_str(current_label) )
+				var onclick = function()
 				{
-					self.a_jqo.text(new_label);
+					self.step(context, 'on click callback');
+					console.log('on click callback');
+					try
+					{
+						var node_index = parseInt( node_jqo.index() );
+						self.value(context, 'node_index', node_index);
+						
+						self.select(node_index);
+						
+						var current_label = node_jqo.text();
+						var new_label = node_jqo.attr('devapt-label');
+						if ( DevaptTypes.is_not_empty_str(new_label) && ! DevaptTypes.is_not_empty_str(current_label) )
+						{
+							self.a_jqo.text(new_label);
+						}
+					}
+					catch(e)
+					{
+						console.error(e, context);
+					}
+				};
+				
+				try
+				{
+					var worker_promise = self.get_worker('default');
+					worker_promise.then(
+						function(worker)
+						{
+							// console.log(worker, 'worker');
+							worker.once(onclick);
+						}
+					);
+					
+					// onclick();
+				}
+				catch(e)
+				{
+					console.error(e, context);
 				}
 				
-				self.ul_jqo.toggle('open');
+				return true;
 			}
 		);
 		

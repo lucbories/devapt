@@ -1,6 +1,6 @@
 /**
  * @file        worker/worker.js
- * @desc        Timer Class
+ * @desc        Worker Class
  * 		API
  * 			Task record :
  * 			{
@@ -44,6 +44,9 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptObject)
 		var context = 'constructor(self)';
 		self.enter(context, '');
 		
+		
+		// DEBUG
+		// self.trace=true;
 		
 		// UPDATE STATE
 		self.worker_state = Devapt.STATE_CREATED;
@@ -137,52 +140,60 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptObject)
 		// CREATE WORKER CB
 		var worker_cb = function(arg_delay)
 			{
+				var context = 'start() callback';
 				// self.step(context, 'worker run');
 				// console.info(self.worker_state, 'worker run');
 				
-				arg_delay = arg_delay ? arg_delay : 0;
-				
-				if (self.worker_state === Devapt.STATE_STARTED || self.worker_state === Devapt.STATE_READY)
+				try
 				{
-					self.worker_state = Devapt.STATE_RUNNING;
+					arg_delay = arg_delay ? arg_delay : 0;
 					
-					// LOOP ON TASKS
-					var tasks_to_remove = [];
-					for(var task_id in self.worker_tasks)
+					if (self.worker_state === Devapt.STATE_STARTED || self.worker_state === Devapt.STATE_READY)
 					{
-						var task = self.worker_tasks[task_id];
+						self.worker_state = Devapt.STATE_RUNNING;
 						
-						if (task.delay > 0)
+						// LOOP ON TASKS
+						var tasks_to_remove = [];
+						for(var task_id in self.worker_tasks)
 						{
-							if (task.cumul_delay < task.delay)
+							var task = self.worker_tasks[task_id];
+							
+							if (task.delay > 0)
 							{
-								task.cumul_delay += arg_delay;
-								continue;
+								if (task.cumul_delay < task.delay)
+								{
+									task.cumul_delay += arg_delay;
+									continue;
+								}
+								task.cumul_delay = 0;
 							}
-							task.cumul_delay = 0;
+							
+							task.state = Devapt.RUNNING;
+							task.callback.call();
+							task.state = Devapt.READY;
+							task.counter++;
+							if (task.once && task.counter >= 1)
+							{
+								tasks_to_remove.push(task);
+							}
 						}
 						
-						task.state = Devapt.RUNNING;
-						task.callback.call();
-						task.state = Devapt.READY;
-						task.counter++;
-						if (task.once && task.counter >= 1)
+						// REMOVE TASKS
+						if (tasks_to_remove.length > 0)
 						{
-							tasks_to_remove.push(task);
+							for(var task_index in tasks_to_remove)
+							{
+								var task = tasks_to_remove[task_index];
+								self.remove_task(task.id);
+							}
 						}
+						
+						self.worker_state = Devapt.STATE_READY;
 					}
-					
-					// REMOVE TASKS
-					if (tasks_to_remove.length > 0)
-					{
-						for(var task_index in tasks_to_remove)
-						{
-							var task = tasks_to_remove[task_index];
-							self.remove_task(task.id);
-						}
-					}
-					
-					self.worker_state = Devapt.STATE_READY;
+				}
+				catch(e)
+				{
+					console.error(e, context);
 				}
 			};
 		
@@ -190,7 +201,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptObject)
 		self.start_worker(worker_cb);
 		
 		// UPDATE STATE
-		self.worker_state = Devapt.STATE_CREATED;
+		self.worker_state = Devapt.STATE_STARTED;
 		
 		
 		self.leave(context, '');
@@ -340,6 +351,30 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptObject)
 	}
 	
 	
+	/**
+	 * @public
+	 * @memberof			DevaptWorker
+	 * @desc				Add a worker task which should be run one time
+	 * @param {function}	arg_task_callback	task callback
+	 * @return {nothing}
+	 */
+	var cb_once = function(arg_task_callback)
+	{
+		var self = this;
+		var context = 'once(cb)';
+		self.enter(context, '');
+		
+		
+		var settings = {
+			once: true
+			};
+		self.add_task(null, arg_task_callback, settings);
+		
+		
+		self.leave(context, '');
+	}
+	
+	
 	
 	/* --------------------------------------------- CREATE OBJECT CLASS ------------------------------------------------ */
 	
@@ -370,6 +405,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptObject)
 	DevaptWorkerClass.add_public_method('resume', {}, cb_resume);
 	DevaptWorkerClass.add_public_method('add_task', {}, cb_add_task);
 	DevaptWorkerClass.add_public_method('remove_task', {}, cb_remove_task);
+	DevaptWorkerClass.add_public_method('once', {}, cb_once);
 	
 	// PROPERTIES
 	DevaptWorkerClass.add_public_obj_property('worker_state',		'worker state (created,started,ready,suspended,running,destroyed)', [], false, false, []);

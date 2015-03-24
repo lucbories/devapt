@@ -732,8 +732,31 @@ final class Broker
 				Broker::$resources_objects_array[$resource_name] = $resource_object;
 				return $resource_object;
 			}
+			
+			case 'logger':
+			{
+				// Debug::dump('Resources\Broker.buildResourceObjectFromRecord: logger ['.$name.']');
+				
+				$resource_object = new Logger($arg_resource_record);
+				$resource_name = $resource_object->getResourceName();
+				Broker::$resources_objects_array[$resource_name] = $resource_object;
+				Broker::$resources_records_array[$resource_name] = $arg_resource_record;
+				return $resource_object;
+			}
 		}
 		
-		return false;
+		return null;
 	}
+	
+	
+	
+	/**
+	 * @brief		Build a resource object from a resource record
+	 * @param[in]	arg_resource_record	resource record
+	 * @return		object|null
+	 */
+	// static public function addResourceObjectFromRecord($arg_resource_record)
+	// {
+	
+	// }
 }
