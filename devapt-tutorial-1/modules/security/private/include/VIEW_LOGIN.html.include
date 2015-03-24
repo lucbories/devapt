@@ -1,0 +1,50 @@
+<div class="row is_login_view">
+<!--	<div class="three columns">
+	</div>
+	
+	<div class="six columns">
+		<center><h4>Login Page</h4></center>
+			<label for='login'>Login</label>
+			<input class='input-text' type='text' name='login' id='login' value='' />
+			
+			<label for='password'>Password</label>
+			<input class='input-text' type='password' name='password' id='password' value='' />
+			
+			<p style='line-height:64px; height:64px; vertical-align:middle; text-align:center;'>
+				<img src='../modules/security/public/images/user-group-icon.png' alt='login icon' style='line-height:64px; height:64px; vertical-align:middle;'></img>
+				<a id='submit' href='#' class='button' style='vertical-align:middle;'>Login</a>
+			</p>
+	</div>
+	
+	<div class="three columns">
+	</div> -->
+</div>
+<!--
+<script language="javascript">
+	
+	
+	function on_login()
+	{
+		require(['Devapt', 'core/security'],
+			function(Devapt, DevaptSecurity)
+			{
+				var login = $('#login').val();
+				var pwd = $('#password').val();
+				// console.log(login, 'login');
+				// console.log(pwd, 'pwd');
+				
+				DevaptSecurity.login(login, pwd);
+			}
+		);
+		
+	    return false;
+	}
+	
+	require(['Devapt'],
+		function(Devapt)
+		{
+			$('#submit').on('click', on_login);
+		}
+	);
+	
+</script> -->
