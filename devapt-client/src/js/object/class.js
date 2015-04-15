@@ -58,13 +58,14 @@
  * 				self.add_public_method(arg_name, arg_method_record, arg_method_cb)
  * 				self.add_public_mixin(arg_mixin_class)
  * 				self.add_property_record(arg_property_record)
- * 				self.add_static_property(arg_property_type, arg_property_name, arg_property_desc, arg_property_value, arg_required, arg_readonly, arg_visibility)
- * 				self.add_property(arg_property_type, arg_property_name, arg_property_desc, arg_property_value, arg_required, arg_readonly, arg_visibility)
- * 				self.add_public_str_property(arg_property_name, arg_property_desc, arg_property_value, arg_required, arg_readonly)
- * 				self.add_public_int_property(arg_property_name, arg_property_desc, arg_property_value, arg_required, arg_readonly)
- * 				self.add_public_bool_property(arg_property_name, arg_property_desc, arg_property_value, arg_required, arg_readonly)
- * 				self.add_public_obj_property(arg_property_name, arg_property_desc, arg_property_value, arg_required, arg_readonly)
- * 				self.add_public_array_property(arg_property_name, arg_property_desc, arg_property_value, arg_required, arg_readonly, itemtype, separator)
+ * 				self.add_static_property(arg_property_type, arg_property_name, arg_property_desc, arg_property_value, arg_required, arg_readonly, arg_visibility, arg_aliases, itemtype, separator)
+ * 				self.add_property(arg_property_type, arg_property_name, arg_property_desc, arg_property_value, arg_required, arg_readonly, arg_visibility, arg_aliases, itemtype, separator)
+ * 				self.add_public_str_property(arg_property_name, arg_property_desc, arg_property_value, arg_required, arg_readonly, arg_aliases)
+ * 				self.add_public_int_property(arg_property_name, arg_property_desc, arg_property_value, arg_required, arg_readonly, arg_aliases)
+ * 				self.add_public_bool_property(arg_property_name, arg_property_desc, arg_property_value, arg_required, arg_readonly, arg_aliases)
+ * 				self.add_public_obj_property(arg_property_name, arg_property_desc, arg_property_value, arg_required, arg_readonly, arg_aliases)
+ * 				self.add_public_array_property(arg_property_name, arg_property_desc, arg_property_value, arg_required, arg_readonly, arg_aliases, itemtype, separator)
+ * 				self.add_public_cb_property(arg_property_name, arg_property_desc, arg_property_value, arg_required, arg_readonly, arg_aliases)
  * 				self.build_class()
  * 				self.create(arg_settings)
  * 
@@ -653,6 +654,7 @@ function(DevaptTypes, DevaptClasses)
 		var context = 'DevaptClass:set_property_with_settings(target,property,settings)';
 		DevaptTraces.trace_enter(context, '', arg_class.trace);
 		DevaptTraces.trace_value(context, 'arg_property_record', arg_property_record, arg_class.trace);
+		DevaptTraces.trace_value(context, 'arg_settings_object', arg_settings_object, arg_class.trace);
 		
 		
 		// CHECK ARGS
@@ -898,13 +900,21 @@ function(DevaptTypes, DevaptClasses)
 								var values_array = DevaptTypes.to_array(setting_value, default_value, arg_property_record.array_separator);
 								if ( DevaptTypes.is_not_empty_str(arg_property_record.array_type) )
 								{
+									DevaptTraces.trace_step(context, 'array property has array type', arg_class.trace);
+									DevaptTraces.trace_value(context, 'arg_property_record.array_type', arg_property_record.array_type, arg_class.trace);
+									
 									for(var array_key in values_array)
 									{
 										var value = values_array[array_key];
+										// console.log(value, 'value');
+										
 										values_array[array_key] = DevaptTypes.convert_value(value, null, arg_property_record.array_type);
+										// console.log(values_array[array_key], 'converted value');
 									}
 								}
 								arg_target_object[property_name] = values_array;
+								// console.log(values_array, context + ':values_array');
+								// console.log(arg_target_object, context + ':arg_target_object');
 								
 								DevaptTraces.trace_leave(context, 'success for [' + arg_property_record.type + ']', arg_class.trace);
 								return true;
@@ -922,7 +932,7 @@ function(DevaptTypes, DevaptClasses)
 	/**
 	 * @memberof				DevaptClass
 	 * @public
-	 * @method					apply_properties(arg_settings)
+	 * @method					init_properties(class,instance)
 	 * @desc					...
 	 * @param {object}			arg_class				a class object
 	 * @param {object}			arg_class_instance		a class instance object
@@ -931,7 +941,7 @@ function(DevaptTypes, DevaptClasses)
 	function init_properties(arg_class, arg_class_instance)
 	{
 		var self = arg_class;
-		var context = 'DevaptClass:apply_properties(class,instance,settings)';
+		var context = 'DevaptClass:init_properties(class,instance)';
 		DevaptTraces.trace_enter(context, '', self.trace);
 		
 		
@@ -1753,6 +1763,24 @@ function(DevaptTypes, DevaptClasses)
 			this.add_property('array', arg_property_name, arg_property_desc, arg_property_value, arg_required, arg_readonly, 'public', arg_aliases, arg_array_type, arg_array_separator);
 		}
 		
+		/**
+		 * @memberof				DevaptClass
+		 * @public
+		 * @method					add_public_cb_property(name,desc,value,required,readonly,aliases)
+		 * @desc					Register a public non static callback property
+		 * @param {string}			arg_property_name		property name
+		 * @param {string}			arg_property_desc		property description
+		 * @param {string}			arg_property_value		property default value
+		 * @param {boolean}			arg_required			property is required
+		 * @param {boolean}			arg_readonly			property is read only
+		 * @param {array}			arg_aliases				property aliases array
+		 * @return {nothing}
+		 */
+		DevaptClass.prototype.add_public_cb_property = function(arg_property_name, arg_property_desc, arg_property_value, arg_required, arg_readonly, arg_aliases)
+		{
+			this.add_property('callback', arg_property_name, arg_property_desc, arg_property_value, arg_required, arg_readonly, 'public', arg_aliases);
+		}
+		
 		
 		
 		// ------------------------------------------------ BUILD CLASS ------------------------------------------------
@@ -1830,7 +1858,8 @@ function(DevaptTypes, DevaptClasses)
 		DevaptClass.prototype.create = function(arg_instance_name, arg_instance_settings)
 		{
 			var self = this;
-			// self.trace = self.infos.class_name === 'DevaptEvent';
+			// self.trace = self.infos.class_name === 'DevaptArrayStorage';
+			// self.trace = true;
 			var context = 'DevaptClass.create(settings)';
 			DevaptTraces.trace_enter(context, '', self.trace);
 			DevaptTraces.trace_value(context, 'arg_instance_name', arg_instance_name, self.trace);
@@ -1860,7 +1889,14 @@ function(DevaptTypes, DevaptClasses)
 			DevaptTraces.trace_step(context, 'build class if needed', self.trace);
 			if (! self.is_build)
 			{
-				self.build_class();
+				try
+				{
+					self.build_class();
+				}
+				catch(e)
+				{
+					console.error(e, context + ':build class');
+				}
 			}
 			
 			
@@ -1904,7 +1940,14 @@ function(DevaptTypes, DevaptClasses)
 			arg_instance_settings.class_name = self.infos.class_name;
 			// console.log(arg_instance_settings, 'class.create settings');
 			init_properties(self, instance);
-			apply_properties(self, instance, arg_instance_settings);
+			try
+			{
+				apply_properties(self, instance, arg_instance_settings);
+			}
+			catch(e)
+			{
+				console.error(e, context + ':apply_properties');
+			}
 			
 			
 			// DEBUG INSTANCE
@@ -1925,35 +1968,65 @@ function(DevaptTypes, DevaptClasses)
 			
 			// CALL MIXINS CONSTRUCTORS
 			DevaptTraces.trace_step(context, 'call mixin constructors', self.trace);
-			var init_mixins = new Object();
-			for(var class_index = class_records.length - 1 ; class_index >= 0 ; class_index--)
+			// console.log(self.infos.class_name, 'call mixin constructors');
+			try
 			{
-				class_record = class_records[class_index];
-				if (! class_record.is_build)
+				var init_mixins = new Object();
+				for(var class_index = class_records.length - 1 ; class_index >= 0 ; class_index--)
 				{
-					class_record.build_class();
-				}
-				// console.log(class_record.infos.class_name, 'class_name');
-				for(var mixin_key in class_record.mixins.all_ordered)
-				{
-					var mixin_class = class_record.mixins.all_ordered[mixin_key];
-					if (mixin_class && ! init_mixins[mixin_class.infos.class_name])
+					class_record = class_records[class_index];
+					if (! class_record.is_build)
 					{
-						// console.log(mixin_class.infos.class_name, 'mixin stack init');
-						// console.log(instance, 'mixin stack init for [' + mixin_class.infos.class_name + ']');
-						mixin_class.infos.ctor(instance);
-						init_mixins[mixin_class.infos.class_name] = true;
+						// console.log(class_record.infos.class_name, 'build class_name');
+						class_record.build_class();
+					}
+					// console.log(class_record.infos.class_name, 'class_name');
+					for(var mixin_key in class_record.mixins.all_ordered)
+					{
+						var mixin_class = class_record.mixins.all_ordered[mixin_key];
+						if (mixin_class && ! init_mixins[mixin_class.infos.class_name])
+						{
+							// console.log(mixin_class.infos.class_name, 'mixin stack init');
+							// console.log(instance, 'mixin stack init for [' + mixin_class.infos.class_name + ']');
+							mixin_class.infos.ctor(instance);
+							init_mixins[mixin_class.infos.class_name] = true;
+						}
 					}
 				}
+			}
+			catch(e)
+			{
+				console.error(e, context + ':mixins ctor');
 			}
 			
 			
 			// CALL CONSTRUCTOR
-			// TODO CALL SUPER CTOR ?
 			DevaptTraces.trace_step(context, 'call class constructor', self.trace);
-			instance._super_ctor = instance._parent_class ? instance._parent_class.infos.ctor : null;
-			instance._ctor = self.infos.ctor;
-			instance._ctor(instance);
+			try
+			{
+				// CALL SUPER CONSTRUCTOR
+				// console.log(self.infos.class_name, 'call super constructors');
+				instance._super_ctor = instance._parent_class ? instance._parent_class.infos.ctor : null;
+				for(var class_index = class_records.length - 1 ; class_index > 0 ; class_index--)
+				{
+					var class_record = class_records[class_index];
+					var ctor = class_record.infos.ctor;
+					if (ctor)
+					{
+						// console.log(class_record.infos.class_name, 'call super constructor');
+						ctor(instance);
+					}
+				}
+				
+				// CALL INSTANCE CONSTRUCTOR
+				// console.log(self.infos.class_name, 'call instance constructor');
+				instance._ctor = self.infos.ctor;
+				instance._ctor(instance);
+			}
+			catch(e)
+			{
+				console.error(e, context + ':instance ctor');
+			}
 			
 			
 			// REGISTER CLASS INSTANCE

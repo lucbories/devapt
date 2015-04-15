@@ -53,12 +53,12 @@
 
 'use strict';
 define([
-	'Devapt', 'core/types', 'core/resources',
+	'Devapt', 'core/types', 'core/resources', 'core/traces-memory',
 	'object/class', 'object/object',
 	'datas/model/model', 'datas/query', 'datas/model/shared_recordset', 'datas/model/view_model-mixin-crudable', 'datas/model/view_model-mixin-selectable',
 	'views/view'],
 function(
-	Devapt, DevaptTypes, DevaptResources,
+	Devapt, DevaptTypes, DevaptResources, DevaptTracesMemory,
 	DevaptClass, DevaptObject,
 	DevaptModel, DevaptQuery, DevaptSharedRecordSet, DevaptViewModelMixinCrudable, DevaptViewModelMixinSelectable,
 	DevaptView)
@@ -92,120 +92,223 @@ function(
 		var view_promise = null;
 		self.ready_promise = null;
 		
-		
-		// SET QUERY
-		if ( ! DevaptTypes.is_object(self.query) || ! self.query.is_query )
+		try
 		{
-			self.step(context, 'set query');
-			var query_name = self.name + '_query';
-			self.query = DevaptQuery.create(query_name, {});
-		}
-		
-		
-		// SET MODEL
-		if ( ! DevaptTypes.is_object(self.model) || ! self.model.is_model )
-		{
-			self.step(context, 'set model');
-			
-			self.value(context, 'source', self.source);
-			switch(self.source)
+			// SET QUERY
+			if ( ! DevaptTypes.is_object(self.query) || ! self.query.is_query )
 			{
-				case 'model':
+				self.step(context, 'set query');
+				var query_name = self.name + '_query';
+				self.query = DevaptQuery.create(query_name, {});
+			}
+			
+			
+			// SET MODEL
+			if ( ! DevaptTypes.is_object(self.model) || ! self.model.is_model )
+			{
+				self.step(context, 'set model');
+				
+				self.value(context, 'source', self.source);
+				switch(self.source)
 				{
-					self.step(context, 'source is model');
-					
-					if ( ! DevaptTypes.is_string(self.model_name) )
+					case 'model':
 					{
-						console.log(self.model_name, 'self.model_name');
-						self.error(context, 'bad model name');
-						return;
+						self.step(context, 'source is model');
+						
+						if ( ! DevaptTypes.is_string(self.model_name) )
+						{
+							console.log(self.model_name, 'self.model_name');
+							self.error(context, 'bad model name');
+							return;
+						}
+						
+						model_promise = DevaptResources.get_resource_instance(self.model_name);
+						
+						break;
 					}
 					
-					model_promise = DevaptResources.get_resource_instance(self.model_name);
+					case 'logs':
+					{
+						self.step(context, 'source is logs');
+						
+						var settings = {
+							"name":"MODEL_AUTH_GROUPS",
+							
+							"class_type":"model",
+							
+							"access":{"create":false,"read":true,"update":false,"delete":false},
+							
+							"role_read":"ROLE_LOGS_READ",
+							"role_create":"ROLE_LOGS_CREATE",
+							"role_update":"ROLE_LOGS_UPDATE",
+							"role_delete":"ROLE_LOGS_DELETE",
+							
+							"engine":{
+								"name":"LOCAL_LOGS_engine",
+								"source":"array",
+								"provider_cb": function(arg_item, arg_index)
+									{
+										if ( DevaptTypes.is_null(arg_item) )
+										{
+											return DevaptTracesMemory.get_logs();
+										}
+										
+										if ( DevaptTypes.is_integer(arg_index) )
+										{
+											DevaptTracesMemory.logs[arg_index] = arg_item;
+										}
+										else
+										{
+											DevaptTracesMemory.logs.push(arg_item);
+										}
+										
+										return DevaptTracesMemory.get_logs();
+									}
+							},
+							
+							"fields":{
+								"level":{
+									"type":"String",
+									"label":"Level"
+								},
+								"class_name":{
+									"type":"String",
+									"label":"Class"
+								},
+								"object_name":{
+									"type":"String",
+									"label":"Object"
+								},
+								"method_name":{
+									"type":"String",
+									"label":"Method"
+								},
+								"context":{
+									"type":"String",
+									"label":"Context"
+								},
+								"step":{
+									"type":"String",
+									"label":"Step"
+								},
+								"text":{
+									"type":"String",
+									"label":"Text"
+								},
+							}
+						};
+						
+						model_promise = Devapt.create('DevaptModel', settings);
+						// console.log(DevaptTracesMemory.logs, 'DevaptTracesMemory.logs');
+						// console.log(model_promise, 'model_promise');
+						break;
+					}
 					
-					break;
+					case 'inline':
+					{
+						self.step(context, 'source is inline datas');
+						// console.log(self.view.items_inline, self.name + '.' + context + '.view.items_inline');
+						
+						var items = [];
+						if ( self.source_format === 'json' )
+						{
+							self.step(context, 'inline source format is json');
+							
+							var json_str = self.view.items_inline.join(',');
+							var json_obj = $.parseJSON(json_str);
+							
+							items = json_obj;
+						}
+						else if ( self.source_format === 'array' )
+						{
+							self.step(context, 'inline source format is array');
+							
+							items = [];
+							for(var item_index in self.view.items_inline)
+							{
+								var item_obj = self.view.items_inline[item_index];
+								if ( ! DevaptTypes.is_object(item_obj) )
+								{
+									item_obj = { value: item_obj };
+								}
+								
+								items.push(item_obj);
+							}
+							// console.log(items, self.name + '.' + context + '.items');
+						}
+						else
+						{
+							self.error(context, 'bad inline source format');
+							return;
+						}
+						
+						var engine_settings = { name:self.name + '_engine', records_array:items };
+						// console.log(engine_settings, context + ':engine_settings');
+						
+						var engine_promise = Devapt.create('StorageArray', engine_settings);
+						self.assert_object(context, 'engine_promise', engine_promise);
+						
+						model_promise = engine_promise.then(
+							function(engine_obj)
+							{
+								self.step(context, 'array engine is created');
+								
+								// console.log(items, context + ':items');
+								// console.log(engine_obj, context + ':array engine');
+								
+								return Devapt.create('Model', { name: self.name + '_model', engine:engine_obj });
+							}
+						);
+						
+						break;
+					}
 				}
 				
-				case 'inline':
-				{
-					self.step(context, 'source is inline datas');
-					
-					var items = [];
-					if ( self.source_format === 'json' )
+				self.step(context, 'check model promise');
+				
+				self.assert_object(context, 'model_promise', model_promise);
+				model_promise.then(
+					function(model)
 					{
-						self.step(context, 'inline source format is json');
-						
-						var json_str = self.view.items_inline.join(',');
-						var json_obj = $.parseJSON(json_str);
-						
-						items = json_obj;
-					}
-					else if ( self.source_format === 'array' )
+						self.step(context, 'model is found');
+						self.model = model;
+					},
+					function()
 					{
-						self.step(context, 'inline source format is array');
-						
-						items = [];
-						for(var item_index in self.view.items_inline)
-						{
-							var item_obj = self.view.items_inline[item_index];
-							if ( ! DevaptTypes.is_object(item_obj) )
-							{
-								item_obj = { value: item_obj };
-							}
-							
-							items.push(item_obj);
-						}
-						// console.log(items, self.name + '.' + context + '.items');
+						self.error(context, 'bad model resource');
 					}
-					else
-					{
-						self.error(context, 'bad inline source format');
-						return;
-					}
-					
-					var engine_promise = Devapt.create('StorageArray', { name: self.name + '_engine', records_array:items } );
-					
-					model_promise = engine_promise.then(
-						function(engine_obj)
-						{
-							self.step(context, 'array engine is created');
-							return Devapt.create('Model', { name: self.name + '_model', engine:engine_obj });
-						}
-					);
-					
-					break;
-				}
+				);
 			}
-			
-			self.step(context, 'check model promise');
-			
-			model_promise.then(
-				function(model)
-				{
-					self.step(context, 'model is found');
-					self.model = model;
-				},
-				function()
-				{
-					self.error(context, 'bad model resource');
-				}
-			);
+		}
+		catch(e)
+		{
+			console.error(e, context);
 		}
 		
 		
-		// SET VIEW
-		if ( ! DevaptTypes.is_object(self.view) || ! self.view.is_view )
+		try
 		{
-			self.step(context, 'set view');
-			
-			if ( ! DevaptTypes.is_string(self.view) )
+			// SET VIEW
+			if ( ! DevaptTypes.is_object(self.view) || ! self.view.is_view )
 			{
-				self.error(context, 'bad view name');
-				return;
+				self.step(context, 'set view');
+				
+				if ( ! DevaptTypes.is_string(self.view) )
+				{
+					self.error(context, 'bad view name');
+					return;
+				}
+				
+				view_promise = DevaptResources.get_resource_instance(self.view);
+			}
+			else
+			{
+				self.step(context, 'view is set');
+				view_promise = Devapt.promise_resolved(self.view);
 			}
 			
-			view_promise = DevaptResources.get_resource_instance(self.view);
 			
+			// UDPATE QUERY WITH VIEW
 			view_promise.then(
 				function(view)
 				{
@@ -218,33 +321,32 @@ function(
 					self.error(context, 'bad view resource');
 				}
 			);
-		}
-		else
-		{
-			self.step(context, 'view is set');
-			view_promise = Devapt.promise_resolved(self.view);
-		}
-		
-		
-		// SET READY PROMISE
-		self.assert_object(context, 'model_promise', model_promise);
-		self.assert_object(context, 'view_promise', view_promise);
-		self.ready_promise = Devapt.promise_all([model_promise, view_promise]);
-		self.ready_promise = self.ready_promise.then(
-			function()
+			
+			
+			// SET READY PROMISE
+			self.assert_object(context, 'model_promise', model_promise);
+			self.assert_object(context, 'view_promise', view_promise);
+			self.ready_promise = Devapt.promise_all([model_promise, view_promise]);
+			self.ready_promise = self.ready_promise.then(
+				function()
+				{
+					self.step(context, 'ready promise is resolved');
+					// console.log(context, 'ready promise is resolved');
+					
+					return self;
+				}
+			);
+			
+			
+			// SET RECORDS
+			if ( DevaptTypes.is_object(self.records) && self.records.is_recordset )
 			{
-				self.step(context, 'ready promise is resolved');
-				// console.log(context, 'ready promise is resolved');
-				
-				return self;
+				self.step(context, 'records is set');
 			}
-		);
-		
-		
-		// SET RECORDS
-		if ( DevaptTypes.is_object(self.records) && self.records.is_recordset )
+		}
+		catch(e)
 		{
-			self.step(context, 'records is set');
+			console.error(e, context);
 		}
 		
 		

@@ -201,7 +201,7 @@ final class QueryBuilderV2
 		{
 			$values = $query_json_array['values'];
 		}
-		if ( is_array($values) )
+		if ( is_array($values) && count($values) > 0 )
 		{
 			if ( array_key_exists('values_count', $query_json_array) )
 			{
@@ -218,7 +218,7 @@ final class QueryBuilderV2
 		{
 			$orders_by = $query_json_array['orders'];
 		}
-		if ( is_array($orders_by) )
+		if ( is_array($orders_by) && count($orders_by) > 0 )
 		{
 			Trace::step($context, 'set orders', self::$TRACE_QUERY_BUILDER);
 			
@@ -250,7 +250,7 @@ final class QueryBuilderV2
 		{
 			$groups = $query_json_array['groups'];
 		}
-		if ( is_array($groups) )
+		if ( is_array($groups) && count($groups) > 0 )
 		{
 			Trace::step($context, 'set groups', self::$TRACE_QUERY_BUILDER);
 			$query->setGroups($groups);
@@ -264,7 +264,10 @@ final class QueryBuilderV2
 			
 			$filters_records = $query_json_array['filters'];
 			
-			$query->setFiltersToBuild($filters_records);
+			if ( is_array($filters_records) && count($filters_records) > 0 )
+			{
+				$query->setFiltersToBuild($filters_records);
+			}
 		}
 		
 		
@@ -302,7 +305,7 @@ final class QueryBuilderV2
 		{
 			$joins = $query_json_array['joins'];
 		}
-		if ( is_array($joins) )
+		if ( is_array($joins) && count($joins) > 0 )
 		{
 			Trace::step($context, 'set joins', self::$TRACE_QUERY_BUILDER);
 			

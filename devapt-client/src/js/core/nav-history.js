@@ -29,7 +29,7 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptClasses, DevaptMixinAssertion,
 	 * @static
 	 * @desc		Trace flag
 	 */
-	DevaptNavHistory.history_trace = false;
+	DevaptNavHistory.history_trace = true;
 	
 	
 	/**
@@ -145,12 +145,16 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptClasses, DevaptMixinAssertion,
 		}
 		
 		// REGISTER HOME PAGE
-		var content_label	= 'Home';
-		var content_id		= null;
-		var content_url		= window.location.pathname;
-		// var content_url		= Devapt.url(window.location.pathname, Devapt.app.get_security_token());
-		var page_title		= 'Home';
-		var page_location	= content_url;
+		var hash			= Devapt.app.get_home_view_hash();
+		var hash_parts		= hash.split(':');
+		var content_label	= hash_parts[3];
+		var content_id		= Devapt.app.get_content_id();
+		var content_url		= Devapt.app.get_home_view_url();
+		var content_view	= hash_parts[1];
+		var page_title		= hash_parts[2];
+		var page_location	= Devapt.app.get_home_view_url();
+		var menubar_name	= (hash_parts.length === 5) ? hash_parts[4] : DevaptNavHistory.current_topbar_name;
+		
 		DevaptNavHistory.push_url_content(content_label, content_id, content_url, page_title, page_location);
 		
 		DevaptNavHistory.current_hash = DevaptNavHistory.get_location_hash();
@@ -189,12 +193,17 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptClasses, DevaptMixinAssertion,
 	DevaptNavHistory.set_location_hash = function(arg_hash)
 	{
 		var context = 'DevaptNavHistory.set_location_hash(hash)';
-		DevaptTraces.trace_step(context, '', DevaptNavHistory.history_trace);
+		DevaptTraces.trace_enter(context, '', DevaptNavHistory.history_trace);
 		
+		
+		// DEBUG
 		DevaptTraces.trace_var(context, 'current hash', window.location.hash, DevaptNavHistory.history_trace);
 		DevaptTraces.trace_var(context, 'new hash', arg_hash, DevaptNavHistory.history_trace);
 		
+		
+		// SET BROWSER HASH
 		try {
+			DevaptTraces.trace_step(context, 'SET BROWSER HASH', DevaptNavHistory.history_trace);
 			window.location.hash = arg_hash;
 			DevaptNavHistory.current_hash = arg_hash;
 		}
@@ -206,16 +215,22 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptClasses, DevaptMixinAssertion,
 		}
 		
 		
+		// GET HASH STATE
+		DevaptTraces.trace_step(context, 'GET HASH STATE', DevaptNavHistory.history_trace);
 		var state = DevaptNavHistory.history_map[arg_hash];
 		DevaptTraces.trace_var(context, 'state', state, DevaptNavHistory.history_trace);
 		
+		
+		// NO EXISTING STATE
 		if ( ! state && arg_hash && arg_hash.substr(0, 5) === 'view:' )
 		{
-			DevaptTraces.trace_step(context, 'process view hash', DevaptNavHistory.history_trace);
+			DevaptTraces.trace_step(context, 'NO EXISTING STATE', DevaptNavHistory.history_trace);
+			
 			var hash_parts = arg_hash.split(':');
 			if (hash_parts.length === 4 || hash_parts.length === 5)
 			{
 				DevaptTraces.trace_step(context, 'process view hash parts', DevaptNavHistory.history_trace);
+				
 				state =
 				{
 					content_label:	hash_parts[3],
@@ -232,14 +247,18 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptClasses, DevaptMixinAssertion,
 			}
 		}
 		
+		
+		// PROCESS HASH STATE
 		if (state)
 		{
+			DevaptTraces.trace_step(context, 'PROCESS HASH STATE', DevaptNavHistory.history_trace);
+			
 			DevaptTraces.trace_var(context, 'hash for state', window.location.hash, DevaptNavHistory.history_trace);
 			var result = DevaptNavHistory.set_content(state, true);
 			if (! result)
 			{
 				DevaptTraces.trace_leave(context, Devapt.msg_failure, DevaptNavHistory.history_trace);
-				return true; // do not propagate event
+				return;
 			}
 		}
 		
@@ -413,6 +432,8 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptClasses, DevaptMixinAssertion,
 		var context = 'DevaptNavHistory.push_view_content(...)';
 		DevaptTraces.trace_step(context, '', DevaptNavHistory.history_trace);
 		
+		var security_token = Devapt.app.get_security_token();
+		var page_url = arg_page_location ? Devapt.url(arg_page_location, security_token) : null;
 		var state =
 			{
 				content_label:	arg_content_label,
@@ -422,7 +443,7 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptClasses, DevaptMixinAssertion,
 				content_html:	null,
 				content_view:	arg_content_view_name,
 				page_title:		arg_page_title ? arg_page_title : null,
-				page_location:	arg_page_location ? arg_page_location : null,
+				page_location:	page_url,
 				menubar_name:	DevaptNavHistory.current_topbar_name
 			};
 		var state_key = 'view:' + arg_content_view_name + ':' + arg_page_title + ':' + arg_content_label + ':' + state.menubar_name;
@@ -446,14 +467,7 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptClasses, DevaptMixinAssertion,
 	{
 		var context = 'DevaptNavHistory.update_breadcrumbs(state)';
 		DevaptTraces.trace_enter(context, '', DevaptNavHistory.history_trace);
-		// console.log(arg_state, 'arg_state');
-		// console.log(arg_state.menubar_name ? arg_state.menubar_name : 'null', 'arg_state.menubar_name');
 		
-		if (DevaptNavHistory.history_stack.length < 2)
-		{
-			DevaptTraces.trace_leave(context, 'nothing to update', DevaptNavHistory.history_trace);
-			return;
-		}
 		
 		if ( DevaptTypes.is_object(DevaptNavHistory.history_breadcrumbs_object) && DevaptTypes.is_object(arg_state) )
 		{
@@ -532,6 +546,125 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptClasses, DevaptMixinAssertion,
 	/**
 	 * @memberof			DevaptNavHistory
 	 * @public
+	 * @method				DevaptNavHistory.hide_all_menubars()
+	 * @desc				Hide all rendered menubars (static method)
+	 * @return {nothing}
+	 */
+	DevaptNavHistory.hide_all_menubars = function(arg_state, arg_force_render)
+	{
+		var context = 'DevaptNavHistory.hide_all_menubars()';
+		DevaptTraces.trace_enter(context, '', DevaptNavHistory.history_trace);
+		
+		
+		// GET MENUBARS CONTAINER ID
+		var container_id = Devapt.app.get_topbar_container_id();
+		var container_jqo = null;
+		if ( DevaptTypes.is_not_empty_str(container_id) )
+		{
+			DevaptTraces.trace_step(context, 'menubars container id is a valid string', DevaptNavHistory.history_trace);
+			
+			container_jqo = $('#' + container_id);
+			if (container_jqo)
+			{
+				DevaptTraces.trace_step(context, 'menubars container jqo exists', DevaptNavHistory.history_trace);
+				
+				container_jqo.children('div').hide();
+			}
+		}
+		
+		
+		DevaptTraces.trace_leave(context, Devapt.msg_success, DevaptNavHistory.history_trace);
+	}
+
+
+	/**
+	 * @memberof			DevaptNavHistory
+	 * @public
+	 * @method				DevaptNavHistory.set_content(state)
+	 * @desc				Set page content (static method)
+	 * @param {object}		arg_state			navigation history state object
+	 * @param {boolean}		arg_force_render
+	 * @return {promise}
+	 */
+	DevaptNavHistory.show_menubar = function(arg_menubar_name)
+	{
+		var context = 'DevaptNavHistory.show_menubar(menubar)';
+		DevaptTraces.trace_enter(context, '', DevaptNavHistory.history_trace);
+		
+		
+		try
+		{
+			// CHECK MENUBAR NAME
+			if ( ! DevaptTypes.is_not_empty_str(arg_menubar_name) )
+			{
+				DevaptTraces.trace_leave(context, Devapt.msg_failure + ':bad menubar name', DevaptNavHistory.history_trace);
+				return false;
+			}
+			
+			// GET MENUBARS CONTAINER ID
+			var container_id = Devapt.app.get_topbar_container_id();
+			if ( ! DevaptTypes.is_not_empty_str(container_id) )
+			{
+				DevaptTraces.trace_leave(context, Devapt.msg_failure + ':bad container id', DevaptNavHistory.history_trace);
+				return false;
+			}
+			
+			// GET MENUBARS CONTAINER JQUERY OBJECT
+			var container_jqo = $('#' + container_id);
+			if (! container_jqo)
+			{
+				DevaptTraces.trace_leave(context, Devapt.msg_failure + ':bad container jqo', DevaptNavHistory.history_trace);
+				return false;
+			}
+			
+			// GET APPLICATION CURRENT BACKEND
+			var backend = Devapt.get_current_backend();
+			if (! backend)
+			{
+				DevaptTraces.trace_leave(context, Devapt.msg_failure + ':bad backend object', DevaptNavHistory.history_trace);
+				return false;
+			}
+			
+			// RENDER MENUBAR
+			var menubar_promise = backend.render_view(container_jqo, arg_menubar_name);
+			
+			// ON RENDER SUCCESS
+			menubar_promise = menubar_promise.then(
+				function(view)
+				{
+					DevaptTraces.trace_step(context, 'on menubar render success', DevaptNavHistory.app_trace);
+					
+					if ( ! DevaptTypes.is_object(view) || ! view.is_view )
+					{
+						DevaptTraces.trace_step(context, 'ERROR: resource view is not a valid object', DevaptNavHistory.app_trace);
+						return null;
+					}
+					
+					DevaptNavHistory.current_topbar_name = view.name;
+					DevaptNavHistory.current_topbar_object = view;
+					DevaptNavHistory.history_stack[0].menubar_name = view.name;
+					
+					return view;
+				}
+			);
+			
+			DevaptTraces.trace_leave(context, Devapt.msg_success_promise, DevaptNavHistory.history_trace);
+			return menubar_promise;
+		}
+		catch(e)
+		{
+			console.error(e, context);
+		}
+		
+		
+		DevaptTraces.trace_leave(context, Devapt.msg_failure_promise, DevaptNavHistory.history_trace);
+		return Devapt.promise_rejected();
+	}
+	
+	
+	/**
+	 * @memberof			DevaptNavHistory
+	 * @public
 	 * @method				DevaptNavHistory.set_content(state)
 	 * @desc				Set page content (static method)
 	 * @param {object}		arg_state			navigation history state object
@@ -583,101 +716,84 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptClasses, DevaptMixinAssertion,
 		}
 		
 		
-		// SWITCH TOP MENUBAR
-		if (DevaptNavHistory.current_topbar_name && menubar_name)
+		// HIDE ALL EXISTING MENUBARS
+		DevaptNavHistory.hide_all_menubars();
+		
+		
+		// SHOW TARGET MENUBAR
+		var topmenubar_promise = null;
+		try
 		{
-			if (DevaptNavHistory.current_topbar_name !== menubar_name)
-			{
-				// console.log('DevaptNavHistory.current_topbar_name !== menubar_name');
-				
-				var current_menubar_object = DevaptClasses.get_instance(DevaptNavHistory.current_topbar_name);
-				var target_menubar_object = DevaptClasses.get_instance(menubar_name);
-				DevaptNavHistory.current_topbar_object = target_menubar_object;
-				
-				if (current_menubar_object)
-				{
-					if (target_menubar_object)
-					{
-						if (target_menubar_object.is_rendered)
-						{
-							DevaptTraces.trace_step(context, 'menubar exists and is rendered', DevaptNavHistory.history_trace);
-							current_menubar_object.switch_top_menubar(target_menubar_object, false);
-						}
-						else
-						{
-							var render_promise = target_menubar_object.render();
-							render_promise.then(
-								function()
-								{
-									DevaptTraces.trace_step(context, 'menubar exists and is now rendered', DevaptNavHistory.history_trace);
-									current_menubar_object.switch_top_menubar(target_menubar_object, false);
-								}
-							);
-						}
-					}
-					else
-					{
-						if ( DevaptTypes.is_not_empty_str(menubar_name) )
-						{
-							// CREATE AND RENDER NEW MENUBAR
-							self.step(context, 'create menubar and render it');
-							var backend = Devapt.get_current_backend();
-							var topmenubar_promise = backend.render_view(null, menubar_name);
-							topmenubar_promise.then(
-								function()
-								{
-									self.step(context, 'menubar created and rendered');
-									
-									var menubar_object = DevaptClasses.get_instance(menubar_name);
-									self.value(context, 'menubar_object.name', menubar_object.name);
-									// self.value(context, 'menubar_object.is_rendered', menubar_object.is_rendered);
-									
-									current_menubar_object.switch_top_menubar(menubar_object, true);
-								}
-							);
-						}
-					}
-				}
-			}
+			topmenubar_promise = DevaptNavHistory.show_menubar(menubar_name);
+		}
+		catch(e)
+		{
+			console.error(e, context + ':SHOW TARGET MENUBAR');
 		}
 		
 		
 		// HTML CONTENT
 		if ( DevaptTypes.is_not_empty_str(content_id) && DevaptTypes.is_not_empty_str(content_html) )
 		{
-			// console.log('set_page_html_content', context);
-			var result = DevaptNavHistory.set_page_html_content(content_label, content_id, content_html, page_title, page_location, arg_force_render);
-			
-			DevaptTraces.trace_leave(context, 'set html content', DevaptNavHistory.history_trace);
-			return result;
+			try
+			{
+				// console.log('set_page_html_content', context);
+				var result = DevaptNavHistory.set_page_html_content(content_label, content_id, content_html, page_title, page_location, arg_force_render);
+				
+				DevaptTraces.trace_leave(context, 'set html content', DevaptNavHistory.history_trace);
+				return result;
+			}
+			catch(e)
+			{
+				console.error(e, context + ':HTML CONTENT');
+				DevaptTraces.trace_leave(context, Devapt.msg_failure, DevaptNavHistory.history_trace);
+				return false;
+			}
 		}
 		
 		// VIEW CONTENT
 		if ( DevaptTypes.is_not_empty_str(content_id) && DevaptTypes.is_not_empty_str(content_view) )
 		{
-			// console.log('set_page_view_content', context);
-			var result = DevaptNavHistory.set_page_view_content(content_label, content_id, content_view, page_title, page_location, arg_force_render, menubar_name);
-			
-			DevaptTraces.trace_leave(context, 'set view content', DevaptNavHistory.history_trace);
-			return result;
+			try
+			{
+				// console.log('set_page_view_content', context);
+				var result = DevaptNavHistory.set_page_view_content(content_label, content_id, content_view, page_title, page_location, arg_force_render, menubar_name);
+				
+				DevaptTraces.trace_leave(context, 'set view content', DevaptNavHistory.history_trace);
+				return result;
+			}
+			catch(e)
+			{
+				console.error(e, context + ':VIEW CONTENT');
+				DevaptTraces.trace_leave(context, Devapt.msg_failure, DevaptNavHistory.history_trace);
+				return false;
+			}
 		}
 		
 		// URL CONTENT
 		if ( DevaptTypes.is_not_empty_str(content_url) )
 		{
-			// console.log('content_url', context);
-			window.title = page_title;
-			// window.location = page_location;
-			window.location = Devapt.url(page_location, Devapt.app.get_security_token());
-			
-			// SAVE NAVIGATION
-			if (arg_force_render)
+			try
 			{
-				DevaptNavHistory.push_html_content(content_label, content_id, content_html, page_title, page_location)
+				// console.log('content_url', context);
+				window.title = page_title;
+				window.location = Devapt.url(page_location, Devapt.app.get_security_token());
+				
+				// SAVE NAVIGATION
+				if (arg_force_render)
+				{
+					DevaptNavHistory.push_html_content(content_label, content_id, content_html, page_title, page_location)
+				}
+				
+				DevaptTraces.trace_leave(context, 'set view content', DevaptNavHistory.history_trace);
+				return result;
 			}
-			
-			DevaptTraces.trace_leave(context, 'set view content', DevaptNavHistory.history_trace);
-			return result;
+			catch(e)
+			{
+				console.error(e, context + ':URL CONTENT');
+				DevaptTraces.trace_leave(context, Devapt.msg_failure, DevaptNavHistory.history_trace);
+				return false;
+			}
 		}
 		
 		
@@ -712,10 +828,6 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptClasses, DevaptMixinAssertion,
 			return DevaptTraces.trace_leaveko(context, 'bad content id [' + arg_content_id + ']', false, DevaptNavHistory.history_trace);
 		}
 		
-		// GET CURRENT BACKEND
-		// var backend = Devapt.get_current_backend();
-		// self.assert_not_null(context, 'backend', backend);
-		
 		// SAVE NAVIGATION
 		if (arg_force_render)
 		{
@@ -727,11 +839,10 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptClasses, DevaptMixinAssertion,
 		page_container_jqo.append(div_jqo);
 		
 		window.title = arg_page_title;
-		// window.location = arg_page_location;
 		window.location = Devapt.url(arg_page_location, Devapt.app.get_security_token());
 		
 		
-		DevaptTraces.trace_leve(context, '', DevaptNavHistory.history_trace);
+		DevaptTraces.trace_leave(context, '', DevaptNavHistory.history_trace);
 		return true;
 	}
 
@@ -739,11 +850,54 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptClasses, DevaptMixinAssertion,
 	/**
 	 * @memberof	DevaptNavHistory
 	 * @public
-	 * @method		DevaptNavHistory.set_page_view_content(label, id, view, title, location)
+	 * @method		DevaptNavHistory.set_view_content(label, id, view, title, location...)
+	 * @desc		Set the view content (static method)
+	 * @param {string}		arg_content_label
+	 * @param {string}		arg_content_id
+	 * @param {string}		arg_content_view_name
+	 * @param {string}		arg_page_title
+	 * @param {string}		arg_page_location
+	 * @param {boolean}		arg_force_render
+	 * @param {string}		arg_menubar_name
+	 * @return {object}		render promise object
+	 */
+	DevaptNavHistory.set_view_content = function(arg_content_label, arg_content_id, arg_content_view_name, arg_page_title, arg_page_location, arg_force_render, arg_menubar_name)
+	{
+		var context = 'DevaptNavHistory.set_view_content(...)';
+		DevaptTraces.trace_enter(context, '', DevaptNavHistory.history_trace);
+		
+		
+		// GET STATE ATTRIBUTES
+		var state =
+			{
+				content_label:	arg_content_label,
+				content_id:		arg_content_id,
+				content_url:	null,
+				content_cb:		null,
+				content_html:	null,
+				content_view:	arg_content_view_name,
+				page_title:		arg_page_title ? arg_page_title : null,
+				page_location:	arg_page_location ? arg_page_location : null,
+				menubar_name:	arg_menubar_name
+			};
+		
+		var result = DevaptNavHistory.set_content(state, arg_force_render);
+		DevaptNavHistory.push_view_content(arg_content_label, arg_content_id, arg_content_view_name, arg_page_title, arg_page_location);
+		
+		
+		DevaptTraces.trace_leave(context, '', DevaptNavHistory.history_trace);
+		return result;
+	}
+	
+
+	/**
+	 * @memberof	DevaptNavHistory
+	 * @public
+	 * @method		DevaptNavHistory.set_page_view_content(label, id, view, title, location...)
 	 * @desc		Set the page view (static method)
 	 * @param {string}		arg_content_label
 	 * @param {string}		arg_content_id
-	 * @param {string}		arg_content_html
+	 * @param {string}		arg_content_view_name
 	 * @param {string}		arg_page_title
 	 * @param {string}		arg_page_location
 	 * @param {boolean}		arg_force_render
@@ -759,6 +913,7 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptClasses, DevaptMixinAssertion,
 		DevaptTraces.trace_var(context, 'arg_content_view_name', arg_content_view_name, DevaptNavHistory.history_trace);
 		
 		// UPDATE TITLE AND LOCATION
+		DevaptTraces.trace_step(context, 'UPDATE TITLE AND LOCATION', DevaptNavHistory.history_trace);
 		window.title = arg_page_title;
 		var new_hash = 'view:' + arg_content_view_name + ':' + arg_page_title + ':' + arg_content_label;
 		if ( DevaptTypes.is_not_empty_str(arg_menubar_name) )
@@ -776,23 +931,14 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptClasses, DevaptMixinAssertion,
 		// SAVE NAVIGATION
 		if (arg_force_render)
 		{
+			DevaptTraces.trace_step(context, 'FORCE RENDER VIEW', DevaptNavHistory.history_trace);
 			DevaptNavHistory.push_view_content(arg_content_label, arg_content_id, arg_content_view_name, arg_page_title, arg_page_location);
 			DevaptTraces.trace_var(context, 'hash after push_view_content', window.location.hash, DevaptNavHistory.history_trace);
 		}
 		
 		
-		// if ( ! arg_force_render )
-		// {
-			// var deferred = Devapt.defer();
-			// deferred.resolve();
-			// var promise = deferred.promise;
-			
-			// DevaptTraces.trace_leave(context, 'nothing to do', DevaptNavHistory.history_trace);
-			// return promise;
-		// }
-		
-		
 		// GET CONTENT JQO
+		DevaptTraces.trace_step(context, 'GET CONTENT JQO', DevaptNavHistory.history_trace);
 		var page_container_jqo = $('#' + arg_content_id);
 		if ( ! page_container_jqo)
 		{
@@ -804,10 +950,13 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptClasses, DevaptMixinAssertion,
 		
 		
 		// SHOW AN EXISTING VIEW
+		DevaptTraces.trace_step(context, 'GET THE VIEW OBJECT', DevaptNavHistory.history_trace);
 		var view_object = DevaptClasses.get_instance(arg_content_view_name);
 		// console.log(view_object, context + ':view_object for [' + arg_content_view_name + ']');
 		if (view_object)
 		{
+			DevaptTraces.trace_step(context, 'SHOW AN EXISTING VIEW', DevaptNavHistory.history_trace);
+			
 			view_object.content_jqo.show();
 			DevaptTraces.trace_var(context, 'hash after content show', window.location.hash, DevaptNavHistory.history_trace);
 			
@@ -817,13 +966,32 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptClasses, DevaptMixinAssertion,
 		
 		
 		// GET CURRENT BACKEND
+		DevaptTraces.trace_step(context, 'GET CURRENT BACKEND', DevaptNavHistory.history_trace);
 		var backend = Devapt.get_current_backend();
 		DevaptMixinAssertion.infos.proto.assert_not_null(context, 'backend', backend);
 		
 		
 		// RENDER VIEW
-		var promise = backend.render_view(page_container_jqo, arg_content_view_name);
-		DevaptTraces.trace_var(context, 'hash after render view', window.location.hash, DevaptNavHistory.history_trace);
+		DevaptTraces.trace_step(context, 'RENDER VIEW', DevaptNavHistory.history_trace);
+		var promise = Devapt.require(['Devapt', 'core/resources']).then(
+			function(Devapt, DevaptResources)
+			{
+				DevaptTraces.trace_step(context, 'RENDER VIEW on Resources loaded', DevaptNavHistory.history_trace);
+				
+				try
+				{
+					var render_promise = backend.render_view(page_container_jqo, arg_content_view_name);
+					DevaptTraces.trace_var(context, 'hash after render view', window.location.hash, DevaptNavHistory.history_trace);
+					
+					return render_promise;
+				}
+				catch(e)
+				{
+					console.error(e, context + ':RENDER VIEW on Resources loaded');
+				}
+				return Devapt.promise_rejected();
+			}
+		);
 		
 		
 		DevaptTraces.trace_leave(context, 'async renderer', DevaptNavHistory.history_trace);

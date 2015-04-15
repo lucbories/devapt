@@ -40,7 +40,7 @@ define( [
 	'datas/model/view_model',
 	'views/container/container-mixin-selectable',
 	'views/container/container-mixin-filtered', 'views/container/container-mixin-pagination',
-	'views/container/container-mixin-render-item', /*'views/container/mixin-get-nodes',*/
+	'views/container/container-mixin-render-item', 'views/container/mixin-get-nodes',
 	'views/container/container-mixin-utils',
 	/*'views/container/mixin-form', */'views/container/container-mixin-model-crud'],
 function(
@@ -49,7 +49,7 @@ function(
 	DevaptViewModel,
 	DevaptContainerMixinSelectable,
 	DevaptMixinFiltered, DevaptMixinPagination,
-	DevaptMixinRenderItem, /*DevaptMixinGetNodes,*/
+	DevaptMixinRenderItem, DevaptMixinGetNodes,
 	DevaptMixinContainerUtils,
 	/*DevaptMixinForm, */DevaptMixinModelCrud)
 {
@@ -98,14 +98,16 @@ function(
 	var cb_constructor = function(self)
 	{
 		// DEBUG
-		// console.log(self.parent_jqo, self.name + ':parent_jqo');
-		self.trace = true;
+		// self.trace = true;
 		
 		// CONSTRUCTOR BEGIN
-		var context = 'contructor(' + self.name + ')';
-		// console.log(self, context);
+		var context = 'DevaptContainer.contructor(' + self.name + ')';
 		self.enter(context, '');
 		
+		
+		// CALL SUPER CLASS CONSTRUCTOR
+		// self._parent_class.infos.ctor(self);
+		self.is_container = true;
 		
 		
 		// SET VIEW MODEL
@@ -116,53 +118,16 @@ function(
 		}
 		
 		
-		// CALL SUPER CLASS CONSTRUCTOR
-		// self._parent_class.infos.ctor(self);
+		// INIT CONTAINER ATTRIBUTES
+		self.items_objects			= [];
+		self.has_divider			= true;
+		self.is_rendering			= false;
+		self.renders_count			= 0;
+		self.items_jquery_parent	= null;
+		self.items_jquery_filter	= null;
 		
 		
-		// SET ID
-		if ( DevaptTypes.is_object(self.parent_jqo) )
-		{
-			self.step(context, 'has a parent node object');
-			if ( DevaptTypes.is_not_empty_str(self.parent_html_id) )
-			{
-				self.step(context, 'has a parent node id');
-				self.parent_jqo.attr('id', self.parent_html_id);
-			}
-		}
-		
-		
-		// SEND EVENT
-		self.fire_event('devapt.view.ready');
-		
-		
-		// ON READY HANDLER
-		if ( self.class_name === 'DevaptView')
-		{
-			self.step(context, 'self is a View base class');
-			
-			if ( DevaptTypes.is_function(self.on_ready) )
-			{
-				self.step(context, 'has on ready function');
-				self.on_ready();
-			}
-		}
-		
-		
-		
-		self.is_container		= true;
-		// self.status				= 'created';
-		
-		self.items_objects		= [];
-		self.has_divider		= true;
-		self.is_rendering		= false;
-		self.renders_count		= 0;
-		
-		self.items_jquery_parent = null;
-		self.items_jquery_filter = null;
-		
-		
-		var has_unique_cb = true;
+		// var has_unique_cb = true;
 		// self.get_worker().then(
 			// function(worker)
 			// {
@@ -170,7 +135,7 @@ function(
 				// self.add_event_callback('devapt.query.filters.added', [self, self.on_query_filters_event], has_unique_cb, null, null, worker);
 			// }
 		// );
-		var worker = undefined;
+		// var worker = undefined;
 		// self.add_event_callback('devapt.query.updated', [self, self.on_query_event], has_unique_cb, null, null, worker);
 		// self.add_event_callback('devapt.query.filters.added', [self, self.on_query_filters_event], has_unique_cb, null, null, worker);
 		
@@ -267,17 +232,45 @@ function(
 		}
 		
 		
-		// REFRESH
-		// self.is_rendering = true;
-		
+		// TEST IF WE NEED TO REMOVE EXISTING ITEMS
 		if (self.items_refresh.mode !== 'append')
 		{
 			self.remove_items();
 		}
 		
-		// console.log('refresh', context);
+		
+		// GET CURRENT ITEMS COUNT
 		var items_count_before = $(self.items_jquery_filter, self.items_jquery_parent).length;
-		var promise = self.render_items(arg_deferred);
+		
+		
+		// UPDATE QUERY SLICE TO QUERY NEW ITEMS TO APPEND
+		var slice_promise = Devapt.promise_resolved();
+		if (self.items_refresh.mode === 'append')
+		{
+			slice_promise = self.view_model.then(
+				function(view_model)
+				{
+					self.step(context, 'view_model is found');
+					
+					view_model.query.slice = {};
+					view_model.query.slice.offset = items_count_before + 1;
+					view_model.query.slice.length = 999999999;
+					
+					console.log(view_model.query, self.name + '.' + context + '.view_model update slice');
+					
+					return view_model;
+				}
+			);
+		}
+		
+		
+		// READ AND RENDER ITEMS
+		var promise = slice_promise.then(
+			function()
+			{
+				return self.render_items(arg_deferred);
+			}
+		);
 		promise.then(
 			function()
 			{
@@ -472,6 +465,7 @@ function(
 				var items_count = $(self.items_jquery_filter, self.items_jquery_parent).filter('.devapt-container-visible').length;
 				
 				self.step(context, 'fire:devapt.pagination.update_pagination');
+				self.fire_event('devapt.render.content', [items_count]);
 				self.fire_event('devapt.pagination.update_pagination', [0, items_count]);
 			}
 		);
@@ -501,6 +495,7 @@ function(
 			function(view_model)
 			{
 				self.step(context, 'view_model get items');
+				console.log(view_model, self.name + '.' + context + '.view_model');
 				
 				return view_model.read();
 			}
@@ -524,87 +519,95 @@ function(
 			function(recordset, types)
 			{
 				self.step(context, 'get items and types promise done');
-				// console.log(recordset, self.name + '.' + context + '.recordset');
+				console.log(recordset, self.name + '.' + context + '.recordset');
+				console.log(types, self.name + '.' + context + '.types');
 				
-				var items = recordset.get_records();
-				var items_count = items.length;
-				self.items_records = items;
-				self.items_records_count = items_count;
-				
-				var types_count = types.length;
-				var default_type = null;
-				self.value(context, 'types', types);
-				
-				// LOOP ON ITEMS
-				self.step(context, 'loop on items');
-				self.value(context, 'items_count', items_count);
-				var item_index = 0;
-				// var items_defers = []; // TODO USE ITEMS DEFERS ?
-				for( ; item_index < items_count ; ++item_index)
+				try
 				{
-					self.step(context, 'loop on item at [' + item_index + ']');
+					var items = recordset.get_records();
+					var items_count = items.length;
+					self.items_records = items;
+					self.items_records_count = items_count;
 					
-					// GET CURRENT ITEM
-					var item = items[item_index];
-					self.value(context, 'item at [' + item_index + ']', item);
-					// console.log(item, context + ':item');
+					var types_count = types.length;
+					var default_type = null;
+					self.value(context, 'types', types);
 					
-					// GET CURRENT TYPE
-					var type = default_type;
-					if ( DevaptTypes.is_array(types) && types_count > item_index )
+					// LOOP ON ITEMS
+					self.step(context, 'loop on items');
+					self.value(context, 'items_count', items_count);
+					var item_index = 0;
+					// var items_defers = []; // TODO USE ITEMS DEFERS ?
+					for( ; item_index < items_count ; ++item_index)
 					{
-						type = types[item_index];
-						default_type = type;
-					}
-					if (item === 'divider')
-					{
-						type = 'divider';
-					}
-					if ( DevaptTypes.is_null(type) )
-					{
-						if ( DevaptTypes.is_array(item) )
+						self.step(context, 'loop on item at [' + item_index + ']');
+						
+						// GET CURRENT ITEM
+						var item = items[item_index];
+						self.value(context, 'item at [' + item_index + ']', item);
+						// console.log(item, context + ':item');
+						
+						// GET CURRENT TYPE
+						var type = default_type;
+						if ( DevaptTypes.is_array(types) && types_count > item_index )
 						{
-							type = 'record';
+							type = types[item_index];
+							default_type = type;
 						}
-						else if ( DevaptTypes.is_object(item) )
+						if (item === 'divider')
 						{
-							type = 'object';
+							type = 'divider';
 						}
+						if ( DevaptTypes.is_null(type) )
+						{
+							if ( DevaptTypes.is_array(item) )
+							{
+								type = 'record';
+							}
+							else if ( DevaptTypes.is_object(item) )
+							{
+								type = 'object';
+							}
+						}
+						self.value(context, 'type at [' + item_index + ']', type);
+						// console.log(type, context + ':type');
+						
+						if ( DevaptTypes.is_object(item) && type === 'view' && item.value )
+						{
+							item = item.value;
+						}
+						
+						// RENDER CURRENT ITEM
+						// var item_defer = Devapt.defer();
+						// items_defers.push(item_defer); // TODO
+						if ( ! self.render_item(arg_deferred, item, item_index, type) )
+						{
+							self.step(context, 'deferred.reject()');
+							arg_deferred.reject();
+							break;
+						}
+						
+						// SEND EVENT
+						self.step(context, 'fire event: devapt.container.render.item');
+						self.fire_event('devapt.container.render.item', [item_index]);
 					}
-					self.value(context, 'type at [' + item_index + ']', type);
-					// console.log(type, context + ':type');
 					
-					if ( DevaptTypes.is_object(item) && type === 'view' && item.value )
-					{
-						item = item.value;
-					}
-					
-					// RENDER CURRENT ITEM
-					// var item_defer = Devapt.defer();
-					// items_defers.push(item_defer); // TODO
-					if ( ! self.render_item(arg_deferred, item, item_index, type) )
-					{
-						self.step(context, 'deferred.reject()');
-						arg_deferred.reject();
-						break;
-					}
 					
 					// SEND EVENT
-					self.step(context, 'fire event: devapt.container.render.item');
-					self.fire_event('devapt.container.render.item', [item_index]);
+					// self.step(context, 'fire event: rendered.items');
+					self.fire_event('rendered.items');
+					
+					
+					// RENDER IS RESOLVED
+					if ( item_index === items_count )
+					{
+						self.step(context, 'get items and types promise done (END): render is resolved');
+						return Devapt.promise_resolved();
+					}
 				}
-				
-				
-				// SEND EVENT
-				// self.step(context, 'fire event: rendered.items');
-				// self.fire_event('rendered.items');
-				
-				
-				// RENDER IS RESOLVED
-				if ( item_index === items_count )
+				catch(e)
 				{
-					self.step(context, 'get items and types promise done (END): render is resolved');
-					return Devapt.promise_resolved();
+					console.error(e, context + ':PROCESS ITEMS');
 				}
 				
 				
@@ -674,7 +677,7 @@ function(
 	DevaptContainerClass.add_public_mixin(DevaptMixinFiltered);
 	DevaptContainerClass.add_public_mixin(DevaptMixinPagination);
 	DevaptContainerClass.add_public_mixin(DevaptMixinRenderItem);
-	// DevaptContainerClass.add_public_mixin(DevaptMixinGetNodes);
+	DevaptContainerClass.add_public_mixin(DevaptMixinGetNodes);
 	// DevaptContainerClass.add_public_mixin(DevaptMixinSelectItem);
 	DevaptContainerClass.add_public_mixin(DevaptMixinContainerUtils);
 	
@@ -692,29 +695,29 @@ function(
 	
 	
 	
-	DevaptContainerClass.add_public_obj_property('items_model_obj',		'',	null, false, false, ['model']);
+	DevaptContainerClass.add_public_obj_property('items_model_obj',			'',	null, false, false, ['model']);
 	DevaptContainerClass.add_public_str_property('items_model_name',		'', null, true, false, ['model_name']);
 	
-	DevaptContainerClass.add_public_bool_property('items_autoload',		'',	true, false, false, ['view_items_autoload']);
+	DevaptContainerClass.add_public_bool_property('items_autoload',			'',	true, false, false, ['view_items_autoload']);
 	DevaptContainerClass.add_public_str_property('items_source',			'', 'inline', false, false, ['view_items_source']); // inline / model / events / resources
-	DevaptContainerClass.add_public_str_property('items_source_format',	'',	'array', false, false, ['view_items_source_format']); // json / array
+	DevaptContainerClass.add_public_str_property('items_source_format',		'',	'array', false, false, ['view_items_source_format']); // json / array
 
-	DevaptContainerClass.add_public_bool_property('items_distinct',		'',	false, false, false, []); // items are distinct ?
+	DevaptContainerClass.add_public_bool_property('items_distinct',			'',	false, false, false, []); // items are distinct ?
 	DevaptContainerClass.add_public_str_property('items_distinct_field',	'',	null, false, false, []); // items are distinct with given field name
 	DevaptContainerClass.add_public_str_property('items_iterator',			'', 'records', false, false, []); // items iterator : records / fields
 	DevaptContainerClass.add_public_array_property('items_fields',			'', [], false, false, [], 'string', ','); // item fields
 	
 	DevaptContainerClass.add_public_str_property('items_format',			'', null, false, false, []); // item format
-	DevaptContainerClass.add_public_array_property('items_formats',		'', null, false, false, [], 'string', ','); // item format
+	DevaptContainerClass.add_public_array_property('items_formats',			'', null, false, false, [], 'string', ','); // item format
 	
 	DevaptContainerClass.add_public_obj_property('items_current_record',	'', null, false, false, []);
 	DevaptContainerClass.add_public_obj_property('items_refresh',			'', null, false, false, []);
 	
-	DevaptContainerClass.add_public_array_property('items_records',		'',	[], false, false, [], 'object', ','); // items records
-	DevaptContainerClass.add_public_int_property('items_records_count',	'',	0, false, false, []); // items records count
+	DevaptContainerClass.add_public_array_property('items_records',			'',	[], false, false, [], 'object', ','); // items records
+	DevaptContainerClass.add_public_int_property('items_records_count',		'',	0, false, false, []); // items records count
 	
 	DevaptContainerClass.add_public_array_property('items_inline',			'',	[], false, false, [], 'string', ',');
-	DevaptContainerClass.add_public_array_property('items_options',		'',	[], false, false, [], 'string', ',');
+	DevaptContainerClass.add_public_array_property('items_options',			'',	[], false, false, [], 'string', ',');
 	
 	DevaptContainerClass.add_public_array_property('items_labels',			'',	[], false, false, [], 'string', ',');
 	DevaptContainerClass.add_public_array_property('items_types',			'',	['view'], false, false, ['view_items_types'], 'string', ',');

@@ -99,11 +99,12 @@ function(Devapt, DevaptTypes, DevaptClass)
 		/**
 		 * @public
 		 * @memberof			DevaptMixinRenderable
-		 * @desc				Init mixin
-		 * @return {nothing}
+		 * @desc				Get render state string
+		 * @return {string}
 		 */
 		get_render_state: function()
 		{
+			var self = this;
 			var context = 'get_render_state()';
 			self.enter(context, '');
 			
@@ -116,19 +117,37 @@ function(Devapt, DevaptTypes, DevaptClass)
 		/**
 		 * @public
 		 * @memberof			DevaptMixinRenderable
+		 * @desc				Get render count
+		 * @return {integer}
+		 */
+		// get_render_count: function()
+		// {
+			// var self = this;
+			// var context = 'get_render_count()';
+			// self.enter(context, '');
+			
+			
+			// self.leave(context, self.mixin_renderable_count);
+			// return self.mixin_renderable_count;
+		// },
+		
+		
+		/**
+		 * @public
+		 * @memberof			DevaptMixinRenderable
 		 * @desc				Set render state
 		 * @param {string}		arg_state		target state
 		 * @return {boolean}
 		 */
 		set_render_state: function(arg_state)
 		{
+			var self = this;
 			var context = 'set_render_state(state)';
 			self.enter(context, '');
 			
 			switch(arg_state)
 			{
 				case Devapt.STATE_RENDERED:
-					self.mixin_renderable_count;
 				case Devapt.STATE_NOT_RENDERED:
 				case Devapt.STATE_BEFORE_RENDERING:
 				case Devapt.STATE_RENDERING:
@@ -151,6 +170,7 @@ function(Devapt, DevaptTypes, DevaptClass)
 		 */
 		set_render_state_not: function()
 		{
+			var self = this;
 			self.mixin_renderable_state = Devapt.STATE_NOT_RENDERED;
 		},
 		
@@ -163,6 +183,7 @@ function(Devapt, DevaptTypes, DevaptClass)
 		 */
 		is_render_state_not: function()
 		{
+			var self = this;
 			return self.mixin_renderable_state === Devapt.STATE_NOT_RENDERED;
 		},
 		
@@ -175,6 +196,7 @@ function(Devapt, DevaptTypes, DevaptClass)
 		 */
 		set_render_state_before: function()
 		{
+			var self = this;
 			self.mixin_renderable_state = Devapt.STATE_BEFORE_RENDERING;
 		},
 		
@@ -187,6 +209,7 @@ function(Devapt, DevaptTypes, DevaptClass)
 		 */
 		is_render_state_before: function()
 		{
+			var self = this;
 			return self.mixin_renderable_state === Devapt.STATE_BEFORE_RENDERING;
 		},
 		
@@ -199,6 +222,7 @@ function(Devapt, DevaptTypes, DevaptClass)
 		 */
 		set_render_state_rendering: function()
 		{
+			var self = this;
 			self.mixin_renderable_state = Devapt.STATE_RENDERING;
 		},
 		
@@ -211,6 +235,7 @@ function(Devapt, DevaptTypes, DevaptClass)
 		 */
 		is_render_state_rendering: function()
 		{
+			var self = this;
 			return self.mixin_renderable_state === Devapt.STATE_RENDERING;
 		},
 		
@@ -223,6 +248,7 @@ function(Devapt, DevaptTypes, DevaptClass)
 		 */
 		set_render_state_after: function()
 		{
+			var self = this;
 			self.mixin_renderable_state = Devapt.STATE_AFTER_RENDERING;
 		},
 		
@@ -235,6 +261,7 @@ function(Devapt, DevaptTypes, DevaptClass)
 		 */
 		is_render_state_after: function()
 		{
+			var self = this;
 			return self.mixin_renderable_state === Devapt.STATE_AFTER_RENDERING;
 		},
 		
@@ -247,6 +274,7 @@ function(Devapt, DevaptTypes, DevaptClass)
 		 */
 		set_render_state_rendered: function()
 		{
+			var self = this;
 			self.mixin_renderable_state = Devapt.STATE_RENDERED;
 		},
 		
@@ -259,6 +287,7 @@ function(Devapt, DevaptTypes, DevaptClass)
 		 */
 		is_render_state_rendered: function()
 		{
+			var self = this;
 			return self.mixin_renderable_state === Devapt.STATE_RENDERED;
 		},
 		
@@ -311,6 +340,13 @@ function(Devapt, DevaptTypes, DevaptClass)
 			self.enter(context, '');
 			
 			
+			// REMOVE EXISTING RENDERED NODES
+			if ( DevaptTypes.is_object(self.content_jqo) )
+			{
+				self.content_jqo.children().remove();
+			}
+			
+			// RUN IF IT EXISTS
 			if ( self.template_enabled && DevaptTypes.is_function(self.render_begin) )
 			{
 				self.render_begin();
@@ -573,6 +609,7 @@ function(Devapt, DevaptTypes, DevaptClass)
 	DevaptMixinRenderableClass.infos.ctor = DevaptMixinRenderable.mixin_renderable_init;
 	
 	DevaptMixinRenderableClass.add_public_method('get_render_state', {}, DevaptMixinRenderable.get_render_state);
+	// DevaptMixinRenderableClass.add_public_method('get_render_count', {}, DevaptMixinRenderable.get_render_count);
 	DevaptMixinRenderableClass.add_public_method('set_render_state', {}, DevaptMixinRenderable.set_render_state);
 	
 	DevaptMixinRenderableClass.add_public_method('set_render_state_not', {}, DevaptMixinRenderable.set_render_state_not);
@@ -604,7 +641,7 @@ function(Devapt, DevaptTypes, DevaptClass)
 	
 	// PROPERTIES
 	DevaptMixinRenderableClass.add_public_str_property('mixin_renderable_state',	'', 'not_created', false, false, []);
-	DevaptMixinRenderableClass.add_public_str_property('mixin_renderable_count',	'', null, false, false, ['view_template_file_name']);
+	DevaptMixinRenderableClass.add_public_int_property('mixin_renderable_count',	'', 0, false, false, []);
 	
 	
 	// BUILD MIXIN CLASS

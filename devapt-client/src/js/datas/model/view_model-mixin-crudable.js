@@ -49,7 +49,7 @@ function(
 	 */
 	var cb_constructor = function(self)
 	{
-		var context = 'constructor';
+		var context = 'DevaptViewModelMixinCrudable.constructor';
 		self.enter(context, '');
 		
 		
@@ -391,6 +391,7 @@ function(
 		}
 		
 		// READ WITH A QUERY
+		self.query.set_select();
 		var items_promise = self.model.read(self.query);
 		
 		

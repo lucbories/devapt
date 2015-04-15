@@ -16,7 +16,7 @@
 namespace Devapt\Application;
 
 // ZEND IMPORTS
-// use Zend\Debug\Debug;
+use Zend\Debug\Debug;
 use Zend\Json\Json as JsonFormatter;
 
 // DEVAPT IMPORTS
@@ -222,6 +222,8 @@ class ModelController extends AbstractController
 		
 		// BUILD QUERY OBJECT
 		$query = \Devapt\Models\Query::buildFromRequest($arg_action_name, $model_resource, $arg_request, $arg_id);
+		Trace::value($context, 'Query', $query, self::$TRACE_MODEL_CONTROLLER);
+		// Debug::dump($query);
 		if ( ! is_object($query) )
 		{
 			Trace::warning($context.'Build query failed ['.$arg_resource_name.']');

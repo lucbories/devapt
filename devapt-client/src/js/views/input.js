@@ -39,11 +39,8 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptView)
 		self.assert_not_null(context, 'arg_deferred', arg_deferred);
 		
 		// GET NODES
-		self.assert_not_null(context, 'parent_jqo', self.parent_jqo);
-		self.content_jqo = $('<div>');
-		self.parent_jqo.append(self.content_jqo);
-		self.content_jqo.attr('id', self.get_view_id());
-		self.input_jqo =  $('<input type="text">');
+		self.assert_not_null(context, 'content_jqo', self.content_jqo);
+		self.input_jqo = $('<input type="text">');
 		self.input_jqo.attr('id', self.get_view_id() + '_input');
 		
 		// SET LABEL

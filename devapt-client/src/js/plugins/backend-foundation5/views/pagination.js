@@ -18,10 +18,6 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptResources, DevaptView, undefine
 	 * @public
 	 * @class				DevaptPagination
 	 * @desc				Pagination view class
-	 * @param {string}		arg_name			View name (string)
-	 * @param {object}		arg_parent_jqo	jQuery object to attach the view to
-	 * @param {object|null}	arg_options			Associative array of options
-	 * @return {nothing}
 	 */
 	
 	
@@ -639,16 +635,16 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptResources, DevaptView, undefine
 		
 		
 		// CREATE MAIN NODE
-		var div_jqo = $('<div>');
-		self.parent_jqo.append(div_jqo);
+		// var div_jqo = $('<div>');
+		// self.parent_jqo.append(div_jqo);
 		if ( self.get_property('pagination_centered') )
 		{
-			div_jqo.addClass('pagination-centered');
+			self.content_jqo.addClass('pagination-centered');
 		}
 		self.ul_jqo = $('<ul>');
 		self.ul_jqo.addClass('pagination');
-		div_jqo.append(self.ul_jqo);
-		self.content_jqo = div_jqo;
+		self.content_jqo.append(self.ul_jqo);
+		// self.content_jqo = div_jqo;
 		
 		
 		var promise = self.render_items(arg_deferred);
@@ -706,7 +702,6 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptResources, DevaptView, undefine
 		// CREATE A TAG
 		var a_jqo = $('<a>');
 		li_jqo.append(a_jqo);
-		a_jqo.attr('href', '#');
 		var label = self.get_page_label(arg_index);
 		a_jqo.text(label);
 		
@@ -761,7 +756,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptResources, DevaptView, undefine
 			left_arrow_li_jqo.addClass('unavailable');
 		}
 		
-		var left_arrow_a_jqo = $('<a href="#">&laquo;</a>');
+		var left_arrow_a_jqo = $('<a>&laquo;</a>');
 		left_arrow_li_jqo.append(left_arrow_a_jqo);
 		
 		// ON CLICK
@@ -789,7 +784,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptResources, DevaptView, undefine
 			right_arrow_li_jqo.addClass('unavailable');
 		}
 		
-		var right_arrow_a_jqo = $('<a href="#">&raquo;</a>');
+		var right_arrow_a_jqo = $('<a>&raquo;</a>');
 		right_arrow_li_jqo.append(right_arrow_a_jqo);
 		
 		// ON CLICK

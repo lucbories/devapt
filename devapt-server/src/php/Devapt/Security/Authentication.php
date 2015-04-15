@@ -28,11 +28,18 @@ final class Authentication
 	// STATIC ATTRIBUTES
 	
 	/// @brief TRACE FLAG
-	static public $TRACE_AUTHENTICATION		= false;
+	static public $TRACE_AUTHENTICATION		= true;
 	
+	/// @brief AUTHENTICATION IMPLEMENTATION ADAPTER
 	static private $authentication_adapter	= null;
-	static private $security_token			= null;
+	
+	/// @brief LIBRARY SECURITY SECRET FOR TOKEN HASH
 	static private $security_secret			= 'vjzirjz"ç²1fg4f5*$?./635è"&&4<:>nezrinrfgjg';
+	
+	/// @brief CURRENT REQUEST SECURITY TOKEN
+	static private $security_token			= null;
+	
+	/// @brief CURRENT REQUEST SECURITY AUTHENTICATED FLAG
 	static private $is_logged				= false;
 	
 	
@@ -236,7 +243,14 @@ final class Authentication
 		// TODO READ EXPIRATION IN CONFIG
 		// 1427115300		PHP time() + 60*60*4
 		// 1427115078059	JS Date.now()
-		return time() + 60*60*4;
+		
+		$expiration_minutes = Application::getInstance()->getConfig()->getSecurityAuthenticationExpirationInMinutes();
+		Trace::value($context, 'expiration_minutes', $expiration_minutes, Authentication::$TRACE_AUTHENTICATION);
+		
+		$expiration_ts = time() + 60*$expiration_minutes;
+		Trace::value($context, 'expiration_ts', $expiration_ts, Authentication::$TRACE_AUTHENTICATION);
+		
+		return $expiration_ts;
 	}
 	
 	
@@ -267,8 +281,10 @@ final class Authentication
 			return $error_token;
 		}
 		
-		// TODO READ SECRET IN CONFIG
-		$hash = sha1($arg_expire.Authentication::$security_secret);
+		// CREATE TOKEN
+		$app_secret = Application::getInstance()->getConfig()->getSecurityAuthenticationSecret();
+		$lib_secret = Authentication::$security_secret;
+		$hash = sha1($arg_expire.$lib_secret.$app_secret);
 		$expire_token = $arg_expire.'******'.$hash;
 		
 		return $expire_token;
@@ -310,7 +326,9 @@ final class Authentication
 		
 		
 		// CHECK HASH
-		$target_hash = sha1($expire.Authentication::$security_secret);
+		$app_secret = Application::getInstance()->getConfig()->getSecurityAuthenticationSecret();
+		$lib_secret = Authentication::$security_secret;
+		$target_hash = sha1($expire.$lib_secret.$app_secret);
 		$token_hash = $parts[1];
 		if ($token_hash !== $target_hash)
 		{
@@ -324,6 +342,7 @@ final class Authentication
 		// CHECK EXPIRATION
 		$is_expired = $expire < $now;
 		Trace::value($context, 'is_expired', $is_expired, Authentication::$TRACE_AUTHENTICATION);
+		Trace::value($context, 'chek token = not expired', ! $is_expired, Authentication::$TRACE_AUTHENTICATION);
 		return ! $is_expired;
 	}
 	

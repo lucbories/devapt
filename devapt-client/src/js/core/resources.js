@@ -26,8 +26,8 @@
 
 'use strict';
 define(
-['Devapt', 'core/traces', 'core/types', 'object/classes', 'core/cache', 'core/application'],
-function(Devapt, DevaptTraces, DevaptTypes, DevaptClasses, DevaptCache, DevaptApplication)
+['Devapt', 'core/traces', 'core/types', 'object/classes', 'core/cache'],
+function(Devapt, DevaptTraces, DevaptTypes, DevaptClasses, DevaptCache)
 {
 	/**
 	 * @memberof	DevaptResources
@@ -308,6 +308,7 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptClasses, DevaptCache, DevaptAp
 				DevaptTraces.trace_step(context, 'promise is resolved: resource declaration is found', DevaptResources.resources_trace);
 				// console.log(arg_declaration, 'resource declaration');
 				var class_id = arg_declaration.class_name ? arg_declaration.class_name : arg_declaration.class_type;
+				
 				return Devapt.create(class_id, arg_declaration);
 			}
 		);
@@ -347,55 +348,59 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptClasses, DevaptCache, DevaptAp
 		DevaptTraces.trace_enter(context, '', DevaptResources.resources_trace);
 		
 		
-		// GET APP BASE URL
-		var url_base	= DevaptApplication.get_url_base();
-		
-		// SET CACHE PROVIDER
-		var cache_provider = function(arg_resource_name)
+		require(['core/application'], function(DevaptApplication)
 			{
-				var context = 'DevaptResources.cache_provider(' + arg_resource_name + ')';
-				DevaptTraces.trace_enter(context + '.cache provider', '', DevaptResources.resources_trace);
+				// GET APP BASE URL
+				var url_base = Devapt.app.get_url_base();
+				
+				// SET CACHE PROVIDER
+				var cache_provider = function(arg_resource_name)
+					{
+						var context = 'DevaptResources.cache_provider(' + arg_resource_name + ')';
+						DevaptTraces.trace_enter(context + '.cache provider', '', DevaptResources.resources_trace);
+						
+						
+						// GET RESOURCE DECLARATION FROM CACHE
+						var resource_declaration = DevaptResources.get_cached_declaration(arg_resource_name);
+						if (resource_declaration)
+						{
+							DevaptTraces.trace_leave(context + '.cache provider', 'resource declaration found from cache', DevaptResources.resources_trace);
+							return Devapt.promise_resolved(resource_declaration);
+						}
+						
+						DevaptTraces.trace_leave(context + '.cache provider', 'resource declaration not found from cache', DevaptResources.resources_trace);
+						return Devapt.promise_rejected();
+					};
+				
+				// SET JSON PROVIDERS
+				var json_provider = function(arg_resource_name)
+					{
+						var context = 'DevaptResources.json_provider(' + arg_resource_name + ')';
+						DevaptTraces.trace_enter(context + '.json provider', '', DevaptResources.resources_trace);
+						
+						
+						// INIT REQUEST ARGS
+						var url = url_base + 'resources/' + arg_resource_name + '/get_resource';
+						var options =
+						{
+							dataType	: 'json',
+							timeout		: DevaptResources.resources_ajax_timeout
+						};
+						
+						// SEND REQUEST
+						var ajax_promise = Devapt.ajax_get(url, null, options, Devapt.app.get_security_token());
+						
+						
+						DevaptTraces.trace_leave(context + '.json provider', 'async request', DevaptResources.resources_trace);
+						return ajax_promise;
+					};
 				
 				
-				// GET RESOURCE DECLARATION FROM CACHE
-				var resource_declaration = DevaptResources.get_cached_declaration(arg_resource_name);
-				if (resource_declaration)
-				{
-					DevaptTraces.trace_leave(context + '.cache provider', 'resource declaration found from cache', DevaptResources.resources_trace);
-					return defer.promise_resolved(resource_declaration);
-				}
-				
-				DevaptTraces.trace_leave(context + '.cache provider', 'resource declaration not found from cache', DevaptResources.resources_trace);
-				return Devapt.promise_rejected();
-			};
-		
-		// SET JSON PROVIDERS
-		var json_provider = function(arg_resource_name)
-			{
-				var context = 'DevaptResources.json_provider(' + arg_resource_name + ')';
-				DevaptTraces.trace_enter(context + '.json provider', '', DevaptResources.resources_trace);
-				
-				
-				// INIT REQUEST ARGS
-				var url = url_base + 'resources/' + arg_resource_name + '/get_resource';
-				var options =
-				{
-					dataType	: 'json',
-					timeout		: DevaptResources.resources_ajax_timeout
-				};
-				
-				// SEND REQUEST
-				var ajax_promise = Devapt.ajax_get(url, null, options, DevaptApplication.get_security_token());
-				
-				
-				DevaptTraces.trace_leave(context + '.json provider', 'async request', DevaptResources.resources_trace);
-				return ajax_promise;
-			};
-		
-		
-		// REGISTER JSON PROVIDERS
-		DevaptResources.resources_providers.push(cache_provider);
-		DevaptResources.resources_providers.push(json_provider);
+				// REGISTER JSON PROVIDERS
+				DevaptResources.resources_providers.push(cache_provider);
+				DevaptResources.resources_providers.push(json_provider);
+			}
+		);
 		
 		
 		DevaptTraces.trace_leave(context, '', DevaptResources.resources_trace);

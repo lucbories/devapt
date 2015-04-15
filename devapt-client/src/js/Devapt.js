@@ -6,6 +6,8 @@
  * 					Devapt.jQuery:(object)
  * 					
  * 					AJAX
+ * 						Devapt.url(url,token): (string)
+ * 						Devapt.ajaxt(method,url,datas,options): (promise)
  * 						Devapt.ajax_get(url,datas,options): (promise)
  * 						Devapt.ajax_post(url,datas,options): (promise)
  * 						Devapt.ajax_put(url,datas,options): (promise)
@@ -39,6 +41,20 @@
  * 					HASH
  * 						Devapt.hash(arg_method_name, arg_value)
  * 						
+ * 					PROMISES
+ * 						Devapt.is_defer(value): boolean
+ * 						Devapt.is_promise(value): boolean
+ * 						Devapt.defer(defer): deffered objectt
+ * 						Devapt.promise(value): promise object
+ * 						Devapt.promise_resolved(value): resolved promise object
+ * 						Devapt.promise_rejected(value): rejected promise object
+ * 						Devapt.promise_all(promises): promise object
+ * 						
+ * 					FACTORY
+ * 						Devapt.require(urls_array): promise object
+ * 						Devapt.get_requires(class_name): promise object of a depds urls array
+ * 						Devapt.create(class_name, settings): promise object
+ * 						
  * 					GARBAGE COLLECTOR
  * 						Devapt.gc_use(arg_using_object, arg_used_object)
  * 						
@@ -52,7 +68,8 @@
  */
 
 'use strict';
-define('Devapt', ['jquery', 'core/init', 'md5', 'sha1', 'Q', 'factory'],
+define('Devapt',
+['jquery', 'core/init', 'md5', 'sha1', 'Q', 'factory'],
 function($, DevaptInit, CryptoMD5, CryptoSHA1, Q, DevaptFactory)
 {
 	console.info('Loading Devapt bootstrap');
@@ -232,8 +249,30 @@ function($, DevaptInit, CryptoMD5, CryptoSHA1, Q, DevaptFactory)
 		
 		// SEND AJAX REQUEST
 		var jq_promise = $.ajax(options);
+		var ajax_promise = Devapt.promise(jq_promise);
 		
-		return Devapt.promise(jq_promise);
+		// PROCESS RESPONSE
+		// var success_cb = undefined;
+		var success_cb = function(arg)
+		{
+			console.error(arg, 'Devapt.ajax: success');
+		};
+		var failure_cb = function(response)
+		{
+			console.error(response, 'Devapt.ajax: failure');
+			if (response.status == '401')
+			{
+				if (! Devapt.current_backend)
+				{
+					console.error('no backend', 'Devapt.ajax: failure');
+					return;
+				}
+				return Devapt.current_backend.render_login();
+			}
+		};
+		ajax_promise.then(success_cb, failure_cb);
+		
+		return ajax_promise;
 	}
 	
 	/**
@@ -794,6 +833,7 @@ function($, DevaptInit, CryptoMD5, CryptoSHA1, Q, DevaptFactory)
 		// CHECK DEPENDANCIES
 		if ( ! (arg_required_urls && arg_required_urls.length > 0) )
 		{
+			console.error(arg_required_urls, 'Devapt.require:failure: bad urls');
 			return Devapt.promise_rejected('Devapt.require: bad given dependancies array');
 		}
 		
@@ -806,12 +846,15 @@ function($, DevaptInit, CryptoMD5, CryptoSHA1, Q, DevaptFactory)
 			require(arg_required_urls,
 				function() 
 				{
+					// console.log(arg_required_urls, 'Devapt.require:success:urls');
+					// console.log(arguments, 'Devapt.require:success:arguments');
 					defer.resolve(arguments);
 				}
 			);
 		}
 		else
 		{
+			console.error(arg_required_urls, 'Devapt.require:failure: bad AMD loader');
 			defer.reject('Devapt.require: module loader not found');
 		}
 		

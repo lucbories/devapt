@@ -123,9 +123,17 @@ function(DevaptTraces, DevaptTypes, DevaptClass, DevaptClasses)
 			// console.log(DevaptClasses.traces_settings, self.name);
 			if ( DevaptTypes.is_not_empty_array_or_object(DevaptClasses.traces_settings) )
 			{
+				// console.log(DevaptClasses.traces_settings, 'DevaptClasses.traces_settings)');
 				for(var trace_key in DevaptClasses.traces_settings)
 				{
+					if (instance.trace)
+					{
+						continue;
+					}
+					
+					// console.log(trace_key, 'trace_key');
 					var trace_record = DevaptClasses.traces_settings[trace_key].split(':');
+					// console.log(trace_record, 'trace_record');
 					
 					var class_name_pattern = trace_record.length > 0 ? trace_record[0] : null;
 					var instance_name_pattern = trace_record.length > 1 ? trace_record[1] : null;
@@ -143,9 +151,13 @@ function(DevaptTraces, DevaptTypes, DevaptClass, DevaptClasses)
 						var class_name_trace = regexp.test(instance.class_name);
 						// console.log(class_name_trace, instance.class_name + ':class_name_trace');
 						instance.trace = class_name_trace;
-						// continue;
+						// console.log(instance.trace, 'instance.trace for [' + instance.name + '] with pattern[' + class_name_pattern + ']');
+						
+						if (instance.trace)
+						{
+							continue;
+						}
 					}
-					
 					
 					// ENABLE INSTANCE METHOD TRACE
 					if ( DevaptTypes.is_not_empty_str(method_name_pattern) )
@@ -185,7 +197,7 @@ function(DevaptTraces, DevaptTypes, DevaptClass, DevaptClasses)
 							var instance_name_trace = regexp.test(instance.name);
 							// console.log(instance_name_trace, instance.name + ':instance_name_trace');
 							instance.trace = instance_name_trace;
-							continue;
+							// continue;
 						}
 					}
 				}

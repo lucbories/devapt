@@ -18,10 +18,6 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptView, DevaptNavHistory, undefin
 	 * @public
 	 * @class				DevaptBreadcrumbs
 	 * @desc				Breadcrumbs view class
-	 * @param {string}		arg_name			View name (string)
-	 * @param {object}		arg_parent_jqo	jQuery object to attach the view to
-	 * @param {object|null}	arg_options			Associative array of options
-	 * @return {nothing}
 	 */
 	
 	
@@ -42,13 +38,13 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptView, DevaptNavHistory, undefin
 		// CHECK DEFEREED
 		self.assert_not_null(context, 'arg_deferred', arg_deferred);
 		
-		// GET NODES
-		self.assert_not_null(context, 'parent_jqo', self.parent_jqo);
+		// CHECK CONTENT NODE
+		self.assert_not_null(context, 'content_jqo', self.content_jqo);
 		
 		// RENDER
-		self.content_jqo = $('<ul>');
-		self.content_jqo.addClass('breadcrumbs');
-		self.parent_jqo.append(self.content_jqo);
+		self.ul_jqo = $('<ul>');
+		self.ul_jqo.addClass('breadcrumbs');
+		self.content_jqo.append(self.ul_jqo);
 		
 		
 		// LOOP ON NAV HISTORY
@@ -103,12 +99,11 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptView, DevaptNavHistory, undefin
 		
 		
 		var li_jqo = $('<li>');
-		self.content_jqo.append(li_jqo);
+		self.ul_jqo.append(li_jqo);
 		
 		var a_jqo = $('<a>');
 		li_jqo.append(a_jqo);
 		
-		a_jqo.attr('href', '#');
 		a_jqo.text(arg_state.content_label);
 		a_jqo.click(
 			(

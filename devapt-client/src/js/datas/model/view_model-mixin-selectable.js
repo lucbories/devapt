@@ -51,7 +51,7 @@ function(
 	var cb_constructor = function(self)
 	{
 		// CONSTRUCTOR BEGIN
-		var context = 'constructor';
+		var context = 'DevaptViewModelMixinSelectable.constructor';
 		self.enter(context, '');
 		
 		

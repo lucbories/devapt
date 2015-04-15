@@ -39,7 +39,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptContainer, DevaptTimerWorker, u
 		
 		
 		// CALL SUPER CLASS CONSTRUCTOR
-		self._parent_class.infos.ctor(self);
+		// self._parent_class.infos.ctor(self);
 		
 		self.items_jquery_parent = null;
 		self.items_jquery_filter = 'li';
@@ -98,15 +98,15 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptContainer, DevaptTimerWorker, u
 		self.enter(context, '');
 		
 		
-		self.content_jqo = $('<div>');
-		self.parent_jqo.append(self.content_jqo);
+		// CHECK CONTENT NODE
+		self.assert_not_null(context, 'content_jqo', self.content_jqo);
 		
 		var ul_id = self.name + '_dropdown_ul_id';
 		var direction = self.direction ? self.direction : 'bottom';
 		
 		self.a_jqo = $('<a>');
 		self.content_jqo.append(self.a_jqo);
-		self.a_jqo.attr('href', '#');
+		// self.a_jqo.attr('href', '#');
 		self.a_jqo.html(self.label);
 		self.a_jqo.attr('data-dropdown', ul_id);
 		self.a_jqo.attr('data-options', 'align:' + direction);
@@ -257,7 +257,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptContainer, DevaptTimerWorker, u
 		var context = 'render_item_text(deferred,jqo,content)';
 		self.enter(context, '');
 		
-		var a_jqo = $('<a href="#">');
+		var a_jqo = $('<a>');
 		a_jqo.html(arg_item_content);
 		arg_item_jqo.append(a_jqo);
 		

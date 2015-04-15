@@ -38,9 +38,6 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptContainer, undefined)
 		self.enter(context, '');
 		
 		
-		// CALL SUPER CLASS CONSTRUCTOR
-		self._parent_class.infos.ctor(self);
-		
 		self.items_jquery_parent = null;
 		self.items_jquery_filter = 'div.row';
 		
@@ -65,10 +62,11 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptContainer, undefined)
 		self.enter(context, '');
 		
 		
+		// CHECK CONTENT NODE
+		self.assert_not_null(context, 'content_jqo', self.content_jqo);
+		
 		// CREATE MAIN NODE
-		self.content_jqo = $('<div>');
 		self.content_jqo.addClass('row');
-		self.parent_jqo.append(self.content_jqo);
 		
 		self.items_jquery_parent = self.content_jqo;
 		

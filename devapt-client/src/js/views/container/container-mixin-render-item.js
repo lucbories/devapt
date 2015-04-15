@@ -105,11 +105,25 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptTemplate,
 			var context = 'render_item(deferred,content,index,type)';
 			self.enter(context, '');
 			self.value(context, 'arg_item_content', arg_item_content);
+			self.value(context, 'arg_item_index', arg_item_index);
 			
 			
 			// CREATE EMPTY ITEMNODE
 			var node_jqo = self.render_item_node(arg_item_index);
 			node_jqo.addClass('devapt-container-visible');
+			
+			// APPEND ITEM NODE
+			var record = {
+				index: arg_item_index,
+				type: arg_item_type,
+				position: false,
+				is_active:false,
+				width: false,
+				heigth: false,
+				node: node_jqo
+			};
+			// console.log(record, context + ':record:' + self.name);
+			self.items_objects.push(record);
 			
 			// FILL ITEM NODE
 			// console.log(arg_item_type, 'arg_item_type');
@@ -143,46 +157,28 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptTemplate,
 				}
 				case 'view':
 				{
-					self.assert_function(context, 'self.render_item_view', self.render_item_view);
+					self.step(context, 'render a view');
+					self.value(context, 'arg_item_content', arg_item_content);
 					
-					self.append_item_node(node_jqo);
-					// console.log(node_jqo, context + ':node_jqo view before:' + self.name + ' for ' + arg_item_content);
+					try
+					{
+						self.assert_function(context, 'self.render_item_view', self.render_item_view);
+						
+						var view_promise = self.render_item_view(arg_deferred, node_jqo, arg_item_content);
+						// console.log(node_jqo, context + ':node_jqo view after:' + self.name + ' for ' + arg_item_content);
+					}
+					catch(e)
+					{
+						console.error(e, context + ':view');
+					}
 					
-					var view_promise = self.render_item_view(arg_deferred, node_jqo, arg_item_content);
-					// console.log(node_jqo, context + ':node_jqo view after:' + self.name + ' for ' + arg_item_content);
-					
-					// APPEND ITEM NODE
-					view_promise.then(
-						function(view)
-						{
-							var record = {
-								index: arg_item_index,
-								type: arg_item_type,
-								position: false,
-								is_active:false,
-								width: false,
-								heigth: false,
-								node: node_jqo
-							};
-							// console.log(record, context + ':record:' + self.name);
-							
-							self.items_objects.push(record);
-							// self.items_jquery_nodes.push(node_jqo);
-						}
-					);
-					
-					self.leave(context, self.msg_success);
-					// self.pop_trace();
-					return true;
-					// break;
+					break;
 				}
 				case 'record':
 				case 'object':
 				{
 					self.assert_function(context, 'self.render_item_object', self.render_item_object);
 					arg_item_content.container_item_index = arg_item_index;
-					// arg_item_content.container_item_type = arg_item_type;
-					// arg_item_content.container_item_node = node_jqo;
 					node_jqo = self.render_item_object(arg_deferred, node_jqo, arg_item_content);
 					break;
 				}
@@ -220,20 +216,19 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptTemplate,
 			}
 			
 			// APPEND ITEM NODE
-			var record = {
-				index: arg_item_index,
-				type: arg_item_type,
-				position: false,
-				is_active:false,
-				width: false,
-				heigth: false,
-				node: node_jqo
-			};
+			// var record = {
+				// index: arg_item_index,
+				// type: arg_item_type,
+				// position: false,
+				// is_active:false,
+				// width: false,
+				// heigth: false,
+				// node: node_jqo
+			// };
 			// console.log(record, context + ':record:' + self.name);
-			self.append_item_node(node_jqo);
-			self.items_objects.push(record);
-			// self.items_jquery_nodes.push(node_jqo);
-			
+			record.node = node_jqo;
+			self.append_item_node(node_jqo, record);
+			// self.items_objects.push(record);
 			
 			self.leave(context, self.msg_success);
 			return true;
@@ -245,12 +240,13 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptTemplate,
 		 * @memberof			DevaptMixinRenderItem
 		 * @desc				Append an item to the view
 		 * @param {object}		arg_item_jqo		item jQuery object
+		 * @param {object}		arg_item_record		item record (used in child class implementation)
 		 * @return {nothing}
 		 */
-		append_item_node: function(arg_item_jqo)
+		append_item_node: function(arg_item_jqo, arg_item_record)
 		{
 			var self = this;
-			var context = 'append_item_node(item node)';
+			var context = 'append_item_node(item node, record)';
 			self.enter(context, '');
 			
 			
@@ -260,14 +256,13 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptTemplate,
 				console.error(self.name, 'bad self.items_jquery_parent');
 				console.log(arg_item_jqo, 'arg_item_jqo');
 				
-				self.leave(context, self.msg_failure);
-				self.pop_trace();
+				self.leave(context, Devapt.msg_failure);
 				return false;
 			}
 			self.items_jquery_parent.append(arg_item_jqo);
 			
 			
-			self.leave(context, self.msg_success);
+			self.leave(context, Devapt.msg_success);
 			return true;
 		}
 	}

@@ -118,6 +118,11 @@ function(Devapt, DevaptTypes, DevaptEvents, DevaptObject, DevaptField, DevaptCla
 			self.leave(context, Devapt.msg_failure + ': bad engine');
 			return false;
 		}
+		if ( ! self.engine_object.is_valid() )
+		{
+			self.leave(context, Devapt.msg_failure + ': engine isnt valid');
+			return false;
+		}
 		
 		// CHECK FIELDS
 		if ( DevaptTypes.is_not_empty_array(self.fields) )
@@ -452,8 +457,10 @@ function(Devapt, DevaptTypes, DevaptEvents, DevaptObject, DevaptField, DevaptCla
 						}
 					);
 					break;
+					
+				case 'array':
 				case 'memory':
-					require(['datas/storage/storage-memory'],
+					require(['datas/storage/storage-array'],
 						function(DevaptMemoryStorage)
 						{
 							self.step(context, 'MEMORY engine is created');
@@ -462,6 +469,7 @@ function(Devapt, DevaptTypes, DevaptEvents, DevaptObject, DevaptField, DevaptCla
 						}
 					);
 					break;
+					
 				default:
 					self.step(context, 'BAD engine type');
 					self.engine_deferred.reject();

@@ -27,25 +27,20 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptContainer, undefined)
 	
 	/**
 	 * @public
-	 * @memberof			DevaptTabs
+	 * @memberof			DevaptTable
 	 * @desc				Constructor
 	 * @return {nothing}
 	 */
 	var cb_constructor = function(self)
 	{
 		// CONSTRUCTOR BEGIN
-		var context = 'constructor(' + self.name + ')';
+		var context = 'DevaptTable.constructor(' + self.name + ')';
 		self.enter(context, '');
 		
 		
 		// DEBUG
 		// self.trace = true;
-		// console.log(self.parent_jqo);
-		
-		// CALL SUPER CLASS CONSTRUCTOR
-		self._parent_class.infos.ctor(self);
-		
-		// console.log(self.parent_jqo);
+		// console.log(self.parent_jqo === null, 'parent is null?');
 		
 		self.table_header_jqo	= null;
 		self.table_body_jqo		= null;
@@ -104,11 +99,8 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptContainer, undefined)
 		self.enter(context, '');
 		
 		
-		self.content_jqo = $('<div>');
-		// console.log(self.parent_jqo);
-		self.parent_jqo.append(self.content_jqo);
-		// console.log(self.content_jqo);
-		self.content_jqo.attr('id', self.get_view_id());
+		// CHECK CONTENT NODE
+		self.assert_not_null(context, 'content_jqo', self.content_jqo);
 		
 		self.table_jqo = $('<table>');
 		self.content_jqo.append(self.table_jqo);
@@ -268,7 +260,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptContainer, undefined)
 		'infos':{
 			'author':'Luc BORIES',
 			'created':'2014-07-27',
-			'updated':'2014-12-13',
+			'updated':'2015-03-28',
 			'description':'Container view class to display a table of items.'
 		}
 	};

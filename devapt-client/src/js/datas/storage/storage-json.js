@@ -218,7 +218,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptStorage, DevaptResultSet)
 				timeout		: self.http_timeout
 			};
 			var method = (! self.http_method_read || self.is_cached) ? 'GET' : self.http_method_read;
-			var ajax_promise = Devapt.ajax(method, url, JSON.stringify(json_datas), ajax_settings, token);
+			var ajax_promise = Devapt.ajax(method, url, { query_json: JSON.stringify(json_datas['query_json'] ) }, ajax_settings, token);
 			
 			// ON SUCCESS
 			if (self.notify_read)
@@ -301,14 +301,12 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptStorage, DevaptResultSet)
 		
 		
 		// CREATE AJAX REQUEST
-		var json_datas =
+		var json_query =
 			{
-				query_json: {
-					action: 'insert',
-					query_type: 'insert',
-					values: arg_records,
-					values_count: arg_records.length
-				}
+				action: 'insert',
+				query_type: 'insert',
+				values: arg_records,
+				values_count: arg_records.length
 			};
 		var token = Devapt.app.get_security_token();
 		
@@ -321,7 +319,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptStorage, DevaptResultSet)
 			timeout		: self.http_timeout
 		};
 		var method = self.http_method_create;
-		var ajax_promise = Devapt.ajax(method, url, JSON.stringify(json_datas), ajax_settings, token);
+		var ajax_promise = Devapt.ajax(method, url, { query_json: JSON.stringify(json_query) }, ajax_settings, token);
 		
 		ajax_promise.done(
 			function(result)
@@ -393,14 +391,12 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptStorage, DevaptResultSet)
 		
 		
 		// CREATE AJAX REQUEST
-		var json_datas =
+		var json_query =
 		{
-			query_json: {
-				action: 'update',
-				query_type: 'update',
-				values: arg_records,
-				values_count: 1
-			}
+			action: 'update',
+			query_type: 'update',
+			values: arg_records,
+			values_count: DevaptTypes.is_array(arg_records) ? arg_records.length : 0
 		};
 		var token = Devapt.app.get_security_token();
 		
@@ -414,7 +410,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptStorage, DevaptResultSet)
 				type		: self.http_method_update,
 				url			: url,
 				timeout		: self.http_timeout,
-				data		: JSON.stringify(json_datas)
+				data		: { query_json: JSON.stringify(json_query) }
 			}
 		);
 		var ajax_promise = Devapt.promise(jq_ajax_promise);
@@ -491,12 +487,10 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptStorage, DevaptResultSet)
 		// CREATE AJAX REQUEST
 		var json_datas =
 		{
-			query_json: {
-				action: 'delete',
-				query_type: 'delete',
-				values: arg_records,
-				values_count: 1
-			}
+			action: 'delete',
+			query_type: 'delete',
+			values: arg_records,
+			values_count: 1
 		};
 		var token = Devapt.app.get_security_token();
 		
@@ -510,7 +504,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptStorage, DevaptResultSet)
 				type		: self.http_method_delete,
 				url			: url,
 				timeout		: self.http_timeout,
-				data		: JSON.stringify(json_datas)
+				data		: { query_json: JSON.stringify(json_query) }
 			}
 		);
 		var ajax_promise = Devapt.promise(jq_ajax_promise);

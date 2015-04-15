@@ -38,9 +38,6 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptContainer, undefined)
 		self.enter(context, '');
 		
 		
-		// CALL SUPER CLASS CONSTRUCTOR
-		self._parent_class.infos.ctor(self);
-			
 		self.items_jquery_parent = null;
 		self.items_jquery_filter = 'li';
 		
@@ -65,19 +62,22 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptContainer, undefined)
 		self.enter(context, '');
 		
 		
+		// CHECK CONTENT NODE
+		self.assert_not_null(context, 'content_jqo', self.content_jqo);
+		
 		// GET BLOCKS COUNT
 		var small_blocks  = Math.max( Math.min(self.small_device_blocks, 12), 1);
 		var medium_blocks = Math.max( Math.min(self.medium_device_blocks, 12), 1);
 		var large_blocks  = Math.max( Math.min(self.large_device_blocks, 12), 1);
 		
 		// CREATE MAIN NODE
-		self.content_jqo = $('<ul>');
-		self.content_jqo.addClass('small-block-grid-' + small_blocks);
-		self.content_jqo.addClass('medium-block-grid-' + medium_blocks);
-		self.content_jqo.addClass('large-block-grid-' + large_blocks);
-		self.parent_jqo.append(self.content_jqo);
+		self.ul_jqo = $('<ul>');
+		self.ul_jqo.addClass('small-block-grid-' + small_blocks);
+		self.ul_jqo.addClass('medium-block-grid-' + medium_blocks);
+		self.ul_jqo.addClass('large-block-grid-' + large_blocks);
+		self.content_jqo.append(self.ul_jqo);
 		
-		self.items_jquery_parent = self.content_jqo;
+		self.items_jquery_parent = self.ul_jqo;
 		
 		
 		self.leave(context, 'success');

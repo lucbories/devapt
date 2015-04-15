@@ -46,7 +46,8 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptStorage, DevaptResultSet)
 		self.enter(context, 'constructor');
 		
 		
-		// STORAGE ATTRIBUTES
+		// CALL SUPER CLASS CONSTRUCTOR
+		self._parent_class.infos.ctor(self);
 		
 		
 		// CONSTRUCTOR END
@@ -63,7 +64,110 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptStorage, DevaptResultSet)
 	 */
 	var cb_is_valid = function()
 	{
-		return DevaptTypes.is_array(self.records_array);
+		return DevaptTypes.is_array(self.records_array) || DevaptTypes.is_callback(self.provider_cb);
+	};
+	
+	
+	/**
+	 * @memberof				DevaptArrayStorage
+	 * @public
+	 * @method					DevaptArrayStorage.get_array()
+	 * @desc					Get storage array
+	 * @return {array}
+	 */
+	var cb_get_array = function()
+	{
+		var self = this;
+		var context = 'get_array()';
+		self.enter(context, '');
+		// self.value(context, 'self.records_array', self.records_array);
+		// self.value(context, 'self.provider_cb', self.provider_cb);
+		// console.log(self.records_array, context);
+		// console.log(self.provider_cb, context);
+		
+		
+		if ( DevaptTypes.is_callback(self.provider_cb) )
+		{
+			self.leave(context, 'has array provider');
+			return self.do_callback(self.provider_cb);
+		}
+		
+		if ( DevaptTypes.is_array(self.records_array) )
+		{
+			self.leave(context, 'has locale array');
+			return self.records_array;
+		}
+		
+		
+		self.leave(context, 'default empty array');
+		return [];
+	};
+	
+	
+	/**
+	 * @memberof				DevaptArrayStorage
+	 * @public
+	 * @method					DevaptArrayStorage.set_item(item,index)
+	 * @desc					Add or set storage array item
+	 * @param {anything}		arg_item
+	 * @param {integer}			arg_index (optional)
+	 * @return {array}
+	 */
+	var cb_set_item = function(arg_item, arg_index)
+	{
+		var self = this;
+		var context = 'get_array()';
+		self.step(context, '');
+		// self.value(context, 'self.records_array', self.records_array);
+		// self.value(context, 'self.provider_cb', self.provider_cb);
+		
+		
+		// PROVIDER CALLBACK
+		if ( DevaptTypes.is_callback(self.provider_cb) )
+		{
+			self.step(context, 'has array provider');
+			
+			// APPEND
+			if ( DevaptTypes.is_null(arg_index) )
+			{
+				return self.do_callback(self.provider_cb, arg_item);
+			}
+			
+			// UPDATE
+			if ( DevaptTypes.is_integer(arg_index) && arg_index > 0 && arg_index < self.records_array.length)
+			{
+				return self.do_callback(self.provider_cb, arg_item, arg_index);
+			}
+			
+			return null;
+		}
+		
+		// LOCALE ARRAY
+		if ( DevaptTypes.is_array(self.records_array) )
+		{
+			self.step(context, 'has locale array');
+			
+			// APPEND
+			if ( DevaptTypes.is_null(arg_index) )
+			{
+				self.records_array.push(arg_item);
+				return self.records_array;
+			}
+			
+			// UPDATE
+			if ( DevaptTypes.is_integer(arg_index) && arg_index > 0 && arg_index < self.records_array.length)
+			{
+				self.records_array[arg_index] = arg_item;
+				return self.records_array;
+			}
+			
+			return null;
+		}
+		
+		
+		// DEFAULT
+		self.step(context, 'default null array');
+		return null;
 	};
 	
 	
@@ -74,7 +178,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptStorage, DevaptResultSet)
 	 * @method					DevaptArrayStorage.read_all_records()
 	 * 
 	 * 		USE:
-	 * 			require(['datas/storage-json'],
+	 * 			require(['datas/storage-array'],
 	 * 				function(DevaptArrayStorage)
 	 * 				{
 	 * 					var store_opts = {
@@ -96,14 +200,19 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptStorage, DevaptResultSet)
 		self.enter(context, '');
 		
 		
+		// GET DATAS ARRAY
+		var datas = self.get_array();
+		self.value(context, 'datas', datas);
+		
+		
 		// FILTERED DATAS
-		var filtered_datas = self.records_array;
-		// console.log(filtered_datas, 'filtered_datas');
+		var filtered_datas = datas;
+		console.log(filtered_datas, context + ':filtered_datas');
 		
 		// NOTIFY
 		if (self.notify_read)
 		{
-			Devapt.get_current_backend().notify_info('storage json: read all is done for [' + self.name + ']');
+			Devapt.get_current_backend().notify_info('storage array: read all is done for [' + self.name + ']');
 		}
 		
 		// RETURN A RESULT SET
@@ -124,7 +233,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptStorage, DevaptResultSet)
 	 * @desc					Read records of the given query along storage strategy (async mode)
 	 * 
 	 * 		USE:
-	 * 			require(['datas/storage-json'],
+	 * 			require(['datas/storage-array'],
 	 * 				function(DevaptArrayStorage)
 	 * 				{
 	 * 					var store_opts = {
@@ -145,17 +254,44 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptStorage, DevaptResultSet)
 		// self.trace=true;
 		var context = 'read_records_self(query)';
 		self.enter(context, '');
-		// console.log(arg_query, 'jsonstorage.arg_query');
+		// self.value(context, 'self.records_array', self.records_array);
+		// self.value(context, 'self.provider_cb', self.provider_cb);
+		
+		
+		// GET DATAS ARRAY
+		var datas = self.get_array();
+		self.value(context, 'datas', datas);
 		
 		
 		// FILTERED DATAS
-		var filtered_datas = self.records_array; // TODO USE query to filter array datas
+		var filtered_datas = datas; // TODO USE query to filter array datas
 		// console.log(filtered_datas, self.name + '.' + context + '.filtered_datas');
+		
+		
+		// SLICE ARRAY
+		if (arg_query && arg_query.slice && arg_query.slice.offset > 0 )
+		{
+			self.step(context, 'has slice filter');
+			
+			filtered_datas = [];
+			
+			if ( arg_query.slice.offset < datas.length )
+			{
+				self.step(context, 'apply valid slice filter');
+				
+				// console.log(datas, self.name + '.' + context + '.records_array');
+				filtered_datas = Array.prototype.slice.call(datas, arg_query.slice.offset);
+				// console.log(filtered_datas, self.name + '.' + context + '.filtered_datas with slice');
+				console.log(arg_query.slice.offset, context + '.arg_query');
+				console.log(filtered_datas.length, self.name + '.' + context + '.filtered_datas with slice');
+			}
+		}
+		
 		
 		// NOTIFY
 		if (self.notify_read)
 		{
-			Devapt.get_current_backend().notify_info('storage json: read query is done for [' + self.name + ']');
+			Devapt.get_current_backend().notify_info('storage array: read query is done for [' + self.name + ']');
 		}
 		
 		// RETURN A RESULT SET
@@ -176,7 +312,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptStorage, DevaptResultSet)
 	 * @desc					Create one or more records with the given values (async mode)
 	 * 
 	 * 		USE:
-	 * 			require(['datas/storage-json'],
+	 * 			require(['datas/storage-array'],
 	 * 				function(DevaptArrayStorage)
 	 * 				{
 	 * 					var store_opts = {
@@ -198,6 +334,10 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptStorage, DevaptResultSet)
 		self.enter(context, '');
 		
 		
+		// GET DATAS ARRAY
+		var datas = self.get_array();
+		
+		
 		// CREATE RECORDS
 		if ( DevaptTypes.is_object(arg_records) )
 		{
@@ -210,7 +350,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptStorage, DevaptResultSet)
 				var record = arg_records[record_index];
 				if ( DevaptTypes.is_object(record) )
 				{
-					self.records_array.push(record);
+					self.set_item(record, undefined);
 				}
 			}
 		}
@@ -218,7 +358,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptStorage, DevaptResultSet)
 		// NOTIFY
 		if (self.notify_create)
 		{
-			Devapt.get_current_backend().notify_info('storage json: create is done for [' + self.name + ']');
+			Devapt.get_current_backend().notify_info('storage array: create is done for [' + self.name + ']');
 		}
 		
 		// RETURN A RESULT SET
@@ -239,7 +379,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptStorage, DevaptResultSet)
 	 * @desc					Update one or more records with the given values (async mode)
 	 * 
 	 * 		USE:
-	 * 			require(['datas/storage-json'],
+	 * 			require(['datas/storage-array'],
 	 * 				function(DevaptArrayStorage)
 	 * 				{
 	 * 					var store_opts = {
@@ -261,15 +401,18 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptStorage, DevaptResultSet)
 		self.enter(context, '');
 		
 		
+		// GET DATAS ARRAY
+		var datas = self.get_array();
+		
 		// UPDATE DATAS
-		var filtered_datas = self.records_array; // TODO USE query to filter array datas
+		var filtered_datas = datas; // TODO USE query to filter array datas
 		// console.log(filtered_datas, 'filtered_datas');
 		// TODO UDPATE DATAS
 		
 		// NOTIFY
 		if (self.notify_update)
 		{
-			Devapt.get_current_backend().notify_info('storage json: update is done for [' + self.name + ']');
+			Devapt.get_current_backend().notify_info('storage array: update is done for [' + self.name + ']');
 		}
 		
 		// RETURN A RESULT SET
@@ -290,7 +433,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptStorage, DevaptResultSet)
 	 * @desc					Delete one or more records with the given values (async mode)
 	 * 
 	 * 		USE:
-	 * 			require(['datas/storage-json'],
+	 * 			require(['datas/storage-array'],
 	 * 				function(DevaptArrayStorage)
 	 * 				{
 	 * 					var store_opts = {
@@ -315,15 +458,18 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptStorage, DevaptResultSet)
 		self.enter(context, '');
 		
 		
+		// GET DATAS ARRAY
+		var datas = self.get_array();
+		
 		// DELETE DATAS
-		var filtered_datas = self.records_array; // TODO USE query to filter array datas
+		var filtered_datas = datas; // TODO USE query to filter array datas
 		// console.log(filtered_datas, 'filtered_datas');
 		// TODO DELETE DATAS
 		
 		// NOTIFY
 		if (self.notify_delete)
 		{
-			Devapt.get_current_backend().notify_info('storage json: delete is done for [' + self.name + ']');
+			Devapt.get_current_backend().notify_info('storage array: delete is done for [' + self.name + ']');
 		}
 		
 		// RETURN A RESULT SET
@@ -356,6 +502,8 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptStorage, DevaptResultSet)
 	// METHODS
 	DevaptStorageClass.infos.ctor = cb_constructor;
 	DevaptStorageClass.add_public_method('is_valid', {}, cb_is_valid);
+	DevaptStorageClass.add_public_method('get_array', {}, cb_get_array);
+	DevaptStorageClass.add_public_method('set_item', {}, cb_set_item);
 	DevaptStorageClass.add_public_method('read_all_records_self', {}, cb_read_all_records_self);
 	DevaptStorageClass.add_public_method('read_records_self', {}, cb_read_records_self);
 	DevaptStorageClass.add_public_method('create_records', {}, cb_create_records);
@@ -365,6 +513,8 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptStorage, DevaptResultSet)
 	// MIXINS
 	
 	// PROPERTIES
+	DevaptStorageClass.add_public_str_property('source', '', [], false, false, []);
+	DevaptStorageClass.add_public_cb_property('provider_cb', '', null, false, false, []);
 	DevaptStorageClass.add_public_array_property('records_array', 'records array', [], false, false, [], 'object', '|');
 	
 	

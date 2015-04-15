@@ -57,94 +57,68 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptResources)
 				return;
 			}
 			
-			/*
-				EXAMPLE:
-					....links.selectlink.source.name=view_access_users_list
-					....links.selectlink.source.event=devapt.events.container.selected
-					....links.selectlink.source.kindof=record
-					....links.selectlink.source.field=login
-					....links.selectlink.target.kindof=filters
-					....links.selectlink.target.field=login
-			*/
-			// LOOP ON LINKS
-			for(var link_key in self.links)
+			var init_bind_cb = function(arg_items_count)
 			{
-				self.value(context, 'link_key', link_key);
+				// console.error(arg_items_count, 'init_bind_cb:' + self.name);
 				
-				// GET LINK SETTINGS
-				var link_settings = self.links[link_key];
-				// console.log(link_settings, 'link_settings');
-				
-				// GET LINKS ATTRIBUTES
-				var source = link_settings['source'];
-				if ( ! DevaptTypes.is_object(source) )
+				/*
+					EXAMPLE:
+						....links.selectlink.source.name=view_access_users_list
+						....links.selectlink.source.event=devapt.events.container.selected
+						....links.selectlink.source.kindof=record
+						....links.selectlink.source.field=login
+						....links.selectlink.target.kindof=filters
+						....links.selectlink.target.field=login
+				*/
+				// LOOP ON LINKS
+				for(var link_key in self.links)
 				{
-					self.step(context, 'bad source object');
-					continue;
-				}
-				
-				var target = link_settings['target'];
-				if ( ! DevaptTypes.is_object(target) )
-				{
-					self.step(context, 'bad target object');
-					continue;
-				}
-				
-				var source_name = source['name'];
-				var source_events = source['event'];
-				var source_kindof = source['kindof'];
-				var source_field = source['field'];
-				var target_name = target['name'];
-				var target_names = target['names'];
-				var target_action = target['action'];
-				var target_kindof = target['kindof'];
-				var target_field = target['field'];
-				
-				// BIND WITH SOURCE=THIS AND TARGET FROM NAME
-				if ( DevaptTypes.is_not_empty_str(target_name) )
-				{
-					self.step(context, 'link has target name [' + target_name + ']');
-					self.value(context, 'action', target_action);
-					self.value(context, 'source_kindof', source_kindof);
-					self.value(context, 'target_kindof', target_kindof);
+					self.value(context, 'link_key', link_key);
 					
-					var promise = DevaptResources.get_resource_instance(target_name);
-					promise.then(
-						function(target_obj)
-						{
-							// console.log(context, 'link target object is found [' + target_obj.name + ']');
-							self.step(context, 'link target object is found [' + target_obj.name + ']');
-							self.value(context, 'action', target_action);
-							
-							self.bind(source_events, target_action, source_kindof, source_field, target_obj, target_kindof, target_field);
-						},
-						
-						function()
-						{
-							console.error('link target object is not found [' + target_obj.name + ']');
-						}
-					);
+					// GET LINK SETTINGS
+					var link_settings = self.links[link_key];
+					// console.log(link_settings, 'link_settings');
 					
-					continue;
-				}
-				
-				// BIND WITH SOURCE=THIS AND TARGET FROM NAMES
-				if ( DevaptTypes.is_not_empty_str(target_names) )
-				{
-					self.step(context, 'link has target names');
-					
-					target_names = target_names.split(',');
-					for(var target_name_key in target_names)
+					// GET LINKS ATTRIBUTES
+					var source = link_settings['source'];
+					if ( ! DevaptTypes.is_object(source) )
 					{
-						var target_name = target_names[target_name_key];
-						
-						self.step(context, 'loop on link target name [' + target_name + ']');
+						self.step(context, 'bad source object');
+						continue;
+					}
+					
+					var target = link_settings['target'];
+					if ( ! DevaptTypes.is_object(target) )
+					{
+						self.step(context, 'bad target object');
+						continue;
+					}
+					
+					var source_name = source['name'];
+					var source_events = source['event'];
+					var source_kindof = source['kindof'];
+					var source_field = source['field'];
+					var target_name = target['name'];
+					var target_names = target['names'];
+					var target_action = target['action'];
+					var target_kindof = target['kindof'];
+					var target_field = target['field'];
+					
+					// BIND WITH SOURCE=THIS AND TARGET FROM NAME
+					if ( DevaptTypes.is_not_empty_str(target_name) )
+					{
+						self.step(context, 'link has target name [' + target_name + ']');
+						self.value(context, 'action', target_action);
+						self.value(context, 'source_kindof', source_kindof);
+						self.value(context, 'target_kindof', target_kindof);
 						
 						var promise = DevaptResources.get_resource_instance(target_name);
 						promise.then(
 							function(target_obj)
 							{
-								self.step(context, 'link target object is found  [' + target_obj.name + ']');
+								// console.log(context, 'link target object is found [' + target_obj.name + ']');
+								self.step(context, 'link target object is found [' + target_obj.name + ']');
+								self.value(context, 'action', target_action);
 								
 								self.bind(source_events, target_action, source_kindof, source_field, target_obj, target_kindof, target_field);
 							},
@@ -154,29 +128,62 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptResources)
 								console.error('link target object is not found [' + target_obj.name + ']');
 							}
 						);
+						
+						continue;
 					}
 					
-					continue;
-				}
-				
-				// BIND WITH SOURCE FROM NAME AND TARGET=THIS
-				if ( DevaptTypes.is_not_empty_str(source_name) )
-				{
-					self.step(context, 'link has source name');
-					
-					var promise = DevaptResources.get_resource_instance(source_name);
-					promise.then(
-						function(source_obj)
+					// BIND WITH SOURCE=THIS AND TARGET FROM NAMES
+					if ( DevaptTypes.is_not_empty_str(target_names) )
+					{
+						self.step(context, 'link has target names');
+						
+						target_names = target_names.split(',');
+						for(var target_name_key in target_names)
 						{
-							self.step(context, 'link source object is found');
+							var target_name = target_names[target_name_key];
 							
-							source_obj.bind(source_events, target_action, source_kindof, source_field, self, target_kindof, target_field);
+							self.step(context, 'loop on link target name [' + target_name + ']');
+							
+							var promise = DevaptResources.get_resource_instance(target_name);
+							promise.then(
+								function(target_obj)
+								{
+									self.step(context, 'link target object is found  [' + target_obj.name + ']');
+									
+									self.bind(source_events, target_action, source_kindof, source_field, target_obj, target_kindof, target_field);
+								},
+								
+								function()
+								{
+									console.error('link target object is not found [' + target_obj.name + ']');
+								}
+							);
 						}
-					);
+						
+						continue;
+					}
 					
-					continue;
+					// BIND WITH SOURCE FROM NAME AND TARGET=THIS
+					if ( DevaptTypes.is_not_empty_str(source_name) )
+					{
+						self.step(context, 'link has source name');
+						
+						var promise = DevaptResources.get_resource_instance(source_name);
+						promise.then(
+							function(source_obj)
+							{
+								self.step(context, 'link source object is found');
+								
+								source_obj.bind(source_events, target_action, source_kindof, source_field, self, target_kindof, target_field);
+							}
+						);
+						
+						continue;
+					}
 				}
-			}
+			};
+			
+			self.add_event_callback('devapt.render.content', init_bind_cb);
 			
 			
 			self.leave(context, self.msg_success);

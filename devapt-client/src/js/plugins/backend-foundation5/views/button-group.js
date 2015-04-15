@@ -18,10 +18,6 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptView, undefined)
 	 * @public
 	 * @class				DevaptButtonGroup
 	 * @desc				Button group view class
-	 * @param {string}		arg_name			View name (string)
-	 * @param {object}		arg_parent_jqo	jQuery object to attach the view to
-	 * @param {object|null}	arg_options			Associative array of options
-	 * @return {nothing}
 	 */
 	
 	
@@ -43,10 +39,10 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptView, undefined)
 		self.assert_not_null(context, 'arg_deferred', arg_deferred);
 		
 		// GET NODES
-		self.assert_not_null(context, 'parent_jqo', self.parent_jqo);
-		self.content_jqo = $('<ul>');
-		self.parent_jqo.append(self.content_jqo);
-		self.content_jqo.addClass('button-group');
+		self.assert_not_null(context, 'content_jqo', self.content_jqo);
+		self.ul_jqo = $('<ul>');
+		self.content_jqo.append(self.ul_jqo);
+		self.ul_jqo.addClass('button-group');
 		
 		// GET CURRENT BACKEND
 		var backend = Devapt.get_current_backend();
@@ -58,7 +54,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptView, undefined)
 		{
 			var button_view = self.buttons[button_key];
 			var node_jqo = $('<li>');
-			self.content_jqo.append(node_jqo);
+			self.ul_jqo.append(node_jqo);
 			
 			// RENDER VIEW
 			arg_deferred.then( backend.render_view(node_jqo, button_view) );

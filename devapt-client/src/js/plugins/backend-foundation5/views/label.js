@@ -18,10 +18,6 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptView, undefined)
 	 * @public
 	 * @class				DevaptLabel
 	 * @desc				Label view class
-	 * @param {string}		arg_name			View name (string)
-	 * @param {object}		arg_parent_jqo	jQuery object to attach the view to
-	 * @param {object|null}	arg_options			Associative array of options
-	 * @return {nothing}
 	 */
 	
 	
@@ -43,14 +39,13 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptView, undefined)
 		self.assert_not_null(context, 'arg_deferred', arg_deferred);
 		
 		// GET NODES
-		self.assert_not_null(context, 'parent_jqo', self.parent_jqo);
-		self.content_jqo = $('<span>');
-		self.parent_jqo.append(self.content_jqo);
-		self.content_jqo.attr('id', self.get_view_id());
+		self.assert_not_null(context, 'content_jqo', self.content_jqo);
+		self.span_jqo = $('<span>');
+		self.content_jqo.append(self.span_jqo);
 		
 		// GET VIEW LABEL TEXT
 		self.assert_not_empty_value(context, 'self.label', self.label);
-		self.content_jqo.text(self.label);
+		self.span_jqo.text(self.label);
 		
 		// RESOLVE AND GET PROMISE
 		arg_deferred.resolve();

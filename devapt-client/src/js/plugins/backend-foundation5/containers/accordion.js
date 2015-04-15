@@ -151,8 +151,10 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptContainer, undefined)
 		var self = this;
 		var context = 'append_item_node(jqo,record)';
 		self.enter(context, '');
+		self.assert_object(context, 'node', arg_item_jqo);
+		self.assert_object(context, 'record', arg_item_record);
 		
-		// debugger;
+		
 		// GET ITEM OPTIONS
 		self.step(context, 'get item options');
 		var item_options = self.get_item_options(arg_item_record.index, { label:'accordion ' + arg_item_record.index, active:false });
@@ -181,7 +183,6 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptContainer, undefined)
 		
 		node_jqo.append(div_jqo);
 		self.content_jqo.append(node_jqo);
-		// console.log(self.content_jqo, context + ':accordion.content_jqo:' + self.name);
 		
 		
 		self.leave(context, 'success');
@@ -197,8 +198,8 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptContainer, undefined)
 		'infos':{
 			'author':'Luc BORIES',
 			'created':'2014-07-27',
-			'updated':'2014-12-13',
-			'description':'Tabs panel view class, horizontally (default), vertically (is_vertical:true).'
+			'updated':'2015-03-28',
+			'description':'Accordion view class.'
 		}
 	};
 	
@@ -214,8 +215,6 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptContainer, undefined)
 	DevaptAccordionClass.add_public_method('append_item_node', {}, cb_append_item_node);
 	
 	// PROPERTIES
-	DevaptAccordionClass.add_public_obj_property('tabs_jqo',			'',	null, false, false, []);
-	DevaptAccordionClass.add_public_obj_property('tabs_content_jqo',	'',	null, false, false, []);
 	
 	
 	return DevaptAccordionClass;

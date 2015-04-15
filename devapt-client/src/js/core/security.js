@@ -13,6 +13,9 @@ define(
 ['Devapt', 'core/traces', 'core/types', 'core/nav-history', 'jStorage'],
 function(Devapt, DevaptTrace, DevaptTypes, DevaptNavHistory, DevaptCache)
 {
+	console.info(DevaptCache, 'DevaptCache');
+	
+	
 	/**
 	 * @memberof	DevaptSecurity
 	 * @public

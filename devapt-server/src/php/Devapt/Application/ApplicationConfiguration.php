@@ -21,6 +21,7 @@ use Devapt\Core\Configuration;
 
 class ApplicationConfiguration extends Configuration
 {
+	
     /**
      * Constructor
      * @param[in] arg_config_array
@@ -262,6 +263,24 @@ class ApplicationConfiguration extends Configuration
     public function getSecurityAuthenticationEnabled()
     {
         return $this->getBooleanAttribute('application.security.authentication.enabled', true);
+    }
+	
+    /**
+     * Get the application security authentication expiration (in minutes)
+     * @return		attribute integer (default 4h=4*60=240)
+     */
+    public function getSecurityAuthenticationExpirationInMinutes()
+    {
+        return $this->getAttribute('application.security.authentication.expiration', 240);
+    }
+	
+    /**
+     * Get the application security authentication secret
+     * @return		attribute string (default non empty string)
+     */
+    public function getSecurityAuthenticationSecret()
+    {
+        return $this->getBooleanAttribute('application.security.authentication.secret', 'nu"hfhfz58875448é",;v;veTRFDHDJjejr');
     }
 	
     /**

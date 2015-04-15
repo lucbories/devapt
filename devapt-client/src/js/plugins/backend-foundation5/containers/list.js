@@ -18,10 +18,6 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptContainer, undefined)
 	 * @public
 	 * @class				DevaptList
 	 * @desc				List view class
-	 * @param {string}		arg_name			View name (string)
-	 * @param {object}		arg_parent_jqo		jQuery object to attach the view to
-	 * @param {object|null}	arg_options			Associative array of options
-	 * @return {nothing}
 	 */
 	
 	
@@ -37,9 +33,6 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptContainer, undefined)
 		var context = 'constructor';
 		self.enter(context, '');
 		
-		
-		// CALL SUPER CLASS CONSTRUCTOR
-		self._parent_class.infos.ctor(self);
 		
 		self.items_jquery_parent = null;
 		self.items_jquery_filter = 'li';
@@ -94,13 +87,14 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptContainer, undefined)
 	var cb_render_begin = function()
 	{
 		var self = this;
+		self.trace=true;
+		
 		var context = 'render_begin()';
 		self.enter(context, '');
 		
 		
-		self.content_jqo = $('<div>');
-		self.parent_jqo.append(self.content_jqo);
-		self.content_jqo.attr('id', self.get_view_id());
+		// CHECK CONTENT NODE
+		self.assert_not_null(context, 'content_jqo', self.content_jqo);
 		
 		self.ul_jqo = $('<ul>');
 		self.content_jqo.append(self.ul_jqo);
@@ -180,7 +174,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptContainer, undefined)
 		self.enter(context, '');
 		self.value(context, 'arg_item_content', arg_item_content);
 		
-		var a_jqo = $('<a href="#">');
+		var a_jqo = $('<a>');
 		a_jqo.html(arg_item_content);
 		arg_item_jqo.append(a_jqo);
 		

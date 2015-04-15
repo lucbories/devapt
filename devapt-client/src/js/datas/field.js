@@ -150,7 +150,7 @@ function(Devapt, DevaptTypes, DevaptResources, DevaptClass, DevaptObject, Devapt
 				self.association.max = null;
 				self.association.model = self.join.model_object;
 				self.association.model_name = self.join.model;
-				self.association.target_field_name = self.sql_column;
+				self.association.target_field_name = self.name;
 				self.association.target_field_key = self.join.target.column;
 			}
 			

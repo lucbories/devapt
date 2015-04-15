@@ -28,7 +28,7 @@ final class Dispatcher
 	// STATIC ATTRIBUTES
 	
 	/// @brief TRACE FLAG
-	static public $TRACE_DISPATCHER = false;
+	static public $TRACE_DISPATCHER = true;
 	
 	/// @brief CONTROLLERS REPOSITORY
 	static private $controllers = array();
@@ -156,11 +156,19 @@ final class Dispatcher
 		Trace::value($context, "uri_path_items", $uri_path_items, Dispatcher::$TRACE_DISPATCHER);
 		
 		
+		// GET CONTROLLER NAME
+		$controller_index = $uri_path_count > $app_path_count ? $app_path_count : $uri_path_count - 1;
+		// $controller_index = $app_path_count;
+		Trace::value($context, "controller_index", $controller_index, Dispatcher::$TRACE_DISPATCHER);
+		$controller_name = $uri_path_items[$controller_index];
+		Trace::value($context, 'controller name', $controller_name, Dispatcher::$TRACE_DISPATCHER);
+		
+		
 		// TEST IF TARGET CONTROLLER IS SECURITY
 		$target_is_security = false;
 		if ($uri_path_count > $app_path_count)
 		{
-			$target_is_security = ($uri_path_items[$app_path_count] === 'security');
+			$target_is_security = ($controller_name === 'security');
 		}
 		if ($target_is_security)
 		{
@@ -170,29 +178,42 @@ final class Dispatcher
 		}
 		
 		
-		// NO SECURITY TOKEN
-		if ( Authentication::isEnabled() && is_null($token) )
-		{
-			Trace::step($context, 'NO SECURITY TOKEN', Dispatcher::$TRACE_DISPATCHER);
-			
-			return Dispatcher::dispatchLogin($arg_request, $arg_response);
-		}
+		// TEST IF TARGET IS HOME PAGE
+		$target_is_home = $uri_path_count === $app_path_count || ($controller_name === 'index.php' && $uri_path_count === $app_path_count + 1 );
 		
 		
 		if ( Authentication::isEnabled() )
 		{
-			// CHECK SECURITY USER
-			// $check_token = Authentication::checkToken($token);
-			// Trace::value($context, 'check security token', $check_token, Dispatcher::$TRACE_DISPATCHER);
+			// NO SECURITY TOKEN
+			if ( is_null($token) )
+			{
+				Trace::step($context, 'NO SECURITY TOKEN', Dispatcher::$TRACE_DISPATCHER);
+				
+				return Dispatcher::dispatchLogin($arg_request, $arg_response);
+			}
 			
+			// CHECK SECURITY USER
 			$check_user = Authentication::isLogged();
 			Trace::value($context, 'check security user', $check_user, Dispatcher::$TRACE_DISPATCHER);
-			
 			if ( ! $check_user )
 			{
 				Trace::step($context, 'no logged user or bad security token', Dispatcher::$TRACE_DISPATCHER);
 				
-				return Dispatcher::dispatchLogin($arg_request, $arg_response);
+				// TARGET IS HOME PAGE
+				if ($target_is_home)
+				{
+					Trace::step($context, 'target is home: display login', Dispatcher::$TRACE_DISPATCHER);
+					return Dispatcher::dispatchLogin($arg_request, $arg_response);
+				}
+				
+				// PREPARE RESPONSE
+				$response_status = $arg_response::STATUS_CODE_401;
+				$arg_response->setStatusCode($response_status);
+				
+				// SEND RESPONSE
+				$arg_response->send();
+				
+				return true;
 			}
 		}
 		
@@ -201,16 +222,8 @@ final class Dispatcher
 		Trace::step($context, 'target is not security', Dispatcher::$TRACE_DISPATCHER);
 		
 		
-		// LOGIN PAGE
-		if ( Authentication::isEnabled() && ! Authentication::isLogged() )
-		{
-			Trace::step($context, 'LOGIN PAGE', Dispatcher::$TRACE_DISPATCHER);
-			return Dispatcher::dispatchLogin($arg_request, $arg_response);
-		}
-		
-		
 		// HOME PAGE
-		if ($uri_path_count === $app_path_count || ($uri_path_items[$app_path_count] === 'index.php' && $uri_path_count === $app_path_count + 1 ))
+		if ($target_is_home)
 		{
 			Trace::step($context, 'HOME PAGE', Dispatcher::$TRACE_DISPATCHER);
 			return Dispatcher::dispatchHome($arg_request, $arg_response);
@@ -225,13 +238,8 @@ final class Dispatcher
 		}
 		
 		
-		// GET THE CONTROLLER NAME
-		$controller_name = $uri_path_items[$app_path_count];
-		$bypass_security = false;
-		Trace::value($context, 'controller name', $controller_name, Dispatcher::$TRACE_DISPATCHER);
-		
-		
 		// PROCESS REQUEST
+		$bypass_security = false;
 		$result = Dispatcher::process($arg_request, $arg_response, $controller_name, $bypass_security);
 		
 		
@@ -309,6 +317,12 @@ final class Dispatcher
 		$app_path_items	= explode('/', $app_path);
 		$app_path_count	= count($app_path_items);
 		
+		// UPDATE REQUEST
+		$request		= $arg_request;
+		$uri			= $request->getUri();
+		$uri_path		= implode('/', $uri_path_items);
+		$uri->setPath($uri_path);
+		
 		
 		// CHECK REQUEST PATH LENGTH
 		if ($uri_path_count < $app_path_count + 1)
@@ -352,6 +366,12 @@ final class Dispatcher
 		$app_path_items	= explode('/', $app_path);
 		$app_path_count	= count($app_path_items);
 		
+		// UPDATE REQUEST
+		$request		= $arg_request;
+		$uri			= $request->getUri();
+		$uri_path		= implode('/', $uri_path_items);
+		$uri->setPath($uri_path);
+		
 		
 		// CHECK REQUEST PATH LENGTH
 		if ($uri_path_count < $app_path_count + 1)
@@ -378,10 +398,9 @@ final class Dispatcher
 	 * @brief		Dispatch the request to the security controller
      * @param[in]	arg_request			request object (RequestInterface)
      * @param[in]	arg_response		response object (ResponseInterface)
-     * @param[in]	arg_bypass_security	bypass security (boolean)
 	 * @return		boolean
 	 */
-	static public function dispatchSecurity($arg_request, $arg_response, $arg_bypass_security)
+	static public function dispatchSecurity($arg_request, $arg_response)
 	{
 		$context = 'Dispatcher::dispatchSecurity(request,response)';
 		Trace::step($context, '', Dispatcher::$TRACE_DISPATCHER);

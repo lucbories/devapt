@@ -57,6 +57,7 @@ function(
 		}
 		
 		
+		// INIT DEFAULT PARENT NODE IF NO PARENT IS GIVEN
 		if ( ! DevaptTypes.is_object(arg_jquery_object) )
 		{
 			self.step(context, 'set default view container');
@@ -64,23 +65,35 @@ function(
 			$('body').append(arg_jquery_object);
 		}
 		
+		
 		// SET CONTAINER JQUERY OBJECT
 		self.parent_jqo = arg_jquery_object;
+		self.assert_not_null(context, 'self.parent_jqo null ?', self.parent_jqo);
 		if ( DevaptTypes.is_object(self.content_jqo) )
 		{
-			self.step(context, 'detach/attach content jqo');
+			self.step(context, 'detach content jqo');
 			self.content_jqo.detach();
 			
-			self.step(context, 'detach/attach content jqo');
-			self.parent_jqo.append(self.content_jqo);
+			self.step(context, 'attach content jqo');
+			if (! self.prepend_content)
+			{
+				self.parent_jqo.append(self.content_jqo);
+			}
+			else
+			{
+				self.parent_jqo.prepend(self.content_jqo);
+			}
 		}
 		// console.log(self.parent_jqo, 'parent_jqo');
 		
-		// CHECK CONTAINER JQO
-		// console.log(self.parent_jqo, 'parent_jqo');
-		// console.log(self.parent_jqo.length, 'parent_jqo.length');
-		self.assert_not_null(context, 'self.parent_jqo null ?', self.parent_jqo);
-		// self.assert_true(context, 'self.parent_jqo empty ?', self.parent_jqo.length > 0);
+		
+		// SET PARENT ID
+		if ( DevaptTypes.is_not_empty_str(self.parent_html_id) )
+		{
+			self.step(context, 'parent node node has an html id');
+			self.parent_jqo.attr('id', self.parent_html_id);
+		}
+		
 		
 		// SEND EVENT
 		self.fire_event('devapt.view.parent.changed');
@@ -100,25 +113,19 @@ function(
 	 */
 	var cb_constructor = function(self)
 	{
-		var self = self ? self : this;
+		// DEBUG
+		// self.trace=true;
+		
 		var context = self.class_name + '(' + self.name + ')';
 		self.enter(context, 'constructor');
 		
 		
-		// DEBUG
-		// self.trace=true;
-		
-		
+		// SET OBJECT TYPE
 		self.is_view = true;
 		
-		// SET ID
-		if ( DevaptTypes.is_object(self.parent_jqo) )
-		{
-			if ( DevaptTypes.is_not_empty_str(self.parent_html_id) )
-			{
-				self.parent_jqo.attr('id', self.parent_html_id);
-			}
-		}
+		// INIT CONTENT NODE
+		self.content_jqo = $('<div>');
+		self.content_jqo.attr('id', self.get_view_id());
 		
 		// SEND EVENT
 		self.fire_event('devapt.view.ready');
@@ -671,8 +678,6 @@ function(
 	DevaptViewClass.infos.ctor = cb_constructor;
 	DevaptViewClass.add_public_method('set_parent', {}, cb_set_parent);
 	DevaptViewClass.add_public_method('get_view_id', {}, cb_get_view_id);
-	// DevaptViewClass.add_public_method('render', {}, cb_render);
-	// DevaptViewClass.add_public_method('render_self', {}, cb_render_self);
 	DevaptViewClass.add_public_method('edit_settings', {}, cb_edit_settings);
 	
 	DevaptViewClass.add_public_method('show', {}, cb_show);
@@ -692,18 +697,17 @@ function(
 	
 	// PROPERTIES
 	DevaptViewClass.add_public_bool_property('is_view',			'is a view flag', true, false, false, []);
-	// DevaptViewClass.add_public_bool_property('is_rendered',		'is a view rendered', false, false, false, []);
-	DevaptViewClass.add_public_str_property('status',			'view current state', 'ready', false, false, []);
+	// DevaptViewClass.add_public_str_property('status',			'view current state', 'ready', false, false, []);
 	DevaptViewClass.add_public_str_property('access_role',		'required role to display the view', null, true, false, ['role_display']);
 	
-	DevaptViewClass.add_public_str_property('parent_html_id',	'',		null, false, false, ['view_parent_html_id']);
-	DevaptViewClass.add_public_str_property('html_id',			'',		null, false, false, ['view_html_id']);
-	DevaptViewClass.add_public_str_property('label',			'',		null, false, false, ['view_label']);
-	DevaptViewClass.add_public_str_property('tooltip',			'',		null, false, false, ['view_tooltip']);
+	DevaptViewClass.add_public_str_property('parent_html_id',	'content jQuery parent ndoe id (html attribute) ', null, false, false, ['view_parent_html_id']);
+	DevaptViewClass.add_public_str_property('html_id',			'content jQuery node id (html attribute)', null, false, false, ['view_html_id']);
+	DevaptViewClass.add_public_str_property('label',			'view label for window title or menu', null, false, false, ['view_label']);
+	DevaptViewClass.add_public_str_property('tooltip',			'view tooltip for menu item', null, false, false, ['view_tooltip']);
 	
-	// var div_jqo = jQuery('<div>');
-	DevaptViewClass.add_public_object_property('parent_jqo',	'',		null, false, false, []);
-	DevaptViewClass.add_public_object_property('content_jqo',	'',		null, false, false, []);
+	DevaptViewClass.add_public_bool_property('prepend_content',	'should prepend content jqo on the parent jqo?', false, false, false, []);
+	DevaptViewClass.add_public_object_property('parent_jqo',	'content parent jQuery node',		null, false, false, []);
+	DevaptViewClass.add_public_object_property('content_jqo',	'content jQuery node',				null, false, false, []);
 	
 	
 	// MIXINS

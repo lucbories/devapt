@@ -30,21 +30,17 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptContainer)
 	 */
 	var cb_constructor = function(self)
 	{
-		console.log(self);
 		// CONSTRUCTOR BEGIN
 		var context = 'constructor(' + self.name + ')';
 		self.enter(context, '');
 		
-		
-		// CALL SUPER CLASS CONSTRUCTOR
-		self._parent_class.infos.ctor(self);
 		
 		self.items_jquery_parent = null;
 		self.items_jquery_filter = 'option';
 		
 		
 		// CONSTRUCTOR END
-		self.leave(context, 'success');
+		self.leave(context, Devapt.msg_success);
 	}
 	
 	
@@ -66,7 +62,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptContainer)
 		var item_jqo = $('option:contains("' + arg_node_item_text + '"):eq(0)', self.items_jquery_parent);
 		if ( ! item_jqo)
 		{
-			self.leave(context, self.msg_failure);
+			self.leave(context, Devapt.msg_failure);
 			return null;
 		}
 		
@@ -74,7 +70,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptContainer)
 		var node_jqo = item_jqo.parent();
 		
 		
-		self.leave(context, self.msg_success);
+		self.leave(context, Devapt.msg_success);
 		return node_jqo;
 	}
 	
@@ -92,9 +88,8 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptContainer)
 		self.enter(context, '');
 		
 		
-		self.content_jqo = $('<div>');
-		self.parent_jqo.append(self.content_jqo);
-		self.content_jqo.attr('id', self.get_view_id());
+		// CHECK CONTENT NODE
+		self.assert_not_null(context, 'content_jqo', self.content_jqo);
 		
 		self.items_jquery_parent = $('<select>');
 		self.content_jqo.append(self.items_jquery_parent);
@@ -112,7 +107,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptContainer)
 		}
 		
 		
-		self.leave(context, 'success');
+		self.leave(context, Devapt.msg_success);
 	}
 	
 	
@@ -140,7 +135,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptContainer)
 		);
 		
 		
-		self.leave(context, 'success');
+		self.leave(context, Devapt.msg_success);
 		return node_jqo;
 	}
 	
@@ -162,7 +157,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptContainer)
 		
 		arg_item_jqo.attr('disabled', '');
 		
-		self.leave(context, self.msg_success);
+		self.leave(context, Devapt.msg_success);
 		return arg_item_jqo;
 	}
 	
@@ -187,7 +182,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptContainer)
 		arg_item_jqo.text(arg_item_content);
 		
 		
-		self.leave(context, self.msg_success);
+		self.leave(context, Devapt.msg_success);
 		return arg_item_jqo;
 	}
 	

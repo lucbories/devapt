@@ -21,6 +21,7 @@ require.config(
 		/*	'foundation':	'/devapt-client/lib/foundation-' + foundation_version + '/js/foundation.min',*/
 			
 			// ALL
+			'jquery-ui':	'/devapt-client/lib/jquery-ui-1.11.4/jquery-ui.min',
 			'QUnit':		'/devapt-client/lib/qunit-1.16.0/qunit-1.16.0',
 			'runtu':		'/devapt-client/tests/run-tests',
 			'Q':			'/devapt-client/lib/q-20150130/q',
@@ -28,6 +29,7 @@ require.config(
 			'mustache':		'/devapt-client/lib/mustache/mustache-wrap',
 			'md5':			'/devapt-client/lib/cryptojs-3.1.2/rollups/md5',
 			'sha1':			'/devapt-client/lib/cryptojs-3.1.2/rollups/sha1',
+			// 'base64':		'/devapt-client/lib/cryptojs-3.1.2/components/enc-base64',
 			
 			'foundation-min':			'/devapt-client/lib/foundation-' + foundation_version + '/js/foundation.min',
 			'foundation':				'/devapt-client/lib/foundation-' + foundation_version + '/js/foundation/foundation',

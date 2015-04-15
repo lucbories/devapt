@@ -55,7 +55,7 @@ function(Devapt, DevaptTrace, DevaptTypes, jStorage)
 		DevaptTrace.trace_enter(context, '', DevaptCache.cache_trace);
 		
 		
-		var value = $.jStorage.get(arg_key, arg_default);
+		var value = Devapt.jQuery().jStorage.get(arg_key, arg_default);
 		if (!value)
 		{
 			DevaptTrace.trace_leave(context, 'not found', DevaptCache.cache_trace);

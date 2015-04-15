@@ -78,7 +78,14 @@ function(
 		
 		// GET SELECTED JQUERY NODE WITH GIVEN INDEX
 		self.step(context, 'get selected jQuery node');
-		selected_item.node_jqo = self.items_objects[arg_index].node;
+		var item_object = self.items_objects[arg_index];
+		if ( ! item_object )
+		{
+			console.log(arg_index, context + ':index');
+			console.error(self, context);
+			return Devapt.promise_rejected();
+		}
+		selected_item.node_jqo = item_object.node;
 		if ( ! selected_item.node_jqo)
 		{
 			self.error(context + ':node not found');

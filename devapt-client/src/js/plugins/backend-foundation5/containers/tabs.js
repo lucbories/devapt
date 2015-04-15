@@ -38,9 +38,6 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptContainer, undefined)
 		self.enter(context, '');
 		
 		
-		// CALL SUPER CLASS CONSTRUCTOR
-		self._parent_class.infos.ctor(self);
-		
 		self.tabs_jqo			= null;
 		self.tabs_content_jqo	= null;
 		self.has_divider		= false;
@@ -66,8 +63,8 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptContainer, undefined)
 		self.enter(context, '');
 		
 		
-		self.content_jqo = $('<div>');
-		self.parent_jqo.append(self.content_jqo);
+		// CHECK CONTENT NODE
+		self.assert_not_null(context, 'content_jqo', self.content_jqo);
 		
 		self.tabs_jqo = $('<dl>');
 		self.tabs_jqo.addClass('tabs');

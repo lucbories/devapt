@@ -194,7 +194,6 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptEvents, DevaptObject)
 		}
 		
 		// LOOP ON FILTERS FOR FIELD
-		// var indices = new Object();
 		var filter_key = null;
 		for(filter_key in field_filters)
 		{
@@ -209,16 +208,11 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptEvents, DevaptObject)
 			// REMOVE FILTER
 			// self.filters_array[filter_index] = null;
 			
-			// indices[filter_index] = filter_ref;
 			self.filters_array[filter_index] = null;
 		}
 		
 		delete self.filters_array_by_field[arg_field_name];
 		self.filters_array_by_field[arg_field_name] = new Array();
-		
-		// var cb_test_not_null = function(item, index, array) { return item !== null; };
-		// var cb_test_not_null = function(a) { return a !== null; };
-		// self.filters_array = self.filters_array.filter(cb_test_not_null);
 		
 		self.filters_array.forEach(
 			function(index, item, array)
@@ -230,24 +224,6 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptEvents, DevaptObject)
 			}
 		);
 		
-	/*	for(filter_key in self.filters_array)
-		{
-			if ( ! indices[filter_key] )
-			{
-				new_filters.push( self.filters_array[filter_key] );
-			}
-			else
-			{
-				delete self.filters_array[filter_key];
-				self.filters_array[filter_key] = null;
-				console.log('remove filter for key ' + filter_key);
-			}
-		} */
-		
-		// delete self.filters_array;
-		// self.filters_array = new_filters;
-		// self.value(context, 'new_filters', new_filters);
-		// console.log(new_filters, 'new_filters');
 		
 		self.leave(context, 'success');
 	}

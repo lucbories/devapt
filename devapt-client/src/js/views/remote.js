@@ -18,10 +18,6 @@ function(Devapt, DevaptClass, DevaptView, DevaptApplication)
 	 * @public
 	 * @class				DevaptRemote
 	 * @desc				Remote view view class
-	 * @param {string}		arg_name			View name (string)
-	 * @param {object}		arg_parent_jqo		jQuery object to attach the view to
-	 * @param {object|null}	arg_options			Associative array of options
-	 * @return {nothing}
 	 */
 	
 	
@@ -43,13 +39,8 @@ function(Devapt, DevaptClass, DevaptView, DevaptApplication)
 		self.assert_not_null(context, 'arg_deferred', arg_deferred);
 		self.assert_not_null(context, 'parent_jqo', self.parent_jqo);
 		
-		self.content_jqo = $('<div>');
-		self.parent_jqo.append(self.content_jqo);
-		self.content_jqo.attr('id', self.get_view_id());
-		
-		
 		// GET APP BASE URL
-		var url_base	= DevaptApplication.get_url_base();
+		var url_base = DevaptApplication.get_url_base();
 		
 		// GET VIEW CONTENT URL
 		var view_content_url = url_base + 'views/' + self.name + '/html_view' + '?security_token=' + DevaptApplication.get_security_token();

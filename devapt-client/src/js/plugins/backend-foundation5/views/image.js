@@ -18,10 +18,6 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptView, DevaptApplication, undefi
 	 * @public
 	 * @class				DevaptImage
 	 * @desc				Image view class
-	 * @param {string}		arg_name			View name (string)
-	 * @param {object}		arg_parent_jqo	jQuery object to attach the view to
-	 * @param {object|null}	arg_options			Associative array of options
-	 * @return {nothing}
 	 */
 	
 	
@@ -43,9 +39,9 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptView, DevaptApplication, undefi
 		self.assert_not_null(context, 'arg_deferred', arg_deferred);
 		
 		// GET NODES
-		self.assert_not_null(context, 'parent_jqo', self.parent_jqo);
-		self.content_jqo = $('<img>');
-		self.parent_jqo.append(self.content_jqo);
+		self.assert_not_null(context, 'content_jqo', self.content_jqo);
+		self.img_jqo = $('<img>');
+		self.content_jqo.append(self.img_jqo);
 		
 		// GET VIEW URL
 		var url = null;
@@ -58,7 +54,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptView, DevaptApplication, undefi
 			url = DevaptApplication.get_url_base() + '../modules/' + DevaptTypes.to_string(self.image_pathname);
 		}
 		self.assert_not_empty_value(context, 'img url', url);
-		self.content_jqo.attr('src', url);
+		self.img_jqo.attr('src', url);
 		
 		// RESOLVE AND GET PROMISE
 		arg_deferred.resolve();

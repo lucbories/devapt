@@ -20,10 +20,6 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptView, undefined)
 	 * @public
 	 * @class				DevaptButton
 	 * @desc				Button view class
-	 * @param {string}		arg_name			View name (string)
-	 * @param {object}		arg_parent_jqo		jQuery object to attach the view to
-	 * @param {object|null}	arg_options			Associative array of options
-	 * @return {nothing}
 	 */
 	
 	
@@ -45,18 +41,18 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptView, undefined)
 		self.assert_not_null(context, 'arg_deferred', arg_deferred);
 		
 		// GET NODES
-		self.assert_not_null(context, 'parent_jqo', self.parent_jqo);
-		self.content_jqo = $('<a>');
-		self.parent_jqo.append(self.content_jqo);
-		self.content_jqo.attr('href', '#');
+		self.assert_not_null(context, 'content_jqo', self.content_jqo);
+		self.a_jqo = $('<a>');
+		self.content_jqo.append(self.a_jqo);
+		// self.a_jqo.attr('href', '#');
 		
 		// GET VIEW LABEL
 		self.assert_not_empty_value(context, 'self.label', self.label);
-		self.content_jqo.html(self.label);
-		self.content_jqo.addClass('button');
+		self.a_jqo.html(self.label);
+		self.a_jqo.addClass('button');
 		
 		// HANDLE CLICK
-		self.content_jqo.click(
+		self.a_jqo.click(
 			function()
 			{
 				self.fire_event('devapt.button.clicked', []);

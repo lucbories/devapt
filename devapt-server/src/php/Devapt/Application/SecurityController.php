@@ -197,6 +197,7 @@ class SecurityController extends AbstractController
 					break;
 				}
 				
+				
 				case 'logout':
 				{
 					$msg = 'SecurityController::doPostAction resource ['.$arg_resource_name.'] action ['.$arg_action_name.']';
@@ -212,6 +213,114 @@ class SecurityController extends AbstractController
 					
 					break;
 				}
+				
+				
+				case 'renew':
+				{
+					$msg = 'SecurityController::doPostAction resource ['.$arg_resource_name.'] action ['.$arg_action_name.']';
+					Trace::notice($msg, $arg_resource_name);
+					
+					if ( ! Authentication::isEnabled() )
+					{
+						Trace::step('SecurityController::doPostAction', 'Renew requested but authentication is not enabled.', self::$TRACE_SECURITY_CONTROLLER);
+						return true;
+					}
+					
+					
+					// NO SECURITY TOKEN
+					$token = Authentication::getToken();
+					if ( is_null($token) )
+					{
+						Trace::step($context, 'NO SECURITY TOKEN', self::$TRACE_SECURITY_CONTROLLER);
+						
+						return Dispatcher::dispatchLogin($arg_request, $arg_response);
+					}
+					
+					
+					// CHECK SECURITY USER
+					$check_user = Authentication::isLogged();
+					Trace::value($context, 'check security user', $check_user, self::$TRACE_SECURITY_CONTROLLER);
+					if ( ! $check_user )
+					{
+						Trace::step($context, 'no logged user or bad security token', self::$TRACE_SECURITY_CONTROLLER);
+						
+						// PREPARE RESPONSE
+						$response_status = $arg_response::STATUS_CODE_401;
+						$arg_response->setStatusCode($response_status);
+						
+						// SEND RESPONSE
+						$arg_response->send();
+						
+						return true;
+					}
+					
+					
+					// AUTHENTICATION IS CHECKED, DO TOKEN RENEW
+					
+					// GET REQUEST CONTENT
+					$json_datas_str = $arg_request->getContent();
+					if ( ! is_string($json_datas_str) )
+					{
+						Trace::warning("SecurityController: no request content for resource [$arg_resource_name]");
+						return false;
+					}
+					
+					// FORMAT JSON REQUEST CONTENT
+					$json_datas = JsonFormatter::decode($json_datas_str, JsonFormatter::TYPE_ARRAY);
+					if ( ! is_array($json_datas) || ! array_key_exists('login', $json_datas) || ! array_key_exists('password', $json_datas) )
+					{
+						Trace::warning("SecurityController: bad request content for resource [$arg_resource_name]");
+						return false;
+					}
+					
+					// GET LOGIN
+					$login = $json_datas['login'];
+					
+					// SET RESPONSE CONTENT
+					$response_status = $arg_response::STATUS_CODE_401;
+					$response_content = array();
+					$response_status = $arg_response::STATUS_CODE_200;
+					
+					$expire = Authentication::expire();
+					$token = Authentication::token($expire);
+					
+					$response_content['status'] = 'ok';
+					$response_content['login'] = $login;
+					$response_content['expire'] = $expire;
+					$response_content['token'] = $token;
+					
+					// IS A JSONP REQUEST ?
+					$jsonp_callback = $arg_request->getQuery('callback', null);
+					$is_jsonp = is_string($jsonp_callback) ? true : false;
+					
+					// SET RESPONSE HEADER
+					$charset		= 'utf-8'; // TODO: configure charset
+					$contentType	= $is_jsonp ? 'application/javascript' : 'application/json';
+					$contentType	.= '; charset=' . $charset;
+					$headers = $arg_response->getHeaders();
+					$headers->addHeaderLine('content-type', $contentType);
+					$multibyteCharsets	= array(); // TODO: check usage
+					if ( in_array(strtoupper($charset), $multibyteCharsets) )
+					{
+						$headers->addHeaderLine('content-transfer-encoding', 'BINARY'); // TODO: check usage
+					}
+					
+					// SET RESPONSE CONTENT
+					$jsonOptions = null;
+					$result_string = JsonFormatter::encode($response_content, null, $jsonOptions);
+					if ($is_jsonp)
+					{
+						$result_string = $jsonp_callback.'('.$result_string.');';
+					}
+					$arg_response->setContent($result_string);
+					$arg_response->setStatusCode($response_status);
+					
+					// SEND RESPONSE
+					$arg_response->send();
+					
+					break;
+				}
+				
 				
 				default:
 					$msg = 'SecurityController::doPostAction resource ['.$arg_resource_name.'] action ['.$arg_action_name.']';
@@ -229,14 +338,14 @@ class SecurityController extends AbstractController
 	
 	public function doPutAction($arg_resource_name, $arg_action_name, $arg_id, $arg_request, $arg_response)
 	{
-		Trace::warning('AbstractController: PUT method is not implemented');
+		Trace::warning('SecurityController: PUT method is not implemented');
 		return false;
 	}
 	
 	
 	public function doDeleteAction($arg_resource_name, $arg_action_name, $arg_id, $arg_request, $arg_response)
 	{
-		Trace::warning('AbstractController: DELETE method is not implemented');
+		Trace::warning('SecurityController: DELETE method is not implemented');
 		return false;
 	}
 }
