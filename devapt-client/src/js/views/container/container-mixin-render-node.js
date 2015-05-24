@@ -39,7 +39,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptTemplate)
 			
 			
 			
-			self.leave(context, self.msg_success);
+			self.leave(context, Devapt.msg_success);
 			return arg_item_jqo;
 		},
 		
@@ -61,7 +61,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptTemplate)
 			
 			arg_item_jqo.html(arg_item_content);
 			
-			self.leave(context, self.msg_success);
+			self.leave(context, Devapt.msg_success);
 			return arg_item_jqo;
 		},
 		
@@ -87,7 +87,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptTemplate)
 			arg_item_jqo.append(span_jqo);
 			
 			
-			self.leave(context, self.msg_success);
+			self.leave(context, Devapt.msg_success);
 			return arg_item_jqo;
 		},
 		
@@ -120,7 +120,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptTemplate)
 			self.render_item_text(arg_deferred, arg_item_jqo, content);
 			
 			
-			self.leave(context, self.msg_success);
+			self.leave(context, Devapt.msg_success);
 			return arg_item_jqo;
 		},
 		
@@ -142,7 +142,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptTemplate)
 			
 			// TODO render_item_object
 			
-			self.leave(context, self.msg_success);
+			self.leave(context, Devapt.msg_success);
 			return arg_item_jqo;
 		}
 	}

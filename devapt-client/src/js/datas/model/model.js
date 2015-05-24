@@ -9,9 +9,12 @@
  * 					->constructor()
  * 					->is_valid()
  * 
+ * 					->has_field()
  * 					->get_field()
  * 					->get_field_for_column()
- * 					->is_pk_field()
+ * 					->is_pk_field(field)
+ * 					->get_pk_field()
+ * 					
  * 					->get_fields()
  * 					->set_fields()
  * 					->get_fields_types()
@@ -40,16 +43,16 @@
 
 'use strict';
 define(
-['Devapt', 'core/types', 'object/events', 'object/object', 'datas/field', 'object/class', 'core/application', 'datas/model/shared_recordset'],
-function(Devapt, DevaptTypes, DevaptEvents, DevaptObject, DevaptField, DevaptClass, DevaptApplication, DevaptSharedRecordSet)
+['Devapt',
+	'core/types', 'object/events', 'object/object', 'core/application',
+	'datas/field', 'object/class', 'datas/model/recordset'],
+function(Devapt,
+	DevaptTypes, DevaptEvents, DevaptObject, DevaptApplication,
+	DevaptField, DevaptClass, DevaptRecordSet)
 {
 	/**
 	 * @class				DevaptModel
-	 * @desc				Model class constructor
-	 * @method				DevaptModel.constructor
-	 * @param {string}		arg_name		object name
-	 * @param {object|null}	arg_options		associative array of name/value options
-	 * @return {nothing}
+	 * @desc				Model class
 	 */
 	
 	
@@ -62,7 +65,7 @@ function(Devapt, DevaptTypes, DevaptEvents, DevaptObject, DevaptField, DevaptCla
 	 */
 	var cb_constructor = function(self)
 	{
-		// self.trace = true;
+//		self.trace = true;
 		
 		
 		var context = 'constructor';
@@ -148,6 +151,27 @@ function(Devapt, DevaptTypes, DevaptEvents, DevaptObject, DevaptField, DevaptCla
 	/**
 	 * @memberof			DevaptModel
 	 * @public
+	 * @method				DevaptModel.has_field(name)
+	 * @desc				Test if model has a field for the given name
+	 * @param {string}		arg_field_name		field name
+	 * @return {boolean}
+	 */
+	var cb_has_field = function(arg_field_name)
+	{
+		var self = this;
+		var context = 'has_field(name)';
+		self.enter(context, '');
+		
+		
+		self.leave(context, Devapt.msg_success);
+		return (arg_field_name in self.fields_map);
+	}
+	
+	
+	
+	/**
+	 * @memberof			DevaptModel
+	 * @public
 	 * @method				DevaptModel.get_field(name)
 	 * @desc				Get model field for the given name
 	 * @param {string}		arg_field_name		field name
@@ -161,7 +185,7 @@ function(Devapt, DevaptTypes, DevaptEvents, DevaptObject, DevaptField, DevaptCla
 		
 		
 		self.leave(context, Devapt.msg_success);
-		return self.fields_map[arg_field_name];
+		return (arg_field_name in self.fields_map) ? self.fields_map[arg_field_name] : null;
 	}
 	
 	
@@ -248,6 +272,7 @@ function(Devapt, DevaptTypes, DevaptEvents, DevaptObject, DevaptField, DevaptCla
 		var context = 'get_pk_field()';
 		self.enter(context, '');
 		
+		self.assert_object(context, 'pk_field', self.pk_field);
 		
 		self.leave(context, Devapt.msg_found);
 		return self.pk_field;
@@ -313,7 +338,6 @@ function(Devapt, DevaptTypes, DevaptEvents, DevaptObject, DevaptField, DevaptCla
 			var field_settings = arg_fields[field_name];
 			field_settings['name'] = field_name;
 			
-			
 			field_settings['field_value'] = {
 				'type': field_settings.type ? field_settings.type : 'string',
 				'items': field_settings.items ? field_settings.items : null,
@@ -323,20 +347,25 @@ function(Devapt, DevaptTypes, DevaptEvents, DevaptObject, DevaptField, DevaptCla
 				'display': field_settings.display ? field_settings.display : null,
 				'defaults': field_settings.defaults ? field_settings.defaults : null
 			};
-			field_settings['is_pk'] = DevaptTypes.to_boolean(field_settings.sql_is_primary_key, false);
+			field_settings['is_pk'] = DevaptTypes.to_boolean(field_settings.sql_is_primary_key, false) || DevaptTypes.to_boolean(field_settings.is_pk, false);
 			field_settings['is_expression'] = DevaptTypes.to_boolean(field_settings.sql_is_expression, false);
+			// self.value(context, 'field_settings', field);
 			
-			// console.log(field_settings, 'field_settings');
-			
+			// CREATE FIELD OBJECT
 			var field = self.do_callback(cb_create_field, [field_settings]);
+			// self.value(context, 'field', field);
+			
+			// REGISTER FIELD
 			self.fields.push(field);
 			self.fields_map[field_name] = field;
-		}
-		
-		// SET PRIMARY KEY FIELD
-		if ( DevaptTypes.is_not_empty_str(self.pk_field_name) )
-		{
-			self.pk_field = self.fields_map[self.pk_field_name];
+			
+			// REGISTER ID KEY FIELD
+			if (field.is_pk)
+			{
+				self.value(context, 'set pk field', field_name);
+				self.pk_field_name = field_name;
+				self.pk_field = field;
+			}
 		}
 		
 		
@@ -345,6 +374,24 @@ function(Devapt, DevaptTypes, DevaptEvents, DevaptObject, DevaptField, DevaptCla
 	}
 	
 	
+	
+	/**
+	 * @memberof			DevaptModel
+	 * @public
+	 * @method				DevaptModel.get_fields_names()
+	 * @desc				Get model fields names
+	 * @return {array}		Array of strings
+	 */
+	var cb_get_fields_names = function()
+	{
+		var self = this;
+		var context = 'get_fields_names()';
+		self.enter(context, '');
+		
+		
+		self.leave(context, Devapt.msg_success);
+		return Object.keys(self.fields_map);
+	}
 	
 	/**
 	 * @memberof			DevaptModel
@@ -363,7 +410,7 @@ function(Devapt, DevaptTypes, DevaptEvents, DevaptObject, DevaptField, DevaptCla
 		
 		var get_field_type_cb = function(field)
 		{
-			return field.value_type;
+			return field.field_value.type;
 		};
 		
 		if ( ! DevaptTypes.is_array(arg_fields_names) )
@@ -376,12 +423,12 @@ function(Devapt, DevaptTypes, DevaptEvents, DevaptObject, DevaptField, DevaptCla
 		
 		var cb_filter = function(element, index, array)
 		{
-			return arg_fields_names.lastIndexOf(element.name) > 0;
+			return arg_fields_names.lastIndexOf(element.name) >= 0;
 		};
 		var types = self.fields.filter(cb_filter).map(get_field_type_cb);
 		
 		
-		self.leave(context, Devapt.msg_success_require);
+		self.leave(context, Devapt.msg_success);
 		return types;
 	}
 	
@@ -563,7 +610,7 @@ function(Devapt, DevaptTypes, DevaptEvents, DevaptObject, DevaptField, DevaptCla
 	/**
 	 * @memberof			DevaptModel
 	 * @public
-	 * @method				DevaptModel.set_access(fields)
+	 * @method				DevaptModel.set_access(arg)
 	 * @desc				Set model datas access
 	 * @param {object}		arg_access		access as { 'create':bool, 'read':bool, 'update':bool, 'delete':bool };
 	 * @return {nothing}
@@ -620,9 +667,10 @@ function(Devapt, DevaptTypes, DevaptEvents, DevaptObject, DevaptField, DevaptCla
 	 * @method					DevaptModel.read(query)
 	 * @desc					Read records from the model storage engine
 	 * @param {object}			arg_query			model query object
+	 * @param {object}			arg_recordset		optional target recordset object
 	 * @return {object}			Operation promise
 	 */
-	var cb_read = function(arg_query)
+	var cb_read = function(arg_query, arg_recordset)
 	{
 		var self = this;
 		var context = 'read(query)';
@@ -640,7 +688,12 @@ function(Devapt, DevaptTypes, DevaptEvents, DevaptObject, DevaptField, DevaptCla
 		promise = promise.then(
 			function(resultset_obj)
 			{
-				return DevaptSharedRecordSet.create(self.name + '_recordset_' + Devapt.uid(), {resultset:resultset_obj});
+				if (! arg_recordset)
+				{
+					return DevaptRecordSet.create(self.name + '_recordset_' + Devapt.uid(), {resultset:resultset_obj, model:self});
+				}
+				
+				arg_recordset.load(resultset_obj);
 			}
 		);
 		
@@ -674,7 +727,7 @@ function(Devapt, DevaptTypes, DevaptEvents, DevaptObject, DevaptField, DevaptCla
 		promise = promise.then(
 			function(resultset_obj)
 			{
-				return DevaptSharedRecordSet.create(self.name + '_recordset_' + Devapt.uid(), {resultset:resultset_obj});
+				return DevaptRecordSet.create(self.name + '_recordset_' + Devapt.uid(), {resultset:resultset_obj});
 			}
 		);
 		
@@ -698,6 +751,7 @@ function(Devapt, DevaptTypes, DevaptEvents, DevaptObject, DevaptField, DevaptCla
 		self.enter(context, '');
 		
 		self.assert_object(context, 'engine_promise', self.engine_promise);
+		arg_records = DevaptTypes.is_array(arg_records) ? arg_records : [arg_records];
 		
 		var promise = self.engine_promise.then(
 			function(engine)
@@ -726,6 +780,7 @@ function(Devapt, DevaptTypes, DevaptEvents, DevaptObject, DevaptField, DevaptCla
 		self.enter(context, '');
 		
 		self.assert_object(context, 'engine_promise', self.engine_promise);
+		arg_records = DevaptTypes.is_array(arg_records) ? arg_records : [arg_records];
 		
 		var promise = self.engine_promise.then(
 			function(engine)
@@ -761,12 +816,14 @@ function(Devapt, DevaptTypes, DevaptEvents, DevaptObject, DevaptField, DevaptCla
 	DevaptModelClass.infos.ctor = cb_constructor;
 	DevaptModelClass.add_public_method('is_valid', {}, cb_is_valid);
 	
+	DevaptModelClass.add_public_method('has_field', {}, cb_has_field);
 	DevaptModelClass.add_public_method('get_field', {}, cb_get_field);
 	DevaptModelClass.add_public_method('get_field_for_column', {}, cb_get_field_for_column);
 	DevaptModelClass.add_public_method('is_pk_field', {}, cb_is_pk_field);
 	DevaptModelClass.add_public_method('get_pk_field', {}, cb_get_pk_field);
 	DevaptModelClass.add_public_method('get_fields', {}, cb_get_fields);
 	DevaptModelClass.add_public_method('set_fields', {}, cb_set_fields);
+	DevaptModelClass.add_public_method('get_fields_names', {}, cb_get_fields_names);
 	DevaptModelClass.add_public_method('get_fields_types', {}, cb_get_fields_types);
 	
 	DevaptModelClass.add_public_method('get_engine', {}, cb_get_engine);

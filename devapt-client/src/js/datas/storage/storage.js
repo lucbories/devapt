@@ -240,7 +240,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptObject, DevaptResultSet)
 		self.cached_queries = {};
 		
 		
-		self.leave(context, self.msg_success_promise);
+		self.leave(context, Devapt.msg_success_promise);
 	};
 	
 	

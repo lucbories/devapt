@@ -93,19 +93,19 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptResources, DevaptView, undefine
 		
 		
 		// TEST STATUS
-		if (self.status === 'on_update_pagination')
+		if (self.pagination_status === 'on_update_pagination')
 		{
 			self.leave(context, 'already processing event');
 			return;
 		}
 		
 		// CHANGE STATUS
-		self.status = 'on_update_pagination';
+		self.pagination_status = 'on_update_pagination';
 		
 		// console.log(arg_event_operands, context);
 		
-		var items_first_index = arg_event_operands[2];
-		var items_last_index = arg_event_operands[3];
+		var items_first_index = arg_event_operands[2].begin;
+		var items_last_index = arg_event_operands[2].end;
 		self.value(context, 'items_first_index', items_first_index);
 		self.value(context, 'items_last_index', items_last_index);
 		self.value(context, 'self.pagination_size', self.pagination_size);
@@ -141,7 +141,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptResources, DevaptView, undefine
 		
 		
 		// CHANGE STATUS
-		self.status = 'ready';
+		self.pagination_status = 'ready';
 		
 		
 		self.leave(context, 'success');
@@ -221,7 +221,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptResources, DevaptView, undefine
 		
 		
 		// PROPAGATE EVENT
-		self.fire_event('devapt.pagination.update_current', [arg_current_page]);
+		self.fire_event('devapt.pagination.update_current', [ {page:arg_current_page} ]);
 		
 		
 		self.leave(context, 'success');
@@ -516,7 +516,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptResources, DevaptView, undefine
 		}
 		
 		// GET NODE
-		var li_jqo = $('li:eq(' + arg_item_index + ')', self.parent_jqo)
+		var li_jqo = $('li:eq(' + arg_item_index + ')', self.parent_jqo);
 		li_jqo.show();
 		li_jqo.removeClass('current');
 		
@@ -575,7 +575,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptResources, DevaptView, undefine
 		self.update_pagination_current(parseInt(self.pagination_current_page) - 1);
 		
 		// PROPAGATE EVENT
-		self.fire_event('devapt.pagination.update_previous', self.pagination_current_page);
+		self.fire_event('devapt.pagination.update_previous', [ {page:self.pagination_current_page} ] );
 		
 		
 		self.leave(context, 'success');
@@ -607,7 +607,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptResources, DevaptView, undefine
 		self.update_pagination_current(parseInt(self.pagination_current_page) + 1);
 		
 		// PROPAGATE EVENT
-		self.fire_event('devapt.pagination.update_next', self.pagination_current_page);
+		self.fire_event('devapt.pagination.update_next', [ { page:self.pagination_current_page} ] );
 		
 		
 		self.leave(context, 'success');
@@ -671,7 +671,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptResources, DevaptView, undefine
 		$('li', self.ul_jqo).remove();
 		
 		
-		self.leave(context, self.msg_success);
+		self.leave(context, Devapt.msg_success);
 	}
 	
 	
@@ -718,7 +718,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptResources, DevaptView, undefine
 		);
 		
 		
-		self.leave(context, self.msg_success);
+		self.leave(context, Devapt.msg_success);
 	}
 	
 	

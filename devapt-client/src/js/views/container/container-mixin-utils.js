@@ -179,7 +179,7 @@ function(Devapt, DevaptTypes, DevaptClass)
 			$(self.items_jquery_filter, self.items_jquery_parent).addClass(arg_css_class);
 			
 			
-			self.leave(context, self.msg_default_empty_implementation);
+			self.leave(context, Devapt.msg_default_empty_implementation);
 			self.pop_trace();
 		},
 		
@@ -203,7 +203,7 @@ function(Devapt, DevaptTypes, DevaptClass)
 			$(self.items_jquery_filter, self.items_jquery_parent).removeClass(arg_css_class);
 			
 			
-			self.leave(context, self.msg_default_empty_implementation);
+			self.leave(context, Devapt.msg_default_empty_implementation);
 			self.pop_trace();
 		},
 		
@@ -227,7 +227,7 @@ function(Devapt, DevaptTypes, DevaptClass)
 			$(self.items_jquery_filter, self.items_jquery_parent).toggle(arg_css_class);
 			
 			
-			self.leave(context, self.msg_default_empty_implementation);
+			self.leave(context, Devapt.msg_default_empty_implementation);
 			self.pop_trace();
 		},
 		
@@ -252,7 +252,7 @@ function(Devapt, DevaptTypes, DevaptClass)
 			var text = arg_node_jqo.css(arg_css_key);
 			
 			
-			self.leave(context, self.msg_default_empty_implementation);
+			self.leave(context, Devapt.msg_default_empty_implementation);
 			self.pop_trace();
 			return text;
 		},
@@ -279,7 +279,7 @@ function(Devapt, DevaptTypes, DevaptClass)
 			arg_node_jqo.css(arg_css_key, arg_css_value);
 			
 			
-			self.leave(context, self.msg_default_empty_implementation);
+			self.leave(context, Devapt.msg_default_empty_implementation);
 			self.pop_trace();
 		},
 		
@@ -304,7 +304,7 @@ function(Devapt, DevaptTypes, DevaptClass)
 			var result = arg_node_jqo.hasClass(arg_css_class);
 			
 			
-			self.leave(context, self.msg_default_empty_implementation);
+			self.leave(context, Devapt.msg_default_empty_implementation);
 			self.pop_trace();
 			return result;
 		},
@@ -330,7 +330,7 @@ function(Devapt, DevaptTypes, DevaptClass)
 			arg_node_jqo.addClass(arg_css_class);
 			
 			
-			self.leave(context, self.msg_default_empty_implementation);
+			self.leave(context, Devapt.msg_default_empty_implementation);
 			self.pop_trace();
 		},
 		
@@ -355,7 +355,7 @@ function(Devapt, DevaptTypes, DevaptClass)
 			arg_node_jqo.removeClass(arg_css_class);
 			
 			
-			self.leave(context, self.msg_default_empty_implementation);
+			self.leave(context, Devapt.msg_default_empty_implementation);
 			self.pop_trace();
 		},
 		
@@ -377,11 +377,13 @@ function(Devapt, DevaptTypes, DevaptClass)
 			self.enter(context, '');
 			
 			
-			// console.log(arg_node_jqo, 'arg_node_jqo');
+//			console.debug(arg_node_jqo, context + ':arg_node_jqo');
+//			console.debug(arg_css_class, context + ':arg_css_class');
+			
 			arg_node_jqo.toggleClass(arg_css_class);
 			
 			
-			self.leave(context, self.msg_default_empty_implementation);
+			self.leave(context, Devapt.msg_default_empty_implementation);
 			self.pop_trace();
 		},
 		
@@ -405,7 +407,7 @@ function(Devapt, DevaptTypes, DevaptClass)
 			var text = arg_node_jqo.text();
 			
 			
-			self.leave(context, self.msg_default_empty_implementation);
+			self.leave(context, Devapt.msg_default_empty_implementation);
 			self.pop_trace();
 			return text;
 		},
@@ -431,7 +433,7 @@ function(Devapt, DevaptTypes, DevaptClass)
 			arg_node_jqo.text(arg_node_text);
 			
 			
-			self.leave(context, self.msg_default_empty_implementation);
+			self.leave(context, Devapt.msg_default_empty_implementation);
 			self.pop_trace();
 			return true;
 		},
@@ -455,7 +457,34 @@ function(Devapt, DevaptTypes, DevaptClass)
 			$(self.items_jquery_filter, self.items_jquery_parent).remove();
 			
 			
-			self.leave(context, self.msg_default_empty_implementation);
+			self.leave(context, Devapt.msg_default_empty_implementation);
+			self.pop_trace();
+			return true;
+		},
+		
+		
+		
+		/**
+		 * @public
+		 * @memberof			DevaptMixinContainerUtils
+		 * @desc				Reset all items
+		 * @return {boolean}
+		 */
+		reset_items: function()
+		{
+			var self = this;
+			var context = 'reset_items()';
+			self.push_trace(self.trace, self.mixin_trace_container_utils);
+			self.enter(context, '');
+			
+			
+			var all_jqo = $(self.items_jquery_filter, self.items_jquery_parent);
+			$('a', all_jqo).val('');
+			$('input', all_jqo).val('');
+			$('span', all_jqo).val('');
+			
+			
+			self.leave(context, Devapt.msg_default_empty_implementation);
 			self.pop_trace();
 			return true;
 		}
@@ -470,7 +499,7 @@ function(Devapt, DevaptTypes, DevaptClass)
 		'infos':{
 			'author':'Luc BORIES',
 			'created':'2014-11-15',
-			'updated':'2014-12-06',
+			'updated':'2015-05-16',
 			'description':'Mixin methods for container utils features.'
 		}
 	};
@@ -492,6 +521,7 @@ function(Devapt, DevaptTypes, DevaptClass)
 	DevaptMixinContainerUtilsClass.add_public_method('get_item_node_text', {}, DevaptMixinContainerUtils.get_item_node_text);
 	DevaptMixinContainerUtilsClass.add_public_method('set_item_node_text', {}, DevaptMixinContainerUtils.set_item_node_text);
 	DevaptMixinContainerUtilsClass.add_public_method('remove_items', {}, DevaptMixinContainerUtils.remove_items);
+	DevaptMixinContainerUtilsClass.add_public_method('reset_items', {}, DevaptMixinContainerUtils.reset_items);
 	
 	DevaptMixinContainerUtilsClass.build_class();
 	

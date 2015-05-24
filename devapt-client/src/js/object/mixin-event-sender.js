@@ -45,6 +45,7 @@ function(DevaptTypes, DevaptClass, DevaptEvent, DevaptEvents)
 			self.push_trace(self.trace, DevaptMixinEventSender.mixin_event_sender_trace);
 			var context = 'fire_event(' + (DevaptTypes.is_string(arg_event_name_or_obj) ? arg_event_name_or_obj : arg_event_name_or_obj.name) + ',callback)';
 			self.enter(context, '');
+//			self.value(context, 'opds', arg_operands_or_nothing);
 			
 			
 			// GET EVENT NAME
@@ -77,6 +78,7 @@ function(DevaptTypes, DevaptClass, DevaptEvent, DevaptEvents)
 			var all_events_callbacks = self.events_callbacks['*'];
 			if ( DevaptTypes.is_array(all_events_callbacks) )
 			{
+				self.step(context, 'event has callbacks');
 				event_callbacks_records = all_events_callbacks.concat(event_callbacks_records);
 			}
 			
@@ -91,6 +93,7 @@ function(DevaptTypes, DevaptClass, DevaptEvent, DevaptEvents)
 			// BUILD EVENT IF NEEDED
 			if ( event === null )
 			{
+				self.step(context, 'create event');
 				event = DevaptEvent.create(event_name, { emitter_object:self, operands_array:arg_operands_or_nothing} );
 			}
 			
@@ -98,6 +101,7 @@ function(DevaptTypes, DevaptClass, DevaptEvent, DevaptEvents)
 			// FIRE EVENT
 			if (event_callbacks_records)
 			{
+				self.step(context, 'fire event on callbacks');
 				event.fire(event_callbacks_records);
 			}
 			

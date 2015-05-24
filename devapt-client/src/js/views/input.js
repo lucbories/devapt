@@ -73,9 +73,9 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptView)
 		{
 			var value = self.input_jqo ? self.input_jqo.val() : '';
 			var devapt_event = arg_event.data.name;
-			console.log(devapt_event, 'input.event');
+			console.log(devapt_event, 'input.event for [' + value + ']');
 			
-			self.fire_event(devapt_event, [value]);
+			self.fire_event(devapt_event, [{ 'input': value}]);
 		};
 		
 		// TRIGGER MOUSE EVENTS

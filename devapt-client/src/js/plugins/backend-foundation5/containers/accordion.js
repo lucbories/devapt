@@ -54,10 +54,10 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptContainer, undefined)
 	 * @desc				End the render of the container
 	 * @return {nothing}
 	 */
-	var cb_render_end = function()
+	var cb_render_end_self = function()
 	{
 		var self = this;
-		var context = 'render_end()';
+		var context = 'render_end_self()';
 		self.enter(context, '');
 		
 		
@@ -84,7 +84,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptContainer, undefined)
 		}
 		
 		
-		self.leave(context, self.msg_success);
+		self.leave(context, Devapt.msg_success);
 	}
 	
 	
@@ -133,7 +133,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptContainer, undefined)
 		p_jqo.html(arg_item_content);
 		arg_item_jqo.append(p_jqo);
 		
-		self.leave(context, self.msg_success);
+		self.leave(context, Devapt.msg_success);
 		return arg_item_jqo;
 	}
 	
@@ -209,7 +209,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptContainer, undefined)
 	
 	// METHODS
 	DevaptAccordionClass.add_public_method('render_begin', {}, cb_render_begin);
-	DevaptAccordionClass.add_public_method('render_end', {}, cb_render_end);
+	DevaptAccordionClass.add_public_method('render_end_self', {}, cb_render_end_self);
 	DevaptAccordionClass.add_public_method('render_item_node', {}, cb_render_item_node);
 	DevaptAccordionClass.add_public_method('render_item_text', {}, cb_render_item_text);
 	DevaptAccordionClass.add_public_method('append_item_node', {}, cb_append_item_node);

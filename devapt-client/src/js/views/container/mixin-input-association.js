@@ -27,7 +27,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptFactory)
 		 * @public
 		 * @desc				Enable/disable trace for mixin operations
 		 */
-		mixin_trace_input_association: false,
+		mixin_trace_input_association: true,
 		
 		
 		
@@ -107,7 +107,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptFactory)
 			input_jqo.on('change', change_cb);
 			
 			
-			self.leave(context, self.msg_success);
+			self.leave(context, Devapt.msg_success);
 			self.pop_trace();
 			return node_jqo;
 		},
@@ -156,12 +156,12 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptFactory)
 			
 			// FILL LIST
 			values_promise.then(
-				function(result)
+				function(arg_recordset)
 				{
 					// console.info('values_promise');
 					
 					// CHECK RESPONSE STATUS
-					if (result.is_ok() )
+					if (! arg_recordset.is_ok() )
 					{
 						// input_jqo.text('Error during fetching');
 						console.error('Error during fetching');
@@ -218,7 +218,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptFactory)
 			// console.log(arg_node_jqo, 'arg_node_jqo');
 			
 			
-			self.leave(context, self.msg_success);
+			self.leave(context, Devapt.msg_success);
 			self.pop_trace();
 			return arg_node_jqo;
 		},
@@ -290,12 +290,12 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptFactory)
 				// GET VALUES PROMISE
 				var values_promise = arg_field_obj.get_available_values();
 				values_promise.then(
-					function(result)
+					function(arg_recordset)
 					{
-						// console.info(result, 'get_join_input.promise.result');
+						// console.info(arg_recordset, 'get_join_input.promise.arg_recordset');
 						
 						// CHECK RESPONSE STATUS
-						if ( result.is_ok() )
+						if ( ! arg_recordset.is_ok() )
 						{
 							input_jqo.text('Error during fetching');
 							return;
@@ -309,10 +309,11 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptFactory)
 						select_jqo.data('value_filled', arg_value);
 						
 						// FILL ITEMS
-						for(var record_index = 0 ; record_index < result.get_count() ; record_index++)
+						var records = arg_recordset.get_records();
+						for(var record_index = 0 ; record_index < records.length ; record_index++)
 						{
-							var record = result.get_records()[record_index];
-							var label = record[arg_field_obj.name];
+							var record = records[record_index];
+							var label = record.get(arg_field_obj.name);
 							var option = $('<option>');
 							
 							select_jqo.append(option);
@@ -346,7 +347,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptFactory)
 			}
 			
 			
-			self.leave(context, self.msg_success);
+			self.leave(context, Devapt.msg_success);
 			self.pop_trace();
 			return input_jqo;
 		},
@@ -377,7 +378,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptFactory)
 			// console.log('on_one_to_many_select');
 			
 			
-			self.leave(context, self.msg_success);
+			self.leave(context, Devapt.msg_success);
 			self.pop_trace();
 			return input_jqo;
 		},
@@ -418,10 +419,10 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptFactory)
 			
 			// FILL LIST
 			values_promise.then(
-				function(result)
+				function(arg_recordset)
 				{
 					// CHECK RESPONSE STATUS
-					if ( result.is_ok() )
+					if ( ! arg_recordset.is_ok() )
 					{
 						input_jqo.text('Error during fetching');
 						return;
@@ -431,10 +432,11 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptFactory)
 					arg_node_jqo.data('value_filled', arg_value);
 					
 					// FILL ITEMS
-					for(var record_index = 0 ; record_index < result.get_count() ; record_index++)
+					var records = arg_recordset.get_records();
+					for(var record_index = 0 ; record_index < records.length ; record_index++)
 					{
-						var record = result.get_records()[record_index];
-						var label = record[arg_field_obj.name];
+						var record = records[record_index];
+						var label = record.get(arg_field_obj.name);
 						var item_jqo = $('<li>');
 						
 						// APPEND ITEM
@@ -467,7 +469,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptFactory)
 			);
 			
 			
-			self.leave(context, self.msg_success);
+			self.leave(context, Devapt.msg_success);
 			self.pop_trace();
 			return ul_jqo;
 		}

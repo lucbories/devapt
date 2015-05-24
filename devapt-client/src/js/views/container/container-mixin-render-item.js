@@ -39,7 +39,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptTemplate,
 			
 			// NOT IMPLEMENTED HERE
 			
-			self.leave(context, self.msg_default_empty_implementation);
+			self.leave(context, Devapt.msg_default_empty_implementation);
 			self.pop_trace();
 			return $('<div>');
 		},
@@ -61,7 +61,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptTemplate,
 			
 			// NOT IMPLEMENTED HERE
 			
-			self.leave(context, self.msg_default_empty_implementation);
+			self.leave(context, Devapt.msg_default_empty_implementation);
 			self.pop_trace();
 			return arg_item_jqo;
 		},
@@ -83,7 +83,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptTemplate,
 			
 			// NOT IMPLEMENTED HERE
 			
-			self.leave(context, self.msg_default_empty_implementation);
+			self.leave(context, Devapt.msg_default_empty_implementation);
 			self.pop_trace();
 			return arg_item_jqo;
 		},
@@ -210,7 +210,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptTemplate,
 				default:
 				{
 					self.error('bad item type [' + arg_item_type + '] for [' + self.name + ']');
-					self.leave(context, self.msg_failure);
+					self.leave(context, Devapt.msg_failure);
 					return false;
 				}
 			}
@@ -230,7 +230,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptTemplate,
 			self.append_item_node(node_jqo, record);
 			// self.items_objects.push(record);
 			
-			self.leave(context, self.msg_success);
+			self.leave(context, Devapt.msg_success);
 			return true;
 		},
 		

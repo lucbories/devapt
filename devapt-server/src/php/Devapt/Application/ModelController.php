@@ -135,10 +135,10 @@ class ModelController extends AbstractController
 		
 		
 		// CHECK ACTION NAME
-		if ( ! $this->has_action_attribute )
-		{
+//		if ( ! $this->has_action_attribute )
+//		{
 			$arg_action_name = self::$ACTION_UPDATE;
-		}
+//		}
 		
 		// DO MODEL ACTION
 		$result = $this->doModelAction($arg_resource_name, $arg_action_name, $arg_id, $arg_request, $arg_response);
@@ -269,11 +269,21 @@ class ModelController extends AbstractController
 		// SET RESPONSE CONTENT
 		$jsonOptions = null;
 		$result_string = JsonFormatter::encode($model_result, null, $jsonOptions);
+		Trace::value($context, 'Response content result', $result_string, self::$TRACE_MODEL_CONTROLLER);
 		if ($is_jsonp)
 		{
 			$result_string = $jsonp_callback.'('.$result_string.');';
 		}
 		$arg_response->setContent($result_string);
+		
+		
+		// DEBUG
+		if (self::$TRACE_MODEL_CONTROLLER)
+		{
+			$str = JsonFormatter::prettyPrint($result_string, array("indent" => " "));
+			Trace::value($context, '$model_result', $model_result, self::$TRACE_MODEL_CONTROLLER);
+			Trace::value($context, 'JSON result', $str, self::$TRACE_MODEL_CONTROLLER);
+		}
 		
 		
 		// SET RESPONSE HEADER

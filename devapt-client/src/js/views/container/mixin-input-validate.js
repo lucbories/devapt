@@ -27,7 +27,7 @@ function(Devapt, DevaptTypes, DevaptClass)
 		 * @public
 		 * @desc				Enable/disable trace for mixin operations
 		 */
-		mixin_trace_input_validation: false,
+		mixin_trace_input_validation: true,
 		
 		
 		
@@ -62,7 +62,7 @@ function(Devapt, DevaptTypes, DevaptClass)
 				
 				validate_status.is_valid = arg_field_obj.field_value.validate_regexp.test(arg_value);
 				
-				self.leave(context, self.msg_success);
+				self.leave(context, Devapt.msg_success);
 				self.pop_trace();
 				return validate_status;
 			}
@@ -171,7 +171,7 @@ function(Devapt, DevaptTypes, DevaptClass)
 			}
 			
 			
-			self.leave(context, self.msg_success);
+			self.leave(context, Devapt.msg_success);
 			self.pop_trace();
 			return validate_status;
 		}

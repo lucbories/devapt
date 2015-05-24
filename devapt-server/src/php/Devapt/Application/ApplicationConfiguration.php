@@ -280,7 +280,7 @@ class ApplicationConfiguration extends Configuration
      */
     public function getSecurityAuthenticationSecret()
     {
-        return $this->getBooleanAttribute('application.security.authentication.secret', 'nu"hfhfz58875448é",;v;veTRFDHDJjejr');
+        return $this->getAttribute('application.security.authentication.secret', 'nu"hfhfz58875448é",;v;veTRFDHDJjejr');
     }
 	
     /**

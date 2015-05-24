@@ -99,6 +99,7 @@
  * 					}
  * 					operands:[
  * 						{
+ * 							name: (string),
  * 							type: (string),
  * 							default: (anything),
  * 							mutable: (boolean)
@@ -727,6 +728,7 @@ function(DevaptTypes, DevaptClasses)
 		DevaptTraces.trace_value(context, 'default value', default_value, arg_class.trace);
 		DevaptTraces.trace_value(context, 'setting value', setting_value, arg_class.trace);
 		var setting_value_is_devapt_object = DevaptTypes.is_object(setting_value) && DevaptTypes.is_not_empty_str(setting_value.class_name);
+		DevaptTraces.trace_value(context, 'setting_value_is_devapt_object', setting_value_is_devapt_object, arg_class.trace);
 		// var setting_value_is_array = DevaptTypes.is_not_empty_array(setting_value);
 		if ( ! setting_value_is_devapt_object )
 		{
@@ -896,7 +898,7 @@ function(DevaptTypes, DevaptClasses)
 							
 			case 'array':	{
 								// setting_value = DevaptTypes.clone_object(setting_value);
-								// console.log(setting_value, 'array value');
+//								console.log(setting_value, arg_target_object.name + ':settings.array value');
 								var values_array = DevaptTypes.to_array(setting_value, default_value, arg_property_record.array_separator);
 								if ( DevaptTypes.is_not_empty_str(arg_property_record.array_type) )
 								{
@@ -913,7 +915,7 @@ function(DevaptTypes, DevaptClasses)
 									}
 								}
 								arg_target_object[property_name] = values_array;
-								// console.log(values_array, context + ':values_array');
+//								console.log(values_array, context + ':values_array');
 								// console.log(arg_target_object, context + ':arg_target_object');
 								
 								DevaptTraces.trace_leave(context, 'success for [' + arg_property_record.type + ']', arg_class.trace);
@@ -1859,7 +1861,7 @@ function(DevaptTypes, DevaptClasses)
 		{
 			var self = this;
 			// self.trace = self.infos.class_name === 'DevaptArrayStorage';
-			// self.trace = true;
+//			self.trace = true;
 			var context = 'DevaptClass.create(settings)';
 			DevaptTraces.trace_enter(context, '', self.trace);
 			DevaptTraces.trace_value(context, 'arg_instance_name', arg_instance_name, self.trace);

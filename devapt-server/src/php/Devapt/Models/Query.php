@@ -34,7 +34,7 @@ class Query extends AbstractQuery
 	// STATIC ATTRIBUTES
 	
 	/// @brief		trace flag
-	static public $TRACE_QUERY = false;
+	static public $TRACE_QUERY = true;
 	
 	static public $FILTERS_GROUP_OPERATORS	= array('', '(', ')');
 	static public $FILTERS_GROUP_ENTER		= '(';
@@ -238,6 +238,7 @@ class Query extends AbstractQuery
 		
 		// CREATE ARRAY FROM JSON STRING
 		$values = $values_str;
+		Trace::value($context, 'values_str', $values_str, self::$TRACE_QUERY);
 		if ( is_string($values_str) )
 		{
 			$values = JsonFormatter::decode($values_str, JsonFormatter::TYPE_ARRAY);

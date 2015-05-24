@@ -153,6 +153,13 @@ function(/*Devapt, */DevaptTraces, DevaptTypes)
 			return new Object();
 		}
 		
+		// FUNCTION
+		if ( DevaptTypes.is_function(arg_object_to_clone)  )
+		{
+//			console.debug(arg_object_to_clone, 'do not clone function');
+			return arg_object_to_clone;
+		}
+		
 		// STRING
 		if ( DevaptTypes.is_string(arg_object_to_clone) )
 		{
@@ -170,11 +177,12 @@ function(/*Devapt, */DevaptTraces, DevaptTypes)
 		// NOT EMPTY ARRAY
 		if ( DevaptTypes.is_array(arg_object_to_clone) )
 		{
-			// console.log(arg_object_to_clone, 'clone array');
+//			console.debug(arg_object_to_clone, 'clone array');
+			
 			var tmp = new Array();
 			for(var key in arg_object_to_clone)
 			{
-				// console.log(arg_object_to_clone[key], 'clone array item [' + key + ']');
+//				console.debug(arg_object_to_clone[key], 'clone array item [' + key + ']');
 				var cloned_object = DevaptTypes.clone_object(arg_object_to_clone[key]);
 				tmp.push(cloned_object);
 			}
@@ -184,6 +192,26 @@ function(/*Devapt, */DevaptTraces, DevaptTypes)
 		// DEVAPT OBJECT
 		if ( DevaptTypes.is_object(arg_object_to_clone) && arg_object_to_clone._class && DevaptTypes.is_not_empty_str(arg_object_to_clone.class_name) )
 		{
+//			console.debug(arg_object_to_clone, 'do not clone Devapt object');
+			
+			// NOTHING TO DO
+			return arg_object_to_clone;
+		}
+		
+		// JQUERY NODE OBJECT
+		if ( DevaptTypes.is_object(arg_object_to_clone) && DevaptTypes.is_not_empty_str(arg_object_to_clone.tagName) )
+		{
+//			console.debug(arg_object_to_clone, 'do not clone jQuery node object');
+			
+			// NOTHING TO DO
+			return arg_object_to_clone;
+		}
+		
+		// JQUERY SELECTOR OBJECT
+		if ( DevaptTypes.is_object(arg_object_to_clone) && arg_object_to_clone.selector )
+		{
+//			console.debug(arg_object_to_clone, 'do not clone jQuery selector object');
+			
 			// NOTHING TO DO
 			return arg_object_to_clone;
 		}
@@ -191,18 +219,22 @@ function(/*Devapt, */DevaptTraces, DevaptTypes)
 		// NOT EMPTY OBJECT
 		if ( DevaptTypes.is_object(arg_object_to_clone) )
 		{
-			if (arg_object_to_clone.selector || (arg_object_to_clone.length > 0 && arg_object_to_clone.tagName) )
+//			console.debug(arg_object_to_clone, 'clone object');
+//			var cloned_object = jQuery.extend(true, new Object(), arg_object_to_clone);
+			
+			var tmp = {};
+			for(var key in arg_object_to_clone)
 			{
-				// console.log(arg_object_to_clone, 'clone jQuery object');
-				return arg_object_to_clone;
+//				console.debug(arg_object_to_clone[key], 'clone object item [' + key + ']');
+				
+				var cloned_object = DevaptTypes.clone_object(arg_object_to_clone[key]);
+				tmp[key] = cloned_object;
 			}
 			
-			// console.log(arg_object_to_clone, 'clone object');
-			var cloned_object = jQuery.extend(true, new Object(), arg_object_to_clone);
-			return cloned_object;
+			return tmp;
 		}
 		
-		// console.log(arg_object_to_clone, 'not cloned object');
+//		console.debug(arg_object_to_clone, 'not cloned object');
 		return arg_object_to_clone;
 	}
 	

@@ -51,7 +51,7 @@ function(Devapt, DevaptTypes, DevaptClass)
 			
 			
 			
-			self.leave(context, self.msg_success);
+			self.leave(context, Devapt.msg_success);
 		},
 		
 		
@@ -68,7 +68,7 @@ function(Devapt, DevaptTypes, DevaptClass)
 			self.enter(context, '');
 			
 			
-			self.leave(context, self.msg_success);
+			self.leave(context, Devapt.msg_success);
 			return self.status;
 		},
 		
@@ -88,7 +88,7 @@ function(Devapt, DevaptTypes, DevaptClass)
 			
 			self.status = arg_status;
 			
-			self.leave(context, self.msg_success);
+			self.leave(context, Devapt.msg_success);
 		},
 		
 		
@@ -105,7 +105,7 @@ function(Devapt, DevaptTypes, DevaptClass)
 			self.enter(context, '');
 			
 			
-			self.leave(context, self.msg_success);
+			self.leave(context, Devapt.msg_success);
 			return self.error;
 		},
 		
@@ -126,7 +126,7 @@ function(Devapt, DevaptTypes, DevaptClass)
 			self.status = 'error';
 			self.error = arg_error;
 			
-			self.leave(context, self.msg_success);
+			self.leave(context, Devapt.msg_success);
 		},
 		
 		
@@ -145,7 +145,7 @@ function(Devapt, DevaptTypes, DevaptClass)
 			self.status = 'ok';
 			self.error = null;
 			
-			self.leave(context, self.msg_success);
+			self.leave(context, Devapt.msg_success);
 		},
 		
 		
@@ -164,15 +164,15 @@ function(Devapt, DevaptTypes, DevaptClass)
 			switch(self.status)
 			{
 				case 'ok':
-					self.leave(context, self.msg_success);
+					self.leave(context, Devapt.msg_success);
 					return self.error === null;
 				
 				case 'error':
-					self.leave(context, self.msg_success);
+					self.leave(context, Devapt.msg_success);
 					return self.error !== null;
 			}
 			
-			self.leave(context, self.msg_success);
+			self.leave(context, Devapt.msg_success);
 			return false;
 		},
 		
@@ -189,7 +189,7 @@ function(Devapt, DevaptTypes, DevaptClass)
 			var context = 'is_ok()';
 			self.enter(context, '');
 			
-			self.leave(context, self.msg_success);
+			self.leave(context, Devapt.msg_success);
 			return self.status === 'ok';
 		},
 		
@@ -206,7 +206,7 @@ function(Devapt, DevaptTypes, DevaptClass)
 			var context = 'is_error()';
 			self.enter(context, '');
 			
-			self.leave(context, self.msg_success);
+			self.leave(context, Devapt.msg_success);
 			return self.status === 'error';
 		}
 	};

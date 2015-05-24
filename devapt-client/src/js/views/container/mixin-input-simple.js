@@ -12,8 +12,8 @@
 
 'use strict';
 define(
-['Devapt', 'core/types', 'object/class'],
-function(Devapt, DevaptTypes, DevaptClass)
+['Devapt', 'core/types', 'object/class', 'md5', 'sha1'],
+function(Devapt, DevaptTypes, DevaptClass, MD5, SHA1)
 {
 	/**
 	 * @mixin				DevaptMixinInputSimple
@@ -76,7 +76,7 @@ function(Devapt, DevaptTypes, DevaptClass)
 			// CHECK RESULT INPUT NODE
 			if (! node_jqo)
 			{
-				self.leave(context, self.msg_failure);
+				self.leave(context, Devapt.msg_failure);
 				self.pop_trace();
 				return null;
 			}
@@ -90,19 +90,28 @@ function(Devapt, DevaptTypes, DevaptClass)
 			// SET PLACEHOLDER
 			if (field_obj.placeholder)
 			{
+				self.step(context, 'sett placeholder');
+				
 				node_jqo.attr('placeholder', field_obj.placeholder);
 			}
 			
 			
 			// STANDARD INPUT EVENT CALLBACK
 			var change_cb = function(event) {
+				self.trace=true;
+				self.step(context, 'on change callback');
+				
 				var event_node_jqo = $(event.target);
 				var value_filled = event_node_jqo.data('value_filled');
 				var value = event_node_jqo.val();
+				self.value(context, 'value_filled', value_filled);
+				self.value(context, 'value', value);
 				
 				// ON VALUE CHANGE
 				if (value !== value_filled)
 				{
+					self.step(context, 'values are different');
+					
 					event_node_jqo.data('value_filled', value);
 					// console.log(value, 'input changed');
 					
@@ -110,6 +119,8 @@ function(Devapt, DevaptTypes, DevaptClass)
 					var validate_status = self.validate_input(field_obj, value);
 					if (! validate_status.is_valid)
 					{
+						self.step(context, 'validation failure');
+						
 						event_node_jqo.parent().addClass('devapt_validate_error');
 						
 						if ( Devapt.has_current_backend() )
@@ -119,6 +130,8 @@ function(Devapt, DevaptTypes, DevaptClass)
 					}
 					else
 					{
+						self.step(context, 'validation success');
+						
 						event_node_jqo.parent().removeClass('devapt_validate_error');
 						
 						// EMIT CHANGE EVENTS
@@ -133,7 +146,7 @@ function(Devapt, DevaptTypes, DevaptClass)
 			node_jqo.on('change', change_cb);
 			
 			
-			self.leave(context, self.msg_success);
+			self.leave(context, Devapt.msg_success);
 			self.pop_trace();
 			return node_jqo;
 		},
@@ -177,7 +190,7 @@ function(Devapt, DevaptTypes, DevaptClass)
 			// CHECK RESULT INPUT NODE
 			if (! node_jqo)
 			{
-				self.leave(context, self.msg_failure);
+				self.leave(context, Devapt.msg_failure);
 				self.pop_trace();
 				return null;
 			}
@@ -186,7 +199,7 @@ function(Devapt, DevaptTypes, DevaptClass)
 			
 			// SAVE FILLED VALUE
 			node_jqo.data('value_filled', value_str);
-			// node_jqo.data('value_changed', null);
+//			 node_jqo.data('value_changed', null);
 			
 			
 			// SET PLACEHOLDER
@@ -199,6 +212,8 @@ function(Devapt, DevaptTypes, DevaptClass)
 			
 			// PASSWORD INPUT EVENT CALLBACK
 			var change_pass_cb = function(event) {
+				self.step(context, 'change password callback');
+				
 				var node_jqo = $(event.target);
 				var value_filled = node_jqo.data('value_filled');
 				var value = null;
@@ -218,9 +233,18 @@ function(Devapt, DevaptTypes, DevaptClass)
 				
 				// HASH PASSWORD IF NEEDED
 				value = value1;
+				// TODO CHOOSE HASH METHOD
 				if (field_obj.hash === 'md5')
 				{
-					value = 'md5(' + value + ')';
+					value = window.CryptoJS.MD5(' + value + ').toString();
+				}
+				else if (field_obj.hash === 'sha1')
+				{
+					value = window.CryptoJS.SHA1(' + value + ').toString();
+				}
+				else
+				{
+					self.error(context, 'unknow HASH method [' + field_obj.hash + ']');
 				}
 				
 				// TEST IF PASSWORD HAS CHANGED
@@ -239,7 +263,7 @@ function(Devapt, DevaptTypes, DevaptClass)
 			pass2_jqo.on('change', change_pass_cb);
 			
 			
-			self.leave(context, self.msg_success);
+			self.leave(context, Devapt.msg_success);
 			self.pop_trace();
 			return node_jqo;
 		}

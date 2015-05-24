@@ -18,11 +18,6 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptObjectBase, DevaptEvents)
 	/**
 	 * @class				DevaptEvent
 	 * @desc				Event class constructor
-	 * @method				DevaptEvent.constructor
-	 * @param {string}		arg_event_name				event name
-	 * @param {object}		arg_event_emitter_object	event emitter object
-	 * @param {array}		arg_event_operands			event operands
-	 * @return {nothing}
 	 */
 	
 	 
@@ -31,26 +26,25 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptObjectBase, DevaptEvents)
 	 * @public
 	 * @method				DevaptEvent.constructor
 	 * @desc				Event class constructor
-	 * @param {string}		arg_event_name				event name
-	 * @param {object}		arg_event_emitter_object	object which emits the event
-	 * @param {array}		arg_event_operands			event operands
 	 * @return {nothing}
 	 */
 	var cb_constructor = function(self)
 	{
-		var context				= self.class_name + '(' + self.name + ')';
+		var context = 'DevaptEvent(' + self.name + ')';
 		self.enter(context, 'constructor');
 		
 		
 		// DEBUG
 		// self.trace = true;
+//		console.debug(self.name, context + ':name');
+//		console.debug(self.emitter_object, context + ':emitter_object');
+//		console.debug(self.operands_array, context + ':operands_array');
 		
 		// GET TIMESTAMP
 		var now = new Date();
 		
 		// SET EVENT ATTRIBUTES
 		self.fired_ts = now.toLocaleDateString() + ' ' + now.toLocaleTimeString();
-		
 		
 		self.leave(context, 'success');
 	}
@@ -113,7 +107,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptObjectBase, DevaptEvents)
 		
 		// REGISTER EVENT
 		DevaptEvents.add(self);
-		console.log(self.to_string(), 'event');
+		console.log(self.operands_array, self.to_string());
 		// console.log(self.name, 'event');
 		
 		// TEST CALLBACKS ARRAY
@@ -307,30 +301,31 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptObjectBase, DevaptEvents)
 	DevaptEventClass.add_public_method('toString', {}, cb_to_string_self);
 	
 	// PROPERTIES
-	DevaptEventClass.add_public_obj_property('emitter_object',	'event emitter object',		null, true, false, []);
-	DevaptEventClass.add_public_int_property('fired_ts',		'event timestamp',			null, true, true, []);
+	DevaptEventClass.add_public_obj_property('emitter_object',		'event emitter object',		null, true, false, []);
+	DevaptEventClass.add_public_int_property('fired_ts',			'event timestamp',			null, true, true, []);
+	DevaptEventClass.add_public_array_property('operands_array',	'event operands',			[], false, true, [], 'object', '|');
 	
-	DevaptEventClass.add_property_record(
-		{
-			name: 'operands_array',
-			description:'',
-			aliases: [],
-			
-			visibility:'public',
-			is_public:true,
-			is_required: false,
-			is_initializable: true,
-			
-			type: 'array',
-			default_value: [],
-			
-			array_separator: '',
-			array_type: '',
-			format: '',
-			
-			children: {}
-		}
-	);
+//	DevaptEventClass.add_property_record(
+//		{
+//			name: 'operands_array',
+//			description:'',
+//			aliases: [],
+//			
+//			visibility:'public',
+//			is_public:true,
+//			is_required: false,
+//			is_initializable: true,
+//			
+//			type: 'array',
+//			default_value: [],
+//			
+//			array_separator: '',
+//			array_type: '',
+//			format: '',
+//			
+//			children: {}
+//		}
+//	);
 	
 	return DevaptEventClass;
 } );

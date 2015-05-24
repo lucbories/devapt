@@ -6,9 +6,9 @@
  *                  ->read_all_records_self() : promise of a ResultSet (internal method)
  *                  ->read_records(query)     : promise of a ResultSet
  *                  ->read_records_self(query): promise of a ResultSet (internal method)
- *                  ->create_records(query)   : promise of a ResultSet
- *                  ->update_records(query)   : promise of a ResultSet
- *                  ->delete_records(query)   : promise of a ResultSet
+ *                  ->create_records(records) : promise of a ResultSet
+ *                  ->update_records(records) : promise of a ResultSet
+ *                  ->delete_records(records) : promise of a ResultSet
  * 
  * @ingroup     DEVAPT_DATAS
  * @date        2014-08-12
@@ -26,7 +26,6 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptStorage, DevaptResultSet)
 	 * @public
 	 * @class				DevaptJsonStorage
 	 * @desc				JSON storage engine class
-	 * @return {nothing}
 	 */
 	
 	
@@ -162,7 +161,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptStorage, DevaptResultSet)
 		}
 		
 		
-		self.leave(context, self.msg_success_promise);
+		self.leave(context, Devapt.msg_success_promise);
 		return resultset_promise;
 	};
 	
@@ -262,7 +261,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptStorage, DevaptResultSet)
 		}
 		
 		
-		self.leave(context, self.msg_success_promise);
+		self.leave(context, Devapt.msg_success_promise);
 		return resultset_promise;
 	};
 	
@@ -298,6 +297,37 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptStorage, DevaptResultSet)
 		var self = this;
 		var context = 'create_records(records)';
 		self.enter(context, '');
+		self.assert_not_empty_array(context, 'arg_records', arg_records);
+		
+		
+		// INIT
+		var fields_values = [];
+		
+		// LOOP ON ITEMS
+		for(var record_index in arg_records)
+		{
+			var record = arg_records[record_index];
+			
+			// APPEND RECORD DATAS
+			if ( DevaptTypes.is_object(record) && record.is_record )
+			{
+				fields_values.push(record.get_datas());
+				continue;
+			}
+			
+			// APPEND PLAIN OBJECT DATAS
+			if ( DevaptTypes.is_plain_object(record) )
+			{
+				fields_values.push(record);
+				continue;
+			}
+			
+			// BAD DATAS
+			self.value(context, 'record', record);
+			self.error(context, 'bad datas: Record or plain object');
+			self.leave(context, Devapt.msg_failure_promise);
+			return Devapt.promise_rejected(record);
+		}
 		
 		
 		// CREATE AJAX REQUEST
@@ -305,8 +335,8 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptStorage, DevaptResultSet)
 			{
 				action: 'insert',
 				query_type: 'insert',
-				values: arg_records,
-				values_count: arg_records.length
+				values: fields_values,
+				values_count: fields_values.length
 			};
 		var token = Devapt.app.get_security_token();
 		
@@ -319,8 +349,10 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptStorage, DevaptResultSet)
 			timeout		: self.http_timeout
 		};
 		var method = self.http_method_create;
-		var ajax_promise = Devapt.ajax(method, url, { query_json: JSON.stringify(json_query) }, ajax_settings, token);
+		var ajax_datas = JSON.stringify( { query_json: json_query } );
+		var ajax_promise = Devapt.ajax(method, url, ajax_datas, ajax_settings, token);
 		
+		// NOTIFY ON PROCESSED
 		ajax_promise.done(
 			function(result)
 			{
@@ -352,7 +384,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptStorage, DevaptResultSet)
 		);
 		
 		
-		self.leave(context, self.msg_success_promise);
+		self.leave(context, Devapt.msg_success_promise);
 		return resultset_promise;
 	};
 	
@@ -380,7 +412,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptStorage, DevaptResultSet)
 	 * 				}
 	 * 			);
 	 * 
-	 * @param {object|array}	arg_records		Records of values
+	 * @param {array}			arg_records		Records of values
 	 * @return {object}			A promise of a ResultSet
 	 */
 	var cb_update_records = function (arg_records)
@@ -388,6 +420,37 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptStorage, DevaptResultSet)
 		var self = this;
 		var context = 'update_records(records)';
 		self.enter(context, '');
+		self.assert_not_empty_array(context, 'arg_records', arg_records);
+		
+		
+		// INIT
+		var fields_values = [];
+		
+		// LOOP ON ITEMS
+		for(var record_index in arg_records)
+		{
+			var record = arg_records[record_index];
+			
+			// APPEND RECORD DATAS
+			if ( DevaptTypes.is_object(record) && record.is_record )
+			{
+				fields_values.push(record.get_datas());
+				continue;
+			}
+			
+			// APPEND PLAIN OBJECT DATAS
+			if ( DevaptTypes.is_plain_object(record) )
+			{
+				fields_values.push(record);
+				continue;
+			}
+			
+			// BAD DATAS
+			self.value(context, 'record', record);
+			self.error(context, 'bad datas: Record or plain object');
+			self.leave(context, Devapt.msg_failure_promise);
+			return Devapt.promise_rejected(record);
+		}
 		
 		
 		// CREATE AJAX REQUEST
@@ -395,26 +458,24 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptStorage, DevaptResultSet)
 		{
 			action: 'update',
 			query_type: 'update',
-			values: arg_records,
-			values_count: DevaptTypes.is_array(arg_records) ? arg_records.length : 0
+			values: fields_values,
+			values_count: fields_values.length
 		};
 		var token = Devapt.app.get_security_token();
 		
 		var url = self.url_update;
-		var jq_ajax_promise = $.ajax(
-			{
-				contentType	: self.http_format + '; charset=' + self.http_charset,
-				dataType	: 'json',
-				async		: ! self.is_sync,
-				cache		: false,
-				type		: self.http_method_update,
-				url			: url,
-				timeout		: self.http_timeout,
-				data		: { query_json: JSON.stringify(json_query) }
-			}
-		);
-		var ajax_promise = Devapt.promise(jq_ajax_promise);
+		var ajax_settings = {
+			contentType	: self.http_format + '; charset=' + self.http_charset,
+			dataType	: 'json',
+			async		: ! self.is_sync,
+			cache		: false,
+			timeout		: self.http_timeout
+		};
+		var method = self.http_method_update;
+		var ajax_datas = JSON.stringify( { query_json: json_query } );
+		var ajax_promise = Devapt.ajax(method, url, ajax_datas, ajax_settings, token);
 		
+		// NOTIFY ON PROCESSED
 		ajax_promise.done(
 			function(result)
 			{
@@ -446,7 +507,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptStorage, DevaptResultSet)
 		);
 		
 		
-		self.leave(context, self.msg_success_promise);
+		self.leave(context, Devapt.msg_success_promise);
 		return resultset_promise;
 	};
 	
@@ -474,7 +535,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptStorage, DevaptResultSet)
 	 * 				}
 	 * 			);
 	 * 
-	 * @param {object|array}	arg_records		Records of values
+	 * @param {array}			arg_records		Array of Records object
 	 * @return {object}			A promise of a ResultSet
 	 */
 	var cb_delete_records = function (arg_records)
@@ -482,33 +543,64 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptStorage, DevaptResultSet)
 		var self = this;
 		var context = 'update_records(records)';
 		self.enter(context, '');
+		self.assert_not_empty_array(context, 'arg_records', arg_records);
+		
+		
+		// INIT
+		var id_field_name = null;
+		var fields_names = [];
+		var fields_values = [];
+		
+		// LOOP ON ITEMS
+		for(var record_index in arg_records)
+		{
+			var record = arg_records[record_index];
+			
+			// CHECK RECORD
+			if ( ! DevaptTypes.is_object(record) || ! record.is_record )
+			{
+				self.value(context, 'record', record);
+				self.error(context, 'bad Reocrd object');
+				self.leave(context, Devapt.msg_failure_promise);
+				return Devapt.promise_rejected(record);
+			}
+			
+			// SET ID FIELD NAME
+			if (! id_field_name)
+			{
+				id_field_name = record.recordset.id_field_name;
+				fields_names = [id_field_name];
+			}
+			
+			// APPEND ID FIELD VALUE
+			fields_values.push( record.get_id() );
+		}
 		
 		
 		// CREATE AJAX REQUEST
-		var json_datas =
+		var json_query =
 		{
 			action: 'delete',
 			query_type: 'delete',
-			values: arg_records,
-			values_count: 1
+			fields: fields_names,
+			values: fields_values,
+			values_count: fields_values.length
 		};
 		var token = Devapt.app.get_security_token();
 		
 		var url = self.url_delete;
-		var jq_ajax_promise = $.ajax(
-			{
-				contentType	: self.http_format + '; charset=' + self.http_charset,
-				dataType	: 'json',
-				async		: ! self.is_sync,
-				cache		: false,
-				type		: self.http_method_delete,
-				url			: url,
-				timeout		: self.http_timeout,
-				data		: { query_json: JSON.stringify(json_query) }
-			}
-		);
-		var ajax_promise = Devapt.promise(jq_ajax_promise);
+		var ajax_settings = {
+			contentType	: self.http_format + '; charset=' + self.http_charset,
+			dataType	: 'json',
+			async		: ! self.is_sync,
+			cache		: false,
+			timeout		: self.http_timeout
+		};
+		var method = self.http_method_delete;
+		var ajax_datas = JSON.stringify( { query_json: json_query } );
+		var ajax_promise = Devapt.ajax(method, url, ajax_datas, ajax_settings, token);
 		
+		// NOTIFY ON PROCESSED
 		ajax_promise.done(
 			function(result)
 			{
@@ -540,7 +632,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptStorage, DevaptResultSet)
 		);
 		
 		
-		self.leave(context, self.msg_success_promise);
+		self.leave(context, Devapt.msg_success_promise);
 		return resultset_promise;
 	};
 	

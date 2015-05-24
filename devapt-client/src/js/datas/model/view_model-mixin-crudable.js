@@ -6,14 +6,13 @@
  *                  ->constructor(object)     : nothing
  *  
  *                  ->reload()                : Reload records from the model and update the view
+ *                  ->get_values()            : Get values
  *  
  *                  ->create(records)         : Create given records into the model and update the view
  *                  ->read()                  : Get records from the model with the query
  *                  ->read_all()              : Get all records from the model
  *                  ->update(records)         : Update given records into the model and update the view
  *                  ->delete(records)         : Delete given records into the model and update the view
- *  
- *                  ->get_items_types_array() : get container view items types (html, view, text...)
  *  
  * @ingroup     DEVAPT_DATAS
  * @date        2015-02-02
@@ -27,17 +26,16 @@
 define([
 	'Devapt', 'core/types',
 	'object/class', 'object/object',
-	'datas/model/shared_recordset'],
+	'datas/model/recordset'],
 function(
 	Devapt, DevaptTypes,
 	DevaptClass, DevaptObject,
-	DevaptSharedRecordSet)
+	DevaptRecordSet)
 {
 	/**
 	 * @public
 	 * @class				DevaptViewModelMixinCrudable
 	 * @desc				ModelView mixin class for CRUD operations
-	 * @return {nothing}
 	 */
 	
 	
@@ -58,406 +56,279 @@ function(
 	
 	
 	
-	/* --------------------------------------------- CRUD OPERATIONS ------------------------------------------------ */
+	/* --------------------------------------------- LOAD OPERATIONS ------------------------------------------------ */
 	
 	/**
 	 * @memberof				DevaptViewModelMixinCrudable
 	 * @public
-	 * @method					DevaptViewModelMixinCrudable.reload()
-	 * @desc					Reload records from the model and refresh the view
+	 * @method					self.reload()
+	 * @desc					Reload records from the model recordset and refresh the view
 	 * @return {object}			Promise of the operation
 	 */
 	var cb_reload = function ()
 	{
 		var self = this;
-		self.enter('reload()', '');
-		// self.assert_object(context, 'recordset', self.recordset);
-		self.assert_object(context, 'query', self.query);
+		var context = 'reload()';
+		self.enter(context, '');
+		self.assert_object(context, 'ready_promise', self.ready_promise);
 		
-		var promise = self.ready_promise.then(
-			function()
+		
+		// LOAD DATAS
+		var promise = self.ready_promise.spread(
+			function(arg_model, arg_view)
 			{
-				return self.model.read(self.query);
+				var datas_promise = self.recordset.read();
+				self.assert_object(context, 'datas_promise', datas_promise);
+				
+				datas_promise.then(
+					function(recordset)
+					{
+						self.assert_object(context, 'recordset', recordset);
+						
+						// UPDATE THE VIEW
+						self.ready_promise.spread(
+							function(arg_model, arg_view)
+							{
+								self.step(context, 'read success');
+								if (arg_view.on_view_model_reload)
+								{
+									arg_view.on_view_model_reload();
+								}
+							}
+						);
+					}
+				);
+				return datas_promise;
 			}
 		);
 		
-		promise.then(
-			function(recordset)
-			{
-				self.step('reload()', 'read success');
-				self.recordset = recordset;
-				self.view.on_view_model_reload();
-			}
-		);
 		
-		self.leave('reload()', Devapt.msg_success_promise);
+		self.leave(context, Devapt.msg_success_promise);
 		return promise;
 	};
+	
 	
 	
 	/**
 	 * @memberof				DevaptViewModelMixinCrudable
 	 * @public
-	 * @method					DevaptViewModelMixinCrudable.create(records)
-	 * @desc					Create records into the model
-	 * @param {object|array}	arg_records			one record object or an array of objects
-	 * @return {object}			Promise of the operation
+	 * @method					self.get_values_recordset()
+	 * @desc					Get datas values RecordSet promise
+	 * @return {promise}		A promise of a RecordSet
 	 */
-	var cb_create = function (arg_records)
+	var cb_get_values_recordset = function ()
 	{
 		var self = this;
-		self.enter('create()', '');
-		// self.assert_object(context, 'recordset', self.recordset);
-		self.assert_object(context, 'query', self.query);
-		self.assert_not_empty_object_or_array(context, 'arg_records', arg_records);
+		var context = 'get_values_recordset()';
+		self.enter(context, '');
 		
-		var promise = self.ready_promise.then(
-			function()
+		
+		var promise = self.ready_promise.spread(
+			function(arg_model, arg_view)
 			{
-				return self.model.create(arg_records);
-			}
-		);
-		
-		promise.then(
-			function()
-			{
-				self.step('create()', 'create success');
-				self.view.on_view_model_create(arg_records);
-			}
-		);
-		
-		self.leave('create()', Devapt.msg_success_promise);
-		return promise;
-	};
-	
-	
-	/**
-	 * @memberof				DevaptViewModelMixinCrudable
-	 * @public
-	 * @method					DevaptViewModelMixinCrudable.read()
-	 * @desc					Read records from the model with the query
-	 * @return {object}			Promise of the operation
-	 */
-	var cb_read = function ()
-	{
-		var self = this;
-		self.enter('read()', '');
-		
-		
-		// ON READY
-		var promise = self.ready_promise.then(
-			function()
-			{
-				self.step('read()', 'view_model is ready');
-				self.value('read()', 'items_iterator', self.view.items_iterator);
+				var items = [];
+				self.assert_not_empty_string(context, 'arg_view.items_iterator', arg_view.items_iterator);
 				
-				// CHECK ATTRIBUTES
-				// self.assert_object(context, 'model', self.model); // TODO
-				// self.assert_object(context, 'query', self.query); // TODO
-				
-				switch(self.view.items_iterator)
+				switch(arg_view.items_iterator)
 				{
-					case 'records': return self.get_items_array_model_with_iterator_records(); //return self.model.read(self.query);
-					case 'fields': return self.get_items_array_model_with_iterator_fields();
-					case 'field_editor': return self.get_items_array_model_with_iterator_field_editor();
-					default: return Devapt.promise_rejected('bad view iterator [' + self.view.items_iterator + ']');
-				}
-			}
-		);
-		
-		// console.log(promise, 'read()');
-		promise.then(
-			function(recordset)
-			{
-				self.step('read()', 'recordset is found');
-				// console.log(recordset, self.name + '.' + 'read()' + '.recordset');
-				self.recordset = recordset;
-				
-				if ( DevaptTypes.is_function(self.on_view_model_read) )
-				{
-					self.view.on_view_model_read(recordset.records);
+					case 'records':
+					{
+						return Devapt.promise_resolved(self.get_recordset());
+					}
+					
+					case 'fields':
+					{
+						return Devapt.promise_resolved(self.get_recordset());
+					}
+					
+					case 'field_editor':
+					{
+						self.assert_not_empty_array(context, 'arg_view.items_fields', arg_view.items_fields);
+						
+						var field_name = arg_view.items_fields[0];
+						self.assert_not_empty_string(context, 'field_name', field_name);
+						
+						var field_obj = self.recordset.model.get_field(field_name);
+						self.assert_object(context, 'field_obj', field_obj);
+						
+						self.edited_field = field_obj;
+						
+						// GET FIELD VALUES
+						return field_obj.get_available_values(true);
+					}
 				}
 			}
 		);
 		
 		
-		self.leave('read()', Devapt.msg_success_promise);
+		self.leave(context, Devapt.msg_success_promise);
 		return promise;
 	};
+	
 	
 	
 	/**
 	 * @memberof				DevaptViewModelMixinCrudable
 	 * @public
-	 * @method					DevaptViewModelMixinCrudable.read_all()
-	 * @desc					Read all records from the model
-	 * @return {object}			Promise of the operation
+	 * @method					self.get_values()
+	 * @desc					Get datas values array promise
+	 * @return {promise}		A promise of an array of values (Record or object)
 	 */
-	var cb_read_all = function ()
+	var cb_get_values = function ()
 	{
 		var self = this;
-		self.enter('read_all()', '');
-		var context = 'read_all()';
-		// self.assert_object(context, 'recordset', self.recordset);
+		var context = 'get_values()';
+		self.enter(context, '');
 		
-		var promise = self.ready_promise.then(
-			function()
+		
+		var promise = self.ready_promise.spread(
+			function(arg_model, arg_view)
 			{
-				return self.model.read_all();
+				var items = [];
+				self.assert_not_empty_string(context, 'arg_view.items_iterator', arg_view.items_iterator);
+				
+				switch(arg_view.items_iterator)
+				{
+					case 'records':
+					{
+						items = self.get_recordset().get_records();
+						// self.value(context, 'items', items);
+						return Devapt.promise_resolved(items);
+					}
+					
+					case 'fields':
+					{
+						// GET FIRST RECORD
+						var records = self.get_recordset().get_records();
+						var record = records.length > 0 ? records[0] : null;
+						if ( DevaptTypes.is_object(record) )
+						{
+							self.step(context, 'current record is found');
+							
+							self.value(context, 'arg_view.items_fields', arg_view.items_fields);
+							items = record.get_fields_values(arg_view.items_fields);
+							self.value(context, 'items', items);
+						}
+						return Devapt.promise_resolved(items);
+					}
+					
+					case 'field_editor':
+					{
+						self.assert_not_empty_array(context, 'arg_view.items_fields', arg_view.items_fields);
+						
+						var field_name = arg_view.items_fields[0];
+						self.assert_not_empty_string(context, 'field_name', field_name);
+						
+						var field_obj = self.recordset.model.get_field(field_name);
+						self.assert_object(context, 'field_obj', field_obj);
+						
+						self.edited_field = field_obj;
+						
+						// GET FIELD VALUES
+						var items_promise = field_obj.get_available_values(true);
+						items_promise = items_promise.then(
+							function(arg_recordset)
+							{
+								var records = arg_recordset.get_records();
+								// self.value(context, 'records', records);
+								
+								return records;
+							}
+						);
+						
+						self.leave(context, Devapt.msg_success_promise);
+						return items_promise;
+					}
+				}
 			}
 		);
 		
-		promise.then(
-			function(recordset)
-			{
-				self.step('read_all()', 'read_all success');
-				self.recordset = recordset;
-				self.view.on_view_model_read_all(recordset.records);
-			}
-		);
 		
-		self.leave('read_all()', Devapt.msg_success_promise);
+		self.leave(context, Devapt.msg_success_promise);
 		return promise;
 	};
+	
 	
 	
 	/**
 	 * @memberof				DevaptViewModelMixinCrudable
 	 * @public
-	 * @method					DevaptViewModelMixinCrudable.update()
-	 * @desc					Update records into the model
-	 * @param {object|array}	arg_records			one record object or an array of objects
-	 * @return {object}			Promise of the operation
+	 * @method					self.get_first_record_by_object()
+	 * @desc					Lookup a record with a datas values object
+	 * @param {object}			arg_item_object		datas values object
+	 * @return {promise}		A promise of Record
 	 */
-	var cb_update = function (arg_records)
+	var cb_get_first_record_by_object = function (arg_item_object)
 	{
 		var self = this;
-		self.enter('update()', '');
-		self.assert_object(context, 'recordset', self.recordset);
-		self.assert_not_empty_object_or_array(context, 'arg_records', arg_records);
+		var context = 'get_first_record_by_object(item)';
+		self.enter(context, '');
 		
-		var promise = self.ready_promise.then(
-			function()
+		
+		var promise = self.ready_promise.spread(
+			function(arg_model, arg_view)
 			{
-				return self.model.update(arg_records);
+				self.step(context, 'view_model is ready');
+				self.assert_not_empty_string(context, 'arg_view.items_iterator', arg_view.items_iterator);
+				
+				switch(arg_view.items_iterator)
+				{
+					case 'records':
+					{
+						self.step(context, 'view_model iterator is records');
+						
+						var record = self.get_recordset().get_first_record_by_object(arg_item_object);
+						self.value(context, 'record', record);
+						
+						return Devapt.promise_resolved(record);
+					}
+					
+					case 'fields':
+					{
+						self.step(context, 'view_model iterator is fields');
+						
+						// GET FIRST RECORD
+						var records = self.get_recordset().get_records();
+						var record = records.length > 0 ? records[0] : null;
+						
+						return Devapt.promise_resolved(record);
+					}
+					
+					case 'field_editor':
+					{
+						self.step(context, 'view_model iterator is field_editor');
+						self.assert_not_empty_array(context, 'arg_view.items_fields', arg_view.items_fields);
+						
+						var field_name = arg_view.items_fields[0];
+						self.assert_not_empty_string(context, 'field_name', field_name);
+						
+						var field_obj = self.recordset.model.get_field(field_name);
+						self.assert_object(context, 'field_obj', field_obj);
+						
+						self.edited_field = field_obj;
+						
+						// GET FIELD VALUES
+						var record_promise = field_obj.get_available_values(true);
+						record_promise = record_promise.then(
+							function(arg_recordset)
+							{
+								var record = arg_recordset.get_first_record_by_object(arg_item_object);
+								self.value(context, 'record', record);
+								
+								return record;
+							}
+						);
+						
+						self.leave(context, Devapt.msg_success_promise);
+						return record_promise;
+					}
+				}
 			}
 		);
 		
-		promise.then(
-			function()
-			{
-				self.step('update()', 'update success');
-				self.view.on_view_model_update(arg_records);
-			}
-		);
 		
-		self.leave('update()', Devapt.msg_success_promise);
+		self.leave(context, Devapt.msg_success_promise);
 		return promise;
-	};
-	
-	
-	/**
-	 * @memberof				DevaptViewModelMixinCrudable
-	 * @public
-	 * @method					DevaptViewModelMixinCrudable.delete()
-	 * @desc					Delete records into the model
-	 * @param {object|array}	arg_records			one record object or an array of objects or an array of primary keys
-	 * @return {object}			Promise of the operation
-	 */
-	var cb_delete = function (arg_records)
-	{
-		var self = this;
-		self.enter('delete()', '');
-		// self.assert_object(context, 'recordset', self.recordset);
-		self.assert_not_empty_object_or_array(context, 'arg_records', arg_records);
-		
-		var promise = self.ready_promise.then(
-			function()
-			{
-				return self.model.delete(arg_records);
-			}
-		);
-		
-		promise.then(
-			function(recordset)
-			{
-				self.step('delete()', 'delete success');
-				self.view.on_view_model_delete(arg_records);
-			}
-		);
-		
-		self.leave('delete()', Devapt.msg_success_promise);
-		return promise;
-	};
-	
-	
-	
-	/* --------------------------------------------- UTILS OPERATIONS ------------------------------------------------ */
-	
-	/**
-	 * @public
-	 * @memberof			DevaptViewModelMixinCrudable
-	 * @desc				Get items array for field iterator
-	 * @return {promise}
-	 */
-	var cb_get_items_array_model_with_iterator_fields = function()
-	{
-		var self = this;
-		var context = 'get_items_array_model_with_iterator_fields()';
-		self.enter(context, '');
-		
-		
-		// CHECK ATTRIBUTES
-		self.assert_not_null(context, 'model', self.model);
-		self.assert_not_null(context, 'view', self.view);
-		
-		// INIT ITEMS
-		var items = [];
-		
-		// GET CURRENT RECORD
-		var record = self.view.items_current_record;
-		if ( DevaptTypes.is_object(record) )
-		{
-			self.step(context, 'current record is found');
-			
-			// LOOP ON FIELDS
-			for(var field_index in self.view.items_fields)
-			{
-				self.value(context, 'loop on field at', field_index);
-				
-				var field_name = self.view.items_fields[field_index];
-				var field_value = record[field_name];
-				var field_record = { 'field_name': field_name, 'field_value': field_value };
-				
-				items.push(field_record);
-			}
-			
-			self.value(context, 'items', items);
-		}
-		
-		// CREATE RESULTSET
-		var unique_name = Devapt.get_unique_name(self.name + '_recordset');
-		var recordset = DevaptSharedRecordSet.create(unique_name, { records:items, count:items.length});
-		
-		
-		self.leave(context, Devapt.msg_success_promise);
-		return Devapt.promise_resolved(recordset);
-	};
-	
-	
-	
-	/**
-	 * @public
-	 * @memberof			DevaptViewModelMixinCrudable
-	 * @desc				Get items array for records iterator
-	 * @return {promise}
-	 */
-	var cb_get_items_array_model_with_iterator_records = function()
-	{
-		var self = this;
-		var context = 'get_items_array_model_with_iterator_records()';
-		self.enter(context, '');
-		
-		
-		// CHECK ATTRIBUTES
-		self.assert_not_null(context, 'model', self.model);
-		self.assert_not_null(context, 'view', self.view);
-		
-		
-		// READ ALL
-		if ( ! DevaptTypes.is_object(self.query) || self.query.is_empty() )
-		{
-			self.step(context, 'read_all_records');
-			return self.model.read_all();
-		}
-		
-		// READ DISTINCT
-		if (self.view.items_distinct)
-		{
-			self.step(context, 'read distinct records');
-			if ( DevaptTypes.is_not_empty_str(self.view.items_distinct_field) )
-			{
-				self.step(context, 'read distinct one records');
-				
-				self.query.set_select_distinct_one();
-				self.query.set_one_field(self.view.items_distinct_field);
-			}
-			else
-			{
-				self.step(context, 'read distinct many records');
-				
-				self.query.set_select_distinc();
-			}
-		}
-		
-		// READ WITH A QUERY
-		self.query.set_select();
-		var items_promise = self.model.read(self.query);
-		
-		
-		self.leave(context, Devapt.msg_success_promise);
-		return items_promise;
-	};
-	
-	
-	
-	/**
-	 * @public
-	 * @memberof			DevaptViewModelMixinCrudable
-	 * @desc				Get items array for records iterator
-	 * @return {promise}
-	 */
-	var cb_get_items_array_model_with_iterator_field_editor = function()
-	{
-		var self = this;
-		var context = 'get_items_array_model_with_iterator_field_editor()';
-		self.enter(context, '');
-		
-		
-		// CHECK ATTRIBUTES
-		self.assert_not_null(context, 'model', self.model);
-		self.assert_not_null(context, 'view', self.view);
-		
-		
-		// GET FIELD NAME
-		var field_name = self.view.items_fields[0];
-		if ( ! DevaptTypes.is_not_empty_str(field_name) )
-		{
-			console.error('bad field name', context);
-			throw new Error(context + ':bad field name');
-		}
-		
-		
-		// GET FIELD OBJECT
-		var field_obj = self.model.get_field(field_name);
-		if ( ! DevaptTypes.is_object(field_obj) )
-		{
-			console.error('bad field object', context);
-			throw new Error(context + ':bad field object');
-		}
-		
-		
-		// GET FIELD ATTRIBUTES
-		var type_str = DevaptTypes.to_string(field_obj.field_value.type, 'string').toLocaleLowerCase();
-		var name_str = DevaptTypes.to_string(field_obj.name, null);
-		var label_str = DevaptTypes.to_string(field_obj.label, null);
-		self.value(context, 'type_str', type_str);
-		self.value(context, 'name_str', name_str);
-		self.value(context, 'label_str', label_str);
-		
-		
-		// GET FIELD VALUES
-		var items_promise = field_obj.get_available_values();
-		items_promise.then(
-			function(recordset)
-			{
-				self.value(context, 'items', recordset.get_records());
-			}
-		);
-		
-		
-		self.leave(context, Devapt.msg_success_promise);
-		return items_promise;
 	};
 	
 	
@@ -481,15 +352,10 @@ function(
 	
 	DevaptViewModelMixinCrudableClass.add_public_method('reload', {}, cb_reload);
 	
-	DevaptViewModelMixinCrudableClass.add_public_method('create', {}, cb_create);
-	DevaptViewModelMixinCrudableClass.add_public_method('read', {}, cb_read);
-	DevaptViewModelMixinCrudableClass.add_public_method('read_all', {}, cb_read_all);
-	DevaptViewModelMixinCrudableClass.add_public_method('update', {}, cb_update);
-	DevaptViewModelMixinCrudableClass.add_public_method('delete', {}, cb_delete);
+	DevaptViewModelMixinCrudableClass.add_public_method('get_values', {}, cb_get_values);
+	DevaptViewModelMixinCrudableClass.add_public_method('get_values_recordset', {}, cb_get_values_recordset);
 	
-	DevaptViewModelMixinCrudableClass.add_public_method('get_items_array_model_with_iterator_fields', {}, cb_get_items_array_model_with_iterator_fields);
-	DevaptViewModelMixinCrudableClass.add_public_method('get_items_array_model_with_iterator_records', {}, cb_get_items_array_model_with_iterator_records);
-	DevaptViewModelMixinCrudableClass.add_public_method('get_items_array_model_with_iterator_field_editor', {}, cb_get_items_array_model_with_iterator_field_editor);
+	DevaptViewModelMixinCrudableClass.add_public_method('get_first_record_by_object', {}, cb_get_first_record_by_object);
 	
 	// MIXINS
 	

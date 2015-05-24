@@ -69,7 +69,7 @@ function(Devapt, DevaptTypes, DevaptClass)
 			
 			// console.log(arg_event_operands, 'on_pagination_previous_event');
 			
-			self.leave(context, self.msg_default_empty_implementation);
+			self.leave(context, Devapt.msg_default_empty_implementation);
 			self.pop_trace();
 		},
 		
@@ -89,10 +89,11 @@ function(Devapt, DevaptTypes, DevaptClass)
 			self.enter(context, '');
 			
 			
-			// console.log(arg_event_operands, 'on_pagination_current_event');
+//			console.log(arg_event_operands, context + ':on_pagination_current_event');
+			
 			
 			var pagination = arg_event_operands[1];
-			var page = arg_event_operands[2];
+			var page = arg_event_operands[2].page;
 			
 			var last_index = pagination.pagination_size * page - 1;
 			var first_index = Math.max(last_index - pagination.pagination_size + 1, 0);
@@ -102,7 +103,7 @@ function(Devapt, DevaptTypes, DevaptClass)
 			self.apply_pagination(first_index, last_index);
 			
 			
-			self.leave(context, self.msg_default_empty_implementation);
+			self.leave(context, Devapt.msg_default_empty_implementation);
 			self.pop_trace();
 		},
 		
@@ -124,7 +125,7 @@ function(Devapt, DevaptTypes, DevaptClass)
 			// console.log(arg_event_operands, 'on_pagination_next_event');
 			
 			
-			self.leave(context, self.msg_default_empty_implementation);
+			self.leave(context, Devapt.msg_default_empty_implementation);
 			self.pop_trace();
 		},
 		
@@ -177,7 +178,7 @@ function(Devapt, DevaptTypes, DevaptClass)
 			self.mixin_pagination_apply_count++;
 			
 			
-			self.leave(context, self.msg_success);
+			self.leave(context, Devapt.msg_success);
 			self.pop_trace();
 			return true;
 		}

@@ -46,7 +46,7 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptResources, DevaptFactory, Deva
 	 * @static
 	 * @desc		Trace flag
 	 */
-	DevaptFoundation5Backend.backend_trace = true;
+	DevaptFoundation5Backend.backend_trace = false;
 	
 	
 	/**
@@ -257,7 +257,7 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptResources, DevaptFactory, Deva
 				function(view)
 				{
 					DevaptTraces.trace_step(context, 'success: promise is resolved: then callback for [' + view.name + ']', DevaptFoundation5Backend.backend_trace);
-					console.log(view, 'backend render view: object [' + view.name + ']');
+					// console.log(view, 'backend render view: object [' + view.name + ']');
 					
 					try
 					{
@@ -279,8 +279,8 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptResources, DevaptFactory, Deva
 							if ( ! (view.parent_jqo && view.parent_jqo[0] === arg_jqo_node[0]) )
 							{
 								DevaptTraces.trace_step(context, 'parent is a different parent', DevaptFoundation5Backend.backend_trace);
-								console.info(view.parent_jqo, 'backend.render_view: existing view parent[' + view.name + ']');
-								console.info(arg_jqo_node, 'backend.render_view: target view parent[' + view.name + ']');
+								// console.info(view.parent_jqo, 'backend.render_view: existing view parent[' + view.name + ']');
+								// console.info(arg_jqo_node, 'backend.render_view: target view parent[' + view.name + ']');
 								
 								view.set_parent(arg_jqo_node);
 							}
@@ -293,16 +293,16 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptResources, DevaptFactory, Deva
 						
 						// TEST IF ALREADY RENDERED AND SHOW THE VIEW
 						var view_is_rendered = ! view.is_render_state_not();
-						console.log(view.get_render_state(), context + ':view status');
+						// console.log(view.get_render_state(), context + ':view status');
 						if ( view_is_rendered ) // && view_jqo && view_jqo.length === 1
 						{
 							DevaptTraces.trace_step(context, 'view is already rendered', DevaptFoundation5Backend.backend_trace);
-							console.info('backend.render_view: view is already rendered[' + view.name + ']');
+							// console.info('backend.render_view: view is already rendered[' + view.name + ']');
 							
 							// GET VIEW NODE ID
 							var view_id = view.get_view_id();
 							var view_jqo = $('#' + view_id);
-							console.info(view_jqo, 'backend.render_view:view_jqo[' + view.name + ']');
+							// console.info(view_jqo, 'backend.render_view:view_jqo[' + view.name + ']');
 							
 							// SHOW EXISTING VIEW
 							view_jqo.show();;
@@ -313,7 +313,7 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptResources, DevaptFactory, Deva
 						
 						
 						// RENDER THE VIEW
-						console.info(view, 'backend.render_view: view is not rendered[' + view.name + ']');
+						// console.info(view, 'backend.render_view: view is not rendered[' + view.name + ']');
 						DevaptTraces.trace_step(context, 'render view', DevaptFoundation5Backend.backend_trace);
 						var render_promise = view.render();
 						
@@ -381,6 +381,9 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptResources, DevaptFactory, Deva
 	
 				// <img src="modules/security/public/images/user-group-icon.png" alt="login icon" style="line-height:64px; height:64px; vertical-align:middle;"></img>\
 		
+		// TODO GET IDs FROM APP CONFIG
+		$('#menubars_id').children().hide();
+		$('#breadcrumbs_id').children().hide();
 		$('#page_content_id').children().hide();
 		$('#page_content_id').append(content_jqo);
 		content_jqo.html(html);
@@ -392,6 +395,8 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptResources, DevaptFactory, Deva
 				{
 					var login = $('#login').val();
 					var pwd = $('#password').val();
+					
+					content_jqo.remove();
 					
 					// TODO
 					var login_promise = DevaptSecurity.login(login, pwd);

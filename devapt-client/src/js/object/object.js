@@ -181,14 +181,32 @@ function(
 	/**
 	 * @memberof			DevaptObject
 	 * @public
-	 * @method				DevaptStorage.to_string()
+	 * @method				self.to_string()
 	 * @desc				Get a string output of the object
 	 * @return {string}		String output
 	 */
 	var cb_to_string = function()
 	{
 		var self = this;
-		return DevaptTypes.get_value_str(self);
+		
+		var str = '';
+		var members = self._class.properties.all_map;
+		for(var key in members)
+		{
+			var property = members[key];
+			var member = self[property.name];
+			
+			if (member === self)
+			{
+				continue;
+			}
+			
+			if ( ! DevaptTypes.is_function(member) )
+			{
+				str += '\n  ' + property.name + '=' + DevaptTypes.get_value_str(member, 0);
+			}
+		}
+		return str;
 	}
 	
 	

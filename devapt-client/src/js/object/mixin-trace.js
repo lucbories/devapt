@@ -578,8 +578,8 @@ function(DevaptTraces, DevaptTypes, DevaptClass, DevaptClasses)
 		 */
 		error: function(arg_context, arg_msg)
 		{
-			if ( this.should_trace(arg_context, DevaptMixinTrace.LEVEL_ERROR) )
-			{
+//			if ( this.should_trace(arg_context, DevaptMixinTrace.LEVEL_ERROR) )
+//			{
 				DevaptTraces.error(
 					{
 						level:DevaptMixinTrace.LEVEL_ERROR,
@@ -591,7 +591,7 @@ function(DevaptTraces, DevaptTypes, DevaptClass, DevaptClasses)
 						text:arg_msg
 					}
 				);
-			}
+//			}
 		},
 		
 		

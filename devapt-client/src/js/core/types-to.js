@@ -65,6 +65,11 @@ define([/*'Devapt', */'core/traces', 'core/types-is'], function(/*Devapt, */Deva
 		if ( DevaptTypes.is_object(arg_value) )
 		{
 			var str = '{';
+			if ( DevaptTypes.is_function(arg_value.to_string) )
+			{
+				str += arg_value.to_string();
+				return str + '}';
+			}
 			
 			if ( DevaptTypes.is_not_empty_str(arg_value['jquery']) )
 			{
@@ -72,14 +77,33 @@ define([/*'Devapt', */'core/traces', 'core/types-is'], function(/*Devapt, */Deva
 				return str;
 			}
 			
+			if ( arg_value.selector )
+			{
+				str += 'a jqo object(selector)}';
+				return str;
+			}
+			
+			if ( DevaptTypes.is_string(arg_value.tagName) )
+			{
+				str += 'a jqo object(' + arg_value.tagName + ')}';
+				return str;
+			}
+			
+//			if ( arg_value._class && DevaptTypes.is_not_empty_str(arg_value.class_name) )
+//			{
+//				
+//			}
+			
 			for(var key in arg_value)
 			{
+				// ATTRIBUTE IS A JQO OBJECT
 				var right_4 = key.substring(key.length - 4, key.length);
 				if ( right_4 === '_jqo' )
 				{
 					str += '\n  ' + key + '= a jqo object';
 					continue;
 				}
+				
 				var member = arg_value[key];
 				if ( ! DevaptTypes.is_function(member) )
 				{

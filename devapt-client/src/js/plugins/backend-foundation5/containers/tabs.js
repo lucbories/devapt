@@ -120,7 +120,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptContainer, undefined)
 		}
 		
 		
-		self.leave(context, self.msg_success);
+		self.leave(context, Devapt.msg_success);
 	}
 	
 	
@@ -165,7 +165,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptContainer, undefined)
 		p_jqo.html(arg_item_content);
 		arg_item_jqo.append(p_jqo);
 		
-		self.leave(context, self.msg_success);
+		self.leave(context, Devapt.msg_success);
 		return arg_item_jqo;
 	}
 	

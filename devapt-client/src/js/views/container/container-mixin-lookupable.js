@@ -158,17 +158,18 @@ function(
 			self.leave(context, Devapt.msg_failure);
 			return Devapt.promise_rejected(context + ':bad node index');
 		}
+		self.value(context, 'selected_item.index', selected_item.index);
 		
 		
 		// WAS SELECTED
 		self.step(context, 'get already selected');
 		selected_item.already_selected = self.has_item_node_css_class(selected_item.node_jqo, 'selected');
+		self.value(context, 'selected_item.already_selected', selected_item.already_selected);
 		
 		
 		// GET SELECTED LABEL
 		self.step(context, 'get selected label');
 		selected_item.label = arg_label;
-		// console.log(selected_item.label, context + '.label');
 		
 		
 		// GET SELECTED RECORD
@@ -195,24 +196,40 @@ function(
 		var self = this;
 		var context = 'get_select_item_by_record(record)';
 		self.enter(context, '');
+		self.value(context, 'arg_record', arg_record);
 		
+		
+		var items_iterator = null;
 		
 		// GET ITEMS PROMISE
 		self.step(context, 'GET ITEMS PROMISE');
-		var items_promise = self.view_model.then(
+		var items_promise = self.view_model_promise.then(
 			function(view_model)
 			{
 				self.step(context, 'VIEW_MODEL IS READY');
 				
-				var items_iterator = view_model.view.items_iterator;
+				items_iterator = view_model.view.items_iterator;
 				self.value(context, 'items_iterator', items_iterator);
 				
 				switch(items_iterator)
 				{
 					case 'field_editor':
+						self.step(context, 'ITERATE ON FIELD EDITOR RECORD');
+						
+						var field_name = self.items_fields[0];
+						self.assert_not_null(context, 'field_name', field_name);
+						self.value(context, 'field_name', field_name);
+						
+						var field_value = arg_record.get(field_name);
+						self.value(context, 'value for field name', field_value);
+						
+						var node_by_label_promise = self.get_select_item_by_label(field_value);
+						return node_by_label_promise;
+					
 					case 'records':
 						self.step(context, 'ITERATE ON RECORDS');
 						return view_model.get_items_array_model_with_iterator_records();
+					
 					case 'fields':
 						self.step(context, 'ITERATE ON FIELDS');
 						return view_model.get_items_array_model_with_iterator_fields();
@@ -223,18 +240,37 @@ function(
 			}
 		);
 		
+		
 		items_promise = items_promise.then(
 			function(recordset)
 			{
 				try
 				{
 					self.step(context, 'items are found');
+					self.value(context, 'arg_record', arg_record);
 					
 					// GET ALL ITEMS
 					self.step(context, 'GET ALL ITEMS');
-					var items_records = recordset.get_records();
-					var items_records_count = recordset.get_count();
-					self.value(context, 'arg_record', arg_record);
+					self.value(context, 'recordset or select record', recordset);
+					
+					// GET ITEMS RECORDS
+					var items_records = [];
+					self.value(context, 'items_iterator', items_iterator);
+					switch(items_iterator)
+					{
+						case 'field_editor':
+							self.step(context, 'RESULT IS ALREADY A SELECTED ITEM ATTRIBUTES OBJECT FOR FIELD EDITOR');
+							recordset.record = arg_record;
+							return recordset;
+							
+						case 'records':
+						case 'fields':
+							items_records = recordset.get_records();
+							break;
+					}
+					
+					// GET ITEMS COUNT
+					var items_records_count = items_records.length;
 					self.value(context, 'items_records', items_records);
 					self.value(context, 'items_records_count', items_records_count);
 					
@@ -247,29 +283,39 @@ function(
 					
 					// GET SELECTION FIELD VALUE
 					self.step(context, 'GET SELECTION FIELD VALUE');
-					var field_value = field_name in arg_record ? arg_record[field_name] : null;
+					var record_datas = arg_record.get_datas();
+					var field_value = field_name in record_datas ? record_datas[field_name] : null;
 					self.assert_not_null(context, 'field_value', field_value);
 					self.value(context, 'field_value', field_value);
 					
 					// GET SELECTION FIELD OBJECT
 					self.step(context, 'GET SELECTION FIELD OBJECT');
-					var field_obj_promise = self.view_model.invoke('get_field', field_name);
-					if ( ! DevaptTypes.is_object(field_obj) )
-					{
-						console.error('bad field object', context);
-						return Devapt.promise_rejected(context + ':bad field object');
-					}
+					var model_promise = self.view_model_promise.get('recordset').get('model');
+					var field_obj_promise = model_promise.then(
+						function(model)
+						{
+							return model.get_field(field_name);
+						}
+					);
+//					if ( ! DevaptTypes.is_object(field_obj) )
+//					{
+//						console.error('bad field object', context);
+//						return Devapt.promise_rejected(context + ':bad field object');
+//					}
 					
 					// LOOP ON ITEMS RECORDS
 					self.step(context, 'LOOP ON ITEMS RECORDS');
 					var selected_record_promise = field_obj_promise.then(
-						function()
+						function(field_obj)
 						{
 							self.step(context, 'loop on field values records');
 							for(var values_index = 0 ; values_index < items_records_count ; values_index++)
 							{
-								self.value(context, 'loop on values indes', values_index);
+								self.value(context, 'loop on values index', values_index);
+								
 								var loop_value_record = items_records[values_index];
+								loop_value_record = loop_value_record.is_record ? items_records[values_index].get_datas() : loop_value_record;
+								
 								var loop_value_field = loop_value_record[field_name];
 								
 								// TEST IF CURRENT ITEM FIELD VALUE IS THE SAME AS THE SELECTION FIELD VALUE
@@ -286,7 +332,8 @@ function(
 									}
 									
 									// UPDATE SELECTED RECORD RESULT
-									var selected_item = { index:null, node_jqo:null, record:null, label:null, already_selected:false };
+									var selected_item = { 'index':values_index, 'node_jqo':node_jqo, 'record':loop_value_record, label:field_value, already_selected:false };
+									self.value(context, 'selected_item', selected_item);
 									
 									self.step(context, 'SELECTED RECORD RESULT');
 									return selected_item;

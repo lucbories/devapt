@@ -10,4 +10,9 @@ The result is: {status: "ok", count: 15, error: "", records: Array[15]}
 
 CREATE:
 GET HTTP REQUEST TO : .../devapt-tutorial-1/public/rest/MODEL_AUTH_USERS/?query_api=2
-with a records as content:
+with a record as content:
+
+UPDATE:
+GET HTTP REQUEST TO : .../devapt-tutorial-1/public/rest/MODEL_AUTH_USERS/45/?query_api=2
+with 45 as the record id
+with a record as content:

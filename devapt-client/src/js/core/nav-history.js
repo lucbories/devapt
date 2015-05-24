@@ -29,7 +29,7 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptClasses, DevaptMixinAssertion,
 	 * @static
 	 * @desc		Trace flag
 	 */
-	DevaptNavHistory.history_trace = true;
+	DevaptNavHistory.history_trace = false;
 	
 	
 	/**

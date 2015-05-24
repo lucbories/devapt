@@ -116,7 +116,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptContainer, undefined)
 			arg_item_jqo.addClass('row');
 		}
 		
-		self.leave(context, self.msg_success);
+		self.leave(context, Devapt.msg_success);
 		return arg_item_jqo;
 	}
 	

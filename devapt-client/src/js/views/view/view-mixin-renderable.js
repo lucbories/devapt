@@ -372,13 +372,19 @@ function(Devapt, DevaptTypes, DevaptClass)
 			self.enter(context, '');
 			
 			
+			// INIT DEFER
+			self.mixin_renderable_defer = Devapt.defer();
+			
+			
 			// TEST IF ALREADY RENDERED
 			if (self.is_render_state_rendered())
 			{
 				self.step(context, 'already rendered');
 				
+				self.mixin_renderable_defer.resolve(self);
+				
 				self.leave(context, Devapt.msg_success_promise);
-				return Devapt.promise_resolved(self);
+				return Devapt.promise(self.mixin_renderable_defer);
 			}
 			
 			// UPDATE STATE
@@ -408,8 +414,20 @@ function(Devapt, DevaptTypes, DevaptClass)
 			self.set_render_state_rendered();
 			
 			
+			promise_after.then(
+				function()
+				{
+					self.mixin_renderable_defer.resolve(self);
+				},
+				function()
+				{
+					self.mixin_renderable_defer.reject();
+				}
+			);
+			
+			
 			self.leave(context, Devapt.msg_success_promise);
-			return promise_after;
+			return Devapt.promise(self.mixin_renderable_defer);
 		},
 		
 		
@@ -640,8 +658,9 @@ function(Devapt, DevaptTypes, DevaptClass)
 	
 	
 	// PROPERTIES
-	DevaptMixinRenderableClass.add_public_str_property('mixin_renderable_state',	'', 'not_created', false, false, []);
+	DevaptMixinRenderableClass.add_public_str_property('mixin_renderable_state',	'', Devapt.STATE_NOT_RENDERED, false, false, []);
 	DevaptMixinRenderableClass.add_public_int_property('mixin_renderable_count',	'', 0, false, false, []);
+	DevaptMixinRenderableClass.add_public_object_property('mixin_renderable_defer',	'', null, false, false, []);
 	
 	
 	// BUILD MIXIN CLASS

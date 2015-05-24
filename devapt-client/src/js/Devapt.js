@@ -238,6 +238,8 @@ function($, DevaptInit, CryptoMD5, CryptoSHA1, Q, DevaptFactory)
 			error: function(jqXHR, textStatus, errorThrown)
 				{
 					console.log(arg_options, 'Devapt.ajax failure: arg_options');
+					console.log(textStatus, 'Devapt.ajax failure: textStatus');
+					console.log(jqXHR, 'Devapt.ajax failure: jqXHR');
 					console.error(errorThrown, 'Devapt.ajax failure: errorThrown');
 					return null;
 				}
@@ -255,7 +257,7 @@ function($, DevaptInit, CryptoMD5, CryptoSHA1, Q, DevaptFactory)
 		// var success_cb = undefined;
 		var success_cb = function(arg)
 		{
-			console.error(arg, 'Devapt.ajax: success');
+//			console.info(arg, 'Devapt.ajax: success');
 		};
 		var failure_cb = function(response)
 		{

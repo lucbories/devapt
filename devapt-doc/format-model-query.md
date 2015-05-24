@@ -1,6 +1,6 @@
 
 MODEL QUERY FORMAT DOCUMENTATION
-=============================
+================================
 
 Project: Devapt (www.devapt.org)
 

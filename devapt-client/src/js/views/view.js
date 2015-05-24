@@ -444,11 +444,13 @@ function(
 		var context = 'on_refresh()';
 		self.enter(context, '');
 		
+		
 		// ON CHANGE HANDLER
 		if ( ! DevaptTypes.is_null(self.js_on_refresh) )
 		{
 			eval(self.js_on_refresh);
 		}
+		
 		
 		self.leave(context, Devapt.msg_success);
 		return true;
@@ -697,7 +699,6 @@ function(
 	
 	// PROPERTIES
 	DevaptViewClass.add_public_bool_property('is_view',			'is a view flag', true, false, false, []);
-	// DevaptViewClass.add_public_str_property('status',			'view current state', 'ready', false, false, []);
 	DevaptViewClass.add_public_str_property('access_role',		'required role to display the view', null, true, false, ['role_display']);
 	
 	DevaptViewClass.add_public_str_property('parent_html_id',	'content jQuery parent ndoe id (html attribute) ', null, false, false, ['view_parent_html_id']);
@@ -708,6 +709,16 @@ function(
 	DevaptViewClass.add_public_bool_property('prepend_content',	'should prepend content jqo on the parent jqo?', false, false, false, []);
 	DevaptViewClass.add_public_object_property('parent_jqo',	'content parent jQuery node',		null, false, false, []);
 	DevaptViewClass.add_public_object_property('content_jqo',	'content jQuery node',				null, false, false, []);
+	
+	/*
+	 * application.views.ViewVVV.on_event: on event actions
+	 * 		.EventEEE.log: trace a message
+	 * 		.EventEEE.runjs: run a JavaScript expression
+	 * 		.EventEEE.do_crud: run a CRUD method on a model resource object
+	 * 		.EventEEE.do_method: run a resource object method
+	 * 		.EventEEE.emit: emit an other event
+	**/
+	DevaptViewClass.add_public_object_property('on_event',	'Event reactors',	null, false, false, []);
 	
 	
 	// MIXINS

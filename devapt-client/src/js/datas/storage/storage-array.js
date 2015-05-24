@@ -64,7 +64,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptStorage, DevaptResultSet)
 	 */
 	var cb_is_valid = function()
 	{
-		return DevaptTypes.is_array(self.records_array) || DevaptTypes.is_callback(self.provider_cb);
+		return DevaptTypes.is_array(self.records_array) || DevaptTypes.is_callback(self.get_records);
 	};
 	
 	
@@ -86,10 +86,10 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptStorage, DevaptResultSet)
 		// console.log(self.provider_cb, context);
 		
 		
-		if ( DevaptTypes.is_callback(self.provider_cb) )
+		if ( DevaptTypes.is_callback(self.get_records) )
 		{
-			self.leave(context, 'has array provider');
-			return self.do_callback(self.provider_cb);
+			self.leave(context, 'has an array provider');
+			return self.do_callback(self.get_records);
 		}
 		
 		if ( DevaptTypes.is_array(self.records_array) )
@@ -116,31 +116,27 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptStorage, DevaptResultSet)
 	var cb_set_item = function(arg_item, arg_index)
 	{
 		var self = this;
-		var context = 'get_array()';
+		var context = 'set_item()';
 		self.step(context, '');
 		// self.value(context, 'self.records_array', self.records_array);
 		// self.value(context, 'self.provider_cb', self.provider_cb);
 		
 		
 		// PROVIDER CALLBACK
-		if ( DevaptTypes.is_callback(self.provider_cb) )
+		
+		// APPEND
+		if ( DevaptTypes.is_null(arg_index) && DevaptTypes.is_callback(self.add_record) )
 		{
-			self.step(context, 'has array provider');
-			
-			// APPEND
-			if ( DevaptTypes.is_null(arg_index) )
-			{
-				return self.do_callback(self.provider_cb, arg_item);
-			}
-			
-			// UPDATE
-			if ( DevaptTypes.is_integer(arg_index) && arg_index > 0 && arg_index < self.records_array.length)
-			{
-				return self.do_callback(self.provider_cb, arg_item, arg_index);
-			}
-			
-			return null;
+			self.step(context, 'memory engine has an add_record');
+			return self.do_callback(self.add_record, [arg_item]);
 		}
+		
+		// UPDATE
+		if ( DevaptTypes.is_integer(arg_index) && arg_index > 0 && DevaptTypes.is_callback(self.set_record))
+		{
+			return self.do_callback(self.set_record, [arg_index, arg_item]);
+		}
+		
 		
 		// LOCALE ARRAY
 		if ( DevaptTypes.is_array(self.records_array) )
@@ -201,6 +197,12 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptStorage, DevaptResultSet)
 		
 		
 		// GET DATAS ARRAY
+		// var datas = [];
+		// if ( DevaptTypes.is_callback(self.get_records) )
+		// {
+			// self.step(context, 'has an array provider');
+			// datas = self.do_callback(self.get_records);
+		// }
 		var datas = self.get_array();
 		self.value(context, 'datas', datas);
 		
@@ -220,7 +222,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptStorage, DevaptResultSet)
 		var resultset_promise = Devapt.promise_resolved(resultset);
 		
 		
-		self.leave(context, self.msg_success_promise);
+		self.leave(context, Devapt.msg_success_promise);
 		return resultset_promise;
 	};
 	
@@ -258,13 +260,8 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptStorage, DevaptResultSet)
 		// self.value(context, 'self.provider_cb', self.provider_cb);
 		
 		
-		// GET DATAS ARRAY
-		var datas = self.get_array();
-		self.value(context, 'datas', datas);
-		
-		
 		// FILTERED DATAS
-		var filtered_datas = datas; // TODO USE query to filter array datas
+		var filtered_datas = []; // TODO USE query to filter array datas
 		// console.log(filtered_datas, self.name + '.' + context + '.filtered_datas');
 		
 		
@@ -273,18 +270,30 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptStorage, DevaptResultSet)
 		{
 			self.step(context, 'has slice filter');
 			
-			filtered_datas = [];
+			if ( DevaptTypes.is_callback(self.get_records) )
+			{
+				self.step(context, 'has an array provider');
+				filtered_datas = self.do_callback(self.get_records, [arg_query.slice.offset, arg_query.slice.length]);
+			}
 			
-			if ( arg_query.slice.offset < datas.length )
+			else
 			{
 				self.step(context, 'apply valid slice filter');
 				
-				// console.log(datas, self.name + '.' + context + '.records_array');
-				filtered_datas = Array.prototype.slice.call(datas, arg_query.slice.offset);
-				// console.log(filtered_datas, self.name + '.' + context + '.filtered_datas with slice');
+				filtered_datas = self.get_array();
+				if ( arg_query.slice.offset < datas.length )
+				{
+					// console.log(datas, self.name + '.' + context + '.records_array');
+					filtered_datas = Array.prototype.slice.call(filtered_datas, arg_query.slice.offset);
+					// console.log(filtered_datas, self.name + '.' + context + '.filtered_datas with slice');
+				}
 				console.log(arg_query.slice.offset, context + '.arg_query');
 				console.log(filtered_datas.length, self.name + '.' + context + '.filtered_datas with slice');
 			}
+		}
+		else
+		{
+			filtered_datas = self.get_array();
 		}
 		
 		
@@ -299,7 +308,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptStorage, DevaptResultSet)
 		var resultset_promise = Devapt.promise_resolved(resultset);
 		
 		
-		self.leave(context, self.msg_success_promise);
+		self.leave(context, Devapt.msg_success_promise);
 		return resultset_promise;
 	};
 	
@@ -366,7 +375,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptStorage, DevaptResultSet)
 		var resultset_promise = Devapt.promise_resolved(resultset);
 		
 		
-		self.leave(context, self.msg_success_promise);
+		self.leave(context, Devapt.msg_success_promise);
 		return resultset_promise;
 	};
 	
@@ -420,7 +429,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptStorage, DevaptResultSet)
 		var resultset_promise = Devapt.promise_resolved(resultset);
 		
 		
-		self.leave(context, self.msg_success_promise);
+		self.leave(context, Devapt.msg_success_promise);
 		return resultset_promise;
 	};
 	
@@ -477,7 +486,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptStorage, DevaptResultSet)
 		var resultset_promise = Devapt.promise_resolved(resultset);
 		
 		
-		self.leave(context, self.msg_success_promise);
+		self.leave(context, Devapt.msg_success_promise);
 		return resultset_promise;
 	};
 	
@@ -514,8 +523,21 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptStorage, DevaptResultSet)
 	
 	// PROPERTIES
 	DevaptStorageClass.add_public_str_property('source', '', [], false, false, []);
-	DevaptStorageClass.add_public_cb_property('provider_cb', '', null, false, false, []);
 	DevaptStorageClass.add_public_array_property('records_array', 'records array', [], false, false, [], 'object', '|');
+	
+		// COLLECTION OPERATIONS
+	DevaptStorageClass.add_public_cb_property('get_records', '', null, false, false, []);
+	DevaptStorageClass.add_public_cb_property('set_records', '', null, false, false, []);
+	DevaptStorageClass.add_public_cb_property('remove_records', '', null, false, false, []);
+		// ITEM OPERATIONS
+	DevaptStorageClass.add_public_cb_property('filter_record', '', null, false, false, []);
+	DevaptStorageClass.add_public_cb_property('get_record', '', null, false, false, []);
+	DevaptStorageClass.add_public_cb_property('set_record', '', null, false, false, []);
+	DevaptStorageClass.add_public_cb_property('remove_record', '', null, false, false, []);
+	DevaptStorageClass.add_public_cb_property('add_record', '', null, false, false, []);
+		// READ/WRITE OPERATIONS
+	DevaptStorageClass.add_public_cb_property('encode', '', null, false, false, []);
+	DevaptStorageClass.add_public_cb_property('decode', '', null, false, false, []);
 	
 	
 	return DevaptStorageClass;

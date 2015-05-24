@@ -263,7 +263,25 @@ final class DbConnexions
 	 */
 	static public function getConnexionOptions($arg_connexion_name)
 	{
-		return DbConnexions::getConnexionAttribute($arg_connexion_name, 'options', null);
+		$value = DbConnexions::getConnexionAttribute($arg_connexion_name, 'options', null);
+		
+		if ( is_string($value) )
+		{
+			$records = explode('|', $value);
+			$value = array();
+			foreach($records as $record_str)
+			{
+				$record = explode('=', $record_str);
+				if ( is_array($record) & count($record) === 2 && is_string($record[0]))
+				{
+					$record_key = $record[0];
+					$record_value = $record[1];
+					$value[$record_key] = $record_value;
+				}
+			}
+		}
+		
+		return $value;
 	}
 	
 	

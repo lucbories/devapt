@@ -68,6 +68,78 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptEvents, DevaptObject)
 	}
 	
 	
+	
+	/**
+	 * @memberof			DevaptQuery
+	 * @public
+	 * @method				DevaptQuery.reset()
+	 * @desc				Remove all configured attributes and set a basic read all query (preserve fields, crud_db and crud_table)
+	 * @return {nothing}
+	 */
+	var cb_reset = function()
+	{
+		this.action = 'read';
+		this.query_type = 'select';
+		
+		this.one_field = null;
+		
+		this.values = [];
+		this.values_count = 0;
+		
+		this.filters_array = [];
+		this.orders = [];
+		this.groups = [];
+		this.joins = [];
+		
+		this.slice = null;
+	}
+	
+	
+	
+	/**
+	 * @memberof			DevaptQuery
+	 * @public
+	 * @method				DevaptQuery.reset()
+	 * @desc				Remove all configured attributes and set a basic read all query (reset one_field, values, filters, slice)
+	 * @return {nothing}
+	 */
+	var cb_select_all = function()
+	{
+		this.action = 'read';
+		this.query_type = 'select';
+		
+		this.one_field = null;
+		
+		this.values = [];
+		this.values_count = 0;
+		
+		this.filters_array = [];
+		this.slice = null;
+	}
+	
+	
+	
+	/**
+	 * @memberof			DevaptQuery
+	 * @public
+	 * @method				DevaptQuery.is_empty()
+	 * @desc				Is empty
+	 * @return {boolean}
+	 */
+	var cb_is_empty = function()
+	{
+		var self = this;
+		var context = 'is_empty()';
+		self.enter(context, '');
+		
+		var is_empty_action = (self.action === null && self.query_type === null) || (self.action === 'read' && self.query_type === 'select');
+		var is_empty = is_empty_action && self.values.length && self.slice.length && self.filters_array.length;
+		
+		self.leave(context, 'success');
+		return is_empty;
+	}
+	
+	
 	/**
 	 * @memberof			DevaptQuery
 	 * @public
@@ -106,27 +178,6 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptEvents, DevaptObject)
 		
 		self.leave(context, 'success');
 		return json_obj;
-	}
-	
-	
-	/**
-	 * @memberof			DevaptQuery
-	 * @public
-	 * @method				DevaptQuery.is_empty()
-	 * @desc				Is empty
-	 * @return {boolean}
-	 */
-	var cb_is_empty = function()
-	{
-		var self = this;
-		var context = 'is_empty()';
-		self.enter(context, '');
-		
-		var is_empty_action = (self.action === null && self.query_type === null) || (self.action === 'read' && self.query_type === 'select');
-		var is_empty = is_empty_action && self.values.length && self.slice.length && self.filters_array.length;
-		
-		self.leave(context, 'success');
-		return is_empty;
 	}
 	
 	
@@ -206,23 +257,21 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptEvents, DevaptObject)
 			// console.log('loop removed filter at ' + filter_index);
 			
 			// REMOVE FILTER
-			// self.filters_array[filter_index] = null;
-			
-			self.filters_array[filter_index] = null;
+			self.filters_array.splice(filter_index, 1);
 		}
 		
 		delete self.filters_array_by_field[arg_field_name];
-		self.filters_array_by_field[arg_field_name] = new Array();
-		
-		self.filters_array.forEach(
-			function(index, item, array)
-			{
-				if (item === null)
-				{
-					delete array[index];
-				}
-			}
-		);
+//		self.filters_array_by_field[arg_field_name] = new Array();
+//		
+//		self.filters_array.forEach(
+//			function(index, item, array)
+//			{
+//				if (item === null)
+//				{
+//					delete array[index];
+//				}
+//			}
+//		);
 		
 		
 		self.leave(context, 'success');
@@ -353,11 +402,17 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptEvents, DevaptObject)
 	
 	// METHODS
 	DevaptQueryClass.infos.ctor = cb_constructor;
-	DevaptQueryClass.add_public_method('get_json', {}, cb_get_json);
+	
+	DevaptQueryClass.add_public_method('reset', {}, cb_reset);
+	DevaptQueryClass.add_public_method('select_all', {}, cb_select_all);
 	DevaptQueryClass.add_public_method('is_empty', {}, cb_is_empty);
+	
+	DevaptQueryClass.add_public_method('get_json', {}, cb_get_json);
 	DevaptQueryClass.add_public_method('get_key', {}, cb_get_key);
+	
 	DevaptQueryClass.add_public_method('add_filter', {}, cb_add_filter);
 	DevaptQueryClass.add_public_method('remove_filters_for_field', {}, cb_remove_filters_for_field);
+	
 	DevaptQueryClass.add_public_method('set_one_field', {}, cb_set_one_field);
 	DevaptQueryClass.add_public_method('set_action', {}, cb_set_action);
 	DevaptQueryClass.add_public_method('set_select', {}, cb_set_select);

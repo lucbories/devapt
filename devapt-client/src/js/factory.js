@@ -99,10 +99,10 @@ function(DevaptTraces, DevaptTypes)
 				break;
 			}
 			
-			case 'SharedRecordSet':
-			case 'DevaptSharedRecordSet':
+			case 'RecordSet':
+			case 'DevaptRecordSet':
 			{
-				view_requires = ['datas/model/shared_recordset'];
+				view_requires = ['datas/model/recordset'];
 				break;
 			}
 			

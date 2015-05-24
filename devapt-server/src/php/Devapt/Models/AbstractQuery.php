@@ -527,6 +527,7 @@ abstract class AbstractQuery
 		
 		// INIT ASSOCIATIVE ARRAY
 		$assoc_values = array();
+		$fields_count = count($this->query_fields_names);
 		
 		// LOOP ON VALUES RECORDS
 		foreach($this->query_values as $record)
@@ -549,12 +550,30 @@ abstract class AbstractQuery
 			}
 			
 			// INDEXED ARRAY
-			$index = 0;
-			foreach($this->query_fields_names as $field_name)
+			if ( is_array($record) )
 			{
-				$assoc_record[$field_name] = $record[$index];
-				++$index;
+				$index = 0;
+				foreach($this->query_fields_names as $field_name)
+				{
+					$assoc_record[$field_name] = $record[$index];
+					++$index;
+				}
+				$assoc_values[] = $assoc_record;
+				continue;
 			}
+			
+			// SCALAR
+			if ($fields_count !== 1)
+			{
+				return Trace::leaveok($context, 'Bad fields count for scalar value', null, self::$TRACE_ABSTRACT_QUERY);
+			}
+			if ( ! is_scalar($fields_count) )
+			{
+				return Trace::leaveok($context, 'Bad scalar value', null, self::$TRACE_ABSTRACT_QUERY);
+			}
+			$field_name = $this->query_fields_names[0];
+			$assoc_record = array();
+			$assoc_record[$field_name] = $record;
 			$assoc_values[] = $assoc_record;
 		}
 		

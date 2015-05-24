@@ -75,12 +75,12 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptContainer, undefined)
 		var node_jqo = $('tr:contains("' + arg_node_item_text + '"):eq(0)', self.items_jquery_parent);
 		if ( ! node_jqo)
 		{
-			self.leave(context, self.msg_failure);
+			self.leave(context, Devapt.msg_failure);
 			return null;
 		}
 		
 		
-		self.leave(context, self.msg_success);
+		self.leave(context, Devapt.msg_success);
 		return node_jqo;
 	}
 	
@@ -156,7 +156,9 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptContainer, undefined)
 			function()
 			{
 				var node_index = parseInt( node_jqo.index() );
-				self.select_item_node(node_index);
+				
+				// TODO
+				self.select(node_index);
 			}
 		);
 		
@@ -181,7 +183,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptContainer, undefined)
 		
 		// NOTHING TO DO
 		
-		self.leave(context, self.msg_success);
+		self.leave(context, Devapt.msg_success);
 		return arg_item_jqo;
 	}
 	
@@ -202,7 +204,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptContainer, undefined)
 		var td_jqo = $('<td>');
 		arg_item_jqo.append(td_jqo);
 		
-		self.leave(context, self.msg_success);
+		self.leave(context, Devapt.msg_success);
 		return td_jqo;
 	}
 	
@@ -247,7 +249,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptContainer, undefined)
 		arg_item_jqo.data('record', arg_item_object);
 		
 		
-		self.leave(context, self.msg_success);
+		self.leave(context, Devapt.msg_success);
 		return arg_item_jqo;
 	}*/
 	

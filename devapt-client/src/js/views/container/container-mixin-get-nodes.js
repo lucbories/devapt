@@ -188,7 +188,7 @@ function(Devapt, DevaptTypes, DevaptClass)
 			}
 			
 			
-			self.leave(context, self.msg_success);
+			self.leave(context, Devapt.msg_success);
 			self.pop_trace();
 			return node_jqo;
 		}

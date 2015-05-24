@@ -10,7 +10,7 @@
  */
 
 define(['Devapt', 'core/traces', 'core/types', 'jStorage'],
-function(Devapt, DevaptTrace, DevaptTypes, jStorage)
+function(Devapt, DevaptTrace, DevaptTypes, JStorage)
 {
 	/**
 	 * @memberof	DevaptCache
@@ -55,7 +55,8 @@ function(Devapt, DevaptTrace, DevaptTypes, jStorage)
 		DevaptTrace.trace_enter(context, '', DevaptCache.cache_trace);
 		
 		
-		var value = Devapt.jQuery().jStorage.get(arg_key, arg_default);
+		// var value = Devapt.jQuery().jStorage.get(arg_key, arg_default);
+		var value = JStorage.get(arg_key, arg_default);
 		if (!value)
 		{
 			DevaptTrace.trace_leave(context, 'not found', DevaptCache.cache_trace);
@@ -82,7 +83,8 @@ function(Devapt, DevaptTrace, DevaptTypes, jStorage)
 		var context = 'DevaptCache.has_into_cache(key)';
 		DevaptTrace.trace_enter(context, '', DevaptCache.cache_trace);
 		
-		var value = $.jStorage.get(arg_key, null);
+		// var value = $.jStorage.get(arg_key, null);
+		var value = JStorage.get(arg_key, null);
 		
 		DevaptTrace.trace_leave(context, '', DevaptCache.cache_trace);
 		return ! DevaptTypes.is_null(value);
@@ -107,7 +109,8 @@ function(Devapt, DevaptTrace, DevaptTypes, jStorage)
 		
 		
 		var options = DevaptTypes.is_number(arg_ttl) ? { 'TTL': arg_ttl } : { 'TTL': DevaptCache.cache_default_ttl };
-		var result = $.jStorage.set(arg_key, arg_value, options);
+		// var result = $.jStorage.set(arg_key, arg_value, options);
+		var result = JStorage.set(arg_key, arg_value, options);
 		if (!result)
 		{
 			DevaptTrace.trace_leave(context, 'failure', LibaptCache.cache_trace);
@@ -135,7 +138,8 @@ function(Devapt, DevaptTrace, DevaptTypes, jStorage)
 		var context = 'DevaptCache.set_ttl_into_cache(key,value,ttl)';
 		DevaptTrace.trace_enter(context, '', DevaptCache.cache_trace);
 		
-		var result = $.jStorage.setTTL(arg_key, arg_ttl);
+		// var result = $.jStorage.setTTL(arg_key, arg_ttl);
+		var result = JStorage.setTTL(arg_key, arg_ttl);
 		
 		DevaptTrace.trace_leave(context, '', DevaptCache.cache_trace);
 		return result;
@@ -156,7 +160,8 @@ function(Devapt, DevaptTrace, DevaptTypes, jStorage)
 		var context = 'DevaptCache.delete_from_cache(key)';
 		DevaptTrace.trace_enter(context, '', DevaptCache.cache_trace);
 		
-		var result = $.jStorage.deleteKey(arg_key);
+		// var result = $.jStorage.deleteKey(arg_key);
+		var result = JStorage.deleteKey(arg_key);
 		
 		DevaptTrace.trace_leave(context, '', DevaptCache.cache_trace);
 		return result;

@@ -37,7 +37,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptEvents)
 			
 			
 			
-			self.leave(context, self.msg_success);
+			self.leave(context, Devapt.msg_success);
 			self.pop_trace();
 		},
 		
@@ -91,7 +91,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptEvents)
 				
 				deferred.resolve(items);
 				
-				self.leave(context, self.msg_success_promise);
+				self.leave(context, Devapt.msg_success_promise);
 				self.pop_trace();
 				return items_promise;
 			}
@@ -100,7 +100,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptEvents)
 			deferred.reject();
 			
 			
-			self.leave(context, self.msg_failure);
+			self.leave(context, Devapt.msg_failure);
 			self.pop_trace();
 			return items_promise;
 		}

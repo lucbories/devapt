@@ -43,7 +43,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptTemplate)
 			{
 				var result_jqo = self.render_item_object_fields(arg_deferred, arg_item_jqo, arg_item_object);
 				
-				self.leave(context, self.msg_success);
+				self.leave(context, Devapt.msg_success);
 				return result_jqo;
 			}
 			
@@ -51,12 +51,12 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptTemplate)
 			{
 				var result_jqo = self.render_item_object_records(arg_deferred, arg_item_jqo, arg_item_object);
 				
-				self.leave(context, self.msg_success);
+				self.leave(context, Devapt.msg_success);
 				return result_jqo;
 			}
 			
 			
-			self.leave(context, self.msg_failure);
+			self.leave(context, Devapt.msg_failure);
 			return null;
 		},
 		
@@ -109,7 +109,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptTemplate)
 					self.value(context, 'content', content);
 					self.render_item_text(arg_deferred, record_jqo, content);
 					
-					self.leave(context, self.msg_success);
+					self.leave(context, Devapt.msg_success);
 					return arg_item_jqo;
 				}
 			}
@@ -193,7 +193,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptTemplate)
 			}
 			
 			
-			self.leave(context, self.msg_success);
+			self.leave(context, Devapt.msg_success);
 			return arg_item_jqo;
 		},
 		
@@ -254,20 +254,31 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptTemplate)
 						field_def_obj = self.items_model_obj.get_field(field_name);
 					}
 					
-					var uid = Devapt.uid();
-					var input_div_html = '<div id="' + field_name + '_' + uid +  '_input_id">';
-					var input_div_jqo = $(input_div_html);
-					var input_jqo = self.get_input(arg_deferred, field_def_obj, null, field_value, true);
-					
-					input_div_jqo.append(input_jqo);
-					arg_item_jqo.append(input_div_jqo);
-					
-					tags_object['field_value'] = input_div_html;
-					tags_object[field_name + '_jqo'] = input_jqo;
+					// TODO SET AN EXISTING INPUT
+//					if (arg_item_jqo.length === 1)
+//					{
+//						self.set_input(arg_deferred, arg_item_jqo, field_def_obj, null, field_value, true);
+//						 
+//						tags_object['field_value'] = input_div_html;
+//						tags_object[field_name + '_jqo'] = input_jqo;
+//					}
+//					else
+//					{
+						var uid = Devapt.uid();
+						var input_div_html = '<div id="' + field_name + '_' + uid +  '_input_id">';
+						var input_div_jqo = $(input_div_html);
+						var input_jqo = self.get_input(arg_deferred, field_def_obj, null, field_value, true);
+						
+						input_div_jqo.append(input_jqo);
+						arg_item_jqo.append(input_div_jqo);
+						
+						tags_object['field_value'] = input_div_html;
+						tags_object[field_name + '_jqo'] = input_jqo;
+//					}
 				}
 				
 				
-				self.leave(context, self.msg_success);
+				self.leave(context, Devapt.msg_success);
 				return arg_item_jqo;
 			}
 			
@@ -293,7 +304,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptTemplate)
 			}
 			
 			
-			self.leave(context, self.msg_success);
+			self.leave(context, Devapt.msg_success);
 			return arg_item_jqo;
 		}
 	}

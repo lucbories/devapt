@@ -18,8 +18,12 @@
 
 'use strict';
 define(
-['Devapt', 'core/types', 'core/resources', 'object/class', 'object/object', 'datas/query'],
-function(Devapt, DevaptTypes, DevaptResources, DevaptClass, DevaptObject, DevaptQuery)
+['Devapt', 'core/types', 'core/resources',
+	'object/class', 'object/object',
+	'datas/query', 'datas/model/recordset'],
+function(Devapt, DevaptTypes, DevaptResources,
+	DevaptClass, DevaptObject,
+	DevaptQuery, DevaptRecordSet)
 {
 	/**
 	 * @class				DevaptField
@@ -377,16 +381,21 @@ function(Devapt, DevaptTypes, DevaptResources, DevaptClass, DevaptObject, Devapt
 	 * @memberof			DevaptField
 	 * @public
 	 * @method				DevaptField.get_available_values()
-	 * @desc				Test if the given value is valid
-	 * @return {object}		a promise of a ResultSet
+	 * @desc				Get all field values
+	 * @param {boolean}		arg_all_fields	should return all fields (optional, default 'false')
+	 * @return {object}		a promise of a RecordSet
 	 */
-	var cb_get_available_values = function()
+	var cb_get_available_values = function(arg_all_fields)
 	{
 		var self = this;
 		// self.trace = true;
-		var context = 'get_available_values()';
+		var context = 'get_available_values(all fields?)';
 		self.enter(context, '');
 		
+		
+		// SHOULD RETURN ALL FIELDS OF THE MODEL
+		arg_all_fields = !! arg_all_fields;
+//		console.debug(arg_all_fields, context + ':arg_all_fields');
 		
 		// TEST IF ALREADY CALLED
 		if ( DevaptTypes.is_object(self.get_available_values_promise) )
@@ -399,76 +408,54 @@ function(Devapt, DevaptTypes, DevaptResources, DevaptClass, DevaptObject, Devapt
 		// HAS AN ASSOCIATION ?
 		if ( ! self.has_association() )
 		{
-			self.leave(context, Devapt.msg_failure);
-			return null;
+			self.leave(context, Devapt.msg_failure_promise);
+			return Devapt.promise_rejected();
 		}
 		
 		// GET ASSOCIATION
 		var asso = self.get_association();
-		// self.value(context, 'association', asso);
-		// console.log(asso, 'association');
-		
-		
-		// INIT
-/*		var model = null;
-		var query = null;
-		
-		
-		// MODEL HAS A JOIN AND FIELD IS A PART OF IT
-		if (self.has_join())
-		{
-			self.step(context, 'has join');
+		var query = asso.query;
+//		 self.value(context, 'association', asso);
+//		console.log(asso, context + ':association');
 			
-			// GET JOINED MODEL NAME
-			model = self.join.model_object || self.join.model;
-		}
-		
-		// MODEL FIELD HAS A FOREIGN LINK
-		else if (self.has_foreign())
-		{
-			self.step(context, 'has foreign');
-			
-			// GET JOINED MODEL NAME
-			model = self.model;
-			
-			// GET QUERY
-			// TODO DEBUG ORDERS
-			// var order = { 'field_name':self.sql_foreign_column, 'mode':'ASC' };
-			// var order = { 'field_name':self.name, 'mode':'ASC' };
-			var order = self.name + '=ASC';
-			var query_settings = {
-				// fields: [self.sql_foreign_column, self.sql_foreign_key],
-				fields: [self.name],
-				orders: [order]
-			};
-			query = DevaptQuery.create(self.name + '_get_values', query_settings);
-			query.set_select_distinct();
-			// console.log(query, self.name);
-			// console.log(self, self.name);
-		}
-		else
-		{
-			self.leave(context, Devapt.msg_failure);
-			return null;
-		}*/
-		
-		
 		// GET VALUES CALLBACK
 		var cb_get_values = function(arg_model, arg_query)
 		{
+			self.step(context, 'get values callback');
 			var results_promise = null;
+			
+			self.get_available_values_model = arg_model;
+			
+			// UPDATE QUERY IF NEEDED
+			if (arg_all_fields)
+			{
+				self.step(context, 'return all fields');
+				
+				arg_query = DevaptTypes.clone_object(arg_query);
+				arg_query.select_all();
+				arg_query.fields = asso.model.get_fields_names();
+			}
+//			console.log(arg_query, context + ':query');
+			
+			// READ WITH A QUERY
 			if ( DevaptTypes.is_object(arg_query) )
 			{
 				self.step(context, 'read with query');
 				results_promise = arg_model.get_engine().then(
 					function (arg_engine)
 					{
-						// console.log(arg_query, 'read query');
+//						console.log(arg_query, context + ':read query');
 						return arg_engine.read_records(arg_query);
+					}
+				).then(
+					function(arg_resultset)
+					{
+						return DevaptRecordSet.create(self.name + '_recordset_' + Devapt.uid(), {resultset:arg_resultset, model:arg_model});
 					}
 				);
 				self.get_available_values_promise = results_promise;
 			}
+			// READ ALL
 			else
 			{
 				self.step(context, 'read all');
@@ -476,6 +463,11 @@ function(Devapt, DevaptTypes, DevaptResources, DevaptClass, DevaptObject, Devapt
 					function (arg_engine)
 					{
 						return arg_engine.read_all_records();
+					}
+				).then(
+					function(arg_resultset)
+					{
+						return DevaptRecordSet.create(self.name + '_recordset_' + Devapt.uid(), {resultset:arg_resultset, model:arg_model});
 					}
 				);
 				self.get_available_values_promise = results_promise;
@@ -493,7 +485,7 @@ function(Devapt, DevaptTypes, DevaptResources, DevaptClass, DevaptObject, Devapt
 		{
 			self.step(context, 'model is an object');
 			
-			var results_promise = cb_get_values(asso.model, asso.query);
+			var results_promise = cb_get_values(asso.model, query);
 			
 			self.leave(context, Devapt.msg_success_promise);
 			return results_promise;
@@ -512,7 +504,7 @@ function(Devapt, DevaptTypes, DevaptResources, DevaptClass, DevaptObject, Devapt
 						self.step(context, 'model is found');
 						asso.model = arg_model;
 						// console.log(asso.model, 'set asso.model');
-						return cb_get_values(arg_model, asso.query);
+						return cb_get_values(arg_model, query);
 					}
 				);
 				
@@ -522,10 +514,68 @@ function(Devapt, DevaptTypes, DevaptResources, DevaptClass, DevaptObject, Devapt
 		}
 		
 		
-		self.leave(context, Devapt.msg_failure);
-		return null;
+		self.leave(context, Devapt.msg_failure_promise);
+		return Devapt.promise_rejected();
 	}
 	
+	
+	/**
+	 * @memberof			DevaptField
+	 * @public
+	 * @method				DevaptField.get_available_records()
+	 * @desc				Get all field values RecordSet
+	 * @param {boolean}		arg_all_fields	should return all fields (optional, default 'false')
+	 * @return {object}		a promise of a RecordSet
+	 */
+/*	var cb_get_available_records = function(arg_all_fields)
+	{
+		var self = this;
+		// self.trace = true;
+		var context = 'get_available_records(all fields?)';
+		self.enter(context, '');
+		
+		
+		// SHOULD RETURN ALL FIELDS OF THE MODEL
+		arg_all_fields = !! arg_all_fields;
+//		console.debug(arg_all_fields, context + ':arg_all_fields');
+		
+		// HAS AN ASSOCIATION ?
+		if ( ! self.has_association() )
+		{
+			self.leave(context, Devapt.msg_failure_promise);
+			return Devapt.promise_rejected();
+		}
+		
+		// TEST IF ALREADY CALLED
+		if ( DevaptTypes.is_object(self.get_available_records_promise) )
+		{
+			self.leave(context, Devapt.msg_success_promise);
+			return self.get_available_records_promise;
+		}
+		
+		// TEST IF ALREADY CALLED
+		if ( DevaptTypes.is_object(self.get_available_values_promise) )
+		{
+			self.get_available_records_promise = self.get_available_values_promise.then(
+				function(arg_resultset)
+				{
+					var resultset_model = self.get_available_values_model;
+					return DevaptRecordSet.create(self.name + '_recordset_' + Devapt.uid(), {resultset:arg_resultset, model:resultset_model});
+				}
+			);
+			
+			self.leave(context, Devapt.msg_success_promise);
+			return self.get_available_records_promise;
+		}
+		
+		
+		
+		
+		
+		self.leave(context, Devapt.msg_success_promise);
+		return promise;
+	}
+	*/
 	
 	
 	/* --------------------------------------------- CREATE CLASS ------------------------------------------------ */

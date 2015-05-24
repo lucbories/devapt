@@ -1,5 +1,5 @@
 /**
- * @file        views/mixin-input.js
+ * @file        views/container-mixin-input.js
  * @desc        Mixin for datas input feature for containers
  * @see			DevaptContainer
  * @ingroup     DEVAPT_VIEWS
@@ -12,70 +12,78 @@
 
 'use strict';
 define(
-['Devapt', 'core/types', 'object/class', 'views/container/mixin-input-simple',
-'views/container/mixin-input-validate', 'views/container/mixin-input-association'],
-function(Devapt, DevaptTypes, DevaptClass, DevaptMixinInputSimple,
-DevaptMixinInputValidation, DevaptMixinInputAssociation)
+['Devapt', 'core/types', 'object/class',
+	'views/container/mixin-input-simple', 'views/container/mixin-input-validate', 'views/container/mixin-input-association'],
+function(Devapt, DevaptTypes, DevaptClass,
+	DevaptMixinInputSimple, DevaptMixinInputValidation, DevaptMixinInputAssociation)
 {
 	/**
-	 * @mixin				DevaptMixinForm
+	 * @mixin				DevaptMixinInput
 	 * @public
 	 * @desc				Mixin of methods for datas form features
 	 */
-	var DevaptMixinForm = 
+	var DevaptMixinInput = 
 	{
 		/**
-		 * @memberof			DevaptMixinForm
+		 * @memberof			DevaptMixinInput
 		 * @public
 		 * @desc				Enable/disable trace for mixin operations
 		 */
-		mixin_trace_form: false,
+		mixin_input_trace: false,
 		
 		
 		/**
-		 * @memberof			DevaptMixinForm
+		 * @memberof			DevaptMixinInput
 		 * @public
 		 * @desc				Enable/disable mixin operations
 		 */
-		mixin_form_enabled: false, // ignored value (see instance value)
+		mixin_input_enabled: false, // ignored value (see instance value)
 		
 		
 		/**
-		 * @memberof			DevaptMixinForm
+		 * @memberof			DevaptMixinInput
 		 * @public
 		 * @desc				Map of HTML input tags
 		 */
-		// mixin_form_inputs_map: {}, // ignored value (see instance value)
+		// mixin_input_inputs_map: {}, // ignored value (see instance value)
 		
 		
 		
 		/**
 		 * @public
-		 * @memberof			DevaptMixinForm
+		 * @memberof			DevaptMixinInput
 		 * @desc				Init mixin
 		 * @return {nothing}
 		 */
-		mixin_init_form: function(self)
+		mixin_input_init: function(self)
 		{
-			self.push_trace(self.trace, DevaptMixinForm.mixin_trace_form);
-			var context = 'mixin_init_form()';
+			self.push_trace(self.trace, DevaptMixinInput.mixin_input_trace);
+			var context = 'mixin_input_init()';
 			self.enter(context, '');
 			
 			
 			var inputs = self.get_property('items_input_fields');
 			// console.log(inputs, 'inputs');
+			self.value(context, 'inputs', inputs);
 			
-			self.mixin_form_enabled = inputs ? inputs.length > 0 : false;
-			// console.log(self.mixin_form_enabled, 'self.mixin_form_enabled');
-			if (self.mixin_form_enabled)
+			self.mixin_input_enabled = inputs ? inputs.length > 0 : false;
+			// console.log(self.mixin_input_enabled, 'self.mixin_input_enabled');
+			self.value(context, 'self.mixin_input_enabled', self.mixin_input_enabled);
+			
+			if (self.mixin_input_enabled)
 			{
+				self.step(context, 'is enabled');
+				
 				if (inputs.length === 1 && inputs[0] === 'all' && self.items_fields && self.items_fields.length > 0)
 				{
+					self.step(context, 'set input fields');
+					
 					self.items_input_fields = self.items_fields;
+					self.value(context, 'self.items_input_fields', self.items_input_fields);
 				}
 			}
 			// console.log(self.items_input_fields, 'self.items_input_fields');
-			// self.mixin_form_inputs_map = {};
+			// self.mixin_input_inputs_map = {};
 			
 			
 			self.leave(context, '');
@@ -86,29 +94,29 @@ DevaptMixinInputValidation, DevaptMixinInputAssociation)
 		
 		/**
 		 * @public
-		 * @memberof			DevaptMixinForm
+		 * @memberof			DevaptMixinInput
 		 * @desc				Test if the view has input fields
 		 * @return {nothing}
 		 */
 		has_input: function()
 		{
 			var self = this;
-			self.push_trace(self.trace, DevaptMixinForm.mixin_trace_form);
+			self.push_trace(self.trace, DevaptMixinInput.mixin_input_trace);
 			var context = 'has_input()';
 			self.enter(context, '');
 			
-			self.value(context, 'enabled', self.mixin_form_enabled);
+			self.value(context, 'enabled', self.mixin_input_enabled);
 			
 			self.leave(context, '');
 			self.pop_trace();
-			return self.mixin_form_enabled;
+			return self.mixin_input_enabled;
 		},
 		
 		
 		
 		/**
 		 * @public
-		 * @memberof			DevaptMixinForm
+		 * @memberof			DevaptMixinInput
 		 * @desc				On input value changed
 		 * @param {object}		arg_field_obj			field definition attributes
 		 * @param {string}		arg_previous_value		previous field value
@@ -119,35 +127,78 @@ DevaptMixinInputValidation, DevaptMixinInputAssociation)
 		{
 			var self = this;
 			var context = 'on_input_changed(field, prev value, new value)';
-			self.push_trace(self.trace, DevaptMixinForm.mixin_trace_form);
+			self.push_trace(self.trace, DevaptMixinInput.mixin_input_trace);
 			self.enter(context, '');
 			
 			
-			self.items_current_record[arg_field_obj.name] = arg_new_value;
-			console.log(self.items_current_record, context + ':current record for [' + self.name + ']');
+			// VALUE IS NOT CHANGED
+			if (arg_previous_value === arg_new_value)
+			{
+				self.leave(context, 'nothing to do');
+				return;
+			}
 			
-			self.get_items_model().then(
-				function(model)
+			var promise = self.view_model_promise.then(
+				function(arg_view_model)
 				{
-					model.get_engine().then(
-						function(engine)
+					return arg_view_model.ready_promise.spread(
+						function(arg_model, arg_view)
 						{
-							engine.update_records([self.items_current_record]).then(
-								function()
+							self.assert_not_empty_string(context, 'arg_view.items_iterator', arg_view.items_iterator);
+							
+							switch(arg_view.items_iterator)
+							{
+								case 'records':
 								{
-									// console.log('fire event', context);
-									// console.log(arg_previous_value, context + ':arg_previous_value');
-									// console.log(arg_new_value, context + ':arg_new_value');
-									self.fire_event('devapt.container.updated', [model, self.items_current_record, arg_field_obj, arg_previous_value, arg_new_value]);
+									self.step(context, 'records iterator');
+									
+									// TODO ?
+		//							items = arg_view_model.get_recordset().get_records();
+									
+									self.step(context, Devapt.msg_default_implementation);
+									return;
 								}
-							);
+								
+								case 'fields':
+								{
+									self.step(context, 'fields iterator');
+									
+									// GET FIRST RECORD
+									var records = arg_view_model.get_recordset().get_records();
+									var record = records.length > 0 ? records[0] : null;
+									
+									if ( ! DevaptTypes.is_object(record) )
+									{
+										self.step(context, 'current record is not found');
+										return;
+									}
+									
+									record.set(arg_field_obj.name, arg_new_value);
+									record.save();
+									
+									break;
+								}
+								
+								case 'field_editor':
+								{
+									self.step(context, 'field_editor iterator');
+									
+		//							self.assert_not_empty_array(context, 'arg_view.items_fields', arg_view.items_fields);
+		//							self.assert_object(context, 'self.edited_field', self.edited_field);
+									
+									// TODO ?
+									
+									self.step(context, Devapt.msg_default_implementation);
+									return;
+								}
+							}
 						}
 					);
 				}
 			);
 			
 			
-			self.leave(context, '');
+			self.leave(context, Devapt.msg_success);
 			self.pop_trace();
 		},
 		
@@ -155,7 +206,7 @@ DevaptMixinInputValidation, DevaptMixinInputAssociation)
 		
 		/**
 		 * @public
-		 * @memberof			DevaptMixinForm
+		 * @memberof			DevaptMixinInput
 		 * @desc				Get an input tag for the given field
 		 * @param {object}		arg_deferred			deferred object
 		 * @param {object}		arg_field_orig			field definition attributes
@@ -169,7 +220,7 @@ DevaptMixinInputValidation, DevaptMixinInputAssociation)
 		{
 			var self = this;
 			var context = 'get_input(field, value)';
-			self.push_trace(self.trace, DevaptMixinForm.mixin_trace_form);
+			self.push_trace(self.trace, DevaptMixinInput.mixin_input_trace);
 			self.enter(context, '');
 			
 			
@@ -177,9 +228,9 @@ DevaptMixinInputValidation, DevaptMixinInputAssociation)
 			arg_render_label = !! (arg_render_label ? arg_render_label : false);
 			
 			// TEST ENABLED
-			if ( ! self.mixin_form_enabled )
+			if ( ! self.mixin_input_enabled )
 			{
-				self.leave(context, self.msg_success);
+				self.leave(context, Devapt.msg_success);
 				self.pop_trace();
 				return null;
 			}
@@ -204,7 +255,7 @@ DevaptMixinInputValidation, DevaptMixinInputAssociation)
 			{
 				self.step(context, 'input is found in current backend');
 				
-				self.leave(context, self.msg_success);
+				self.leave(context, Devapt.msg_success);
 				self.pop_trace();
 				return backend_input_jqo;
 			}
@@ -217,7 +268,7 @@ DevaptMixinInputValidation, DevaptMixinInputAssociation)
 				
 				var node_jqo = self.get_association_input(arg_deferred, field_obj, value_str, arg_access);
 				
-				self.leave(context, self.msg_success);
+				self.leave(context, Devapt.msg_success);
 				self.pop_trace();
 				return node_jqo; 
 			}
@@ -257,13 +308,13 @@ DevaptMixinInputValidation, DevaptMixinInputAssociation)
 				div_jqo.append(label_jqo);
 				div_jqo.append(node_jqo);
 				
-				self.leave(context, self.msg_success);
+				self.leave(context, Devapt.msg_success);
 				self.pop_trace();
 				return div_jqo;
 			}
 			
 			
-			self.leave(context, self.msg_success);
+			self.leave(context, Devapt.msg_success);
 			self.pop_trace();
 			return node_jqo;
 		}
@@ -278,34 +329,34 @@ DevaptMixinInputValidation, DevaptMixinInputAssociation)
 		'infos':{
 			'author':'Luc BORIES',
 			'created':'2014-08-23',
-			'updated':'2014-12-06',
+			'updated':'2015-05-08',
 			'description':'Mixin methods for datas form feature for containers.'
 		}
 	};
 	
 	
 	/**
-	 * @mixin				DevaptMixinFormClass
+	 * @mixin				DevaptMixinInputClass
 	 * @public
 	 * @desc				Mixin of methods for datas form feature for containers
 	 */
-	var DevaptMixinFormClass = new DevaptClass('DevaptMixinForm', null, class_settings);
+	var DevaptMixinInputClass = new DevaptClass('DevaptMixinInput', null, class_settings);
 	
 	// METHODS
-	DevaptMixinFormClass.infos.ctor = DevaptMixinForm.mixin_init_form;
-	DevaptMixinFormClass.add_public_method('has_input', {}, DevaptMixinForm.has_input);
-	DevaptMixinFormClass.add_public_method('on_input_changed', {}, DevaptMixinForm.on_input_changed);
-	DevaptMixinFormClass.add_public_method('get_input', {}, DevaptMixinForm.get_input);
+	DevaptMixinInputClass.infos.ctor = DevaptMixinInput.mixin_input_init;
+	DevaptMixinInputClass.add_public_method('has_input', {}, DevaptMixinInput.has_input);
+	DevaptMixinInputClass.add_public_method('on_input_changed', {}, DevaptMixinInput.on_input_changed);
+	DevaptMixinInputClass.add_public_method('get_input', {}, DevaptMixinInput.get_input);
 	
 	// MIXINS
-	DevaptMixinFormClass.add_public_mixin(DevaptMixinInputSimple);
-	DevaptMixinFormClass.add_public_mixin(DevaptMixinInputValidation);
-	DevaptMixinFormClass.add_public_mixin(DevaptMixinInputAssociation);
+	DevaptMixinInputClass.add_public_mixin(DevaptMixinInputSimple);
+	DevaptMixinInputClass.add_public_mixin(DevaptMixinInputValidation);
+	DevaptMixinInputClass.add_public_mixin(DevaptMixinInputAssociation);
 	
 	// BUILD MIXIN CLASS
-	DevaptMixinFormClass.build_class();
+	DevaptMixinInputClass.build_class();
 	
 	
-	return DevaptMixinFormClass;
+	return DevaptMixinInputClass;
 }
 );

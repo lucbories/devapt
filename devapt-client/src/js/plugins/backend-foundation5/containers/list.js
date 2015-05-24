@@ -60,7 +60,16 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptContainer, undefined)
 		
 		
 		// SELECT ANCHOR BY CONTENT
-		var a_jqo = $('li>a:contains("' + arg_node_item_text + '"):eq(0)', self.items_jquery_parent);
+		var a_jqo = null;
+		try
+		{
+			a_jqo = $('li>a:contains("' + arg_node_item_text + '"):eq(0)', self.items_jquery_parent);
+		}
+		catch(e)
+		{
+			self.error(context + 'jquery select failed for [' + 'li>a:contains("' + arg_node_item_text + '"):eq(0)' + ']');
+		}
+		
 		if ( ! a_jqo)
 		{
 			console.error(arg_node_item_text, context + ':arg_node_item_text');
@@ -87,7 +96,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptContainer, undefined)
 	var cb_render_begin = function()
 	{
 		var self = this;
-		self.trace=true;
+		// self.trace=true;
 		
 		var context = 'render_begin()';
 		self.enter(context, '');

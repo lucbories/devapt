@@ -278,7 +278,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptContainer, undefined)
 		node_jqo.append(arg_item_jqo);
 		
 		
-		self.leave(context, self.msg_success);
+		self.leave(context, Devapt.msg_success);
 		return true;
 	}
 	

@@ -243,9 +243,10 @@ define([/*'Devapt', */'core/traces'], function(/*Devapt, */DevaptTraces)
 	 * @memberof			DevaptTypes
 	 * @public
 	 * @static
-	 * @method				DevaptTypes.is_object(arg_value)
-	 * @desc				Test if the value is an object
-	 * @param {anything}	arg_value			value to test
+	 * @method				DevaptTypes.is_object_with(arg_value,arg_attributes_array)
+	 * @desc				Test if the value is an object and has all given attributes names
+	 * @param {object}		arg_value				value to test
+	 * @param {array}		arg_attributes_array	array of attributes names
 	 * @return {boolean}
 	 */
 	DevaptTypes.is_object_with = function(arg_value, arg_attributes_array)
@@ -258,9 +259,10 @@ define([/*'Devapt', */'core/traces'], function(/*Devapt, */DevaptTraces)
 	 * @memberof			DevaptTypes
 	 * @public
 	 * @static
-	 * @method				DevaptTypes.are_objectg(arg_values)
-	 * @desc				Test if an array of value are object
+	 * @method				DevaptTypes.are_object_with(arg_values,arg_attributes_array)
+	 * @desc				Test if an array of values are object and have all given attributes names
 	 * @param {array}		arg_values			values to test
+	 * @param {array}		arg_attributes_array	array of attributes names
 	 * @return {boolean}
 	 */
 	DevaptTypes.are_object_with = function(arg_values, arg_attributes_array)
@@ -592,6 +594,7 @@ define([/*'Devapt', */'core/traces'], function(/*Devapt, */DevaptTraces)
 	{
 		return DevaptTypes.is_string(arg_value) && arg_value === '';
 	}
+	DevaptTypes.is_empty_string = DevaptTypes.is_empty_str;
 
 	/**
 	 * @memberof			DevaptTypes
@@ -606,7 +609,8 @@ define([/*'Devapt', */'core/traces'], function(/*Devapt, */DevaptTraces)
 	{
 		return DevaptTypes.is_null(arg_value) || ( DevaptTypes.is_string(arg_value) && arg_value === '' );
 	}
-
+	DevaptTypes.is_empty_string_or_null = DevaptTypes.is_empty_str_or_null;
+	
 	/**
 	 * @memberof		Devapt
 	 * @public
@@ -620,6 +624,7 @@ define([/*'Devapt', */'core/traces'], function(/*Devapt, */DevaptTraces)
 	{
 		return DevaptTypes.is_string(arg_value) && arg_value !== '' && arg_value.length > 0;
 	}
+	DevaptTypes.is_not_empty_string = DevaptTypes.is_not_empty_str;
 
 	/**
 	 * @memberof			DevaptTypes

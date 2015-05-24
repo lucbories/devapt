@@ -35,7 +35,7 @@ final class SqlBuilderDelete
 	// STATIC ATTRIBUTES
 	
 	/// @brief TRACE FLAG
-	static public $TRACE_BUILDER = false;
+	static public $TRACE_BUILDER = true;
 	
 	
 	
@@ -83,6 +83,8 @@ final class SqlBuilderDelete
 		
 		// GET OPTIONAL VALUES
 		$query_values = $arg_query->getOperandsAssocValues();
+//		Trace::value($context, 'query_values', $query_values, self::$TRACE_BUILDER);
+		
 		$query_values = is_array($query_values) ? $query_values : array();
 		Trace::value($context, 'query_values', $query_values, self::$TRACE_BUILDER);
 		

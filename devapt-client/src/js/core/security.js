@@ -273,14 +273,17 @@ function(Devapt, DevaptTrace, DevaptTypes, DevaptNavHistory, DevaptCache)
 		try
 		{
 			var record = DevaptCache.get(DevaptSecurity.logged_user_key, DevaptSecurity.default_logged_user);
+			
+			DevaptTrace.trace_leave(context, Devapt.msg_success, DevaptSecurity.security_trace);
+			return record.token;
 		}
 		catch(e)
 		{
 			console.error(e, context);
 		}
 		
-		DevaptTrace.trace_leave(context, Devapt.msg_success, DevaptSecurity.security_trace);
-		return record.token;
+		DevaptTrace.trace_leave(context, Devapt.msg_failure, DevaptSecurity.security_trace);
+		return null;
 	}
 	
 	

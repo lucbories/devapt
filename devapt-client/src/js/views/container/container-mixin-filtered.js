@@ -67,21 +67,6 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptResources)
 							view.add_event_callback(self.filtered.event, [self, self.on_filtered_event], false);
 						}
 					);
-					
-					// promise.fail(
-						// function()
-						// {
-							// console.log(self.filtered_jqo, 'self.filtered_jqo');
-							// console.log(self.filtered, 'self.filtered');
-							
-							// self.leave(context, '');
-							// self.pop_trace();
-							// return;
-						// }
-					// );
-					
-					// self.value(context, 'add callback on event', self.filtered.event);
-					// self.add_event_callback(self.filtered.event, [self, self.on_filtered_event], false);
 				}
 				else
 				{
@@ -113,7 +98,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptResources)
 			// GET OPERANDS
 			var event_obj = arg_event_operands[0];
 			var target_obj = arg_event_operands[1];
-			var value = arg_event_operands[2];
+			var value = arg_event_operands[2].input;
 			self.value(context, 'value', value);
 			self.mixin_filtered_value = value;
 			
@@ -126,7 +111,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptResources)
 			self.apply_filtered_value(value, fields_names);
 			
 			
-			self.leave(context, self.msg_success);
+			self.leave(context, Devapt.msg_success);
 			self.pop_trace();
 		},
 		
@@ -154,7 +139,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptResources)
 			// FILTERED FEATURE IS DISABLED
 			if (! self.mixin_filtered_enabled)
 			{
-				self.leave(context, self.msg_success);
+				self.leave(context, Devapt.msg_success);
 				self.pop_trace
 				return true;
 			}
@@ -162,7 +147,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptResources)
 			// CHECK VALUE
 			if (! DevaptTypes.is_string(arg_filtered_value) )
 			{
-				self.leave(context, self.msg_failure);
+				self.leave(context, Devapt.msg_failure);
 				self.pop_trace
 				return false;
 			}
@@ -170,7 +155,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptResources)
 			// CHECK FIELDS NAMES
 			if (! DevaptTypes.is_not_empty_array(arg_fields_names) )
 			{
-				self.leave(context, self.msg_failure);
+				self.leave(context, Devapt.msg_failure);
 				self.pop_trace
 				return false;
 			}
@@ -182,7 +167,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptResources)
 				nodes_jqo.show();
 				nodes_jqo.addClass('devapt-container-visible');
 				
-				self.leave(context, self.msg_success);
+				self.leave(context, Devapt.msg_success);
 				self.pop_trace
 				return true;
 			}
@@ -210,7 +195,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptResources)
 							var field_name = arg_fields_names[field_index];
 							self.value(context, 'field_name', field_name);
 							
-							var field_value = loop_record[field_name];
+							var field_value = loop_record.get(field_name);
 							self.value(context, 'field_value', field_value);
 							
 							if ( DevaptTypes.is_not_empty_str(field_value) && regex.test(field_value) )
@@ -236,26 +221,15 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptResources)
 			);
 			
 			// UPDATE PAGINATION
-			// self.fire_event('devapt.pagination.update_filtered_pagination', [0, items_count]);
+			self.fire_event('devapt.pagination.update_pagination', [ {'begin':0, 'end':items_count} ]);
 			
 			
-			self.leave(context, self.msg_success);
+			self.leave(context, Devapt.msg_success);
 			self.pop_trace();
 			return true;
 		}
 		
 	};
-	
-	
-	/**
-	 * @public
-	 * @memberof			DevaptMixinFiltered
-	 * @desc				Register mixin options
-	 * @return {nothing}
-	 */
-	// DevaptMixinFiltered.register_options = function(arg_prototype)
-	// {
-	// };
 	
 	
 	
@@ -266,7 +240,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptResources)
 		'infos':{
 			'author':'Luc BORIES',
 			'created':'2014-08-23',
-			'updated':'2014-12-06',
+			'updated':'2015-04-16',
 			'description':'Mixin methods for datas filtered feature for containers.'
 		}
 	};

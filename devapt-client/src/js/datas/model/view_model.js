@@ -4,8 +4,14 @@
  * 				
  * 				Principle:
  * 					... <--[Datas]--> Storage Engine <--[ResultSet]--> Model
- * 					Model <--[SharedRecordSet]--> ViewModel <--[datas]--> View
+ * 					Model <--[RecordSet]--> ViewModel <--[RecordSet]--> View
  * 				
+ * 					A ViewModel contains the common state of a View and a Model.
+ * 						A View.
+ * 						Current datas records: a datas Recordset.
+ * 						Current selected records: a selection Recordset.
+ * 						Formulas, aliases, rules.
+ * 					
  * 				Example:
  * 					A view V receive a refresh event.
  * 					V call its ViewModel VM reload operation.
@@ -25,10 +31,10 @@
  *                  ->is_ok()                 : boolean (status is 'ok')
  *                  ->is_error()              : boolean (status is 'error')
  *  
- *                  ->get_records()           : Current SharedRecordSet object (shared between many ViewModel instances)
- *                  ->get_query()             : Query object (one Query per View)
- *                  ->get_model()             : Model object (shared between many ViewModel instances)
- *                  ->get_view()              : View object (one ViewModel per View)
+ *                  ->get_recordset()         : Current SharedRecordSet object (shared between many ViewModel instances)
+ *                 // ->get_query()             : Query object (one Query per View)
+ *                 // ->get_model()             : Model object (shared between many ViewModel instances)
+ *                 // ->get_view()              : View object (one ViewModel per View)
  *  
  *                  ->reload()                : Reload all query model records and refresh the view
  *  
@@ -37,11 +43,19 @@
  *                  ->read_all()              : Get all records from the model
  *                  ->update(records)         : Update given records into the model and update the view
  *                  ->delete(records)         : Delete given records into the model and update the view
- *  
- *                  ->select(records)         : Given records are selected into the View object
+ *  				
+ *                  ->select_record(record)         : 
+ *                  ->unselect_record(record)         : 
+ *  				->get_selected_records()       :
+ *  				->set_selected_records(records):
+ *  				->get_selected_record(record)  :
+ *  				->on_container_select(items)   :
+ *  				
  *                  ->select_all()            : All view records are selected into the View object
  *                  ->unselect(records)       : Given records are unselected into the View object
  *                  ->unselect_all()          : All view records are unselected into the View object
+ *  
+ *                  ->get_items_types()       : get container view items types (html, view, text...)
  *  
  * @ingroup     DEVAPT_DATAS
  * @date        2015-02-02
@@ -53,21 +67,20 @@
 
 'use strict';
 define([
-	'Devapt', 'core/types', 'core/resources', 'core/traces-memory',
+	'Devapt', 'core/types', 'core/resources',
 	'object/class', 'object/object',
-	'datas/model/model', 'datas/query', 'datas/model/shared_recordset', 'datas/model/view_model-mixin-crudable', 'datas/model/view_model-mixin-selectable',
+	'datas/model/model', 'datas/datasource/datasources', 'datas/query', 'datas/model/recordset', 'datas/model/view_model-mixin-crudable', 'datas/model/view_model-mixin-selectable',
 	'views/view'],
 function(
-	Devapt, DevaptTypes, DevaptResources, DevaptTracesMemory,
+	Devapt, DevaptTypes, DevaptResources,
 	DevaptClass, DevaptObject,
-	DevaptModel, DevaptQuery, DevaptSharedRecordSet, DevaptViewModelMixinCrudable, DevaptViewModelMixinSelectable,
+	DevaptModel, DevaptDatasources, DevaptQuery, DevaptRecordSet, DevaptViewModelMixinCrudable, DevaptViewModelMixinSelectable,
 	DevaptView)
 {
 	/**
 	 * @public
 	 * @class				DevaptViewModel
 	 * @desc				ModelView class to interact with a model and a view and to deal with functional rules
-	 * @return {nothing}
 	 */
 	
 	
@@ -80,7 +93,7 @@ function(
 	var cb_constructor = function(self)
 	{
 		// DEBUG
-		// self.trace=true;
+//		self.trace=true;
 		
 		// CONSTRUCTOR BEGIN
 		var context = 'constructor';
@@ -88,22 +101,82 @@ function(
 		
 		
 		// INIT PROMISES
-		var model_promise = null;
-		var view_promise = null;
+		self.model_promise = null;
+		self.view_promise = null;
 		self.ready_promise = null;
+		self.batch_promise = Devapt.promise_resolved();
+		
+		// INIT THE MODEL
+		cb_init_model(self);
+		
+		// INIT THE VIEW
+		cb_init_view(self);
+		
+		// INIT READY PROMISE
+		self.assert_object(context, 'model_promise', self.model_promise);
+		self.assert_object(context, 'view_promise', self.view_promise);
+		self.ready_promise = Devapt.promise_all([self.model_promise, self.view_promise]);
+		
+		// INIT THE RECORDSET
+		cb_init_recordset(self);
+		
+		// INIT ITEMS TYPES
+		cb_init_items_types(self);
+		
+		// INIT FIELDS TYPES
+		cb_init_fields_types(self);
+		
+		// INIT THE SELECTED RECORDS
+		cb_init_selection(self);
+		
+		
+		// CONSTRUCTOR END
+		self.leave(context, Devapt.msg_success);
+	};
+	
+	
+	
+	/**
+	 * @memberof				DevaptViewModel
+	 * @public
+	 * @method					DevaptViewModel.is_valid()
+	 * @desc					Test if the storage engine is valid
+	 * @return {boolean}		Is valid ?
+	 */
+	var cb_is_valid = function()
+	{
+		var self = this;
+		self.step('is valid ?', '');
+		
+		var result = self.is_ok()
+			&& DevaptTypes.is_object(self.ready_promise) && Devapt.is_promise(self.ready_promise)
+			&& DevaptTypes.is_object(self.model_promise) && Devapt.is_promise(self.model_promise)
+			&& DevaptTypes.is_object(self.view_promise) && Devapt.is_promise(self.view_promise)
+			&& DevaptTypes.is_object(self.recordset) && self.recordset.is_recordset
+			;
+		self.value('is valid ?', 'result', result);
+		return result;
+	};
+	
+	
+	
+	/* --------------------------------------------- INIT OPERATIONS ------------------------------------------------ */
+	
+	/**
+	 * @memberof				DevaptViewModel
+	 * @public
+	 * @method					cb_init_model()
+	 * @desc					Init a promise for a Model
+	 * @return {nothing}
+	 */
+	var cb_init_model = function (self)
+	{
+		var context = 'cb_init_model';
+		self.enter(context, '');
+		
 		
 		try
 		{
-			// SET QUERY
-			if ( ! DevaptTypes.is_object(self.query) || ! self.query.is_query )
-			{
-				self.step(context, 'set query');
-				var query_name = self.name + '_query';
-				self.query = DevaptQuery.create(query_name, {});
-			}
-			
-			
-			// SET MODEL
 			if ( ! DevaptTypes.is_object(self.model) || ! self.model.is_model )
 			{
 				self.step(context, 'set model');
@@ -122,85 +195,8 @@ function(
 							return;
 						}
 						
-						model_promise = DevaptResources.get_resource_instance(self.model_name);
+						self.model_promise = DevaptResources.get_resource_instance(self.model_name);
 						
-						break;
-					}
-					
-					case 'logs':
-					{
-						self.step(context, 'source is logs');
-						
-						var settings = {
-							"name":"MODEL_AUTH_GROUPS",
-							
-							"class_type":"model",
-							
-							"access":{"create":false,"read":true,"update":false,"delete":false},
-							
-							"role_read":"ROLE_LOGS_READ",
-							"role_create":"ROLE_LOGS_CREATE",
-							"role_update":"ROLE_LOGS_UPDATE",
-							"role_delete":"ROLE_LOGS_DELETE",
-							
-							"engine":{
-								"name":"LOCAL_LOGS_engine",
-								"source":"array",
-								"provider_cb": function(arg_item, arg_index)
-									{
-										if ( DevaptTypes.is_null(arg_item) )
-										{
-											return DevaptTracesMemory.get_logs();
-										}
-										
-										if ( DevaptTypes.is_integer(arg_index) )
-										{
-											DevaptTracesMemory.logs[arg_index] = arg_item;
-										}
-										else
-										{
-											DevaptTracesMemory.logs.push(arg_item);
-										}
-										
-										return DevaptTracesMemory.get_logs();
-									}
-							},
-							
-							"fields":{
-								"level":{
-									"type":"String",
-									"label":"Level"
-								},
-								"class_name":{
-									"type":"String",
-									"label":"Class"
-								},
-								"object_name":{
-									"type":"String",
-									"label":"Object"
-								},
-								"method_name":{
-									"type":"String",
-									"label":"Method"
-								},
-								"context":{
-									"type":"String",
-									"label":"Context"
-								},
-								"step":{
-									"type":"String",
-									"label":"Step"
-								},
-								"text":{
-									"type":"String",
-									"label":"Text"
-								},
-							}
-						};
-						
-						model_promise = Devapt.create('DevaptModel', settings);
-						// console.log(DevaptTracesMemory.logs, 'DevaptTracesMemory.logs');
-						// console.log(model_promise, 'model_promise');
 						break;
 					}
 					
@@ -242,21 +238,32 @@ function(
 							return;
 						}
 						
-						var engine_settings = { name:self.name + '_engine', records_array:items };
-						// console.log(engine_settings, context + ':engine_settings');
+						var engine_settings = {
+							name:self.name + '_engine',
+							records_array:items
+						};
 						
 						var engine_promise = Devapt.create('StorageArray', engine_settings);
 						self.assert_object(context, 'engine_promise', engine_promise);
 						
-						model_promise = engine_promise.then(
+						self.model_promise = engine_promise.then(
 							function(engine_obj)
 							{
 								self.step(context, 'array engine is created');
 								
-								// console.log(items, context + ':items');
-								// console.log(engine_obj, context + ':array engine');
+								var model_settings = {
+									name: self.name + '_model',
+									engine:engine_obj,
+									fields:{
+										value:{
+											type:'String',
+											label:'Inline value',
+											is_pk:true
+										}
+									}
+								};
 								
-								return Devapt.create('Model', { name: self.name + '_model', engine:engine_obj });
+								return Devapt.create('Model', model_settings);
 							}
 						);
 						
@@ -264,18 +271,180 @@ function(
 					}
 				}
 				
-				self.step(context, 'check model promise');
 				
-				self.assert_object(context, 'model_promise', model_promise);
-				model_promise.then(
-					function(model)
+				// GET THE MODEL FROM DATASOURCES
+				if ( ! self.model_promise)
+				{
+					self.model_promise = DevaptDatasources.get_datasource_model(self.source);
+				}
+			}
+		}
+		catch(e)
+		{
+			console.error(e, context);
+		}
+		
+		
+		self.leave(context, '');
+	};
+	
+	
+	/**
+	 * @memberof				DevaptViewModel
+	 * @public
+	 * @method					cb_init_view(self)
+	 * @desc					Init a promise for a View
+	 * @return {nothing}
+	 */
+	var cb_init_view = function (self)
+	{
+		var context = 'cb_init_view';
+		self.enter(context, '');
+		
+		
+		try
+		{
+			// GET VIEW
+			var has_valid_view = DevaptTypes.is_object(self.view) && self.view.is_view;
+			if ( ! has_valid_view)
+			{
+				self.step(context, 'set view');
+				
+				self.assert_not_empty_str(context, 'view name', self.view);
+				
+				self.view_promise = DevaptResources.get_resource_instance(self.view);
+				self.view_promise.then(
+					function(arg_view)
 					{
-						self.step(context, 'model is found');
-						self.model = model;
-					},
-					function()
+						self.view_items_iterator = self.view.items_iterator;
+					}
+				);
+			}
+			else
+			{
+				self.step(context, 'view is set');
+				self.view_promise = Devapt.promise_resolved(self.view);
+				self.view_items_iterator = self.view.items_iterator;
+			}
+		}
+		catch(e)
+		{
+			console.error(e, context);
+		}
+		
+		
+		self.leave(context, '');
+	};
+	
+	
+	/**
+	 * @memberof				DevaptViewModel
+	 * @public
+	 * @method					cb_init_selection()
+	 * @desc					Init the selected records
+	 * @return {nothing}
+	 */
+	var cb_init_selection = function (self)
+	{
+		var context = 'cb_init_selection';
+		self.enter(context, '');
+		
+		
+		try
+		{
+			// TODO
+		}
+		catch(e)
+		{
+			console.error(e, context);
+		}
+		
+		
+		self.leave(context, '');
+	};
+	
+	
+	/**
+	 * @memberof				DevaptViewModel
+	 * @public
+	 * @method					cb_init_recordset()
+	 * @desc					Init the records set
+	 * @return {nothing}
+	 */
+	var cb_init_recordset = function (self)
+	{
+		var context = 'cb_init_recordset';
+		self.enter(context, '');
+		
+		
+		try
+		{
+			var has_valid_recordset = DevaptTypes.is_object(self.recordset) && self.recordset.is_recordset;
+			if ( ! has_valid_recordset)
+			{
+				self.step(context, 'init recordset');
+				
+				self.ready_promise = self.ready_promise.spread(
+					function(arg_model, arg_view)
 					{
-						self.error(context, 'bad model resource');
+						// CREATE ITEMS RECORDSET
+						var recordset_name = self.name + '_recordset';
+						var recordset_settings = {
+							model:arg_model
+						};
+						
+						self.recordset = DevaptRecordSet.create(recordset_name, recordset_settings);
+						
+						// GET PK FIELD NAME
+						var pk_field = arg_model.get_pk_field();
+						var pk_field_name = pk_field ? pk_field.name : null;
+						
+						// SET FIELDS LIST
+						var pk_field_found = false;
+						self.recordset.query.fields = [];
+						for(var index in arg_view.items_fields)
+						{
+							var field_name = arg_view.items_fields[index];
+							self.recordset.query.fields.push(field_name);
+							
+							if (pk_field_name && field_name === pk_field_name)
+							{
+								pk_field_found = true;
+							}
+						}
+						
+						// ADD ID FIELD IF NEEDED
+						self.recordset.query.fields
+						if (!pk_field_found)
+						{
+							self.recordset.query.fields.push(pk_field_name);
+						}
+						
+						// SELECT DISTINCT CASE
+						if (arg_view.items_distinct)
+						{
+							self.step(context, 'read distinct records');
+							if ( DevaptTypes.is_not_empty_str(arg_view.items_distinct_field) )
+							{
+								self.step(context, 'read distinct one records');
+								
+								self.recordset.query.set_select_distinct_one();
+								self.recordset.query.set_one_field(arg_view.items_distinct_field);
+							}
+							else
+							{
+								self.step(context, 'read distinct many records');
+								
+								self.recordset.query.set_select_distinc();
+							}
+						}
+						else
+						{
+							self.step(context, 'set select query');
+							self.recordset.query.set_select();
+						}
+						
+						return [arg_model, arg_view];
 					}
 				);
 			}
@@ -286,63 +455,59 @@ function(
 		}
 		
 		
+		self.leave(context, '');
+	};
+	
+	
+	/**
+	 * @memberof				DevaptViewModel
+	 * @public
+	 * @method					cb_init_items_types()
+	 * @desc					Init the records set
+	 * @return {nothing}
+	 */
+	var cb_init_items_types = function (self)
+	{
+		var context = 'cb_init_items_types';
+		self.enter(context, '');
+		
+		
 		try
 		{
-			// SET VIEW
-			if ( ! DevaptTypes.is_object(self.view) || ! self.view.is_view )
-			{
-				self.step(context, 'set view');
-				
-				if ( ! DevaptTypes.is_string(self.view) )
+			self.ready_promise = self.ready_promise.spread(
+				function(arg_model, arg_view)
 				{
-					self.error(context, 'bad view name');
-					return;
-				}
-				
-				view_promise = DevaptResources.get_resource_instance(self.view);
-			}
-			else
-			{
-				self.step(context, 'view is set');
-				view_promise = Devapt.promise_resolved(self.view);
-			}
-			
-			
-			// UDPATE QUERY WITH VIEW
-			view_promise.then(
-				function(view)
-				{
-					self.step(context, 'view is found');
-					self.view = view;
-					self.query.fields = self.view.items_fields;
-				},
-				function()
-				{
-					self.error(context, 'bad view resource');
-				}
-			);
-			
-			
-			// SET READY PROMISE
-			self.assert_object(context, 'model_promise', model_promise);
-			self.assert_object(context, 'view_promise', view_promise);
-			self.ready_promise = Devapt.promise_all([model_promise, view_promise]);
-			self.ready_promise = self.ready_promise.then(
-				function()
-				{
-					self.step(context, 'ready promise is resolved');
-					// console.log(context, 'ready promise is resolved');
+					self.step(context, 'init items types');
 					
-					return self;
+					self.items_types = [];
+					
+					// GET ITEMS TYPES FROM INLINE SOURCE
+					if (self.source === 'inline')
+					{
+						self.step(context, 'inline source');
+						
+						if ( DevaptTypes.is_not_empty_array(arg_view.items_types) )
+						{
+							self.items_types = arg_view.items_types;
+						}
+					}
+					
+					// GET ITEMS TYPES FROM MODEL SOURCE
+					else if (self.source === 'model')
+					{
+						self.step(context, 'model source');
+						
+						if (arg_view.items_iterator === 'field_editor' || arg_view.items_iterator === 'records' || arg_view.items_iterator === 'fields')
+						{
+							self.step(context, 'iterator is ' + arg_view.items_iterator);
+							
+							self.items_types = ['object'];
+						}
+					}
+					
+					return [arg_model, arg_view];
 				}
 			);
-			
-			
-			// SET RECORDS
-			if ( DevaptTypes.is_object(self.records) && self.records.is_recordset )
-			{
-				self.step(context, 'records is set');
-			}
 		}
 		catch(e)
 		{
@@ -350,263 +515,174 @@ function(
 		}
 		
 		
-		// CONSTRUCTOR END
-		self.leave(context, Devapt.msg_success_promise);
+		self.leave(context, '');
 	};
 	
 	
 	/**
 	 * @memberof				DevaptViewModel
 	 * @public
-	 * @method					DevaptViewModel.is_valid()
-	 * @desc					Test if the storage engine is valid
-	 * @return {boolean}		Is valid ?
+	 * @method					cb_init_fields_types()
+	 * @desc					Init the records set
+	 * @return {nothing}
 	 */
-	var cb_is_valid = function()
+	var cb_init_fields_types = function (self)
 	{
-		var self = this;
-		self.step('is valid ?', '');
+		var context = 'cb_init_fields_types';
+		self.enter(context, '');
 		
-		var result = self.is_ok()
-			&& Devapt.is_object(self.ready_promise) && Devapt.is_promise(self.ready_promise)
-			&& Devapt.is_object(self.model) && self.model.is_model
-			&& Devapt.is_object(self.query) && self.query.is_query
-			&& Devapt.is_object(self.view) && self.view.is_view
-			// && Devapt.is_object(self.records) && self.records.is_recordset
-			;
-		self.value('is valid ?', 'result', result);
-		return result;
+		
+		try
+		{
+			self.ready_promise = self.ready_promise.spread(
+				function(arg_model, arg_view)
+				{
+					self.step(context, 'init fields types');
+					
+					self.fields_types = [];
+					
+					// ITERATE ON ONE FIELD RECORDS
+					if (arg_view.items_iterator === 'field_editor')
+					{
+						self.step(context, 'iterator is field_editor');
+						
+						self.fields_types = ['object'];
+					}
+					
+					// ITERATE ON RECORDS
+					else if (arg_view.items_iterator === 'records')
+					{
+						self.step(context, 'iterator is records');
+						
+						self.fields_types = arg_model.get_fields_types(arg_view.items_fields);
+					}
+					
+					// ITERATE ON FIELDS
+					else if (arg_view.items_iterator === 'fields')
+					{
+						self.step(context, 'iterator is fields');
+						
+						// FIELD NAME / FIELD VALUE
+						self.fields_types = ['string', 'anything'];
+					}
+					
+					else 
+					{
+						self.step(context, 'iterator is unknow');
+					}
+					
+					return [arg_model, arg_view];
+				}
+			);
+		}
+		catch(e)
+		{
+			console.error(e, context);
+		}
+		
+		
+		self.leave(context, '');
 	};
 	
 	
 	
+	/* --------------------------------------------- RECORDSET OPERATIONS ------------------------------------------------ */
+	
 	/**
 	 * @memberof				DevaptViewModel
 	 * @public
-	 * @method					DevaptViewModel.get_recordset()
+	 * @method					self.get_recordset()
 	 * @desc					Get recordset object
-	 * @return {object}			SharedRecordSet object
+	 * @return {object}			RecordSet object
 	 */
 	var cb_get_recordset = function ()
 	{
 		var self = this;
 		self.step('get recordset', '');
+		
 		return self.recordset;
 	};
 	
 	
 	
-	/**
-	 * @memberof				DevaptViewModel
-	 * @public
-	 * @method					DevaptViewModel.get_records()
-	 * @desc					Get all records object
-	 * @return {array}			Records array
-	 */
-	var cb_get_records = function ()
-	{
-		var self = this;
-		self.step('get records', '');
-		self.assert_object(context, 'recordset', self.recordset);
-		return self.recordset.records;
-	};
-	
+	/* --------------------------------------------- LINK OPERATIONS ------------------------------------------------ */
 	
 	/**
 	 * @memberof				DevaptViewModel
 	 * @public
-	 * @method					DevaptViewModel.get_query()
-	 * @desc					Get the view query
-	 * @return {object}			Query object
+	 * @method					self.get_linked_record()
+	 * @desc					Get linked record object
+	 * @return {object}			Record object
 	 */
-	var cb_get_query = function ()
+	var cb_get_linked_record = function ()
 	{
 		var self = this;
-		self.step('get query', '');
-		return self.query;
+		self.step('get linked record', '');
+		return self.linked_record;
 	};
-	
 	
 	/**
 	 * @memberof				DevaptViewModel
 	 * @public
-	 * @method					DevaptViewModel.get_model()
-	 * @desc					Get the model
-	 * @return {object}			Model object
+	 * @method					self.set_linked_record(record)
+	 * @desc					Set linked record object
+	 * @param					arg_record		linked record
+	 * @return {nothing}
 	 */
-	var cb_get_model = function ()
+	var cb_set_linked_record = function (arg_record)
 	{
 		var self = this;
-		self.step('get model', '');
-		return self.model;
-	};
-	
-	
-	/**
-	 * @memberof				DevaptViewModel
-	 * @public
-	 * @method					DevaptViewModel.get_view()
-	 * @desc					Get the view
-	 * @return {object}			View object
-	 */
-	var cb_get_view = function ()
-	{
-		var self = this;
-		self.step('get view', '');
-		return self.view;
+		var context = 'set_linked_record(record)';
+		self.enter(context, '');
+		self.assert_object(context, 'record', arg_record);
+		self.assert_true(context, 'record.is_record', arg_record.is_record);
+		
+		self.linked_record = arg_record;
+		
+		self.leave(context, Devapt.msg_success);
 	};
 	
 	
 	
-	/* --------------------------------------------- UTILS OPERATIONS ------------------------------------------------ */
+	/* --------------------------------------------- TYPES OPERATIONS ------------------------------------------------ */
 	
 	/**
 	 * @public
 	 * @memberof			DevaptViewModel
-	 * @method				DevaptViewModel.get_items_types_array()
-	 * @desc				Get items types array
-	 * @return {promise}
+	 * @method				DevaptViewModel.get_items_types()
+	 * @desc				Get container items types array with type in 'view', 'text', 'object'
+	 * @return {array}
 	 */
-	var cb_get_items_types_array = function()
+	var cb_get_items_types = function()
 	{
 		var self = this;
-		// self.trace=true;
-		var context = 'get_items_types_array()';
+		var context = 'get_items_types()';
 		self.enter(context, '');
 		
+		self.value(context, 'types', self.items_types);
 		
-		var deferred = Devapt.defer();
-		var types_promise = Devapt.promise(deferred);
-		
-		self.value(context, 'source', self.source);
-		// console.log('source', self.source);
-		
-		// GET ITEMS TYPES FROM INLINE SOURCE
-		if ( self.source === 'inline' || self.source === 'logs' || self.source === 'events'
-			|| self.source === 'classes' || self.source === 'resources' || self.source === 'views'
-			|| self.source === 'models' || self.source === 'resource-api'
-			|| self.source === 'server-api' || self.source === 'view-api' || self.source === 'crud-api' )
-		{
-			self.step(context, 'inline source');
-			
-			var types = [];
-			
-			if ( DevaptTypes.is_not_empty_array(self.view.items_types) )
-			{
-				types = self.view.items_types;
-			}
-			
-			self.value(context, 'types', types);
-			deferred.resolve(types);
-			
-			self.leave(context, Devapt.msg_success_promise);
-			return types_promise;
-		}
-		
-		
-		// GET ITEMS TYPES FROM MODEL SOURCE
-		if ( self.source === 'model' )
-		{
-			self.step(context, 'model source');
-			
-			self.ready_promise.then(
-				function()
-				{
-					self.step(context, 'model found');
-					
-					// ITERATE ON ONE FIELD RECORDS
-					if (self.view.items_iterator === 'field_editor')
-					{
-						self.step(context, 'iterator is field_editor');
-						
-						var types = ['object'];
-						
-						deferred.resolve(types);
-						return types_promise;
-					}
-					
-					// ITERATE ON RECORDS
-					if (self.view.items_iterator === 'records')
-					{
-						self.step(context, 'iterator is records');
-						
-						var types = self.model.get_fields_types(self.view.items_fields);
-						deferred.resolve(types);
-						return types_promise;
-					}
-					
-					// ITERATE ON FIELDS
-					if (self.view.items_iterator === 'fields')
-					{
-						self.step(context, 'iterator is fields');
-						
-						// FIELD NAME / FIELD VALUE
-						var types = ['object'];
-						
-						deferred.resolve(types);
-						return types_promise;
-					}
-					
-					// BAD ITERATOR
-					self.step(context, 'iterator is bad [' + self.view.items_iterator + ']');
-					deferred.reject();
-					return types_promise;
-				}
-			);
-			
-			self.leave(context, self.msg_success_promise);
-			return types_promise;
-		}
-		
-		
-		// DEFAULT SOURCE
-		deferred.reject();
-		
-		
-		self.leave(context, Devapt.msg_failure_promise);
-		return types_promise;
+		self.leave(context, Devapt.msg_success);
+		return self.items_types;
 	};
-	
 	
 	
 	/**
 	 * @public
-	 * @memberof				DevaptViewModel
-	 * @desc					Add a filter on a query with a field name/value pair.
-	 * @param {string}			arg_query_name		query name
-	 * @param {string|object}	arg_field_name		field name or field object
-	 * @param {string|number}	arg_field_value		field value
-	 * @param {boolean}			arg_is_unique		filter should be unique on this field
-	 * @return {boolean}
+	 * @memberof			DevaptViewModel
+	 * @method				DevaptViewModel.get_fields_types()
+	 * @desc				Get record fields types array with type in 'string', 'integer', 'object'...
+	 * @return {array}
 	 */
-	var cb_add_field_value_filter = function(arg_field_name, arg_field_value, arg_is_unique)
+	var cb_get_fields_types = function()
 	{
 		var self = this;
-		var context = 'add_field_value_filter()';
-		self.enter(context, arg_field_name);
-		
-		
-		// DEBUG
-		self.value(context, 'arg_field_name', arg_field_name);
-		self.value(context, 'arg_field_value', arg_field_value);
-		self.value(context, 'arg_is_unique', arg_is_unique);
-		
-		// CHECK ARGS
-		var id = self.query.name + '.' + arg_field_name + '.' + arg_field_value;
-		var field_name = DevaptTypes.is_string(arg_field_name) ? arg_field_name : (DevaptTypes.is_object(arg_field_name) ? arg_field_name.name : null);
-		self.assert_not_empty_string(context, 'field_name', field_name);
-		var field_filter = { id: id, combination:'and', expression: {operator: 'equals', operands: [{ value:field_name, type:'string'}, { value:arg_field_value, type:'string'}]} };
-		
-		// ADD FILTER
-		self.query.add_filter(field_name, field_filter, arg_is_unique);
-		
-		// EMIT EVENTS
-		self.view.fire_event('devapt.query.updated');
-		self.view.fire_event('devapt.query.filters.added', [field_filter]);
+		var context = 'get_fields_types()';
+		self.enter(context, '');
+		self.value(context, 'types', self.fields_types);
 		
 		
 		self.leave(context, Devapt.msg_success);
-		return true;
+		return self.fields_types;
 	};
 	
 	
@@ -618,8 +694,8 @@ function(
 		infos:{
 			author:'Luc BORIES',
 			created:'2015-02-02',
-			updated:'2015-02-08',
-			description:'Business rules between model and view.'
+			updated:'2015-05-02',
+			description:'Link between model and view.'
 		},
 		mixins: [DevaptViewModelMixinCrudable, DevaptViewModelMixinSelectable]
 	};
@@ -629,18 +705,19 @@ function(
 	
 	// METHODS
 	DevaptViewModelClass.infos.ctor = cb_constructor;
-	
 	DevaptViewModelClass.add_public_method('is_valid', {}, cb_is_valid);
 	
+		// RECORDSET OPERATIONS
 	DevaptViewModelClass.add_public_method('get_recordset', {}, cb_get_recordset);
-	DevaptViewModelClass.add_public_method('get_records', {}, cb_get_records);
-	DevaptViewModelClass.add_public_method('get_model', {}, cb_get_model);
-	DevaptViewModelClass.add_public_method('get_query', {}, cb_get_query);
-	DevaptViewModelClass.add_public_method('get_view', {}, cb_get_view);
+//	DevaptViewModelClass.add_public_method('get_selection_recordset', {}, cb_get_selection_recordset);
 	
-	DevaptViewModelClass.add_public_method('add_field_value_filter', {}, cb_add_field_value_filter);
+		// LINK OPERATIONS
+	DevaptViewModelClass.add_public_method('get_linked_record', {}, cb_get_linked_record);
+	DevaptViewModelClass.add_public_method('set_linked_record', {}, cb_set_linked_record);
 	
-	DevaptViewModelClass.add_public_method('get_items_types_array', {}, cb_get_items_types_array);
+		// TYPES OPERATIONS
+	DevaptViewModelClass.add_public_method('get_items_types', {}, cb_get_items_types);
+	DevaptViewModelClass.add_public_method('get_fields_types', {}, cb_get_fields_types);
 	
 	
 	// PROPERTIES
@@ -649,11 +726,18 @@ function(
 	DevaptViewModelClass.add_public_str_property('source', 'model datas source', 'inline', true, false, []);
 	DevaptViewModelClass.add_public_str_property('source_format', 'model datas source format', 'array', false, false, []);
 	
-	DevaptViewModelClass.add_public_object_property('query', 'View query object for the model', null, false, false, []);
 	DevaptViewModelClass.add_public_object_property('view', 'View object linked with the model', null, true, false, []);
+	DevaptViewModelClass.add_public_object_property('recordset', 'Model datas result for the items query', null, true, false, []);
+	
+	DevaptViewModelClass.add_public_object_property('linked_record', 'Linked record', null, true, false, []);
+	
+	DevaptViewModelClass.add_public_array_property('items_types', 'Items types', null, true, false, [], 'string', '|');
+	DevaptViewModelClass.add_public_array_property('fields_types', 'Fields types', null, true, false, [], 'string', '|');
+	
+	
+	// SETTINGS
 	DevaptViewModelClass.add_public_object_property('model', 'Model object linked with the view', null, false, false, []);
 	DevaptViewModelClass.add_public_str_property('model_name', 'Model name linked with the view', null, false, false, []);
-	DevaptViewModelClass.add_public_object_property('recordset', 'Model datas result for the query', null, true, false, []);
 	
 	
 	return DevaptViewModelClass;

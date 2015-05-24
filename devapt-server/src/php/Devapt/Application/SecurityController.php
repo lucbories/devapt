@@ -29,7 +29,7 @@ class SecurityController extends AbstractController
 	// STATIC ATTRIBUTES
 	
 	/// @brief TRACE FLAG
-	static public $TRACE_SECURITY_CONTROLLER = false;
+	static public $TRACE_SECURITY_CONTROLLER = true;
 	
 	
 	

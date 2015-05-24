@@ -44,7 +44,7 @@ class SqlEngine
 	// STATIC ATTRIBUTES
 	
 	/// @brief TRACE FLAG
-	static public $TRACE_ENGINE	= false;
+	static public $TRACE_ENGINE	= true;
 	
 	
 	
@@ -55,6 +55,7 @@ class SqlEngine
 	
 	/// @brief ZF2 DB adapter (Zend\Db\Adapter\Adapter)
 	private $db_adapter		= null;
+	private $db_charset		= null;
 	
 	
 	
@@ -112,6 +113,10 @@ class SqlEngine
 		$arg_options['username']	= DbConnexions::getConnexionUser($connexion_name);
 		$arg_options['password']	= DbConnexions::getConnexionPassword($connexion_name);
 		$arg_options['charset']		= DbConnexions::getConnexionCharset($connexion_name, '');
+		$arg_options['driver_options']		= DbConnexions::getConnexionOptions($connexion_name);
+		Trace::value($context, '$arg_options', $arg_options, self::$TRACE_ENGINE);
+		
+		$this->db_charset = $arg_options['charset'];
 		
 		// INIT DB ADAPTER
 		$this->db_adapter = new DbAdapter($arg_options);
@@ -406,7 +411,33 @@ class SqlEngine
 		
 		return Trace::leaveok($context, '', $sql_action, self::$TRACE_ENGINE);
 	}
-		
+	
+	// TODO DOCUMENT utf8_encode_deep API
+	// SOURCE: http://fr.php.net/manual/en/function.utf8-encode.php (OSCAR B. COMMENT)
+	function utf8_encode_deep(&$input)
+	{
+		if ( is_string($input) )
+		{
+			$input = utf8_encode($input);
+		} else if ( is_array($input) )
+		{
+			foreach ($input as &$value)
+			{
+				$this->utf8_encode_deep($value);
+			}
+			
+			unset($value);
+		} else if ( is_object($input) )
+		{
+			$vars = array_keys(get_object_vars($input));
+			
+			foreach ($vars as $var)
+			{
+				$this->utf8_encode_deep($input->$var);
+			}
+		}
+	}
+	
 	/**
 	 * @brief		Insert datas
 	 * @param[in]	arg_query			query (object)
@@ -470,6 +501,14 @@ class SqlEngine
 		{
 			$results = $result_set->toArray();
 			Trace::value($context, 'results', $results, self::$TRACE_ENGINE);
+			
+			// TODO SECURE UTF8 STRING TEST
+			if ($this->db_charset !== 'utf8')
+			{
+				$this->utf8_encode_deep($results);
+				Trace::value($context, 'results encode utf8', $results, self::$TRACE_ENGINE);
+			}
+			
 			return Trace::leaveok($context, '', $results, self::$TRACE_ENGINE);
 		}
 		

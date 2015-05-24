@@ -1,6 +1,19 @@
 /**
  * @file        views/view/view-mixin-bind.js
  * @desc        Mixin for bind feature
+ * 
+ * 		[application.views.viewVVV]
+ * 		on_event.e0.event='devapt.events.container.selected,devapt.events.container.unselected'
+ * 		on_event.e0.log.level='ERROR'
+ * 		on_event.e0.log.message='profile is selected/unselected'
+ * 		on_event.e0.log.loggers='console'
+ * 		
+ * 		on_event.e1.event='devapt.events.container.selected'
+ * 		on_event.e1.filter.mode='replace'
+ * 		on_event.e1.filter.source.field='profiles_id_profile'
+ * 		on_event.e1.filter.target.name='view_access_user_inspector_profiles_roles'
+ * 		on_event.e1.filter.target.field='profiles_id_profile'
+ * 
  * @see			DevaptView
  * @ingroup     DEVAPT_VIEWS
  * @date        2014-08-23
@@ -12,8 +25,8 @@
 
 'use strict'
 define(
-['Devapt', 'core/types', 'object/class', 'core/resources'],
-function(Devapt, DevaptTypes, DevaptClass, DevaptResources)
+['Devapt', 'core/types', 'core/traces', 'object/class', 'core/resources'],
+function(Devapt, DevaptTypes, DevaptTraces, DevaptClass, DevaptResources)
 {
 	/**
 	 * @mixin				DevaptMixinBind
@@ -27,7 +40,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptResources)
 		 * @public
 		 * @desc				Enable/disable trace for mixin operations
 		 */
-		mixin_bind_trace: false,
+		mixin_bind_trace: true,
 		
 		
 		/**
@@ -37,850 +50,719 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptResources)
 		 * @return {nothing}
 		 */
 		mixin_init_bind: function(self)
-		{		
+		{
 			self.push_trace(self.trace, DevaptMixinBind.mixin_bind_trace);
 			var context = 'mixin_init_bind()';
 			self.enter(context, '');
 			
+			self.on_event_forwards = {};
 			
-			// DEBUG
-			// console.log(self.name, 'mixin_init_bind: self.name');
-			// console.log(self, 'self');
-			// console.log(self.links, 'self.links');
+			self.leave(context, Devapt.msg_success);
+			self.pop_trace();
+		},
+		
+		
+		
+		/* --------------------------------------------- ON EVENT BINDINGS ------------------------------------------------ */
+		
+		/**
+		 * @public
+		 * @memberof			DevaptMixinBind
+		 * @desc				Enable bindings with 'on_event' setting
+		 * 	application.views.ViewVVV.on_event: on event actions
+		 * 		.EventEEE.log: trace a message
+		 * 			level: log level string ('DEBUG', 'INFO', ...)
+		 * 			message: string message to log
+		 * 			template: string template to log
+		 * 			loggers: list of loggers
+		 * 		.EventEEE.do_crud: run a CRUD method on a model resource object
+		 * 			TO BE DEFINED
+		 * 		.EventEEE.do_method: run a resource object method
+		 * 			object: object name
+		 * 			method: method name
+		 * 			operands: operands list of the method call with {1} for the first source event operand...
+		 * 		.EventEEE.emit: emit an other event
+		 * 			event: event name
+		 * 			operands: operands list of the method call with {1} for the first source event operand...
+		 * @return {promise}
+		 */
+		init_on_event: function()
+		{
+			var self = this;
+			self.push_trace(self.trace, DevaptMixinBind.mixin_bind_trace);
+			var context = 'init_on_event()';
+			self.enter(context, '');
 			
 			
-			// TEST IF A LINKS OPTION IS SET
-			if ( ! DevaptTypes.is_object(self.links) )
+			// TEST IF AN OPTION IS SET
+			if ( ! DevaptTypes.is_object(self.on_event) )
 			{
-				self.leave(context, 'no links');
+				self.leave(context, 'no on_event bindings');
 				self.pop_trace();
-				return;
+				return Devapt.promise_resolved();
 			}
 			
-			var init_bind_cb = function(arg_items_count)
+			// LOOP ON LINKS
+			var all_bind_promises = [];
+			for(var bind_key in self.on_event)
 			{
-				// console.error(arg_items_count, 'init_bind_cb:' + self.name);
+				self.value(context, 'bind_key', bind_key);
 				
-				/*
-					EXAMPLE:
-						....links.selectlink.source.name=view_access_users_list
-						....links.selectlink.source.event=devapt.events.container.selected
-						....links.selectlink.source.kindof=record
-						....links.selectlink.source.field=login
-						....links.selectlink.target.kindof=filters
-						....links.selectlink.target.field=login
-				*/
-				// LOOP ON LINKS
-				for(var link_key in self.links)
+				// GET LINK SETTINGS
+				var bind_settings = self.on_event[bind_key];
+				self.value(context, 'bind_settings', bind_settings);
+				
+				// INIT SETTING
+				var setting_promise = self.init_on_event_setting(bind_settings);
+				all_bind_promises.push(setting_promise);
+			}
+			
+			// CREATE ALL PROMISE
+			var promise = Devapt.promise_all(all_bind_promises);
+			
+			
+			self.leave(context, Devapt.msg_success);
+			self.pop_trace();
+			return promise;
+		},
+		
+		
+		/**
+		 * @public
+		 * @memberof			DevaptMixinBind
+		 * @desc				Add an 'on_event' binding
+		 * @param {object}		arg_setting		'on_event' setting object
+		 * @return {promise}
+		 */
+		init_on_event_setting: function(arg_setting)
+		{
+			var self = this;
+			self.push_trace(self.trace, DevaptMixinBind.mixin_bind_trace);
+			var context = 'init_on_event_setting(setting)';
+			self.enter(context, '');
+			self.assert_object(context, 'setting', arg_setting);
+			
+			
+			// CHECK EVENT NAME
+			self.assert_true(context, 'event name', 'event' in arg_setting);
+			self.assert_not_empty_string(context, 'event name', arg_setting['event']);
+			var event_names = arg_setting['event'];
+			self.value(context, 'event_names', event_names);
+			event_names = event_names.split(',');
+			
+			// LOOP ON LINKS
+			var all_bind_promises = [];
+			for(var bind_action in arg_setting)
+			{
+				self.value(context, 'bind_action', bind_action);
+				
+				// SKIP EVENT NAME
+				if (bind_action === 'event')
 				{
-					self.value(context, 'link_key', link_key);
+					continue;
+				}
+				
+				// GET LINK SETTINGS
+				var action_settings = arg_setting[bind_action];
+				self.value(context, 'action_settings', action_settings);
+				
+				// LOOP ON EVENTS
+				for(var event_index in event_names)
+				{
+					var event_name = event_names[event_index];
+					self.value(context, 'event_name', event_name);
 					
-					// GET LINK SETTINGS
-					var link_settings = self.links[link_key];
-					// console.log(link_settings, 'link_settings');
-					
-					// GET LINKS ATTRIBUTES
-					var source = link_settings['source'];
-					if ( ! DevaptTypes.is_object(source) )
+					// SWITCH ON ACTION
+					switch(bind_action)
 					{
-						self.step(context, 'bad source object');
-						continue;
-					}
-					
-					var target = link_settings['target'];
-					if ( ! DevaptTypes.is_object(target) )
-					{
-						self.step(context, 'bad target object');
-						continue;
-					}
-					
-					var source_name = source['name'];
-					var source_events = source['event'];
-					var source_kindof = source['kindof'];
-					var source_field = source['field'];
-					var target_name = target['name'];
-					var target_names = target['names'];
-					var target_action = target['action'];
-					var target_kindof = target['kindof'];
-					var target_field = target['field'];
-					
-					// BIND WITH SOURCE=THIS AND TARGET FROM NAME
-					if ( DevaptTypes.is_not_empty_str(target_name) )
-					{
-						self.step(context, 'link has target name [' + target_name + ']');
-						self.value(context, 'action', target_action);
-						self.value(context, 'source_kindof', source_kindof);
-						self.value(context, 'target_kindof', target_kindof);
-						
-						var promise = DevaptResources.get_resource_instance(target_name);
-						promise.then(
-							function(target_obj)
-							{
-								// console.log(context, 'link target object is found [' + target_obj.name + ']');
-								self.step(context, 'link target object is found [' + target_obj.name + ']');
-								self.value(context, 'action', target_action);
-								
-								self.bind(source_events, target_action, source_kindof, source_field, target_obj, target_kindof, target_field);
-							},
-							
-							function()
-							{
-								console.error('link target object is not found [' + target_obj.name + ']');
-							}
-						);
-						
-						continue;
-					}
-					
-					// BIND WITH SOURCE=THIS AND TARGET FROM NAMES
-					if ( DevaptTypes.is_not_empty_str(target_names) )
-					{
-						self.step(context, 'link has target names');
-						
-						target_names = target_names.split(',');
-						for(var target_name_key in target_names)
+						case 'forward':
 						{
-							var target_name = target_names[target_name_key];
-							
-							self.step(context, 'loop on link target name [' + target_name + ']');
-							
-							var promise = DevaptResources.get_resource_instance(target_name);
-							promise.then(
-								function(target_obj)
-								{
-									self.step(context, 'link target object is found  [' + target_obj.name + ']');
-									
-									self.bind(source_events, target_action, source_kindof, source_field, target_obj, target_kindof, target_field);
-								},
-								
-								function()
-								{
-									console.error('link target object is not found [' + target_obj.name + ']');
-								}
-							);
-						}
-						
-						continue;
-					}
-					
-					// BIND WITH SOURCE FROM NAME AND TARGET=THIS
-					if ( DevaptTypes.is_not_empty_str(source_name) )
-					{
-						self.step(context, 'link has source name');
-						
-						var promise = DevaptResources.get_resource_instance(source_name);
-						promise.then(
-							function(source_obj)
+							// INIT SETTING
+//							var setting_promise = self.init_on_event_setting_forward(event_name, action_settings);
+//							all_bind_promises.push(setting_promise);
+							if ( ! DevaptTypes.is_array(self.on_event_forwards[event_name]) )
 							{
-								self.step(context, 'link source object is found');
-								
-								source_obj.bind(source_events, target_action, source_kindof, source_field, self, target_kindof, target_field);
+								self.on_event_forwards[event_name] = [];
 							}
-						);
-						
-						continue;
+							self.on_event_forwards[event_name].push(action_settings);
+							break;
+						}
+						case 'log':
+						{
+							// INIT SETTING
+							var setting_promise = self.init_on_event_setting_log(event_name, action_settings);
+							all_bind_promises.push(setting_promise);
+							break;
+						}
+						case 'method':
+						{
+							// INIT SETTING
+//							var setting_promise = self.init_on_event_setting_log(event_name, action_settings);
+//							all_bind_promises.push(setting_promise);
+							break;
+						}
+						case 'filter':
+						{
+							// INIT SETTING
+							var setting_promise = self.init_on_event_setting_filter(event_name, action_settings);
+							all_bind_promises.push(setting_promise);
+							break;
+						}
+						case 'do_crud':
+						{
+							break;
+						}
+						case 'emit':
+						{
+							break;
+						}
 					}
 				}
+			}
+			
+			// CREATE ALL PROMISE
+			var promise = Devapt.promise_all(all_bind_promises);
+			
+			
+			self.leave(context, Devapt.msg_success);
+			self.pop_trace();
+			return promise;
+		},
+		
+		
+		/**
+		 * @public
+		 * @memberof			DevaptMixinBind
+		 * @desc				Add an 'on_event' log binding action
+		 * @param {string|array}	arg_event_name	'on_event' event name
+		 * @param {object}			arg_setting		'on_event' action setting object
+		 * @return {promise}
+		 */
+		init_on_event_setting_log: function(arg_event_name, arg_setting)
+		{
+			var self = this;
+			self.push_trace(self.trace, DevaptMixinBind.mixin_bind_trace);
+			var context = 'init_on_event_setting_log(event,setting)';
+			self.enter(context, '');
+			self.assert_not_null(context, 'event name', arg_event_name);
+			self.assert_object(context, 'setting', arg_setting);
+			self.assert_true(context, 'level', ('level' in arg_setting));
+			self.assert_true(context, 'message', ('message' in arg_setting));
+			self.assert_true(context, 'loggers', ('loggers' in arg_setting));
+			
+			
+			// GET LOG LEVEL
+			var level = arg_setting['level'];
+			if ( ! DevaptTypes.is_not_empty_str(level) )
+			{
+				self.error(context, 'bad log level');
+				self.leave(context, Devapt.msg_failure);
+				self.pop_trace();
+				return Devapt.promise_rejected();
+			}
+			
+			// GET LOG MESSAGE
+			var message = arg_setting['message'];
+			if ( ! DevaptTypes.is_not_empty_str(message) )
+			{
+				self.error(context, 'bad log message');
+				self.leave(context, Devapt.msg_failure);
+				self.pop_trace();
+				return Devapt.promise_rejected();
+			}
+			
+			// GET LOG LOGGERS
+			var loggers = arg_setting['loggers'];
+			if ( ! DevaptTypes.is_not_empty_str(loggers) )
+			{
+				self.error(context, 'bad log loggers');
+				self.leave(context, Devapt.msg_failure);
+				self.pop_trace();
+				return Devapt.promise_rejected();
+			}
+			loggers = loggers.split(',');
+			
+			// GET EVENT HAS UNIQUE CALLBACK
+			var unique_event_callback = ('unique_event_callback' in arg_setting) ? DevaptTypes.to_boolean(arg_setting['unique_event_callback'], false) : false;
+			
+			// REGISTER ACTION
+			var action_cb = function(arg_resource_obj)
+			{
+				return function(arg_event_obj, arg_source_obj, arg_event_operands)
+				{
+					return (
+						function(arg_self, arg_loggers, arg_level, arg_event, arg_message)
+						{
+							self.step(context, 'ON ACTION CALLBACK');
+	//						console.log(arguments, context + ':ON ACTION CALLBACK');
+							
+							// TODO format message with arg_event_operands and a template message
+							var log_object = {
+								level:arg_level,
+								step:'',
+								class_name:arg_self.class_name,
+								object_name:arg_self.name,
+								method_name:'on_event:',
+								context: DevaptTypes.is_string(arg_event) ? arg_event : 'array of events',
+								text:arg_message
+							};
+							
+							DevaptTraces.log_appenders(log_object, arg_loggers);
+							
+							return true;
+						}
+					)(arg_resource_obj, loggers, level, arg_event_name, message);
+				};
 			};
 			
-			self.add_event_callback('devapt.render.content', init_bind_cb);
+			var promise = self.init_on_event_callback(self, arg_event_name, action_cb, unique_event_callback);
 			
 			
-			self.leave(context, self.msg_success);
+			self.leave(context, Devapt.msg_success_promise);
 			self.pop_trace();
+			return promise;
 		},
-		
 		
 		
 		/**
 		 * @public
-		 * @memberof				DevaptMixinBind
-		 * @desc					Bind two items of two objects
-		 * @param {string}			arg_events		events filter for the binding (string|arr of strings)
-		 * @param {string}			arg_bind_action	binding action
-		 * @param {string}			arg_set_1		items set name of object 1 (records, record, filters)
-		 * @param {string}			arg_item_1		item name of object 1
-		 * @param {object|string}	arg_object_2	object 2
-		 * @param {string}			arg_set_2		items set name of object 2 (records, record, filters)
-		 * @param {string}			arg_item_2		item name of object 2
-		 * @return {nothing}
+		 * @memberof			DevaptMixinBind
+		 * @desc				Add an 'on_event' filter binding action
+		 * @param {string|array}	arg_event_name	'on_event' event name
+		 * @param {object}			arg_setting		'on_event' action setting object
+		 * @return {promise}
 		 */
-		bind: function(arg_events_filter, arg_bind_action, arg_set_1, arg_item_1, arg_object_2, arg_set_2, arg_item_2)
+		init_on_event_setting_filter: function(arg_event_name, arg_setting)
 		{
 			var self = this;
 			self.push_trace(self.trace, DevaptMixinBind.mixin_bind_trace);
-			var context = 'bind(events,action,set,item,obj,set,item)';
+			var context = 'init_on_event_setting_filter(event,setting)';
 			self.enter(context, '');
-			// console.error(self.name, arguments);
+			self.assert_not_null(context, 'event name', arg_event_name);
+			self.assert_object(context, 'setting', arg_setting);
+			
+			self.assert_true(context, 'mode', ('mode' in arg_setting));
+			self.assert_true(context, 'source', ('source' in arg_setting));
+			self.assert_true(context, 'target', ('target' in arg_setting));
+			
+			self.assert_object(context, 'source', arg_setting['source']);
+			self.assert_object(context, 'target', arg_setting['target']);
+			
+			self.assert_not_empty_string(context, 'mode', arg_setting['mode']);
+			
+			self.assert_true(context, 'source.field', ('field' in arg_setting['source']));
+			self.assert_not_empty_string(context, 'source.field', arg_setting['source']['field']);
+			
+			self.assert_true(context, 'target.name', ('name' in arg_setting['target']));
+			self.assert_not_empty_string(context, 'target.name', arg_setting['target']['name']);
+			self.assert_true(context, 'target.field', ('field' in arg_setting['target']));
+			self.assert_not_empty_string(context, 'target.field', arg_setting['target']['field']);
 			
 			
-			self.value(context, 'arg_bind_action', arg_bind_action);
-			self.value(context, 'arg_set_1', arg_set_1);
-			self.value(context, 'arg_set_2', arg_set_2);
+			// GET FILTER MODE
+			var mode = arg_setting['mode'];
+			
+			// GET FILTER SOURCE FIELD
+			var source_field = arg_setting['source']['field'];
+			
+			// GET FILTER TARGET NAMES
+			var target_names = arg_setting['target']['name'];
+			target_names = target_names.split(',');
+			
+			// GET FILTER TARGET FIELD
+			var target_field = arg_setting['target']['field'];
+			
+			// GET EVENT HAS UNIQUE CALLBACK
+			var unique_event_callback = ('unique_event_callback' in arg_setting) ? DevaptTypes.to_boolean(arg_setting['unique_event_callback'], false) : false;
 			
 			
-			// TARGET FORWARDS EVENT
-			if ( DevaptTypes.is_object(arg_object_2.links_forwarder) )
+			// ACTION CALLBACK
+			var action_cb = function(arg_resource_obj)
 			{
-				self.step(context, 'link target object is a links forwarder');
-				
-				for(var forwarder_key in arg_object_2.links_forwarder)
+				return function(arg_event_obj, arg_source_obj, arg_event_operands)
 				{
-					self.step(context, 'loop on target object link forward');
-					
-					var forwarder_obj = arg_object_2.links_forwarder[forwarder_key];
-					var forwarder_source_name = forwarder_obj.source.name;
-					var forwarder_target_names = forwarder_obj.target.name || forwarder_obj.target.names;
-					if ( DevaptTypes.is_string(forwarder_source_name) && DevaptTypes.is_string(forwarder_target_names) )
-					{
-						self.step(context, 'target object link forward has valid source name and target names');
-						
-						// CHECK SOURCE NAME
-						if ( ! DevaptTypes.is_not_empty_str(forwarder_source_name) )
+					return (
+						function(arg_closure_self, arg_closure_resource_obj)
 						{
-							self.step(context, 'source name is not a valid string');
-							self.value(context, 'forwarder_source_name', forwarder_source_name);
+//							arg_closure_self.trace=true;
+							arg_closure_self.step(context, 'ON ACTION CALLBACK');
+//							console.log(arguments, context + ':ON ACTION CALLBACK');
+//							console.log(mode, context + ':ON ACTION CALLBACK:mode');
+//							console.log(target_names, context + ':ON ACTION CALLBACK:target_names');
+//							console.log(source_field, context + ':ON ACTION CALLBACK:source_field');
+//							console.log(target_field, context + ':ON ACTION CALLBACK:target_field');
+//							console.log(unique_event_callback, context + ':ON ACTION CALLBACK:unique_event_callback');
 							
-							self.leave(context, self.msg_failure);
-							self.pop_trace();
-							return;
-						}
-						
-						// CHECK TARGET NAMES
-						if ( DevaptTypes.is_not_empty_str(forwarder_target_names) )
-						{
-							forwarder_target_names = forwarder_target_names.split(',');
-						}
-						if ( ! DevaptTypes.is_array(forwarder_target_names) )
-						{
-							self.step(context, 'target names is not an array');
-							self.value(context, 'forwarder_target_names', forwarder_target_names);
+							// GET SOURCE OBJECT
+							var source_object = arg_event_operands[0];
+//							console.log(source_object, context + 'ON ACTION CALLBACK:source_object');
 							
-							self.leave(context, self.msg_failure);
-							self.pop_trace();
-							return;
-						}
-						
-						// TEST SOURCE
-						if (self.name === forwarder_source_name || forwarder_source_name === '*')
-						{
-							self.step(context, 'target object bind because link self.name === target object link forward source name');
+							// GET EVENT OPERANDS MAP
+							var event_opds_map = arg_event_operands[1];
+//							console.log(event_opds_map, context + 'ON ACTION CALLBACK:event_opds_map');
 							
-							// LOOP ON TARGETS NAMES
-							for(var target_name_key in forwarder_target_names)
-							{
-								var target_name = forwarder_target_names[target_name_key];
-								
-								self.step(context, 'loop on link target name [' + target_name + ']');
-								
-								self.bind(arg_events_filter, arg_bind_action, arg_set_1, arg_item_1, target_name, arg_set_2, arg_item_2);
-							}
+							// GET RECORD
+							var item_record = event_opds_map['record'];
+//							console.log(item_record, context + 'ON ACTION CALLBACK:record');
 							
-							self.leave(context, self.msg_success);
-							self.pop_trace();
-							return;
-						}
-					}
-				}
-			}
-			
-			
-			self.step(context, 'default self bind');
-			
-			
-			// GET EVENTS FILTER
-			var events_filters = [];
-			if ( DevaptTypes.is_string(arg_events_filter) )
-			{
-				var arg_events_filter = arg_events_filter.split(',');
-			}
-			if ( DevaptTypes.is_array(arg_events_filter) )
-			{
-				 if ( arg_events_filter.every(DevaptTypes.is_string) )
-				 {
-					events_filters = arg_events_filter;
-				 }
-			}
-			
-			
-			// GET OBJECT 2
-			if ( DevaptTypes.is_string(arg_object_2) )
-			{
-				var promise = DevaptResources.get_resource_instance(arg_object_2);
-				promise.then(
-					function(obj2)
-					{
-						self.bind(arg_events_filter, arg_bind_action, arg_set_1, arg_item_1, obj2, arg_set_2, arg_item_2);
-					}
-				);
-				
-				self.leave(context, self.msg_success_promise);
-				self.pop_trace();
-				return;
-			}
-			
-			
-			// LOOP ON EVENTS
-			for(var events_filter_index in events_filters)
-			{
-				var events_filter = events_filters[events_filter_index];
-				self.value(context, 'events_filter', events_filter);
-				
-				
-				var has_unique_cb = false;
-				
-				var on_event_cb = function(event_obj, source_obj, opd_record)
-					{
-						// console.log('bind.event.cb');
-						// console.log(arg_object_2, 'bind.cb arg_object_2');
-						
-						var operands = [source_obj, opd_record];
-						// console.log(operands, 'bind.cb.operands');
-						
-						if ( arg_object_2.is_view )
-						{
-							if ( ! self.is_render_state_rendering() )
-							{
-								self.step(context, 'view is not rendering');
-								
-								if ( self.renders_count === 0)
+							// ADD FILTER
+							arg_closure_self.step(context, 'ON ACTION CALLBACK:add field value filter');
+							var filter_added_promise = arg_resource_obj.view_model_promise.then(
+								function(arg_view_model)
 								{
-									self.step(context, 'first view rendering');
-									setTimeout(
-										function()
-										{
-											arg_object_2.on_binding(event_obj, arg_bind_action, arg_set_1, arg_item_1, arg_set_2, arg_item_2, operands);
-										},
-										10
-									);
-								}
-								else
-								{
-									self.step(context, 'view is rendered');
-									arg_object_2.on_binding(event_obj, arg_bind_action, arg_set_1, arg_item_1, arg_set_2, arg_item_2, operands);
-								}
-							}
-							else
-							{
-								setTimeout(
-									function()
-									{
-										self.step(context, 'view is not yet rendered');
-										arg_object_2.on_binding(event_obj, arg_bind_action, arg_set_1, arg_item_1, arg_set_2, arg_item_2, operands);
-									},
-									10
-								);
-							}
-						}
-						else
-						{
-							arg_object_2.on_binding(event_obj, arg_bind_action, arg_set_1, arg_item_1, arg_set_2, arg_item_2, operands);
-						}
-					};
-				self.add_event_callback(events_filter, on_event_cb, has_unique_cb);
-				
-				
-				var on_change_cb = function(event_obj, source_obj, model, record, field_obj, old_value, new_value)
-					{
-						// console.log('bind.change.cb');
-						
-						// console.log(self.name, 'on_change_cb:self.name');
-						// console.log(record, 'on_change_cb:record');
-						// console.log(field_obj, 'on_change_cb:field_obj');
-						// console.log(old_value, 'on_change_cb:old_value');
-						// console.log(new_value, 'on_change_cb:new_value');
-						
-						var index = record.container_item_index;
-						var type = arg_set_1;
-						var node_jqo = self.get_item_node(index);
-						
-						// console.log('bind.change.cb:step 1');
-						if ( DevaptTypes.is_integer(index) && DevaptTypes.is_array(self.items_records) && self.items_records.length > index )
-						{
-							var record = self.items_records[index];
-							if ( DevaptTypes.is_object(record) && DevaptTypes.is_not_empty_str(field_obj.name) && record[field_obj.name] )
-							{
-								record[field_obj.name] = new_value;
-							}
-						}
-						
-						// console.log('bind.change.cb:step 2');
-						var deferred = Devapt.defer();
-						if ( DevaptTypes.is_object(node_jqo) && (type === 'object' || type === 'record') )
-						{
-							node_jqo.children().remove();
-							self.render_item_object(deferred, node_jqo, record);
-						}
-					};
-				arg_object_2.add_event_callback('devapt.container.updated', on_change_cb, has_unique_cb);
-			}
-			
-			
-			self.leave(context, self.msg_success);
-			self.pop_trace();
-		},
-		
-		
-		
-		/**
-		 * @public
-		 * @memberof				DevaptMixinBind
-		 * @desc					Do bind actions
-		 * @param {object}			arg_event_obj	event object
-		 * @param {string}			arg_bind_action	binding action
-		 * @param {string}			arg_set_1		items set name of object 1 (records, record, filters)
-		 * @param {string}			arg_item_1		item name of object 1
-		 * @param {string}			arg_set_2		items set name of object 2 (records, record, filters)
-		 * @param {string}			arg_item_2		item name of object 2
-		 * @param {array}			arg_event_opds	event operands
-		 * @return {nothing}
-		 */
-		on_binding: function(arg_event_obj, arg_bind_action, arg_set_1, arg_item_1, arg_set_2, arg_item_2, arg_event_opds)
-		{
-			var self = this;
-			self.push_trace(self.trace, DevaptMixinBind.mixin_bind_trace);
-			var context = 'on_bindings(event,action,set,item,opds)';
-			self.enter(context, '');
-			
-			
-			// DEBUG
-			// console.info(self, 'self');
-			// console.log(arg_event_obj, 'arg_event_obj');
-			
-			
-			switch(arg_set_1 + '-' + arg_set_2)
-			{
-				case 'record-selections':
-				{
-					self.on_binding_on_selections(arg_event_obj, arg_bind_action, arg_item_1, arg_item_2, arg_event_opds);
-					break;
-				}
-				case 'record-filters':
-				{
-					self.on_binding_on_filters(arg_event_obj, arg_bind_action, arg_item_1, arg_item_2, arg_event_opds);
-					break;
-				}
-				case 'records-records':
-				{
-					self.on_binding_on_records(arg_event_obj, arg_bind_action, arg_item_1, arg_item_2, arg_event_opds);
-					break;
-				}
-				case 'record-record':
-				{
-					self.on_binding_on_record(arg_event_obj, arg_bind_action, arg_item_1, arg_item_2, arg_event_opds);
-					break;
-				}
-			}
-			
-			
-			self.leave(context, '');
-			self.pop_trace();
-		},
-		
-		
-		
-		/**
-		 * @public
-		 * @memberof				DevaptMixinBind
-		 * @desc					Do bind actions on selectyions
-		 * @param {object}			arg_event_obj	event object
-		 * @param {string}			arg_bind_action	binding action
-		 * @param {string}			arg_item_1		item name of object 1
-		 * @param {string}			arg_item_2		item name of object 2
-		 * @param {array}			arg_event_opds	event operands
-		 * @return {nothing}
-		 */
-		on_binding_on_selections: function(arg_event_obj, arg_bind_action, arg_item_1, arg_item_2, arg_event_opds)
-		{
-			var self = this;
-			self.push_trace(self.trace, DevaptMixinBind.mixin_bind_trace);
-			var context = 'on_binding_on_selections(event,actio,item,opds)';
-			self.enter(context, '');
-			
-			
-			// console.log(self.name + ': on_binding_on_selections: action[' + arg_bind_action + '] on record for field [' + arg_item_2 + '] with opds count [' + arg_event_opds.length + ']');
-			// console.log(arg_event_opds, 'arg_event_opds');
-			// console.error(self, 'self');
-			// console.log(arg_event_obj, 'arg_event_obj');
-			
-			self.value(context, 'action', arg_bind_action);
-			switch(arg_bind_action)
-			{
-				/*case 'toggle':
-				{
-					// GET EVENT OPERANDS MAP
-					var event_opds_map = arg_event_opds[1];
-					
-					// GET RECORD
-					var record = event_opds_map['record'];
-					if (! record && DevaptTypes.is_integer( arg_event_opds[1] ) )
-					{
-						var record_index = arg_event_opds[1];
-						record = self.items_records[record_index];
-					}
-					console.log(record, 'record');
-					
-					// GET FIELD VALUE
-					var field_name = arg_item_1;
-					var field_value = event_opds_map['field_value'] ? event_opds_map['field_value'] : record[arg_item_1];
-					if ( DevaptTypes.is_null(field_value) )
-					{
-						if ( DevaptTypes.is_not_empty_array(self.items_records) )
-						{
-							for(var record_index in self.items_records)
-							{
-								var items_record = self.items_records[record_index];
-								field_value = items_record[arg_item_1];
-								break;
-							}
-						}
-						
-						if ( DevaptTypes.is_null(field_value) )
-						{
-							self.value(context, 'field name', field_name);
-							self.error(context, 'bad field value');
-							self.leave(context, '');
-							self.pop_trace();
-							return;
-						}
-					}
-					
-					// ON RECORD SELECT
-					self.on_record_select(field_name, field_value, null);
-					
-					// SET CURRENT RECORD
-					self.items_current_records = record;
-					
-					// RENDER VIEW
-					
-					break;
-				}*/
-				case 'set':
-				{
-					self.step(context, 'action is set');
-					
-					// GET EVENT OPERANDS MAP
-					var event_opds_map = arg_event_opds[1];
-					
-					// GET RECORD
-					var record = event_opds_map['record'];
-					if (! record && DevaptTypes.is_integer( arg_event_opds[1] ) )
-					{
-						self.step(context, 'get record by index');
-						
-						var record_index = arg_event_opds[1];
-						record = self.items_records[record_index];
-					}
-					// console.log(record, 'record');
-					
-					// GET FIELD VALUE
-					self.step(context, 'get field value');
-					var field_name = arg_item_1;
-					var field_value = event_opds_map['field_value'] ? event_opds_map['field_value'] : record[field_name];
-					if ( DevaptTypes.is_null(field_value) )
-					{
-						self.step(context, 'field value is null');
-						
-						if ( DevaptTypes.is_not_empty_array(self.items_records) )
-						{
-							self.step(context, 'items records is a valid array');
-							
-							for(var record_index in self.items_records)
-							{
-								self.value(context, 'record_index', record_index);
-								
-								var items_record = self.items_records[record_index];
-								field_value = items_record[field_name];
-								break;
-							}
-						}
-						
-						// console.log(record, 'record');
-						if ( DevaptTypes.is_null(field_value) )
-						{
-							self.value(context, 'field name', field_name);
-							self.error(context, 'bad field value');
-							self.leave(context, '');
-							self.pop_trace();
-							return;
-						}
-					}
-					
-					// ON RECORD SELECT
-					self.step(context, 'on record select');
-					self.on_record_select(arg_item_2, field_value, null, false);
-					
-					// SET CURRENT RECORD
-					self.step(context, 'set current record');
-					self.items_current_records = record;
-					
-					// RENDER VIEW
-					
-					break;
-				}
-				
-				// case 'toggle':
-				// {
-					// break;
-				// }
-				
-			/*	case 'add':
-				{
-					break;
-				}
-				
-				case 'remove':
-				{
-					break;
-				}*/
-				
-			/*	case 'reset':
-				{
-					// UNSELECT ALL
-					self.remove_items_css_class('selected');
-					
-					// SET CURRENT RECORD
-					self.items_current_records = null;
-					
-					break;
-				}*/
-			}
-			
-			
-			self.leave(context, '');
-			self.pop_trace();
-		},
-		
-		
-		
-		/**
-		 * @public
-		 * @memberof				DevaptMixinBind
-		 * @desc					Do bind actions on filters
-		 * @param {object}			arg_event_obj	event object
-		 * @param {string}			arg_bind_action	binding action
-		 * @param {string}			arg_item_1		item name of object 1
-		 * @param {string}			arg_item_2		item name of object 2
-		 * @param {array}			arg_event_opds	event operands
-		 * @return {nothing}
-		 */
-		on_binding_on_filters: function(arg_event_obj, arg_bind_action, arg_item_1, arg_item_2, arg_event_opds)
-		{
-			var self = this;
-			self.push_trace(self.trace, DevaptMixinBind.mixin_bind_trace);
-			var context = 'on_binding_on_filters(event,actio,item,opds)';
-			self.enter(context, '');
-			
-			
-			// console.log(self.name + ': on_binding_on_filters: action[' + arg_bind_action + '] on record for field [' + arg_item_2 + '] with opds count [' + arg_event_opds.length + ']');
-			// console.log(arg_event_opds, 'arg_event_opds');
-			
-			self.value(context, 'action', arg_bind_action);
-			switch(arg_bind_action)
-			{
-				case 'update':
-				{
-					self.step(context, 'action is update');
-					
-					// GET SOURCE OBJECT
-					// var source_object = arg_event_opds[0];
-					
-					// GET EVENT OPERANDS MAP
-					var event_opds_map = arg_event_opds[1];
-					// console.log(event_opds_map, 'event_opds_map');
-					
-					// GET RECORD
-					var record = event_opds_map['record'];
-					// console.log(record, 'record');
-					
-					// GET FIELD VALUE
-					self.step(context, 'get field value');
-					// console.log(event_opds_map, 'event_opds_map');
-					// console.log(record, 'record');
-					// console.log(arg_item_1, 'arg_item_1');
-					// console.log(record[arg_item_1], 'record[arg_item_1]');
-					var field_value = event_opds_map['field_value'] ? event_opds_map['field_value'] : record[arg_item_1];
-					
-					// ADD FILTER
-					// console.log(context, 'add field value filter');
-					self.step(context, 'add field value filter');
-					var filter_added_promise = self.view_model.get('ready_promise').invoke('add_field_value_filter', arg_item_2, field_value, true);
-					
-					// filter_added_promise.then(
-						// function()
-						// {
-							self.step(context, 'filter is added');
-							self.value(context, 'self.renders_count', self.renders_count);
-							
-							if (self.items_iterator === 'field_editor')
-							{
-								self.step(context, 'select items in field editor');
-								
-								self.items_current_record = record;
-								
-								if ( self.renders_count === 0)
-								{
-									self.step(context, 'first view rendering');
+									arg_closure_self.step(context, 'ON ACTION CALLBACK:view model is found');
 									
-									var render_promise = self.render( Devapt.defer() );
-									render_promise.then(
-										function()
+									// GET MODEL RECORD FOR CURRENT SELECTED ITEM
+//									var record = arg_view_model.get_recordset().get_first_record_by_object(item_record);
+									var record_promise = arg_closure_self.view_model_promise.then(
+										function(arg_self_view_model)
 										{
-											self.select([record]);
+//											return arg_self_view_model.get_recordset().get_first_record_by_object(item_record);
+											return arg_self_view_model.get_first_record_by_object(item_record);
+										}
+									);
+									return record_promise.then(
+										function(record)
+										{
+											arg_closure_self.value(context, 'recordset record', record);
+											arg_closure_self.assert_object(context, 'record', record);
+											arg_closure_self.assert_true(context, 'record.is_record', record.is_record);
+											
+											// GET FIELD VALUE
+											arg_closure_self.step(context, 'get field value');
+											var field_value = event_opds_map['field_value'] ? event_opds_map['field_value'] : record.get(source_field);
+//											console.log(field_value, context + 'ON ACTION CALLBACK:field_value');
+											
+											
+											return arg_view_model.ready_promise.spread(
+												function(arg_model, arg_view)
+												{
+													arg_closure_self.step(context, 'ON ACTION CALLBACK:model and view are found');
+													
+													arg_closure_self.step(context, 'view_model is ready');
+													var replace = mode === 'replace';
+													arg_view_model.recordset.add_field_value_filter(target_field, field_value, replace);
+													arg_view_model.set_linked_record(record);
+												}
+											);
 										}
 									);
 								}
-								else
+							);
+							
+							filter_added_promise.then(
+								function()
 								{
-									self.select([record]);
-								}
-								
-								// self.view_model.get('ready_promise').invoke('select', [record]);
-							}
-							else if (self.items_iterator === 'fields')
-							{
-								self.step(context, 'select items in fields');
-								
-								self.items_current_record = record;
-								
-								self.remove_items();
-								self.render_items( Devapt.defer() );
-								
-								// self.view_model.get('ready_promise').invoke('select', [record]);
-								// self.select([record]);
-							}
-							else if (self.items_iterator === 'records')
-							{
-								self.step(context, 'select items in fields');
-								
-								if ( self.renders_count === 0)
-								{
-									self.step(context, 'first view rendering');
+									arg_closure_self.step(context, 'filter is added');
 									
-									self.render( Devapt.defer() );
+									arg_resource_obj.on_recordset_filter_change();
 								}
-								else
-								{
-									self.step(context, 'remove previous items and render items');
-									
-									self.remove_items();
-									self.render_items( Devapt.defer() );
-								}
-							}
-							else
-							{
-								self.step(context, 'bad items iterator [' + self.items_iterator + ']');
-							}
-						// }
-					// );
-				}
+							);
+							
+//							arg_closure_self.trace=false;
+							return true;
+						}
+					)(self, arg_resource_obj);
+				};
+			};
+			
+			// REGISTER ACTION CALLBACK
+			var register_cb = function(arg_resource_obj)
+			{
+			/*	if (arg_resource_obj.on_event_forwards && arg_resource_obj.on_event_forwards[arg_event_name] && arg_resource_obj.on_event_forwards[arg_event_name].length > 0)
+				{
+					self.step(context, 'REGISTER ACTION CALLBACK with forwards for event name [' + arg_event_name + ']');
+					
+					// LOOP ON FORWARDS SETTINGS
+					var all_promises = [];
+					for(var forward_index in arg_resource_obj.on_event_forwards[arg_event_name])
+					{
+						self.step(context, 'REGISTER ACTION CALLBACK with forwards at [' + forward_index + ']');
+						
+						var forward_settings = arg_resource_obj.on_event_forwards[arg_event_name][forward_index];
+						
+						var setting_promise = self.init_on_event_setting_forward(arg_event_name, action_cb, unique_event_callback, forward_settings);
+						all_promises.push(setting_promise);
+					}
+					
+					var promise = Devapt.promise_all(all_promises);
+					return promise ? promise : Devapt.promise_rejected();
+				}*/
+				
+				self.step(context, 'REGISTER ACTION CALLBACK without forward for event name [' + arg_event_name + ']');
+				return self.init_on_event_callback(arg_resource_obj, arg_event_name, action_cb, unique_event_callback);
+			};
+			
+			// LOOP ON TARGETS NAMES
+			var all_bind_promises = [];
+			for(var target_name_key in target_names)
+			{
+				var target_name = target_names[target_name_key];
+				
+				self.step(context, 'loop on binding target name [' + target_name + ']');
+				
+				var loop_promise = DevaptResources.get_resource_instance(target_name);
+				loop_promise.then(register_cb);
+				
+				all_bind_promises.push(loop_promise);
 			}
 			
+			// CREATE ALL PROMISE
+			var promise = Devapt.promise_all(all_bind_promises);
 			
-			self.leave(context, '');
+			
+			self.leave(context, Devapt.msg_success_promise);
 			self.pop_trace();
+			return promise;
 		},
 		
 		
 		
 		/**
 		 * @public
-		 * @memberof				DevaptMixinBind
-		 * @desc					Do bind actions on records
-		 * @param {object}			arg_event_obj	event object
-		 * @param {string}			arg_bind_action	binding action
-		 * @param {string}			arg_item_1		item name of object 1
-		 * @param {string}			arg_item_2		item name of object 2
-		 * @param {array}			arg_event_opds	event operands
-		 * @return {nothing}
+		 * @memberof			DevaptMixinBind
+		 * @desc				Add an 'on_event' forward binding action
+		 * @param {string|array}	arg_event_name	'on_event' event name
+		 * @param {object}			arg_callback	'on_event' action callback
+		 * @param {boolean}			arg_unique		'on_event' action is a unique callback for this event
+		 * @param {object}			arg_setting		'on_event' forward setting object
+		 * @return {promise}
 		 */
-		on_binding_on_records: function(arg_event_obj, arg_bind_action, arg_item_1, arg_item_2, arg_event_opds)
+		init_on_event_setting_forward: function(arg_event_name, arg_callback, arg_unique, arg_setting)
 		{
 			var self = this;
 			self.push_trace(self.trace, DevaptMixinBind.mixin_bind_trace);
-			var context = 'on_binding_on_records(event,actio,item,opds)';
+			var context = 'init_on_event_setting_forward(event,setting)';
 			self.enter(context, '');
 			
 			
-			// console.log(self.name + ': on_binding_on_records: action[' + arg_bind_action + '] on records for field [' + arg_item_2 + '] with opds count [' + arg_event_opds.length + ']');
-			// console.log(arg_event_opds, 'arg_event_opds');
+			// CHECK ARG: EVENT NAME
+			self.assert_not_null(context, 'event name', arg_event_name);
 			
-			self.value(context, 'action', arg_bind_action);
-			switch(arg_bind_action)
+			// CHECK ARG: EVENT ACTION CALLBACK
+			self.assert_function(context, 'event action callback', arg_callback);
+			
+			// CHECK ARG: EVENT LISTENER IS UNIQUE
+			self.assert_true(context, 'listener is unique', DevaptTypes.is_boolean(arg_unique) );
+			
+			// CHECK ARG: FORWARD SETTINGS
+			self.assert_object(context, 'setting', arg_setting);
+			
+			self.assert_true(context, 'source', ('source' in arg_setting));
+			self.assert_true(context, 'target', ('target' in arg_setting));
+			
+			self.assert_object(context, 'source', arg_setting['source']);
+			self.assert_object(context, 'target', arg_setting['target']);
+			
+			self.assert_true(context, 'source.name', ('name' in arg_setting['source']));
+			self.assert_not_empty_string(context, 'source.name', arg_setting['source']['name']);
+			
+			self.assert_true(context, 'target.name', ('name' in arg_setting['target']));
+			self.assert_not_empty_string(context, 'target.name', arg_setting['target']['name']);
+			
+			
+			// GET FILTER SOURCE NAMES
+			var source_names = arg_setting['source']['name'];
+			source_names = source_names.split(',');
+			self.value(context, 'source_names', source_names);
+			
+			
+			// TEST IF CURRENT OBJECT IS IN THE ENABLED SOURCES OBJECTS
+			var source_is_found = false;
+			for(var source_name_key in source_names)
 			{
-				// case 'select': {
-					// console.log(arg_bind_action, 'event action not processed');
-				// }
-				
-				default: {
-					console.error(arg_bind_action, 'event action not processed');
+				var source_name = source_names[source_name_key];
+				self.step(context, 'TEST IF CURRENT OBJECT IS IN THE ENABLED SOURCES OBJECTS at [' + source_name + ']');
+						
+				if (self.name === source_name)
+				{
+					self.step(context, 'TEST IF CURRENT OBJECT IS IN THE ENABLED SOURCES OBJECTS: found');
+					source_is_found = true;
+					break;
 				}
+			}
+			if (!source_is_found)
+			{
+				self.step(context, 'TEST IF CURRENT OBJECT IS IN THE ENABLED SOURCES OBJECTS: not found');
+				
+				self.leave(context, Devapt.msg_success_promise);
+				return Devapt.promise_resolved();
 			}
 			
 			
-			self.leave(context, '');
+			// GET FILTER TARGET NAMES
+			var target_names = arg_setting['target']['name'];
+			target_names = target_names.split(',');
+			self.value(context, 'target_names', target_names);
+			
+			
+			
+			// LOOP ON TARGET NAMES
+			var all_bind_promises = [];
+			for(var target_name_key in target_names)
+			{
+				var target_name = target_names[target_name_key];
+				
+				self.step(context, 'loop on binding target name [' + target_name + ']');
+				
+				var promise = DevaptResources.get_resource_instance(target_name);
+				promise.then(
+					function(arg_target_obj)
+					{
+						self.step(context, 'REGISTER ACTION CALLBACK');
+						var loop_promise = self.init_on_event_callback(arg_target_obj, arg_event_name, arg_callback/*(arg_target_obj)*/, arg_unique);
+						all_bind_promises.push(loop_promise);
+					}
+				);
+			}
+			
+			// CREATE ALL PROMISE
+			var promise = Devapt.promise_all(all_bind_promises);
+			
+			
+			self.leave(context, Devapt.msg_success_promise);
 			self.pop_trace();
+			return promise;
 		},
 		
 		
 		
 		/**
 		 * @public
-		 * @memberof				DevaptMixinBind
-		 * @desc					Do bind actions on record
-		 * @param {object}			arg_event_obj	event object
-		 * @param {string}			arg_bind_action	binding action
-		 * @param {string}			arg_item_1		item name of object 1
-		 * @param {string}			arg_item_2		item name of object 2
-		 * @param {array}			arg_event_opds	event operands
-		 * @return {nothing}
+		 * @memberof			DevaptMixinBind
+		 * @desc				Register an event binding action callback
+		 * @param {object}			arg_target_obj	'on_event' target object
+		 * @param {string|array}	arg_event_name	'on_event' event name(s)
+		 * @param {function}		arg_callback	'on_event' action callback with the 
+		 * @param {boolean}			arg_unique		'on_event' action is a unique callback for this event
+		 * @return {promise}
 		 */
-		on_binding_on_record: function(arg_event_obj, arg_bind_action, arg_item_1, arg_item_2, arg_event_opds)
+		init_on_event_callback: function(arg_target_obj, arg_event_name, arg_callback, arg_unique)
 		{
 			var self = this;
 			self.push_trace(self.trace, DevaptMixinBind.mixin_bind_trace);
-			var context = 'on_binding_on_record(event,actio,item,opds)';
+			var context = 'init_on_event_callback(target,event,callback,unique)';
 			self.enter(context, '');
 			
 			
-			// console.log(self.name + ': on_binding_on_record: action[' + arg_bind_action + '] on record for field [' + arg_item_2 + '] with opds count [' + arg_event_opds.length + ']');
-			// console.log(arg_event_opds, 'arg_event_opds');
+			// CHECK ARGS
+			self.assert_object(context, 'arg_target_obj', arg_target_obj);
+			self.assert_not_empty_string(context, 'arg_event_name', arg_event_name);
+			self.assert_function(context, 'arg_callback', arg_callback);
+			arg_unique = DevaptTypes.to_boolean(arg_unique, false);
 			
-			self.value(context, 'action', arg_bind_action);
-			switch(arg_bind_action)
+			
+			if (arg_target_obj.on_event_forwards && arg_target_obj.on_event_forwards[arg_event_name] && arg_target_obj.on_event_forwards[arg_event_name].length > 0)
 			{
-				case 'select':
+				self.step(context, 'REGISTER ACTION CALLBACK with forwards for event name [' + arg_event_name + ']');
+				
+				// LOOP ON FORWARDS SETTINGS
+				var all_promises = [];
+				for(var forward_index in arg_target_obj.on_event_forwards[arg_event_name])
 				{
-					self.step(context, 'action is select');
+					self.step(context, 'REGISTER ACTION CALLBACK with forwards at [' + forward_index + ']');
 					
-					var operand_1 = arg_event_opds[1];
-					// console.log(operand_1, 'operand_1');
+					var forward_settings = arg_target_obj.on_event_forwards[arg_event_name][forward_index];
 					
-					var selected_item_record = operand_1['record'];
-					// console.log(selected_item_record, 'selected_item_record');
-					
-					var source_field_name = arg_item_1;
-					var target_field_name = arg_item_2;
-					
-					var target_field_value = selected_item_record[source_field_name];
-					// console.log(target_field_value, 'target_field_value');
-					
-					self.on_record_select(target_field_name, target_field_value, null);
-					break;
+					var setting_promise = self.init_on_event_setting_forward(arg_event_name, arg_callback, arg_unique, forward_settings);
+					all_promises.push(setting_promise);
 				}
 				
-				default:
-				{
-					console.log(arg_bind_action, 'event action not processed');
-					break;
-				}
+				var promise = Devapt.promise_all(all_promises);
+				return promise ? promise : Devapt.promise_rejected();
 			}
 			
 			
-			self.leave(context, '');
+			// DEFINE ON EVENT CALLBACK
+			var on_event_cb = function(event_obj, source_obj, opd_record)
+			{
+				self.step(context, 'ON EVENT CALLBACK');
+				
+				var operands = [source_obj, opd_record];
+//				console.log(operands, context + ':bind.cb.operands for event [' + arg_event_name + ']');
+				
+				if ( arg_target_obj.is_view )
+				{
+					self.step(context, 'target object is a view');
+					
+					if ( arg_target_obj.is_render_state_rendering() )
+					{
+						self.step(context, 'view is rendering (wait)');
+						
+						return arg_target_obj.mixin_renderable_defer.then(
+							function(arg_rendered_view)
+							{
+								self.step(context, 'target object is a view and is ready to process bind');
+								return arg_callback(arg_rendered_view)(event_obj, source_obj, operands);
+							}
+						)
+					}
+				}
+				
+				return arg_callback(arg_target_obj)(event_obj, source_obj, operands);
+			};
+			
+			// ADD EVENT CALLBACK
+			self.step(context,'add event callback for [' + arg_event_name + ']');
+			var bool_result = false;
+			if ( DevaptTypes.is_not_empty_string(arg_event_name) )
+			{
+				bool_result = self.add_event_callback(arg_event_name, on_event_cb, arg_unique);
+			}
+			else if ( DevaptTypes.is_not_empty_array(arg_event_name) )
+			{
+				for(var event_name_key in arg_event_name)
+				{
+					var event_name = arg_event_name[event_name_key];
+					bool_result = self.add_event_callback(event_name, on_event_cb, arg_unique);
+					if (!bool_result)
+					{
+						break;
+					}
+				}
+			}
+			
+			self.step(context,'create promise with result [' + bool_result + ']');
+			var promise = bool_result ? Devapt.promise_resolved() : Devapt.promise_rejected();
+			
+			
+			self.leave(context, Devapt.msg_success_promise);
 			self.pop_trace();
+			return promise;
+		},
+		
+		
+		
+		/* --------------------------------------------- ENABLE BINDINGS ------------------------------------------------ */
+		
+		/**
+		 * @public
+		 * @memberof			DevaptMixinBind
+		 * @desc				Enable bindings
+		 * @return {promise}
+		 */
+		enable_bindings: function()
+		{
+			var self = this;
+			self.push_trace(self.trace, DevaptMixinBind.mixin_bind_trace);
+			var context = 'enable_bindings()';
+			self.enter(context, '');
+			
+			
+			// ENABLE 'on_event' BINDINGS
+			var promise = self.init_on_event();
+			promise.then(
+				function()
+				{
+					self.fire_event('devapt.render.bind_finished', []);
+				}
+			);
+			
+			
+			self.leave(context, Devapt.msg_success_promise);
+			self.pop_trace();
+			return promise;
 		}
-		
 	};
 	
 	
@@ -892,25 +774,26 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptResources)
 		'infos':{
 			'author':'Luc BORIES',
 			'created':'2014-07-14',
-			'updated':'2014-12-06',
-			'description':'Mixin methods for bind feature.'
+			'updated':'2015-05-23',
+			'description':'Mixin methods for bindings features.'
 		}
 	};
 	var DevaptMixinBindClass = new DevaptClass('DevaptMixinBind', null, class_settings);
 	
 	// METHODS
 	DevaptMixinBindClass.infos.ctor = DevaptMixinBind.mixin_init_bind;
-	DevaptMixinBindClass.add_public_method('bind', {}, DevaptMixinBind.bind);
-	DevaptMixinBindClass.add_public_method('on_binding', {}, DevaptMixinBind.on_binding);
-	DevaptMixinBindClass.add_public_method('on_binding_on_selections', {}, DevaptMixinBind.on_binding_on_selections);
-	DevaptMixinBindClass.add_public_method('on_binding_on_filters', {}, DevaptMixinBind.on_binding_on_filters);
-	DevaptMixinBindClass.add_public_method('on_binding_on_records', {}, DevaptMixinBind.on_binding_on_records);
-	DevaptMixinBindClass.add_public_method('on_binding_on_record', {}, DevaptMixinBind.on_binding_on_record);
+	
+	DevaptMixinBindClass.add_public_method('init_on_event', {}, DevaptMixinBind.init_on_event);
+	DevaptMixinBindClass.add_public_method('init_on_event_setting', {}, DevaptMixinBind.init_on_event_setting);
+	DevaptMixinBindClass.add_public_method('init_on_event_setting_log', {}, DevaptMixinBind.init_on_event_setting_log);
+	DevaptMixinBindClass.add_public_method('init_on_event_setting_filter', {}, DevaptMixinBind.init_on_event_setting_filter);
+	DevaptMixinBindClass.add_public_method('init_on_event_setting_forward', {}, DevaptMixinBind.init_on_event_setting_forward);
+	DevaptMixinBindClass.add_public_method('init_on_event_callback', {}, DevaptMixinBind.init_on_event_callback);
+	
+	DevaptMixinBindClass.add_public_method('enable_bindings', {}, DevaptMixinBind.enable_bindings);
 	
 	// PROPERTIES
-	// DevaptMixinBindClass.add_public_bool_property('mixin_bind_trace',		'', false, false, false, []);
-	DevaptMixinBindClass.add_public_object_property('links',				'', null, false, false, []);
-	DevaptMixinBindClass.add_public_object_property('links_forwarder',		'', null, false, false, []);
+	DevaptMixinBindClass.add_public_object_property('on_event',				'', null, false, false, []);
 	
 	// BUID MIXIN CLASS
 	DevaptMixinBindClass.build_class();
