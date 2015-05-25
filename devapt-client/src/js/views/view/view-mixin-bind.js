@@ -40,7 +40,7 @@ function(Devapt, DevaptTypes, DevaptTraces, DevaptClass, DevaptResources)
 		 * @public
 		 * @desc				Enable/disable trace for mixin operations
 		 */
-		mixin_bind_trace: true,
+		mixin_bind_trace: false,
 		
 		
 		/**
@@ -338,6 +338,7 @@ function(Devapt, DevaptTypes, DevaptTraces, DevaptClass, DevaptResources)
 			self.push_trace(self.trace, DevaptMixinBind.mixin_bind_trace);
 			var context = 'init_on_event_setting_filter(event,setting)';
 			self.enter(context, '');
+			
 			self.assert_not_null(context, 'event name', arg_event_name);
 			self.assert_object(context, 'setting', arg_setting);
 			
@@ -384,8 +385,11 @@ function(Devapt, DevaptTypes, DevaptTraces, DevaptClass, DevaptResources)
 					return (
 						function(arg_closure_self, arg_closure_resource_obj)
 						{
+							var context = 'init_on_event_setting_filter.callback(' + arg_closure_resource_obj.name + ')';
+							
 //							arg_closure_self.trace=true;
 							arg_closure_self.step(context, 'ON ACTION CALLBACK');
+							
 //							console.log(arguments, context + ':ON ACTION CALLBACK');
 //							console.log(mode, context + ':ON ACTION CALLBACK:mode');
 //							console.log(target_names, context + ':ON ACTION CALLBACK:target_names');
@@ -393,9 +397,12 @@ function(Devapt, DevaptTypes, DevaptTraces, DevaptClass, DevaptResources)
 //							console.log(target_field, context + ':ON ACTION CALLBACK:target_field');
 //							console.log(unique_event_callback, context + ':ON ACTION CALLBACK:unique_event_callback');
 							
+							// TARGET OBJECT
+//							console.log(arg_resource_obj.name, context + 'ON ACTION CALLBACK:target');
+							
 							// GET SOURCE OBJECT
 							var source_object = arg_event_operands[0];
-//							console.log(source_object, context + 'ON ACTION CALLBACK:source_object');
+//							console.log(source_object.name, context + 'ON ACTION CALLBACK:source_object');
 							
 							// GET EVENT OPERANDS MAP
 							var event_opds_map = arg_event_operands[1];
@@ -412,15 +419,18 @@ function(Devapt, DevaptTypes, DevaptTraces, DevaptClass, DevaptResources)
 								{
 									arg_closure_self.step(context, 'ON ACTION CALLBACK:view model is found');
 									
+//									arg_view_model.trace=true;
+									
 									// GET MODEL RECORD FOR CURRENT SELECTED ITEM
-//									var record = arg_view_model.get_recordset().get_first_record_by_object(item_record);
 									var record_promise = arg_closure_self.view_model_promise.then(
 										function(arg_self_view_model)
 										{
-//											return arg_self_view_model.get_recordset().get_first_record_by_object(item_record);
+//											arg_self_view_model.trace=true;
+											
 											return arg_self_view_model.get_first_record_by_object(item_record);
 										}
 									);
+									
 									return record_promise.then(
 										function(record)
 										{
@@ -469,27 +479,8 @@ function(Devapt, DevaptTypes, DevaptTraces, DevaptClass, DevaptResources)
 			// REGISTER ACTION CALLBACK
 			var register_cb = function(arg_resource_obj)
 			{
-			/*	if (arg_resource_obj.on_event_forwards && arg_resource_obj.on_event_forwards[arg_event_name] && arg_resource_obj.on_event_forwards[arg_event_name].length > 0)
-				{
-					self.step(context, 'REGISTER ACTION CALLBACK with forwards for event name [' + arg_event_name + ']');
-					
-					// LOOP ON FORWARDS SETTINGS
-					var all_promises = [];
-					for(var forward_index in arg_resource_obj.on_event_forwards[arg_event_name])
-					{
-						self.step(context, 'REGISTER ACTION CALLBACK with forwards at [' + forward_index + ']');
-						
-						var forward_settings = arg_resource_obj.on_event_forwards[arg_event_name][forward_index];
-						
-						var setting_promise = self.init_on_event_setting_forward(arg_event_name, action_cb, unique_event_callback, forward_settings);
-						all_promises.push(setting_promise);
-					}
-					
-					var promise = Devapt.promise_all(all_promises);
-					return promise ? promise : Devapt.promise_rejected();
-				}*/
+				self.step(context, 'REGISTER ACTION CALLBACK for event name [' + arg_event_name + ']');
 				
-				self.step(context, 'REGISTER ACTION CALLBACK without forward for event name [' + arg_event_name + ']');
 				return self.init_on_event_callback(arg_resource_obj, arg_event_name, action_cb, unique_event_callback);
 			};
 			
@@ -609,8 +600,9 @@ function(Devapt, DevaptTypes, DevaptTraces, DevaptClass, DevaptResources)
 				promise.then(
 					function(arg_target_obj)
 					{
-						self.step(context, 'REGISTER ACTION CALLBACK');
-						var loop_promise = self.init_on_event_callback(arg_target_obj, arg_event_name, arg_callback/*(arg_target_obj)*/, arg_unique);
+						self.step(context, 'REGISTER FORWAD ACTION CALLBACK for target [' + arg_target_obj.name + ']');
+						
+						var loop_promise = self.init_on_event_callback(arg_target_obj, arg_event_name, arg_callback, arg_unique);
 						all_bind_promises.push(loop_promise);
 					}
 				);
@@ -652,58 +644,117 @@ function(Devapt, DevaptTypes, DevaptTraces, DevaptClass, DevaptResources)
 			arg_unique = DevaptTypes.to_boolean(arg_unique, false);
 			
 			
-			if (arg_target_obj.on_event_forwards && arg_target_obj.on_event_forwards[arg_event_name] && arg_target_obj.on_event_forwards[arg_event_name].length > 0)
+			if ( DevaptTypes.is_object(arg_target_obj.on_event_forwards) )
 			{
-				self.step(context, 'REGISTER ACTION CALLBACK with forwards for event name [' + arg_event_name + ']');
+				self.step(context, 'TARGET OBJECT HAS FORWARDS ?');
 				
-				// LOOP ON FORWARDS SETTINGS
+				var has_event_forward = (arg_event_name in arg_target_obj.on_event_forwards) && DevaptTypes.is_not_empty_array( arg_target_obj.on_event_forwards[arg_event_name] );
+				var has_all_forward = ('*' in arg_target_obj.on_event_forwards) && DevaptTypes.is_not_empty_array( arg_target_obj.on_event_forwards['*'] );
+				
+				// DEBUG
+				self.value(context, 'has_event_forward', has_event_forward);
+				self.value(context, 'has_all_forward', has_all_forward);
+//				console.log(arg_target_obj.on_event_forwards, 'arg_target_obj.on_event_forwards');
+				
 				var all_promises = [];
-				for(var forward_index in arg_target_obj.on_event_forwards[arg_event_name])
+				
+				// PROCESS GIVEN EVENT FORWARD
+				if (has_event_forward)
 				{
-					self.step(context, 'REGISTER ACTION CALLBACK with forwards at [' + forward_index + ']');
+					self.step(context, 'REGISTER ACTION CALLBACK with event forwards for [' + arg_event_name + ']');
 					
-					var forward_settings = arg_target_obj.on_event_forwards[arg_event_name][forward_index];
+					var forwards_settings = arg_target_obj.on_event_forwards[arg_event_name];
 					
-					var setting_promise = self.init_on_event_setting_forward(arg_event_name, arg_callback, arg_unique, forward_settings);
-					all_promises.push(setting_promise);
+					// LOOP ON FORWARDS SETTINGS
+					for(var forward_index in forwards_settings)
+					{
+						self.step(context, 'REGISTER ACTION CALLBACK with event forward at [' + forward_index + ']');
+						
+						var forward_settings = forwards_settings[forward_index];
+						
+						var setting_promise = self.init_on_event_setting_forward(arg_event_name, arg_callback, arg_unique, forward_settings);
+						all_promises.push(setting_promise);
+					}
 				}
 				
-				var promise = Devapt.promise_all(all_promises);
-				return promise ? promise : Devapt.promise_rejected();
+				// PROCESS ALL EVENTS FORWARD
+				if (has_all_forward)
+				{
+					self.step(context, 'REGISTER ACTION CALLBACK with all events forwards for [' + '*' + ']');
+					
+					var forwards_settings = arg_target_obj.on_event_forwards['*'];
+					
+					// LOOP ON FORWARDS SETTINGS
+					for(var forward_index in forwards_settings)
+					{
+						self.step(context, 'REGISTER ACTION CALLBACK with all forward at [' + forward_index + ']');
+						
+						var forward_settings = forwards_settings[forward_index];
+						
+						var setting_promise = self.init_on_event_setting_forward('*', arg_callback, arg_unique, forward_settings);
+						all_promises.push(setting_promise);
+					}
+				}
+				
+				if (all_promises.length > 0)
+				{
+					var promise = Devapt.promise_all(all_promises);
+					
+					self.leave(context, Devapt.msg_success_promise);
+					self.pop_trace();
+					return promise;
+				}
 			}
 			
 			
 			// DEFINE ON EVENT CALLBACK
-			var on_event_cb = function(event_obj, source_obj, opd_record)
+			var on_event_cb = function(arg_cb_event_obj, arg_cb_source_obj, arg_cb_opd_record)
 			{
-				self.step(context, 'ON EVENT CALLBACK');
-				
-				var operands = [source_obj, opd_record];
-//				console.log(operands, context + ':bind.cb.operands for event [' + arg_event_name + ']');
-				
-				if ( arg_target_obj.is_view )
-				{
-					self.step(context, 'target object is a view');
-					
-					if ( arg_target_obj.is_render_state_rendering() )
+				return (
+					function(arg_self, target_obj, event_obj, source_obj, opd_record)
 					{
-						self.step(context, 'view is rendering (wait)');
+						arg_self.step(context, 'ON EVENT CALLBACK');
 						
-						return arg_target_obj.mixin_renderable_defer.then(
-							function(arg_rendered_view)
+//						console.log(arg_self.name, 'ON EVENT CALLBACK: self');
+//						console.log(event_obj.name, 'ON EVENT CALLBACK: event');
+//						console.log(source_obj.name, 'ON EVENT CALLBACK: source');
+//						console.log(target_obj.name, 'ON EVENT CALLBACK: target');
+//						console.log(opd_record, 'ON EVENT CALLBACK: opds');
+						
+						var operands = [source_obj, opd_record];
+		//				console.log(operands, context + ':bind.cb.operands for event [' + arg_event_name + ']');
+						
+						if ( target_obj.is_view )
+						{
+							arg_self.step(context, 'target object is a view');
+							
+							if ( target_obj.is_render_state_rendering() )
 							{
-								self.step(context, 'target object is a view and is ready to process bind');
-								return arg_callback(arg_rendered_view)(event_obj, source_obj, operands);
+								arg_self.step(context, 'view is rendering (wait)');
+								
+								var target_render_promise = Devapt.promise(target_obj.mixin_renderable_defer);
+								
+								return target_render_promise.then(
+									function(arg_rendered_view)
+									{
+										arg_self.step(context, 'target object is a view and is ready to process bind');
+										return arg_callback(arg_rendered_view)(event_obj, source_obj, operands);
+									}
+								)
 							}
-						)
+						}
+						
+						arg_self.step(context, 'run event callback without waiting for rendering for target [' + target_obj.name + ']');
+//						console.log(target_obj.name, context + 'run event callback without waiting for rendering for target');
+						
+						return arg_callback(target_obj)(event_obj, source_obj, operands);
 					}
-				}
-				
-				return arg_callback(arg_target_obj)(event_obj, source_obj, operands);
+				)(self, arg_target_obj, arg_cb_event_obj, arg_cb_source_obj, arg_cb_opd_record);
 			};
 			
 			// ADD EVENT CALLBACK
 			self.step(context,'add event callback for [' + arg_event_name + ']');
+			self.step(context,'event callback is unique ? [' + arg_unique + ']');
 			var bool_result = false;
 			if ( DevaptTypes.is_not_empty_string(arg_event_name) )
 			{
@@ -722,11 +773,11 @@ function(Devapt, DevaptTypes, DevaptTraces, DevaptClass, DevaptResources)
 				}
 			}
 			
-			self.step(context,'create promise with result [' + bool_result + ']');
+			self.step(context,'create promise with result [' + bool_result + '] for target [' + arg_target_obj.name + ']');
 			var promise = bool_result ? Devapt.promise_resolved() : Devapt.promise_rejected();
 			
 			
-			self.leave(context, Devapt.msg_success_promise);
+			self.leave(context, bool_result ? Devapt.msg_success_promise : Devapt.msg_failure_promise);
 			self.pop_trace();
 			return promise;
 		},

@@ -116,7 +116,7 @@ function(
 	var cb_constructor = function(self)
 	{
 		// DEBUG
-		self.trace = true;
+//		self.trace = true;
 		
 		// CONSTRUCTOR BEGIN
 		var context = 'DevaptContainer.contructor(' + self.name + ')';
