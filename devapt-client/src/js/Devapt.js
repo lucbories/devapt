@@ -44,7 +44,7 @@
  * 					PROMISES
  * 						Devapt.is_defer(value): boolean
  * 						Devapt.is_promise(value): boolean
- * 						Devapt.defer(defer): deffered objectt
+ * 						Devapt.defer(defer): deffered object
  * 						Devapt.promise(value): promise object
  * 						Devapt.promise_resolved(value): resolved promise object
  * 						Devapt.promise_rejected(value): rejected promise object
@@ -739,9 +739,9 @@ function($, DevaptInit, CryptoMD5, CryptoSHA1, Q, DevaptFactory)
 	 * @memberof			Devapt
 	 * @public
 	 * @static
-	 * @method				Devapt.defer()
+	 * @method				Devapt.defer(value)
 	 * @desc				Create a deferred object
-	 * @param {object}		arg_value		external deferred
+	 * @param {object}		arg_value		external deferred (optional)
 	 * @return {object}
 	 */
 	Devapt.defer = function(arg_value)
@@ -757,8 +757,8 @@ function($, DevaptInit, CryptoMD5, CryptoSHA1, Q, DevaptFactory)
 	 * @memberof			Devapt
 	 * @public
 	 * @static
-	 * @method				Devapt.defer()
-	 * @desc				Create a deferred object
+	 * @method				Devapt.promise()
+	 * @desc				Create a promise object
 	 * @param {object}		arg_value		external deferred
 	 * @return {object}
 	 */

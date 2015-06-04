@@ -10,10 +10,27 @@
  * 			PRIVATE METHODS
  * 
  * 			PUBLIC METHODS
- * 				self.init_mixin_event_listener(self):nothing
- * 				self.has_event_callback(arg_event_name, arg_event_cb):boolean
- * 				self.add_event_callback(arg_event_name, arg_event_cb, arg_unique, arg_sources, arg_not_sources):boolean
- * 				self.remove_event_callback(arg_event_name, arg_event_cb):boolean
+ * 				init_mixin_event_listener(self): mixin constructor (nothing)
+ * 				
+ * 				has_event_callback(arg_event_name,arg_event_cb): test if the object has a listener for the event (boolean)
+ * 				
+ * 				add_event_callback(arg_event_name,arg_event_cb,arg_unique,arg_sources,arg_not_sources): add an event listener (boolean)
+ * 				remove_event_callback(arg_event_name,arg_event_cb): remove an event listener (boolean)
+ * 				
+ * 				on_event(arg_event_name,arg_event_cb, arg_unique, arg_sources, arg_not_sources): shorthand for add_event_callback (boolean)
+ * 				rm_event(arg_event_name,arg_event_cb): shorthand for remove_event_callback (boolean)
+ * 				
+ * 				relay_event(arg_source_event_name,arg_relayed_event_name,arg_sources): emit a new event with an alternate name on source event (boolean)
+ * 				proxy_event(arg_event_name,arg_target_objects,arg_sources): emit a received event from the source to the targets (boolean)
+ * 				proxy_event_to_parents(arg_event_name,arg_sources): emit a received event from the source to the parents hierarchy (boolean)
+ * 				proxy_event_to_children(arg_event_name,arg_sources): emit a received event from the source to the children hierarchy (boolean)
+ * 				get_proxy_event_parents(): get an array of parents objects to transfer the event (array)
+ * 				get_proxy_event_children(): get an array of children objects to transfer the event (array)
+ * 				
+ * 				suspend_event(arg_event_name): suspend event listening (nothing)
+ * 				resume_event(arg_event_name): resume event listening (nothing)
+ * 				
+ * 				add_buffer_listner(arg_event_name,arg_delay,arg_event_cb,arg_unique,arg_sources,arg_not_sources)
  * 
  * 			EVENT CALLBACK RECORD
  * 				{
@@ -21,6 +38,7 @@
  * 					event_cb:function|array[object,function],
  * 					event_sources:array of (string|regexp),
  * 					event_not_sources:array of (string|regexp),
+ * 					event_buffer_delay:integer
  * 				}
  * 					
  * @see			DevaptObject
@@ -95,7 +113,7 @@ function(DevaptTypes, DevaptClass)
 			if ( DevaptTypes.is_array(event_callbacks) )
 			{
 				self.step(context, 'object event has registered callbacks');
-				for(record_index in event_callbacks)
+				for(var record_index in event_callbacks)
 				{
 					self.step(context, 'loop on event callback record at [' + record_index + ']');
 					
@@ -156,7 +174,7 @@ function(DevaptTypes, DevaptClass)
 		/**
 		 * @memberof			DevaptMixinEventListener
 		 * @public
-		 * @method				add_event_callback(arg_event_name, arg_event_cb)
+		 * @method				add_event_callback(arg_event_name,arg_event_cb,arg_unique,arg_sources,arg_not_sources,arg_worker)
 		 * @desc				Register an event callback
 		 * @param {string}		arg_event_name		event name
 		 * @param {function}	arg_event_cb		event callback
@@ -170,7 +188,7 @@ function(DevaptTypes, DevaptClass)
 		{
 			var self = this;
 			self.push_trace(self.trace, DevaptMixinEventListener.mixin_event_listener_trace);
-			var context = 'add_event_callback(' + arg_event_name + ',callback)';
+			var context = 'add_event_callback(' + arg_event_name + ',callback...)';
 			self.enter(context, '');
 			
 			
@@ -221,6 +239,41 @@ function(DevaptTypes, DevaptClass)
 		/**
 		 * @memberof			DevaptMixinEventListener
 		 * @public
+		 * @method				add_event_once_callback(arg_event_name,arg_event_cb,arg_sources,arg_not_sources,arg_worker)
+		 * @desc				Register an event callback
+		 * @param {string}		arg_event_name		event name
+		 * @param {function}	arg_event_cb		event callback
+		 * @param {array}		arg_sources			list of processed event sources (emitters)
+		 * @param {array}		arg_not_sources		list of ignored event sources (emitters)
+		 * @param {object}		arg_worker			tasks worker
+		 * @return {boolean}	true:success,false:failure
+		 */
+		add_event_once_callback: function(arg_event_name, arg_event_cb, arg_sources, arg_not_sources, arg_worker)
+		{
+			var self = this;
+			self.push_trace(self.trace, DevaptMixinEventListener.mixin_event_listener_trace);
+			var context = 'add_event_once_callback(' + arg_event_name + ',callback...)';
+			self.enter(context, '');
+			
+			
+			var once_cb = function()
+			{
+				self.remove_event_callback(arg_event_name, once_cb);
+				self.do_callback(once_cb, arguments);
+			};
+			self.add_event_callback(arg_event_name, once_cb, false, arg_sources, arg_not_sources, arg_worker);
+			
+			
+			self.leave(context, 'success');
+			self.pop_trace();
+			return true;
+		},
+		
+		
+		
+		/**
+		 * @memberof			DevaptMixinEventListener
+		 * @public
 		 * @method				remove_event_callback(arg_event_name, arg_event_cb)
 		 * @desc				Unregister an event callback
 		 * @param {string}		arg_event_name		event name
@@ -245,7 +298,7 @@ function(DevaptTypes, DevaptClass)
 			}
 			
 			// REMOVE GIVEN CALLBACK
-			for(record_index in event_callbacks)
+			for(var record_index in event_callbacks)
 			{
 				self.step(context, 'loop on event callback record at [' + record_index + ']');
 				
@@ -258,7 +311,7 @@ function(DevaptTypes, DevaptClass)
 					self.step(context, 'object event is a function');
 					if (event_cb === arg_event_cb)
 					{
-						event_callbacks.splice(index, 1);
+						event_callbacks.splice(record_index, 1);
 						self.leave(context, 'callback function found');
 						self.pop_trace();
 						return true;
@@ -273,7 +326,7 @@ function(DevaptTypes, DevaptClass)
 					{
 						if (arg_event_cb[0] === event_cb[0] && arg_event_cb[1] === event_cb[1])
 						{
-							event_callbacks.splice(index, 1);
+							event_callbacks.splice(record_index, 1);
 							self.leave(context, 'callback function found');
 							self.pop_trace();
 							return true;
@@ -308,6 +361,7 @@ function(DevaptTypes, DevaptClass)
 	DevaptMixinEventListenerClass.infos.ctor = DevaptMixinEventListener.init_mixin_event_listener;
 	DevaptMixinEventListenerClass.add_public_method('has_event_callback', {}, DevaptMixinEventListener.has_event_callback);
 	DevaptMixinEventListenerClass.add_public_method('add_event_callback', {}, DevaptMixinEventListener.add_event_callback);
+	DevaptMixinEventListenerClass.add_public_method('add_event_once_callback', {}, DevaptMixinEventListener.add_event_once_callback);
 	DevaptMixinEventListenerClass.add_public_method('remove_event_callback', {}, DevaptMixinEventListener.remove_event_callback);
 	
 	// PROPERTIES

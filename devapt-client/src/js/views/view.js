@@ -618,11 +618,11 @@ function(
 		self.server_api = {
 			view_name: self.name,
 			
-			// action_view: {
-				// method:'GET',
-				// url:url_base + 'views/' + self.name + '/html_view',
-				// format:'devapt_view_api_2'
-			// },
+			 action_view: {
+				 method:'GET',
+				 url:url_base + 'views/' + self.name + '/html_view',
+				 format:'devapt_view_api_2'
+			 },
 			action_page: {
 				method:'GET',
 				url:url_base + 'views/' + self.name + '/html_page',

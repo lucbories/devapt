@@ -168,7 +168,7 @@ function(Devapt, DevaptTypes,
 	 * @method					DevaptRecordSet.free_record(record)
 	 * @desc					Unuse a Record
 	 * @param {object}			arg_record		uused Record object
-	 * @return {object}			Promise of the operation
+	 * @return {nothing}
 	 */
 	var cb_free_record = function (arg_record)
 	{
@@ -177,15 +177,10 @@ function(Devapt, DevaptTypes,
 		self.enter(context, '');
 		self.assert_object(context, 'record', arg_record);
 		
-		var promise = arg_record.erase().then(
-			function()
-			{
-				self.empty_records.push(arg_record);
-			}
-		);
+		arg_record.free();
+		self.empty_records.push(arg_record);
 		
 		self.leave(context, '');
-		return promise;
 	};
 	
 	

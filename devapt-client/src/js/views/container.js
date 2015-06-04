@@ -226,14 +226,21 @@ function(
 		var promise = slice_promise.then(
 			function()
 			{
-				return self.render_items(arg_deferred);
+				console.log('refresh:READ AND RENDER ITEMS');
+				
+				return self.render_items();
 			}
 		);
-		promise.then(
+		
+		// SET REFRESH TIMER AND UPDATE PAGER
+		promise = promise.then(
 			function()
 			{
+				console.log('refresh:SET REFRESH TIMER AND UPDATE PAGER');
+				
 				self.fire_event('devapt.container.refresh.items_rendered');
 				
+				// SET REFRESH TIMER
 				if ( DevaptTypes.is_integer(self.items_refresh.frequency) )
 				{
 					var refresh_cb = function ()
@@ -244,20 +251,27 @@ function(
 					setTimeout(refresh_cb, self.items_refresh.frequency*1000);
 				}
 				
+				// UPDATE PAGER
 				var items_count = $(self.items_jquery_filter, self.items_jquery_parent).filter('.devapt-container-visible').length;
 				if (self.mixin_pagination_apply_count === 0 || items_count_before !== items_count)
 				{
 					self.fire_event('devapt.pagination.update_pagination', [ {'begin':0, 'end':items_count} ]);
+					
+					// END REFRESH PROCESS
+					console.log('refresh:END REFRESH PROCESS');
+					self.fire_event('devapt.container.refresh.end');
+				}
+				else
+				{
+					// END REFRESH PROCESS
+					console.log('refresh:END REFRESH PROCESS');
+					self.fire_event('devapt.container.refresh.end');
 				}
 			}
 		);
 		
 		
-		// END REFRESH PROCESS
-		self.fire_event('devapt.container.refresh.end');
-		
-		
-		self.leave(context, Devapt.msg_success);
+		self.leave(context, Devapt.msg_success_promise);
 		return promise
 	};
 	
@@ -502,16 +516,33 @@ function(
 			{
 				self.step(context, 'get items and types promise done');
 //				console.log(recordset, self.name + '.' + context + '.recordset');
-//				console.log(items, self.name + '.' + context + '.items');
-//				console.log(types, self.name + '.' + context + '.types');
+				console.log(items, self.name + '.' + context + '.items');
+				console.log(types, self.name + '.' + context + '.types');
 				
 				try
 				{
 					var items_count = items.length;
-					self.items_records = items;
-					self.items_records_count = items_count;
+					var index_start = 0;
+					
+					if (self.items_records.length > 0)
+					{
+						index_start = self.items_records.length;
+						if (items_count > 0)
+						{
+							// APPEND ITEMS
+							self.items_records = self.items_records.concat(items);
+							self.items_records_count = self.items_records.length;
+						}
+					}
+					else
+					{
+						self.items_records = items;
+						self.items_records_count = items_count;
+					}
 //					self.value(context, 'items', items);
-					self.value(context, 'items_count', items_count);
+//					self.value(context, 'items_count', items_count);
+//					console.debug(items, context + ':items');
+//					console.debug(self.items_records, context + ':items_records');
 					
 					var types_count = types.length;
 					var default_type = null;
@@ -565,7 +596,7 @@ function(
 						// TODO REMOVE DEFERRED
 						var arg_deferred = Devapt.defer();
 						// items_defers.push(item_defer); // TODO
-						if ( ! self.render_item(arg_deferred, item, item_index, type) )
+						if ( ! self.render_item(arg_deferred, item, index_start + item_index, type) )
 						{
 							self.step(context, 'deferred.reject()');
 							arg_deferred.reject();
@@ -574,7 +605,7 @@ function(
 						
 						// SEND EVENT
 						self.step(context, 'fire event: devapt.container.render.item');
-						self.fire_event('devapt.container.render.item', [item_index]);
+						self.fire_event('devapt.container.render.item', [index_start + item_index]);
 					}
 					
 					

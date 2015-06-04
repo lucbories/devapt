@@ -149,9 +149,9 @@ function(Devapt, DevaptTypes, DevaptClass)
 			
 			
 			// UPDATE FILTERED
-			if (self.apply_filtered_value && self.mixin_filtered_value && self.mixin_filtered_value !== '')
+			if (self.apply_or_delay_filtered_value && self.mixin_filtered_value && self.mixin_filtered_value !== '')
 			{
-				self.apply_filtered_value(self.mixin_filtered_value, self.mixin_filtered_fields);
+				self.apply_or_delay_filtered_value(self.mixin_filtered_value, self.mixin_filtered_fields);
 			}
 			
 			
@@ -160,6 +160,7 @@ function(Devapt, DevaptTypes, DevaptClass)
 			nodes_jqo.hide();
 			
 			// LOOP ON NODES
+			var $ = Devapt.jQuery();
 			nodes_jqo.filter('.devapt-container-visible').each(
 				function(index, loop_node, array)
 				{

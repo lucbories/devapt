@@ -32,15 +32,6 @@ function(Devapt, DevaptTypes, DevaptClass)
 		
 		
 		/**
-		 * @memberof			DevaptMixinGetNodes
-		 * @public
-		 * @desc				Enable/disable mixin operations
-		 */
-		mixin_filtered_enabled: true,
-		
-		
-		
-		/**
 		 * @public
 		 * @memberof			DevaptMixinGetNodes
 		 * @desc				Init mixin

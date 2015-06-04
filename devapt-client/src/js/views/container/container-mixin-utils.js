@@ -456,6 +456,10 @@ function(Devapt, DevaptTypes, DevaptClass)
 			
 			$(self.items_jquery_filter, self.items_jquery_parent).remove();
 			
+			// EMPTY RECORDS
+			self.items_count = 0;
+			self.items_records = [];
+			
 			
 			self.leave(context, Devapt.msg_default_empty_implementation);
 			self.pop_trace();

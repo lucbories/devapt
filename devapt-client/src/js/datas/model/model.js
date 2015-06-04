@@ -45,10 +45,10 @@
 define(
 ['Devapt',
 	'core/types', 'object/events', 'object/object', 'core/application',
-	'datas/field', 'object/class', 'datas/model/recordset'],
+	'datas/field', 'object/class', 'datas/model/record', 'datas/model/recordset'],
 function(Devapt,
 	DevaptTypes, DevaptEvents, DevaptObject, DevaptApplication,
-	DevaptField, DevaptClass, DevaptRecordSet)
+	DevaptField, DevaptClass, DevaptRecord, DevaptRecordSet)
 {
 	/**
 	 * @class				DevaptModel
@@ -97,8 +97,14 @@ function(Devapt,
 		}
 		
 		
+		// INIT RECORDS COLLECTIONS
+		self.all_empty_records = [];
+		self.all_records_array = [];
+		self.all_records_map = {};
+		
+		
 		self.leave(context, 'success');
-	}
+	};
 	
 	
 	/**
@@ -144,9 +150,107 @@ function(Devapt,
 		
 		self.leave(context, Devapt.msg_success);
 		return true;
-	}
+	};
 	
 	
+	
+	/* --------------------------------------------- RECORDS OPERATIONS ------------------------------------------------ */
+	
+	/**
+	 * @memberof				DevaptModel
+	 * @public
+	 * @method					self.get_empty_record()
+	 * @desc					Get an empty Record object (create it or reuse it)
+	 * @return {object}
+	 */
+	var cb_new_record = function ()
+	{
+		var self = this;
+		
+		if( self.all_empty_records.length > 0 )
+		{
+			return self.all_empty_records.pop();
+		}
+		
+		return DevaptRecord.create(self.name + '_record_' + Devapt.uid(), { recordset:self });
+	};
+	
+	
+	/**
+	 * @memberof				DevaptModel
+	 * @public
+	 * @method					self.free_record(record)
+	 * @desc					Unuse a Record
+	 * @param {object}			arg_record		unused Record object
+	 * @return {nothing}
+	 */
+	var cb_free_record = function (arg_record)
+	{
+		var self = this;
+		var context = 'free_record(record)';
+		self.enter(context, '');
+		self.assert_object(context, 'record', arg_record);
+		
+		arg_record.free();
+		self.all_empty_records.push(arg_record);
+		
+		self.leave(context, Devapt.msg_success);
+	};
+	
+	
+	/**
+	 * @memberof				DevaptModel
+	 * @public
+	 * @method					self.free_record(records)
+	 * @desc					Unuse an array of Record
+	 * @param {array}			arg_records		unused Record objects array
+	 * @return {nothing}
+	 */
+	var cb_free_records = function (arg_records)
+	{
+		var self = this;
+		var context = 'free_records(records)';
+		self.enter(context, '');
+		self.assert_array(context, 'records', arg_records);
+		
+		for(var record_index in arg_records)
+		{
+			var record = arg_records[record_index];
+			self.assert_object(context, 'record', record);
+			
+			record.free();
+			self.all_empty_records.push(record);
+		}
+		
+		self.leave(context, Devapt.msg_success);
+	};
+	
+	
+	/**
+	 * @memberof				DevaptModel
+	 * @public
+	 * @method					self.add_record(record)
+	 * @desc					Register a Record
+	 * @param {object}			arg_record		a Record object
+	 * @return {nothing}
+	 */
+	var cb_add_record = function (arg_record)
+	{
+		var self = this;
+		var context = 'add_record(record)';
+		self.enter(context, '');
+		self.assert_object(context, 'record', arg_record);
+		
+		arg_record.use();
+		self.all_records_array.push(arg_record);
+		self.all_records_map.push(arg_record);
+		
+		self.leave(context, Devapt.msg_success);
+	};
+	
+	
+	
+	/* --------------------------------------------- FIELDS OPERATIONS ------------------------------------------------ */
 	
 	/**
 	 * @memberof			DevaptModel
@@ -165,7 +269,7 @@ function(Devapt,
 		
 		self.leave(context, Devapt.msg_success);
 		return (arg_field_name in self.fields_map);
-	}
+	};
 	
 	
 	
@@ -186,7 +290,7 @@ function(Devapt,
 		
 		self.leave(context, Devapt.msg_success);
 		return (arg_field_name in self.fields_map) ? self.fields_map[arg_field_name] : null;
-	}
+	};
 	
 	
 	
@@ -231,7 +335,7 @@ function(Devapt,
 		
 		self.leave(context, Devapt.msg_not_found);
 		return null;
-	}
+	};
 	
 	
 	
@@ -255,7 +359,7 @@ function(Devapt,
 		
 		self.leave(context, Devapt.msg_success);
 		return is_pk_field;
-	}
+	};
 	
 	
 	
@@ -276,7 +380,7 @@ function(Devapt,
 		
 		self.leave(context, Devapt.msg_found);
 		return self.pk_field;
-	}
+	};
 	
 	
 	
@@ -297,7 +401,7 @@ function(Devapt,
 		
 		self.leave(context, Devapt.msg_success);
 		return self.fields;
-	}
+	};
 	
 	
 	/**
@@ -323,7 +427,7 @@ function(Devapt,
 				// console.log(self, 'model');
 				// console.log(field_settings, 'field_settings');
 				
-				var field = (field_settings && field_settings.class_name && field_settings.class_name === 'DevaptField') ? field_settings : null
+				var field = (field_settings && field_settings.class_name && field_settings.class_name === 'DevaptField') ? field_settings : null;
 				field = field ? field : DevaptField.create(field_settings.name, field_settings);
 				
 				field.model = self;
@@ -371,7 +475,7 @@ function(Devapt,
 		
 		self.leave(context, Devapt.msg_success);
 		return true;
-	}
+	};
 	
 	
 	
@@ -391,7 +495,7 @@ function(Devapt,
 		
 		self.leave(context, Devapt.msg_success);
 		return Object.keys(self.fields_map);
-	}
+	};
 	
 	/**
 	 * @memberof			DevaptModel
@@ -408,6 +512,8 @@ function(Devapt,
 		self.enter(context, '');
 		
 		
+		var types = null;
+		
 		var get_field_type_cb = function(field)
 		{
 			return field.field_value.type;
@@ -415,7 +521,7 @@ function(Devapt,
 		
 		if ( ! DevaptTypes.is_array(arg_fields_names) )
 		{
-			var types = self.fields.map(get_field_type_cb);
+			types = self.fields.map(get_field_type_cb);
 			
 			self.leave(context, Devapt.msg_success_require);
 			return types;
@@ -425,14 +531,17 @@ function(Devapt,
 		{
 			return arg_fields_names.lastIndexOf(element.name) >= 0;
 		};
-		var types = self.fields.filter(cb_filter).map(get_field_type_cb);
+		
+		types = self.fields.filter(cb_filter).map(get_field_type_cb);
 		
 		
 		self.leave(context, Devapt.msg_success);
 		return types;
-	}
+	};
 	
 	
+	
+	/* --------------------------------------------- ENGINE OPERATIONS ------------------------------------------------ */
 	
 	/**
 	 * @memberof			DevaptModel
@@ -451,7 +560,7 @@ function(Devapt,
 		
 		self.leave(context, Devapt.msg_success);
 		return self.engine_promise;
-	}
+	};
 	
 	
 	
@@ -491,7 +600,6 @@ function(Devapt,
 						{
 							self.step(context, 'JSON engine is created');
 							
-							var url_base = DevaptApplication.get_url_base;
 							var crud_api = self.get_server_api();
 							
 							arg_engine.url_read		= crud_api.action_read.url + '?query_api=2';
@@ -528,7 +636,7 @@ function(Devapt,
 		
 		self.leave(context, Devapt.msg_success_promise);
 		return self.engine_promise;
-	}
+	};
 	
 	
 	
@@ -583,9 +691,11 @@ function(Devapt,
 		
 		self.leave(context, Devapt.msg_success);
 		return self.crud_api;
-	}
+	};
 	
 	
+	
+	/* --------------------------------------------- ACCESS OPERATIONS ------------------------------------------------ */
 	
 	/**
 	 * @memberof			DevaptModel
@@ -604,7 +714,7 @@ function(Devapt,
 		
 		self.leave(context, Devapt.msg_success);
 		return self.access;
-	}
+	};
 	
 	
 	/**
@@ -624,11 +734,11 @@ function(Devapt,
 		
 		// DEFAULT ACCESSES
 		var default_access =  { 'create':false, 'read':true, 'update':false, 'delete':false };
-		self.access = $.extend(default_access, arg_access);
+		self.access = window.$.extend(default_access, arg_access);
 		
 		
 		self.leave(context, Devapt.msg_success);
-	}
+	};
 	
 	
 	
@@ -658,7 +768,7 @@ function(Devapt,
 		
 		self.leave(context, Devapt.msg_success_promise);
 		return promise;
-	}
+	};
 	
 	
 	/**
@@ -694,12 +804,14 @@ function(Devapt,
 				}
 				
 				arg_recordset.load(resultset_obj);
+				
+				// TODO REGISTER RECORDSET RECORDS ON MODEL
 			}
 		);
 		
 		self.leave(context, Devapt.msg_success_promise);
 		return promise;
-	}
+	};
 	
 	
 	/**
@@ -733,7 +845,7 @@ function(Devapt,
 		
 		self.leave(context, Devapt.msg_success_promise);
 		return promise;
-	}
+	};
 	
 	
 	/**
@@ -762,7 +874,7 @@ function(Devapt,
 		
 		self.leave(context, Devapt.msg_success_promise);
 		return promise;
-	}
+	};
 	
 	
 	/**
@@ -791,7 +903,7 @@ function(Devapt,
 		
 		self.leave(context, Devapt.msg_success_promise);
 		return promise;
-	}
+	};
 	
 	
 	
@@ -815,6 +927,11 @@ function(Devapt,
 	// METHODS
 	DevaptModelClass.infos.ctor = cb_constructor;
 	DevaptModelClass.add_public_method('is_valid', {}, cb_is_valid);
+	
+	DevaptModelClass.add_public_method('new_record', {}, cb_new_record);
+	DevaptModelClass.add_public_method('add_record', {}, cb_add_record);
+	DevaptModelClass.add_public_method('free_record', {}, cb_free_record);
+	DevaptModelClass.add_public_method('free_records', {}, cb_free_records);
 	
 	DevaptModelClass.add_public_method('has_field', {}, cb_has_field);
 	DevaptModelClass.add_public_method('get_field', {}, cb_get_field);

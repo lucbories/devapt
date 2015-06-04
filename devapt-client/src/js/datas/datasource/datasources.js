@@ -34,7 +34,7 @@ function(Devapt,
 		 * @public
 		 * @desc				Enable/disable trace for static class operations
 		 */
-		trace_datasources: false,
+		trace_datasources: true,
 		
 		
 		/**
@@ -48,13 +48,13 @@ function(Devapt,
 		get_datasource_model: function(arg_datasource_name)
 		{
 			var context = 'get_datasource_model(name)';
-			DevaptTraces.trace_enter(context, DevaptTypes.to_string(arg_datasource_name, 'bad name'), DevaptClasses.trace_datasources);
+			DevaptTraces.trace_enter(context, DevaptTypes.to_string(arg_datasource_name, 'bad name'), DevaptDatasources.trace_datasources);
 			
 			
 			// CHECK NAME
 			if ( ! DevaptTypes.is_not_empty_str(arg_datasource_name) )
 			{
-				DevaptTraces.trace_leave(context, Devapt.msg_failure_promise, DevaptClasses.trace_datasources);
+				DevaptTraces.trace_leave(context, Devapt.msg_failure_promise, DevaptDatasources.trace_datasources);
 				return Devapt.promise_rejected();
 			}
 			
@@ -67,7 +67,7 @@ function(Devapt,
 				{
 					case 'logs':
 					{
-						DevaptTraces.trace_step(context, 'source is logs', DevaptClasses.trace_datasources);
+						DevaptTraces.trace_step(context, 'source is logs', DevaptDatasources.trace_datasources);
 						var settings = DevaptDatasources.get_logs_settings();
 						model_promise = Devapt.create('DevaptModel', settings);
 						break;
@@ -75,7 +75,7 @@ function(Devapt,
 					
 					case 'resources':
 					{
-						DevaptTraces.trace_step(context, 'source is resources', DevaptClasses.trace_datasources);
+						DevaptTraces.trace_step(context, 'source is resources', DevaptDatasources.trace_datasources);
 						var settings = DevaptDatasources.get_resources_settings();
 						model_promise = Devapt.create('DevaptModel', settings);
 						break;
@@ -83,7 +83,7 @@ function(Devapt,
 					
 					case 'events':
 					{
-						DevaptTraces.trace_step(context, 'source is events', DevaptClasses.trace_datasources);
+						DevaptTraces.trace_step(context, 'source is events', DevaptDatasources.trace_datasources);
 						var settings = DevaptDatasources.get_events_settings();
 						model_promise = Devapt.create('DevaptModel', settings);
 						break;
@@ -91,14 +91,38 @@ function(Devapt,
 					
 					case 'classes':
 					{
-						DevaptTraces.trace_step(context, 'source is classes', DevaptClasses.trace_datasources);
+						DevaptTraces.trace_step(context, 'source is classes', DevaptDatasources.trace_datasources);
 						var settings = DevaptDatasources.get_classes_settings();
 						model_promise = Devapt.create('DevaptModel', settings);
 						break;
 					}
 					
+					case 'crud-api':
+					{
+						DevaptTraces.trace_step(context, 'source is crud-api', DevaptDatasources.trace_datasources);
+						var settings = DevaptDatasources.get_crud_api_settings();
+						model_promise = Devapt.create('DevaptModel', settings);
+						break;
+					}
+					
+					case 'view-api':
+					{
+						DevaptTraces.trace_step(context, 'source is view-api', DevaptDatasources.trace_datasources);
+						var settings = DevaptDatasources.get_view_api_settings();
+						model_promise = Devapt.create('DevaptModel', settings);
+						break;
+					}
+					
+					case 'resource-api':
+					{
+						DevaptTraces.trace_step(context, 'source is resource-api', DevaptDatasources.trace_datasources);
+						var settings = DevaptDatasources.get_resource_api_settings();
+						model_promise = Devapt.create('DevaptModel', settings);
+						break;
+					}
+					
 				default:
-					DevaptTraces.trace_leave(context, Devapt.msg_failure_promise, DevaptClasses.trace_datasources);
+					DevaptTraces.trace_leave(context, Devapt.msg_failure_promise, DevaptDatasources.trace_datasources);
 					return Devapt.promise_rejected();
 				}
 			}
@@ -108,7 +132,7 @@ function(Devapt,
 			}
 			
 			
-			DevaptTraces.trace_leave(context, Devapt.msg_sucess_promise, DevaptClasses.trace_datasources);
+			DevaptTraces.trace_leave(context, Devapt.msg_sucess_promise, DevaptDatasources.trace_datasources);
 			return model_promise;
 		},
 		
@@ -230,7 +254,7 @@ function(Devapt,
 						{
 							var regexp1 = /^.*_events.*$/i;
 							var regexp2 = /^.*_logs.*$/i;
-							if ( regexp1.test(arg_record.context) || regexp2.test(arg_record.context) )
+							if ( regexp1.test(arg_record.context) || regexp2.test(arg_record.context) || regexp2.test(arg_record.instance) )
 							{
 								return false;
 							}
@@ -780,6 +804,553 @@ function(Devapt,
 					"operands":{
 						"type":"Integer",
 						"label":"Operands count"
+					}
+				}
+			};
+			
+			return settings;
+		},
+		
+		
+		
+		/**
+		 * @public
+		 * @static
+		 * @memberof			DevaptDatasources
+		 * @desc				Get CRUD API datasource model settings
+		 * @return {object}
+		 */
+		get_crud_api_settings: function()
+		{
+			var settings = {
+				"name":"MODEL_BROWSER_CRUD_API",
+				
+				"class_type":"model",
+				
+				"access":{"create":false,"read":true,"update":false,"delete":false},
+				
+				"role_read":"ROLE_BROWSER_API_READ",
+				"role_create":"ROLE_BROWSER_API_CREATE",
+				"role_update":"ROLE_BROWSER_API_UPDATE",
+				"role_delete":"ROLE_BROWSER_API_DELETE",
+				
+				"engine":{
+					"name":"STORAGE_BROWSER_CRUD_API",
+					"source":"array",
+					
+					// COLLECTION OEPRATIONS
+					"get_records": function(arg_offset, arg_length)
+						{
+							var datas = [];
+							
+							var model_instances = DevaptClasses.get_model_instances();
+							var model_index = 0;
+							for( ; model_index < model_instances.length ; model_index++)
+							{
+								var model = model_instances[model_index];
+									
+								var server_api = model.get_server_api();
+								
+								var record_create = {
+									id:Devapt.uid(),
+									resource_name:server_api.model_name,
+									action:'create',
+									method:server_api.action_create.method,
+									format:server_api.action_create.format,
+									url:server_api.action_create.url
+								};
+								var record_read = {
+									id:Devapt.uid(),
+									resource_name:server_api.model_name,
+									action:'read',
+									method:server_api.action_read.method,
+									format:server_api.action_read.format,
+									url:server_api.action_read.url
+								};
+								var record_update = {
+									id:Devapt.uid(),
+									resource_name:server_api.model_name,
+									action:'update',
+									method:server_api.action_update.method,
+									format:server_api.action_update.format,
+									url:server_api.action_update.url
+								};
+								var record_delete = {
+									id:Devapt.uid(),
+									resource_name:server_api.model_name,
+									action:'delete',
+									method:server_api.action_delete.method,
+									format:server_api.action_delete.format,
+									url:server_api.action_delete.url
+								};
+								
+								datas.push(record_create);
+								datas.push(record_read);
+								datas.push(record_update);
+								datas.push(record_delete);
+							}
+							
+							// console.log(datas, 'crud-api.datas');
+							
+							return DevaptDatasources.get_records(settings, datas, arg_offset, arg_length);
+						},
+					
+					"set_records": function(arg_records)
+						{
+							// NOTHING TO DO
+							return false;
+						},
+					
+					"remove_records": function()
+						{
+							// NOTHING TO DO
+							return false;
+						},
+					
+					// ITEM OEPRATIONS
+					"filter_record": function(arg_record)
+						{
+//							var regexp1 = /^.*_events.*$/i;
+//							var regexp2 = /^.*_logs.*$/i;
+//							if ( regexp1.test(arg_record.emitter) || regexp2.test(arg_record.emitter) )
+//							{
+//								return false;
+//							}
+							return true;
+						},
+					"get_record": function(arg_key)
+						{
+							if (! arg_key)
+							{
+								return null;
+							}
+//							var records = DevaptClasses.get_instances_array();
+//							if (arg_key in records)
+//							{
+//								var item = records[arg_key];
+//								return settings.engine.decode(item);
+//							}
+							return null;
+						},
+					
+					"set_record": function(arg_key, arg_record)
+						{
+							if (! arg_record || ! arg_key)
+							{
+								return false;
+							}
+							return false;
+						},
+					
+					"remove_record": function(arg_key)
+						{
+							if (! arg_key)
+							{
+								return false;
+							}
+							return false;
+						},
+					
+					"add_record": function(arg_record)
+						{
+							if (! arg_record)
+							{
+								return false;
+							}
+							return true;
+						},
+					
+					// READ/WRITE OPERATIONS
+					"encode": function(arg_value)
+						{
+							return null;
+						},
+					
+					"decode": function(arg_value)
+						{
+							// console.log(arg_value, 'events.decode');
+//							return (!arg_value) ? {} : {
+//								id:arg_value.id ? arg_value.id : Devapt.uid(),
+//								name:arg_value.name,
+//								ts:arg_value.fired_ts,
+//								emitter:arg_value.emitter_object.name,
+//								operands:arg_value.operands_array.length
+//							};
+							return arg_value;
+						}
+				},
+				
+				"fields":{
+					"id":{
+						"type":"Integer",
+						"label":"Id",
+						"is_pk":true
+					},
+					"resource_name":{
+						"type":"String",
+						"label":"Resource name"
+					},
+					"action":{
+						"type":"String",
+						"label":"Action"
+					},
+					"method":{
+						"type":"String",
+						"label":"Method"
+					},
+					"format":{
+						"type":"String",
+						"label":"Format"
+					},
+					"url":{
+						"type":"String",
+						"label":"URL"
+					}
+				}
+			};
+			
+			return settings;
+		},
+		
+		
+		
+		/**
+		 * @public
+		 * @static
+		 * @memberof			DevaptDatasources
+		 * @desc				Get VIEW API datasource model settings
+		 * @return {object}
+		 */
+		get_view_api_settings: function()
+		{
+			var settings = {
+				"name":"MODEL_BROWSER_VIEW_API",
+				
+				"class_type":"model",
+				
+				"access":{"create":false,"read":true,"update":false,"delete":false},
+				
+				"role_read":"ROLE_BROWSER_API_READ",
+				"role_create":"ROLE_BROWSER_API_CREATE",
+				"role_update":"ROLE_BROWSER_API_UPDATE",
+				"role_delete":"ROLE_BROWSER_API_DELETE",
+				
+				"engine":{
+					"name":"STORAGE_BROWSER_VIEW_API",
+					"source":"array",
+					
+					// COLLECTION OEPRATIONS
+					"get_records": function(arg_offset, arg_length)
+						{
+							var datas = [];
+							
+							var view_instances = DevaptClasses.get_view_instances();
+							var view_index = 0;
+							for( ; view_index < view_instances.length ; view_index++)
+							{
+								var view = view_instances[view_index];
+								
+								var server_api = view.get_server_api();
+								// console.log(server_api);
+								
+								 var record_view = {
+									 resource_name:server_api.view_name,
+									 action:'display_view',
+									 method:server_api.action_view.method,
+									 format:server_api.action_view.format,
+									 url:server_api.action_view.url
+								 };
+								var record_page = {
+									resource_name:server_api.view_name,
+									action:'display_page',
+									method:server_api.action_page.method,
+									format:server_api.action_page.format,
+									url:server_api.action_page.url
+								};
+								
+								datas.push(record_view);
+								datas.push(record_page);
+							}
+							
+							// console.log(datas, 'crud-api.datas');
+							
+							return DevaptDatasources.get_records(settings, datas, arg_offset, arg_length);
+						},
+					
+					"set_records": function(arg_records)
+						{
+							// NOTHING TO DO
+							return false;
+						},
+					
+					"remove_records": function()
+						{
+							// NOTHING TO DO
+							return false;
+						},
+					
+					// ITEM OEPRATIONS
+					"filter_record": function(arg_record)
+						{
+//							var regexp1 = /^.*_events.*$/i;
+//							var regexp2 = /^.*_logs.*$/i;
+//							if ( regexp1.test(arg_record.emitter) || regexp2.test(arg_record.emitter) )
+//							{
+//								return false;
+//							}
+							return true;
+						},
+					"get_record": function(arg_key)
+						{
+							if (! arg_key)
+							{
+								return null;
+							}
+//							var records = DevaptClasses.get_instances_array();
+//							if (arg_key in records)
+//							{
+//								var item = records[arg_key];
+//								return settings.engine.decode(item);
+//							}
+							return null;
+						},
+					
+					"set_record": function(arg_key, arg_record)
+						{
+							if (! arg_record || ! arg_key)
+							{
+								return false;
+							}
+							return false;
+						},
+					
+					"remove_record": function(arg_key)
+						{
+							if (! arg_key)
+							{
+								return false;
+							}
+							return false;
+						},
+					
+					"add_record": function(arg_record)
+						{
+							if (! arg_record)
+							{
+								return false;
+							}
+							return true;
+						},
+					
+					// READ/WRITE OPERATIONS
+					"encode": function(arg_value)
+						{
+							return null;
+						},
+					
+					"decode": function(arg_value)
+						{
+							// console.log(arg_value, 'events.decode');
+//							return (!arg_value) ? {} : {
+//								id:arg_value.id ? arg_value.id : Devapt.uid(),
+//								name:arg_value.name,
+//								ts:arg_value.fired_ts,
+//								emitter:arg_value.emitter_object.name,
+//								operands:arg_value.operands_array.length
+//							};
+							return arg_value;
+						}
+				},
+				
+				"fields":{
+					"id":{
+						"type":"Integer",
+						"label":"Id",
+						"is_pk":true
+					},
+					"resource_name":{
+						"type":"String",
+						"label":"Resource name"
+					},
+					"action":{
+						"type":"String",
+						"label":"Action"
+					},
+					"method":{
+						"type":"String",
+						"label":"Method"
+					},
+					"format":{
+						"type":"String",
+						"label":"Format"
+					},
+					"url":{
+						"type":"String",
+						"label":"URL"
+					}
+				}
+			};
+			
+			return settings;
+		},
+		
+		
+		
+		/**
+		 * @public
+		 * @static
+		 * @memberof			DevaptDatasources
+		 * @desc				Get RESOURCE API datasource model settings
+		 * @return {object}
+		 */
+		get_resource_api_settings: function()
+		{
+			var settings = {
+				"name":"MODEL_BROWSER_RESOURCE_API",
+				
+				"class_type":"model",
+				
+				"access":{"create":false,"read":true,"update":false,"delete":false},
+				
+				"role_read":"ROLE_BROWSER_API_READ",
+				"role_create":"ROLE_BROWSER_API_CREATE",
+				"role_update":"ROLE_BROWSER_API_UPDATE",
+				"role_delete":"ROLE_BROWSER_API_DELETE",
+				
+				"engine":{
+					"name":"STORAGE_BROWSER_RESOURCE_API",
+					"source":"array",
+					
+					// COLLECTION OEPRATIONS
+					"get_records": function(arg_offset, arg_length)
+						{
+							var datas = [];
+							
+							var record_resource = {
+								resource_name:'resources',
+								action:'resource',
+								method:'GET',
+								format:'devapt_resource_api_2',
+								url:'/.../resources/'
+							};
+							
+							datas.push(record_resource);
+							
+							// console.log(datas, 'crud-api.datas');
+							
+							return DevaptDatasources.get_records(settings, datas, arg_offset, arg_length);
+						},
+					
+					"set_records": function(arg_records)
+						{
+							// NOTHING TO DO
+							return false;
+						},
+					
+					"remove_records": function()
+						{
+							// NOTHING TO DO
+							return false;
+						},
+					
+					// ITEM OEPRATIONS
+					"filter_record": function(arg_record)
+						{
+//							var regexp1 = /^.*_events.*$/i;
+//							var regexp2 = /^.*_logs.*$/i;
+//							if ( regexp1.test(arg_record.emitter) || regexp2.test(arg_record.emitter) )
+//							{
+//								return false;
+//							}
+							return true;
+						},
+					"get_record": function(arg_key)
+						{
+							if (! arg_key)
+							{
+								return null;
+							}
+//							var records = DevaptClasses.get_instances_array();
+//							if (arg_key in records)
+//							{
+//								var item = records[arg_key];
+//								return settings.engine.decode(item);
+//							}
+							return null;
+						},
+					
+					"set_record": function(arg_key, arg_record)
+						{
+							if (! arg_record || ! arg_key)
+							{
+								return false;
+							}
+							return false;
+						},
+					
+					"remove_record": function(arg_key)
+						{
+							if (! arg_key)
+							{
+								return false;
+							}
+							return false;
+						},
+					
+					"add_record": function(arg_record)
+						{
+							if (! arg_record)
+							{
+								return false;
+							}
+							return true;
+						},
+					
+					// READ/WRITE OPERATIONS
+					"encode": function(arg_value)
+						{
+							return null;
+						},
+					
+					"decode": function(arg_value)
+						{
+							// console.log(arg_value, 'events.decode');
+//							return (!arg_value) ? {} : {
+//								id:arg_value.id ? arg_value.id : Devapt.uid(),
+//								name:arg_value.name,
+//								ts:arg_value.fired_ts,
+//								emitter:arg_value.emitter_object.name,
+//								operands:arg_value.operands_array.length
+//							};
+							return arg_value;
+						}
+				},
+				
+				"fields":{
+					"id":{
+						"type":"Integer",
+						"label":"Id",
+						"is_pk":true
+					},
+					"resource_name":{
+						"type":"String",
+						"label":"Resource name"
+					},
+					"action":{
+						"type":"String",
+						"label":"Action"
+					},
+					"method":{
+						"type":"String",
+						"label":"Method"
+					},
+					"format":{
+						"type":"String",
+						"label":"Format"
+					},
+					"url":{
+						"type":"String",
+						"label":"URL"
 					}
 				}
 			};

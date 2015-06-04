@@ -18,10 +18,6 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptView, undefined)
 	 * @public
 	 * @class				DevaptWindow
 	 * @desc				Label view class
-	 * @param {string}		arg_name			View name (string)
-	 * @param {object}		arg_parent_jqo	jQuery object to attach the view to
-	 * @param {object|null}	arg_options			Associative array of options
-	 * @return {nothing}
 	 */
 	
 	
@@ -66,19 +62,35 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptView, undefined)
 			function()
 			{
 				self.content_jqo.dialog();
+				self.content_jqo.on('close', [self, self.on_close])
 			}
 		);
 		
 		// body_jqo.html(self.content);
 		self.content_jqo.append(body_jqo);
 		
-		// RESOLVE AND GET PROMISE
-		// arg_deferred.resolve();
-		// var promise = arg_deferred.promise;
-		// var content_promise = Devapt.promise_resolved();
 		
 		self.leave(context, Devapt.msg_success_promise);
 		return content_promise;
+	}
+	
+	
+	/**
+	 * @public
+	 * @memberof			DevaptWindow
+	 * @desc				Handle Close event
+	 * @return {boolean}
+	 */
+	var cb_on_close = function()
+	{
+		var self = this;self.trace=true;
+		var context = 'on_close()';
+		self.enter(context, '');
+		
+		
+		
+		self.leave(context, Devapt.msg_success_promise);
+		return true;
 	}
 	
 	
@@ -101,6 +113,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptView, undefined)
 	
 	// METHODS
 	DevaptWindowClass.add_public_method('render_self', {}, cb_render_self);
+	DevaptWindowClass.add_public_method('on_close', {}, cb_on_close);
 	
 	// PROPERTIES
 	DevaptWindowClass.add_public_str_property('content',	'',		null, false, false, []);
