@@ -13,6 +13,10 @@
  * 		on_event.e1.filter.source.field='profiles_id_profile'
  * 		on_event.e1.filter.target.name='view_access_user_inspector_profiles_roles'
  * 		on_event.e1.filter.target.field='profiles_id_profile'
+ * 		
+ * 		on_event.e1.event='devapt.events.container.selected'
+ * 		on_event.e1.value.mode='replace'
+ * 		on_event.e1.value.target.name='view_access_user_inspector_profiles_roles'
  * 
  * @see			DevaptView
  * @ingroup     DEVAPT_VIEWS
@@ -201,6 +205,13 @@ function(Devapt, DevaptTypes, DevaptTraces, DevaptClass, DevaptResources)
 //							all_bind_promises.push(setting_promise);
 							break;
 						}
+						case 'value':
+						{
+							// INIT SETTING
+							var setting_promise = self.init_on_event_setting_value(event_name, action_settings);
+							all_bind_promises.push(setting_promise);
+							break;
+						}
 						case 'filter':
 						{
 							// INIT SETTING
@@ -316,6 +327,127 @@ function(Devapt, DevaptTypes, DevaptTraces, DevaptClass, DevaptResources)
 			};
 			
 			var promise = self.init_on_event_callback(self, arg_event_name, action_cb, unique_event_callback);
+			
+			
+			self.leave(context, Devapt.msg_success_promise);
+			self.pop_trace();
+			return promise;
+		},
+		
+		
+		/**
+		 * @public
+		 * @memberof			DevaptMixinBind
+		 * @desc				Add an 'on_event' value binding action
+		 * @param {string|array}	arg_event_name	'on_event' event name
+		 * @param {object}			arg_setting		'on_event' action setting object
+		 * @return {promise}
+		 */
+		init_on_event_setting_value: function(arg_event_name, arg_setting)
+		{
+			var self = this;
+			self.push_trace(self.trace, DevaptMixinBind.mixin_bind_trace);
+			var context = 'init_on_event_setting_value(event,setting)';
+			self.enter(context, '');
+			
+			self.assert_not_null(context, 'event name', arg_event_name);
+			self.assert_object(context, 'setting', arg_setting);
+			
+			self.assert_true(context, 'mode', ('mode' in arg_setting));
+			self.assert_true(context, 'target', ('target' in arg_setting));
+			
+			self.assert_object(context, 'target', arg_setting['target']);
+			
+			self.assert_not_empty_string(context, 'mode', arg_setting['mode']);
+			
+			self.assert_true(context, 'target.name', ('name' in arg_setting['target']));
+			self.assert_not_empty_string(context, 'target.name', arg_setting['target']['name']);
+			
+			
+			
+			// GET FILTER MODE
+			var mode = arg_setting['mode'];
+			// TOOD DEFINE OTHERS VALUE MODES : REPLACE, APPEND, REMOVE, MERGE...
+			// console.log(arg_setting, context + ':settings')
+			self.assert_true(context, 'mode', mode === 'replace');
+				
+			// GET FILTER TARGET NAMES
+			var target_names = arg_setting['target']['name'];
+			target_names = target_names.split(',');
+			
+			// GET EVENT HAS UNIQUE CALLBACK
+			var unique_event_callback = ('unique_event_callback' in arg_setting) ? DevaptTypes.to_boolean(arg_setting['unique_event_callback'], false) : false;
+			
+			// REGISTER ACTION
+			var action_cb = function(arg_resource_obj)
+			{
+				return function(arg_event_obj, arg_source_obj, arg_event_operands)
+				{
+					return (
+						function(arg_self, arg_event)
+						{
+							self.step(context, 'ON ACTION CALLBACK');
+	//						console.log(arguments, context + ':ON ACTION CALLBACK');
+							
+							// CHECK METHOD
+							var set_value_cb = 'set_value' in arg_resource_obj ? arg_resource_obj['set_value'] : null;
+							self.assert_function(context, 'set_value', set_value_cb);
+							
+							// GET SOURCE OBJECT
+							var source_object = arg_event_operands[0];
+							// console.log(source_object.name, context + 'ON ACTION CALLBACK:source_object');
+							
+							// GET EVENT OPERANDS MAP
+							var event_opds_map = arg_event_operands[1];
+							console.log(event_opds_map, context + ':ON ACTION CALLBACK:event_opds_map');
+							
+							// GET RECORD
+							// TODO CONFIGURE THE OPERAND NAME TO GET FROM THE MAP
+							var item_record = 'record' in event_opds_map ? event_opds_map.record : ( 'value' in event_opds_map ? event_opds_map.Value : null);
+							// console.log(item_record, context + 'ON ACTION CALLBACK:record');
+							
+							// CALL METHOD
+							if (item_record)
+							{
+								arg_resource_obj.set_value(item_record);
+							}
+							
+							return true;
+						}
+					)(arg_resource_obj, arg_event_name);
+				};
+			};
+			
+			
+			// REGISTER ACTION CALLBACK
+			var register_cb = function(arg_resource_obj)
+			{
+				self.step(context, 'REGISTER ACTION CALLBACK for event name [' + arg_event_name + ']');
+				
+				// CHECK METHOD
+				var set_value_cb = 'set_value' in arg_resource_obj ? arg_resource_obj['set_value'] : null;
+				self.assert_function(context, 'set_value', set_value_cb);
+
+				return self.init_on_event_callback(arg_resource_obj, arg_event_name, action_cb, unique_event_callback);
+			};
+			
+			// LOOP ON TARGETS NAMES
+			self.step(context, 'LOOP ON TARGETS NAMES');
+			var all_bind_promises = [];
+			for(var target_name_key in target_names)
+			{
+				var target_name = target_names[target_name_key];
+				
+				self.step(context, 'loop on binding target name [' + target_name + ']');
+				
+				var loop_promise = DevaptResources.get_resource_instance(target_name);
+				loop_promise.then(register_cb);
+				
+				all_bind_promises.push(loop_promise);
+			}
+			
+			// CREATE ALL PROMISE
+			var promise = Devapt.promise_all(all_bind_promises);
 			
 			
 			self.leave(context, Devapt.msg_success_promise);
@@ -837,6 +969,7 @@ function(Devapt, DevaptTypes, DevaptTraces, DevaptClass, DevaptResources)
 	DevaptMixinBindClass.add_public_method('init_on_event', {}, DevaptMixinBind.init_on_event);
 	DevaptMixinBindClass.add_public_method('init_on_event_setting', {}, DevaptMixinBind.init_on_event_setting);
 	DevaptMixinBindClass.add_public_method('init_on_event_setting_log', {}, DevaptMixinBind.init_on_event_setting_log);
+	DevaptMixinBindClass.add_public_method('init_on_event_setting_value', {}, DevaptMixinBind.init_on_event_setting_value);
 	DevaptMixinBindClass.add_public_method('init_on_event_setting_filter', {}, DevaptMixinBind.init_on_event_setting_filter);
 	DevaptMixinBindClass.add_public_method('init_on_event_setting_forward', {}, DevaptMixinBind.init_on_event_setting_forward);
 	DevaptMixinBindClass.add_public_method('init_on_event_callback', {}, DevaptMixinBind.init_on_event_callback);

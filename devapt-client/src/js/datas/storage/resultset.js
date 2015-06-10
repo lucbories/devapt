@@ -61,10 +61,10 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptObject, DevaptMixinStatus)
 		switch(self.status)
 		{
 			case 'ok':
-				return self.error === null && self.count === self.records.length;
+				return self.error_msg === null && self.count === self.records.length;
 			
 			case 'error':
-				return self.error !== null && self.count === 0 && self.records.length === 0;
+				return self.error_msg !== null && self.count === 0 && self.records.length === 0;
 		}
 		
 		return false;

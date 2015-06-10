@@ -62,7 +62,7 @@ function(DevaptTraces, DevaptTypes)
 		// SWITCH CLASS NAME
 		switch(arg_class_name)
 		{
-			// DATAS
+			// DATAS STORAGE ENGINES
 			case 'ResultSet':
 			case 'DevaptResultSet':
 			{
@@ -84,6 +84,59 @@ function(DevaptTraces, DevaptTypes)
 				break;
 			}
 			
+			
+			// DATAS PROVIDERS
+			case 'LogsProvider':
+			case 'DevaptLogsProvider':
+			{
+				view_requires = ['datas/datasource/logs_provider'];
+				break;
+			}
+			
+			case 'ResourcesProvider':
+			case 'DevaptResourcesProvider':
+			{
+				view_requires = ['datas/datasource/resources_provider'];
+				break;
+			}
+			
+			case 'EventsProvider':
+			case 'DevaptEventsProvider':
+			{
+				view_requires = ['datas/datasource/events_provider'];
+				break;
+			}
+			
+			case 'ClassesProvider':
+			case 'DevaptClassesProvider':
+			{
+				view_requires = ['datas/datasource/classes_provider'];
+				break;
+			}
+			
+			case 'CrudApiProvider':
+			case 'DevaptCrudApiProvider':
+			{
+				view_requires = ['datas/datasource/crud_api_provider'];
+				break;
+			}
+			
+			case 'ViewApiProvider':
+			case 'DevaptViewApiProvider':
+			{
+				view_requires = ['datas/datasource/view_api_provider'];
+				break;
+			}
+			
+			case 'ResourceApiProvider':
+			case 'DevaptResourceApiProvider':
+			{
+				view_requires = ['datas/datasource/resource_api_provider'];
+				break;
+			}
+			
+			
+			// DATAS MODELS
 			case 'model':
 			case 'Model':
 			case 'DevaptModel':
@@ -145,6 +198,13 @@ function(DevaptTraces, DevaptTypes)
 			case 'DevaptInput':
 			{
 				view_requires = ['views/input'];
+				break;
+			}
+			
+			case 'UrlApiDetail':
+			case 'DevaptUrlApiDetail':
+			{
+				view_requires = ['views/url_api_detail'];
 				break;
 			}
 		}

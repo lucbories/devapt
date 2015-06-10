@@ -281,6 +281,8 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptObject, DevaptResultSet)
 	DevaptStorageClass.add_public_bool_property('is_sync', 'storage engine has synchronous operations', false, false, false, []);
 	DevaptStorageClass.add_public_bool_property('is_cached', 'storage engine has cached operations', false, false, false, []);
 	DevaptStorageClass.add_public_int_property('cache_ttl', 'storage engine cache TTL (time to leave)', null, false, false, []);
+	DevaptStorageClass.add_public_bool_property('is_local_storage', 'storage engine has local datas on browser', true, false, false, []);
+	DevaptStorageClass.add_public_bool_property('is_remote_storage', 'storage engine has remote datas on server', false, false, false, []);
 	
 	DevaptStorageClass.add_public_str_property('notify_create', 'notify user on create operations', true, false, false, []);
 	DevaptStorageClass.add_public_str_property('notify_read', 'notify user on read operations', false, false, false, []);

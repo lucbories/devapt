@@ -40,5 +40,5 @@
         </header>
 		
 		<!-- Views container -->
-		<article id="page_content_id" class='row devapt_display'>
+		<article id="page_content_id" class='row devapt_display devapt_page_content'>
 		

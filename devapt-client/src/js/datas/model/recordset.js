@@ -85,7 +85,7 @@ function(Devapt, DevaptTypes,
 		else
 		{
 			self.status = 'empty';
-			self.error = null;
+			self.error_msg = null;
 		}
 		
 		// CHECK MODEL
@@ -102,7 +102,7 @@ function(Devapt, DevaptTypes,
 		if ( DevaptTypes.is_array(self.records) )
 		{
 			self.status = 'ok';
-			self.error = null;
+			self.error_msg = null;
 		}
 		
 		
@@ -220,12 +220,15 @@ function(Devapt, DevaptTypes,
 //				console.debug(self.id_field_name, 'self.id_field_name');
 //				console.debug(record_id, 'record_id');
 				
-				self.records_map[record_id] = record;
+				if (record_id && record)
+				{
+					self.records_map[record_id] = record;
+				}
 			}
 		}
 		catch(e)
 		{
-			self.error(context, e);
+			self.error_msg(context, e);
 		}
 		
 		self.leave(context, '');
@@ -267,7 +270,7 @@ function(Devapt, DevaptTypes,
 		}
 		catch(e)
 		{
-			self.error(context, e);
+			self.error_msg(context, e);
 		}
 		
 		
@@ -291,7 +294,7 @@ function(Devapt, DevaptTypes,
 		self.enter(context, '');
 		self.assert_not_empty_string(context, 'arg_field_value', arg_field_value);
 		self.assert_object(context, 'model', self.model);
-		self.assert_array(context, 'records_map', self.records_map);
+		self.assert_object(context, 'records_map', self.records_map);
 		
 		
 		try
@@ -309,7 +312,7 @@ function(Devapt, DevaptTypes,
 		}
 		catch(e)
 		{
-			self.error(context, e);
+			self.error_msg(context, e);
 		}
 		
 		
@@ -374,7 +377,7 @@ function(Devapt, DevaptTypes,
 		}
 		catch(e)
 		{
-			self.error(context, e);
+			self.error_msg(context, e);
 		}
 		
 		
@@ -453,7 +456,7 @@ function(Devapt, DevaptTypes,
 		}
 		catch(e)
 		{
-			self.error(context, e);
+			self.error_msg(context, e);
 		}
 		
 		
@@ -556,7 +559,7 @@ function(Devapt, DevaptTypes,
 					self.step(context, 'model has field');
 					
 					found_records = self.get_all_records_by_field(field_name, value, found_records);
-					if (found_records.length < 1)
+					if (found_records && found_records.length < 1)
 					{
 						self.step(context, 'model has field but no record found');
 						
@@ -573,7 +576,7 @@ function(Devapt, DevaptTypes,
 		}
 		catch(e)
 		{
-			self.error(context, e);
+			self.error_msg(context, e);
 		}
 		
 		
@@ -657,7 +660,7 @@ function(Devapt, DevaptTypes,
 		}
 		catch(e)
 		{
-			self.error(context, e);
+			self.error_msg(context, e);
 		}
 		
 		
@@ -699,7 +702,7 @@ function(Devapt, DevaptTypes,
 		}
 		catch(e)
 		{
-			self.error(context, e);
+			self.error_msg(context, e);
 		}
 		
 		return Devapt.promise_rejected();
@@ -729,7 +732,7 @@ function(Devapt, DevaptTypes,
 		}
 		catch(e)
 		{
-			self.error(context, e);
+			self.error_msg(context, e);
 		}
 		
 		return Devapt.promise_rejected();
@@ -796,7 +799,7 @@ function(Devapt, DevaptTypes,
 		}
 		catch(e)
 		{
-			self.error(context, e);
+			self.error_msg(context, e);
 		}
 		
 		
@@ -845,7 +848,7 @@ function(Devapt, DevaptTypes,
 		}
 		catch(e)
 		{
-			self.error(context, e);
+			self.error_msg(context, e);
 		}
 		
 		
@@ -941,7 +944,7 @@ function(Devapt, DevaptTypes,
 		}
 		catch(e)
 		{
-			self.error(context, e);
+			self.error_msg(context, e);
 		}
 		
 		
@@ -1029,7 +1032,7 @@ function(Devapt, DevaptTypes,
 		}
 		catch(e)
 		{
-			self.error(context, e);
+			self.error_msg(context, e);
 		}
 		
 		

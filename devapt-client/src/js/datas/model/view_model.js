@@ -251,8 +251,10 @@ function(
 							{
 								self.step(context, 'array engine is created');
 								
+								var view_name = DevaptTypes.is_string(self.view) ? self.view : ( (DevaptTypes.is_object(self.view) && self.view.is_view) ? self.view.name : 'unknow');
+								var model_name = view_name + '_model';
 								var model_settings = {
-									name: self.name + '_model',
+									name: model_name,
 									engine:engine_obj,
 									fields:{
 										value:{

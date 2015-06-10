@@ -69,9 +69,17 @@ class Application extends AbstractApplication implements ApplicationInterface
         $this->response       = new HttpResponse();
 		
 		// REGISTER ACCESS
+		// TODO DEFINE CUSTOM ROLES IN APPLICATION CONFIG
 		$get_action = \Devapt\Application\ResourceController::$RESOURCES_ACTION_GET;
+		$list_action = \Devapt\Application\ResourceController::$RESOURCES_ACTION_LIST;
 		$access = '*';
 		\Devapt\Security\Authorization::registerRoleAccess('application', $get_action, $access);
+		\Devapt\Security\Authorization::registerRoleAccess('all', $list_action, $access);
+		\Devapt\Security\Authorization::registerRoleAccess('models', $list_action, $access);
+		\Devapt\Security\Authorization::registerRoleAccess('views', $list_action, $access);
+		\Devapt\Security\Authorization::registerRoleAccess('menus', $list_action, $access);
+		\Devapt\Security\Authorization::registerRoleAccess('menubars', $list_action, $access);
+		\Devapt\Security\Authorization::registerRoleAccess('loggers', $list_action, $access);
     }
 	
 	

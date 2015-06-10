@@ -30,6 +30,7 @@ require.config(
 			'md5':			'/devapt-client/lib/cryptojs-3.1.2/rollups/md5',
 			'sha1':			'/devapt-client/lib/cryptojs-3.1.2/rollups/sha1',
 			// 'base64':		'/devapt-client/lib/cryptojs-3.1.2/components/enc-base64',
+			'bind':			'/devapt-client/lib/bind.js-20150609/bind-wrap',
 			
 			'foundation-min':			'/devapt-client/lib/foundation-' + foundation_version + '/js/foundation.min',
 			'foundation':				'/devapt-client/lib/foundation-' + foundation_version + '/js/foundation/foundation',

@@ -986,8 +986,7 @@ function($, DevaptInit, CryptoMD5, CryptoSHA1, Q, DevaptFactory)
 					return create_promise;
 				}
 				
-				defer.reject('class dependancies failure');
-				return Devapt.promise(defer);
+				return Devapt.promise_rejected('class dependancies failure');
 			}
 		);
 		

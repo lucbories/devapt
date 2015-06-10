@@ -65,7 +65,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptResources)
 		 * @public
 		 * @desc				Enable/disable trace for mixin operations
 		 */
-		mixin_trace_filtered: true,
+		mixin_trace_filtered: false,
 		
 		
 		
@@ -99,14 +99,12 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptResources)
 			self.mixin_filtered_value = null;
 			self.mixin_filtered_delayed_count = 0;
 			self.mixin_filtered_delayed_max= 1;
-			console.log(self.mixin_filtered_enabled , 'self.mixin_filtered_enabled  1');
+			
 			// INIT EVENTS HANDLERS
 			if (self.filtered && self.filtered.enabled)
 			{
 				if ( DevaptTypes.is_not_empty_str(self.filtered.event) && DevaptTypes.is_not_empty_str(self.filtered.source) )
 				{
-//					self.mixin_filtered_enabled = true;
-					console.log(self.mixin_filtered_enabled , 'self.mixin_filtered_enabled  2');
 					var promise = DevaptResources.get_resource_instance(self.filtered.source);
 					
 					promise.then(
@@ -114,11 +112,8 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptResources)
 						{
 							self.filtered.view = view;
 							view.add_event_callback(self.filtered.event, [self, self.on_filtered_event], false);
-							console.log(self.mixin_filtered_enabled , 'self.mixin_filtered_enabled  3');
 						}
 					);
-					
-//					self.add_event_callback('devapt.container.refresh.end', [self, self.on_refreshed_event], false);
 				}
 				else
 				{
@@ -145,7 +140,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptResources)
 			var context = 'on_filtered_event(opds)';
 			self.push_trace(self.trace, DevaptMixinFiltered.mixin_trace_filtered);
 			self.enter(context, '');
-			console.log(self.mixin_filtered_enabled , 'self.mixin_filtered_enabled  4');
+			
 			
 			// GET OPERANDS
 //			var event_obj = arg_event_operands[0];
@@ -188,7 +183,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptResources)
 			self.push_trace(self.trace, DevaptMixinFiltered.mixin_trace_filtered);
 			var context = 'apply_or_delay_filtered_value(value,fields)';
 			self.enter(context, '');
-			console.log(self.mixin_filtered_is_processing , 'self.mixin_filtered_is_processing  5');
+			
 			
 			// A FILTERING PROCESS IS ALREADY RUNNING
 			if (self.mixin_filtered_is_processing)
@@ -220,7 +215,6 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptResources)
 			
 			// APPLY FILTERED VALUE ON FILTERED FIELDS
 			var result = self.apply_filtered_value(arg_filtered_value, arg_fields_names);
-			console.log(self.mixin_filtered_is_processing , 'self.mixin_filtered_is_processing  7');
 			
 			
 			self.leave(context, result ? Devapt.msg_success : Devapt.msg_failure);
@@ -243,18 +237,21 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptResources)
 			self.push_trace(self.trace, DevaptMixinFiltered.mixin_trace_filtered);
 			var context = 'apply_filtered_value(value,fields)';
 			self.enter(context, '');
+			
+			
+			// DEBUG
 			self.value(context, 'mixin_filtered_enabled', self.mixin_filtered_enabled);
 			self.value(context, 'arg_filtered_value', arg_filtered_value);
 			self.value(context, 'arg_fields_names', arg_fields_names);
 			self.value(context, 'mixin_filtered_is_processing', self.mixin_filtered_is_processing);
-			debugger;
+			// debugger;
 			
 			// FILTERED FEATURE IS DISABLED
 			if (! self.mixin_filtered_enabled)
 			{
 				// UPDATE FILTERING STATE
 				self.mixin_filtered_is_processing = false;
-				console.log(self, context + ':FILTERING IS DISABLED');
+				// console.log(self, context + ':FILTERING IS DISABLED');
 				
 				self.leave(context, Devapt.msg_success + ':FILTERING IS DISABLED');
 				self.pop_trace();
@@ -365,7 +362,6 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptResources)
 			
 			// UPDATE PAGINATION
 			self.fire_event('devapt.pagination.update_pagination', [ {'begin':0, 'end':items_count} ]);
-			console.log(self.name, context + ':END');
 			
 			
 			self.leave(context, Devapt.msg_success);

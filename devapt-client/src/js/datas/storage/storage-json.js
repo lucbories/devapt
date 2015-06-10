@@ -46,7 +46,9 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptStorage, DevaptResultSet)
 		
 		
 		// STORAGE ATTRIBUTES
-		self.is_sync		= false;
+		self.is_sync = false;
+		self.is_remote_storage = true;
+		self.is_local_storage = false;
 		
 		
 		// CONSTRUCTOR END

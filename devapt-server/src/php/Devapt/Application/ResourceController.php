@@ -33,6 +33,9 @@ class ResourceController extends AbstractController
 	/// @brief ACTION NAME
 	static public $RESOURCES_ACTION_GET		= 'get_resource';
 	
+	/// @brief ACTION NAME
+	static public $RESOURCES_ACTION_LIST		= 'list';
+	
 	
 	
     /**
@@ -61,7 +64,7 @@ class ResourceController extends AbstractController
 		
 		
 		// CHECK ACTION NAME
-		if ( ! is_string($arg_action_name) )
+		if ( ! is_string($arg_action_name) || ($arg_action_name !== self::$RESOURCES_ACTION_GET && $arg_action_name !== self::$RESOURCES_ACTION_LIST) )
 		{
 			Trace::warning("ResourceController: Controller has no action name for resource [$arg_resource_name]");
 			
@@ -75,23 +78,36 @@ class ResourceController extends AbstractController
 			return false;
 		}
 		
-		// CHECK AUTORIZATION
-		if ( ! $this->authorization_is_cheched && ! $this->checkAuthorization($arg_resource_name, $arg_action_name) )
+		// LIST ACTION
+		if ($arg_action_name === self::$RESOURCES_ACTION_LIST)
 		{
-			Trace::warning("ResourceController: Controller authorization failed for action [$arg_action_name] on resource [$arg_resource_name]");
-			
-			// UPDATE RESPONSE
-			$arg_response->setContent('No access');
-			$arg_response->setStatusCode($arg_response::STATUS_CODE_401);
-			
-			// SEND JSON RESPONSE
-			$arg_response->send();
-			
-			return false;
+			$resources = ResourcesBroker::getResourcesNames($arg_resource_name);
+			$resource_json_str = implode(',', $resources);
 		}
 		
-		// GET RESOURCE OBJECT
-		$resource_json_str = ResourcesBroker::getResourceJson($arg_resource_name);
+		// GET ACTION
+		else if ($arg_action_name === self::$RESOURCES_ACTION_GET)
+		{
+			// CHECK AUTORIZATION
+			if ( ! $this->authorization_is_cheched && ! $this->checkAuthorization($arg_resource_name, $arg_action_name) )
+			{
+				Trace::warning("ResourceController: Controller authorization failed for action [$arg_action_name] on resource [$arg_resource_name]");
+				
+				// UPDATE RESPONSE
+				$arg_response->setContent('No access');
+				$arg_response->setStatusCode($arg_response::STATUS_CODE_401);
+				
+				// SEND JSON RESPONSE
+				$arg_response->send();
+				
+				return false;
+			}
+			
+			// GET RESOURCE OBJECT
+			$resource_json_str = ResourcesBroker::getResourceJson($arg_resource_name);
+		}
+		
+		// CHECK BROKER ERROR
 		if ( is_null($resource_json_str) )
 		{
 			Trace::warning('ResourceController: Resource broker error ['.$arg_resource_name.']');

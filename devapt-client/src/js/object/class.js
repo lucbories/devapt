@@ -247,8 +247,8 @@ function(DevaptTypes, DevaptClasses)
 						type:'nothing',
 						default_value:null,
 						failure_value:null,
-						success:function(value){return value !== null},
-						failure:function(value){return value === null}
+						success:function(value){return value !== null; },
+						failure:function(value){return value === null; }
 					}
 				};
 				
@@ -766,7 +766,7 @@ function(DevaptTypes, DevaptClasses)
 								DevaptTraces.trace_leave(context, 'success for [' + arg_property_record.type + ']', arg_class.trace);
 								return true;
 								
-			case 'float':		arg_target_object[aproperty_name] = DevaptTypes.to_float(setting_value, default_value);
+			case 'float':		arg_target_object[property_name] = DevaptTypes.to_float(setting_value, default_value);
 								DevaptTraces.trace_leave(context, 'success for [' + arg_property_record.type + ']', arg_class.trace);
 								return true;
 								
@@ -1424,6 +1424,7 @@ function(DevaptTypes, DevaptClasses)
 	{
 		var self = this;
 		self.trace = false;
+		self.is_class = true;
 		self.is_build = false;
 		self.is_auto_build = true;
 		
@@ -1694,7 +1695,7 @@ function(DevaptTypes, DevaptClasses)
 		 * @memberof				DevaptClass
 		 * @public
 		 * @method					add_public_int_property(name,desc,value,required,readonly,aliases)
-		 * @desc					Register a public non static string property
+		 * @desc					Register a public non static integer property
 		 * @param {string}			arg_property_name		property name
 		 * @param {string}			arg_property_desc		property description
 		 * @param {integer}			arg_property_value		property default value
@@ -1706,6 +1707,24 @@ function(DevaptTypes, DevaptClasses)
 		DevaptClass.prototype.add_public_int_property = function(arg_property_name, arg_property_desc, arg_property_value, arg_required, arg_readonly, arg_aliases)
 		{
 			this.add_property('integer', arg_property_name, arg_property_desc, arg_property_value, arg_required, arg_readonly, 'public', arg_aliases);
+		}
+		
+		/**
+		 * @memberof				DevaptClass
+		 * @public
+		 * @method					add_public_float_property(name,desc,value,required,readonly,aliases)
+		 * @desc					Register a public non static float property
+		 * @param {string}			arg_property_name		property name
+		 * @param {string}			arg_property_desc		property description
+		 * @param {float}			arg_property_value		property default value
+		 * @param {boolean}			arg_required			property is required
+		 * @param {boolean}			arg_readonly			property is read only
+		 * @param {array}			arg_aliases				property aliases array
+		 * @return {nothing}
+		 */
+		DevaptClass.prototype.add_public_float_property = function(arg_property_name, arg_property_desc, arg_property_value, arg_required, arg_readonly, arg_aliases)
+		{
+			this.add_property('float', arg_property_name, arg_property_desc, arg_property_value, arg_required, arg_readonly, 'public', arg_aliases);
 		}
 		
 		/**

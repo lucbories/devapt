@@ -61,8 +61,38 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptView, undefined)
 		content_promise.then(
 			function()
 			{
-				self.content_jqo.dialog();
-				self.content_jqo.on('close', [self, self.on_close])
+				self.content_jqo.dialog(
+					{
+						resize: function(event,ui){ console.log(ui, context + ':on resize'); },
+						close: function() { self.on_close(); }
+					}
+				);
+				
+				// UPDATE SIZE
+				var win_jqo = $(window);
+				// console.log(win_jqo.height(), context + ':win_height');
+				// console.log(win_jqo.width(), context + ':win_width');
+				
+				var height = DevaptTypes.is_integer(self.height) ? self.height : win_jqo.height() * self.height_percent;
+				var width = DevaptTypes.is_integer(self.width) ? self.width : win_jqo.width() * self.width_percent;
+				self.content_jqo.dialog('option', 'width', width);
+				self.content_jqo.dialog('option', 'height', height);
+				// console.log(height, context + ':height');
+				// console.log(width, context + ':width');
+				
+				var min_height = DevaptTypes.is_integer(self.min_height) ? self.min_height : win_jqo.height() * self.min_height_percent;
+				var min_width = DevaptTypes.is_integer(self.min_width) ? self.min_width : win_jqo.width() * self.min_width_percent;
+				self.content_jqo.dialog('option', 'minWidth', min_width);
+				self.content_jqo.dialog('option', 'minHeight', min_height);
+				// console.log(min_height, context + ':min_height');
+				// console.log(min_width, context + ':min_width');
+				
+				var max_height = DevaptTypes.is_integer(self.max_height) ? self.max_height : win_jqo.height() * self.max_height_percent;
+				var max_width = DevaptTypes.is_integer(self.max_width) ? self.max_width : win_jqo.width() * self.max_width_percent;
+				self.content_jqo.dialog('option', 'maxWidth', max_width);
+				self.content_jqo.dialog('option', 'maxHeight', max_height);
+				// console.log(max_height, context + ':max_height');
+				// console.log(max_width, context + ':max_width');
 			}
 		);
 		
@@ -83,7 +113,8 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptView, undefined)
 	 */
 	var cb_on_close = function()
 	{
-		var self = this;self.trace=true;
+		var self = this;
+		// self.trace=true;
 		var context = 'on_close()';
 		self.enter(context, '');
 		
@@ -116,7 +147,22 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptView, undefined)
 	DevaptWindowClass.add_public_method('on_close', {}, cb_on_close);
 	
 	// PROPERTIES
-	DevaptWindowClass.add_public_str_property('content',	'',		null, false, false, []);
+	DevaptWindowClass.add_public_str_property('content',	'',					null, false, false, []);
+	
+	DevaptWindowClass.add_public_int_property('min_height',	'',					null, false, false, []);
+	DevaptWindowClass.add_public_int_property('min_width',	'',					null, false, false, []);
+	DevaptWindowClass.add_public_float_property('min_height_percent',	'',		0.5, false, false, []);
+	DevaptWindowClass.add_public_float_property('min_width_percent',	'',		0.5, false, false, []);
+	
+	DevaptWindowClass.add_public_int_property('max_height',	'',					null, false, false, []);
+	DevaptWindowClass.add_public_int_property('max_width',	'',					null, false, false, []);
+	DevaptWindowClass.add_public_float_property('max_height_percent',	'',		0.9, false, false, []);
+	DevaptWindowClass.add_public_float_property('max_width_percent',	'',		0.9, false, false, []);
+	
+	DevaptWindowClass.add_public_int_property('height',	'',						null, false, false, []);
+	DevaptWindowClass.add_public_int_property('width',	'',						null, false, false, []);
+	DevaptWindowClass.add_public_float_property('height_percent',	'',			0.8, false, false, []);
+	DevaptWindowClass.add_public_float_property('width_percent',	'',			0.8, false, false, []);
 	
 	
 	return DevaptWindowClass;

@@ -516,8 +516,8 @@ function(
 			{
 				self.step(context, 'get items and types promise done');
 //				console.log(recordset, self.name + '.' + context + '.recordset');
-				console.log(items, self.name + '.' + context + '.items');
-				console.log(types, self.name + '.' + context + '.types');
+				// console.log(items, self.name + '.' + context + '.items');
+				// console.log(types, self.name + '.' + context + '.types');
 				
 				try
 				{

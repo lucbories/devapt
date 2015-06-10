@@ -234,6 +234,14 @@ final class Dispatcher
 		if ($uri_path_count < $app_path_count + 1)
 		{
 			Trace::warning('Dispatcher::dispatch: Bad request path length');
+			
+			// PREPARE RESPONSE
+			$response_status = $arg_response::STATUS_CODE_404;
+			$arg_response->setStatusCode($response_status);
+			
+			// SEND RESPONSE
+			$arg_response->send();
+			
 			return false;
 		}
 		
@@ -242,6 +250,15 @@ final class Dispatcher
 		$bypass_security = false;
 		$result = Dispatcher::process($arg_request, $arg_response, $controller_name, $bypass_security);
 		
+		if ( ! $result )
+		{
+			// PREPARE RESPONSE
+			$response_status = $arg_response::STATUS_CODE_404;
+			$arg_response->setStatusCode($response_status);
+			
+			// SEND RESPONSE
+			$arg_response->send();
+		}
 		
 		Trace::step($context, ($result ? 'SUCCESS' : 'FAILURE'), Dispatcher::$TRACE_DISPATCHER);
 		return $result;

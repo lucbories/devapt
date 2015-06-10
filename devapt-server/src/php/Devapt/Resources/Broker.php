@@ -303,6 +303,32 @@ final class Broker
 			return Trace::leaveok($context, 'resource "application"', true, Broker::$TRACE_BROKER);
 		}
 		
+		// GET RESOURCES
+		if ($arg_resource_name === 'all')
+		{
+			return Trace::leaveok($context, 'list resources: "all"', true, Broker::$TRACE_BROKER);
+		}
+		if ($arg_resource_name === 'models')
+		{
+			return Trace::leaveok($context, 'list resources: "models"', true, Broker::$TRACE_BROKER);
+		}
+		if ($arg_resource_name === 'views')
+		{
+			return Trace::leaveok($context, 'list resources: "views"', true, Broker::$TRACE_BROKER);
+		}
+		if ($arg_resource_name === 'menus')
+		{
+			return Trace::leaveok($context, 'list resources: "menus"', true, Broker::$TRACE_BROKER);
+		}
+		if ($arg_resource_name === 'menubars')
+		{
+			return Trace::leaveok($context, 'list resources: "menubars"', true, Broker::$TRACE_BROKER);
+		}
+		if ($arg_resource_name === 'loggers')
+		{
+			return Trace::leaveok($context, 'list resources: "loggers"', true, Broker::$TRACE_BROKER);
+		}
+		
 		// Debug::dump( Broker::$resources_files_array );
 		foreach(Broker::$resources_files_array as $file_path_name)
 		{
@@ -751,12 +777,90 @@ final class Broker
 	
 	
 	/**
-	 * @brief		Build a resource object from a resource record
-	 * @param[in]	arg_resource_record	resource record
-	 * @return		object|null
+	 * @brief		Get an array of resources names
+	 * @param[in]	arg_resource_type	resource type (nothing|all|models|views|menus|menubars|loggers)
+	 * @return		array
 	 */
-	// static public function addResourceObjectFromRecord($arg_resource_record)
-	// {
-	
-	// }
+	static public function getResourcesNames($arg_resource_type)
+	{
+		// LOAD ALL RESOURCES FILES
+		self::searchResource('*');
+		
+		if ( ! is_string($arg_resource_type) || $arg_resource_type === 'all')
+		{
+			return array_keys( Broker::$resources_records_array );
+		}
+		
+		if ($arg_resource_type === 'models')
+		{
+			$resources = array();
+			foreach(Broker::$resources_records_array as $name=>$record)
+			{
+				$type = $record['class_type'];
+				if ($type === 'model')
+				{
+					$resources[] = $name;
+				}
+			}
+			return $resources;
+		}
+		
+		if ($arg_resource_type === 'views')
+		{
+			$resources = array();
+			foreach(Broker::$resources_records_array as $name=>$record)
+			{
+				$type = $record['class_type'];
+				if ($type === 'view')
+				{
+					$resources[] = $name;
+				}
+			}
+			return $resources;
+		}
+		
+		if ($arg_resource_type === 'menus')
+		{
+			$resources = array();
+			foreach(Broker::$resources_records_array as $name=>$record)
+			{
+				$type = $record['class_type'];
+				if ($type === 'menu')
+				{
+					$resources[] = $name;
+				}
+			}
+			return $resources;
+		}
+		
+		if ($arg_resource_type === 'menubars')
+		{
+			$resources = array();
+			foreach(Broker::$resources_records_array as $name=>$record)
+			{
+				$type = $record['class_type'];
+				if ($type === 'menubar')
+				{
+					$resources[] = $name;
+				}
+			}
+			return $resources;
+		}
+		
+		if ($arg_resource_type === 'loggers')
+		{
+			$resources = array();
+			foreach(Broker::$resources_records_array as $name=>$record)
+			{
+				$type = $record['class_type'];
+				if ($type === 'logger')
+				{
+					$resources[] = $name;
+				}
+			}
+			return $resources;
+		}
+		
+		return array();
+	}
 }

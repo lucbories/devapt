@@ -66,7 +66,7 @@ function(Devapt,
 		
 		// INIT STATUS
 		self.status = 'empty';
-		self.error = null;
+		self.error_msg = null;
 		
 		
 		// INIT DATAS
@@ -103,13 +103,13 @@ function(Devapt,
 		if ( DevaptTypes.is_object(self.datas) && Object.keys(self.datas).length === self.recordset.model.fields.length )
 		{
 			self.status = 'ok';
-			self.error = null;
+			self.error_msg = null;
 			return;
 		}
 		
 		// SET ERROR STATUS
 		self.status = 'error';
-		self.error = self.error ? self.error : 'bad datas';
+		self.error_msg = self.error_msg ? self.error_msg : 'bad datas';
 	};
 	
 	
@@ -177,7 +177,7 @@ function(Devapt,
 		var read_promise = self.recordset.model.read(query);
 		
 		self.status = 'loading';
-		self.error = null;
+		self.error_msg = null;
 		self.is_dirty = true;
 		
 		read_promise.then(
@@ -188,14 +188,14 @@ function(Devapt,
 				{
 					self.datas = items[0];
 					self.status = 'ok';
-					self.error = null;
+					self.error_msg = null;
 					return;
 				}
 				
 				// ERROR
 				self.datas = null;
 				self.status = 'error';
-				self.error = 'model.read recordset failure';
+				self.error_msg = 'model.read recordset failure';
 				
 				// FREE QUERY
 				query.destroy();
@@ -206,7 +206,7 @@ function(Devapt,
 			{
 				self.datas = null;
 				self.status = 'error';
-				self.error = 'model.read failure';
+				self.error_msg = 'model.read failure';
 				
 				// FREE QUERY
 				query.destroy();

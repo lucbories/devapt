@@ -600,6 +600,9 @@ function(Devapt,
 						{
 							self.step(context, 'JSON engine is created');
 							
+							self.engine.is_local_storage = false;
+							self.engine.is_remote_storage = true;
+							
 							var crud_api = self.get_server_api();
 							
 							arg_engine.url_read		= crud_api.action_read.url + '?query_api=2';
@@ -663,31 +666,43 @@ function(Devapt,
 		
 		// CREATE API RECORD
 		var url_base = DevaptApplication.get_url_base();
-		self.crud_api = {
-			model_name: self.name,
-			
-			action_create: {
-				method:'PUT',
-				url:url_base + 'rest/' + self.name + '/',
-				format:'devapt_query_api_2'
-			},
-			action_read: {
-				method:'GET',
-				url:url_base + 'rest/' + self.name + '/',
-				format:'devapt_query_api_2'
-			},
-			action_update: {
-				method:'POST',
-				url:url_base + 'rest/' + self.name + '/',
-				format:'devapt_query_api_2'
-			},
-			action_delete: {
-				method:'DELETE',
-				url:url_base + 'rest/' + self.name + '/',
-				format:'devapt_query_api_2'
-			}
-		};
-		
+		if (self.engine.is_remote_storage)
+		{
+			self.crud_api = {
+				model_name: self.name,
+				is_remote:true,
+				is_local:false,
+				
+				action_create: {
+					method:'PUT',
+					url:url_base + 'rest/' + self.name + '/',
+					format:'devapt_query_api_2'
+				},
+				action_read: {
+					method:'GET',
+					url:url_base + 'rest/' + self.name + '/',
+					format:'devapt_query_api_2'
+				},
+				action_update: {
+					method:'POST',
+					url:url_base + 'rest/' + self.name + '/',
+					format:'devapt_query_api_2'
+				},
+				action_delete: {
+					method:'DELETE',
+					url:url_base + 'rest/' + self.name + '/',
+					format:'devapt_query_api_2'
+				}
+			};
+		}
+		else
+		{
+			self.crud_api = {
+				model_name: self.name,
+				is_local:true,
+				is_remote:false
+			};
+		}
 		
 		self.leave(context, Devapt.msg_success);
 		return self.crud_api;

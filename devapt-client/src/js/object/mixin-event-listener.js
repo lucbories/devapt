@@ -1,7 +1,7 @@
 /**
  * @file        object/mixin-event-listener.js
  * @desc        Mixin of methods for event listening
- * 				API
+ * 		API
  * 			ATTRIBUTES
  * 				self.events_callbacks:map by event name of arrays of event callback records
  * 					example:
@@ -24,13 +24,14 @@
  * 				proxy_event(arg_event_name,arg_target_objects,arg_sources): emit a received event from the source to the targets (boolean)
  * 				proxy_event_to_parents(arg_event_name,arg_sources): emit a received event from the source to the parents hierarchy (boolean)
  * 				proxy_event_to_children(arg_event_name,arg_sources): emit a received event from the source to the children hierarchy (boolean)
+ * 				
  * 				get_proxy_event_parents(): get an array of parents objects to transfer the event (array)
  * 				get_proxy_event_children(): get an array of children objects to transfer the event (array)
  * 				
  * 				suspend_event(arg_event_name): suspend event listening (nothing)
  * 				resume_event(arg_event_name): resume event listening (nothing)
  * 				
- * 				add_buffer_listner(arg_event_name,arg_delay,arg_event_cb,arg_unique,arg_sources,arg_not_sources)
+ * 				add_buffer_listener(arg_event_name,arg_delay,arg_event_cb,arg_unique,arg_sources,arg_not_sources)
  * 
  * 			EVENT CALLBACK RECORD
  * 				{

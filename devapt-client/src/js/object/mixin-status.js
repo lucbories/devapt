@@ -106,7 +106,7 @@ function(Devapt, DevaptTypes, DevaptClass)
 			
 			
 			self.leave(context, Devapt.msg_success);
-			return self.error;
+			return self.error_msg;
 		},
 		
 		
@@ -124,7 +124,7 @@ function(Devapt, DevaptTypes, DevaptClass)
 			self.enter(context, '');
 			
 			self.status = 'error';
-			self.error = arg_error;
+			self.error_msg = arg_error;
 			
 			self.leave(context, Devapt.msg_success);
 		},
@@ -143,7 +143,7 @@ function(Devapt, DevaptTypes, DevaptClass)
 			self.enter(context, '');
 			
 			self.status = 'ok';
-			self.error = null;
+			self.error_msg = null;
 			
 			self.leave(context, Devapt.msg_success);
 		},
@@ -165,11 +165,11 @@ function(Devapt, DevaptTypes, DevaptClass)
 			{
 				case 'ok':
 					self.leave(context, Devapt.msg_success);
-					return self.error === null;
+					return self.error_msg === null;
 				
 				case 'error':
 					self.leave(context, Devapt.msg_success);
-					return self.error !== null;
+					return self.error_msg !== null;
 			}
 			
 			self.leave(context, Devapt.msg_success);
@@ -245,7 +245,7 @@ function(Devapt, DevaptTypes, DevaptClass)
 	
 	// PROPERTIES
 	DevaptMixinStatusClass.add_public_str_property('status', 'object status', null, false, true, []);
-	DevaptMixinStatusClass.add_public_str_property('error', 'object error message', null, false, true, []);
+	DevaptMixinStatusClass.add_public_str_property('error_msg', 'object error message', null, false, true, []);
 	
 	// BUILD CLASS
 	DevaptMixinStatusClass.build_class();
