@@ -512,6 +512,15 @@ class SqlEngine
 			return Trace::leaveok($context, '', $results, self::$TRACE_ENGINE);
 		}
 		
+		if ($arg_action === 'create')
+		{
+			$results = $result_set->toArray();
+			Trace::value($context, 'results', $results, self::$TRACE_ENGINE);
+			
+			$results['count'] = $count;
+			return Trace::leaveok($context, '', $results, self::$TRACE_ENGINE);
+		}
+		
 		return Trace::leaveok($context, '', $count, self::$TRACE_ENGINE);
 	}
 }

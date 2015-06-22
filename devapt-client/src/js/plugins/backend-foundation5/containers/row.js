@@ -20,12 +20,9 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptContainer, undefined)
 	 * @public
 	 * @class				DevaptRow
 	 * @desc				Row view class
-	 * @param {string}		arg_name			View name (string)
-	 * @param {object}		arg_parent_jqo		jQuery object to attach the view to
-	 * @param {object|null}	arg_options			Associative array of options
-	 * @return {nothing}
 	 */
 	
+	var $ = window.$;
 	
 	/**
 	 * @public
@@ -48,7 +45,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptContainer, undefined)
 		
 		// CONSTRUCTOR END
 		self.leave(context, 'success');
-	}
+	};
 	
 	
 	/**
@@ -76,7 +73,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptContainer, undefined)
 		
 		
 		self.leave(context, 'success');
-	}
+	};
 	
 	
 	/**
@@ -106,7 +103,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptContainer, undefined)
 		
 		self.leave(context, 'success');
 		return node_jqo;
-	}
+	};
 	
 	
 	

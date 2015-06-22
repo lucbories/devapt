@@ -863,4 +863,21 @@ final class Broker
 		
 		return array();
 	}
+	
+	
+	/**
+	 * @brief		Get a JSON string of resources names
+	 * @param[in]	arg_resource_type	resource type (nothing|all|models|views|menus|menubars|loggers)
+	 * @return		array
+	 */
+	static public function getResourcesNamesJson($arg_resource_type)
+	{
+		$resources = self::getResourcesNames($arg_resource_type);
+		
+		// FORMAT JSON STRING
+		$jsonOptions = null;
+		$json_str = JsonFormatter::encode($resources, null, $jsonOptions);
+		
+		return $json_str;
+	}
 }

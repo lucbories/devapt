@@ -179,7 +179,15 @@ final class DbConnexions
 	{
 		$connexion_record = DbConnexions::getConnexionRecord($arg_connexion_name);
 		
-		return (in_array($arg_attribute_name, DbConnexions::$attributes_list) && is_array($connexion_record) ) ? $connexion_record[$arg_attribute_name] : $arg_default_value;
+		if ( in_array($arg_attribute_name, DbConnexions::$attributes_list) && is_array($connexion_record) )
+		{
+			if ( array_key_exists($arg_attribute_name, $connexion_record) )
+			{
+				return $connexion_record[$arg_attribute_name];
+			}
+		}
+		
+		return $arg_default_value;
 	}
 	
 	

@@ -11,9 +11,9 @@
  */
 
 'use strict';
-define(['Devapt', 'core/types',
+define(['Devapt', 'core/types', 'core/resources',
 	'object/classes', 'object/class', 'datas/datasource/provider'],
-function(Devapt, DevaptTypes,
+function(Devapt, DevaptTypes, DevaptResources,
 	DevaptClasses, DevaptClass, DevaptProvider)
 {
 	/**
@@ -89,12 +89,26 @@ function(Devapt, DevaptTypes,
 	var cb_decode = function (arg_record)
 	{
 		// var self = this;
-		
+		var context = 'DevaptResourcesProvider.decode(record)';
 		return (!arg_record) ? {} : {
 			id:arg_record.id ? arg_record.id : Devapt.uid(),
 			name:arg_record.name,
 			class_name:arg_record.class_name,
-			trace:arg_record.trace ? true : false
+			trace:arg_record.trace ? true : false,
+			get_instance: function() {
+				var promise = DevaptResources.get_resource_instance(arg_record.name);
+				return promise.then(
+					function(arg_instance)
+					{
+						console.log(arg_instance, context + ':instance is found');
+						return arg_instance;
+					},
+					function()
+					{
+						console.error(arguments, context + ':failure callback');
+					}
+				);
+			}
 		};
 	};
 	
@@ -161,6 +175,10 @@ function(Devapt, DevaptTypes,
 					"trace":{
 						"type":"Boolean",
 						"label":"Trace enabled"
+					},
+					"get_instance":{
+						"type":"Function",
+						"label":"get resource instance"
 					}
 				}
 		};

@@ -25,7 +25,8 @@ require.config(
 			'QUnit':		'/devapt-client/lib/qunit-1.16.0/qunit-1.16.0',
 			'runtu':		'/devapt-client/tests/run-tests',
 			'Q':			'/devapt-client/lib/q-20150130/q',
-			'jStorage':		'/devapt-client/lib/jstorage-0.4.12/jstorage-wrap',
+		/*	'jStorage':		'/devapt-client/lib/jstorage-0.4.12/jstorage-wrap', */
+			'jStorage':		'/devapt-client/lib/simplestorage-0.1.3/simplestorage',
 			'mustache':		'/devapt-client/lib/mustache/mustache-wrap',
 			'md5':			'/devapt-client/lib/cryptojs-3.1.2/rollups/md5',
 			'sha1':			'/devapt-client/lib/cryptojs-3.1.2/rollups/sha1',

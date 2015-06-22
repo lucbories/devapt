@@ -178,6 +178,13 @@ function(DevaptTraces, DevaptTypes)
 				break;
 			}
 			
+			case 'Tree':
+			case 'DevaptTree':
+			{
+				view_requires = ['views/tree'];
+				break;
+			}
+			
 			case 'IncludeView':
 			case 'DevaptIncludeView':
 			case 'TemplateView':

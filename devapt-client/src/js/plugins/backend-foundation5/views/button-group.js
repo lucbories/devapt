@@ -25,18 +25,14 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptView, undefined)
 	 * @public
 	 * @memberof			DevaptButtonGroup
 	 * @desc				Render view
-	 * @param {object}		arg_deferred	deferred object
 	 * @return {object}		deferred promise object
 	 */
-	var cb_render_self = function(arg_deferred)
+	var cb_render_content_self = function()
 	{
-		var self = this;
-		var context = 'render_self(deferred)';
+		var self = this;self.trace=true
+		var context = 'render_content_self()';
 		self.enter(context, '');
 		
-		
-		// CHECK DEFEREED
-		self.assert_not_null(context, 'arg_deferred', arg_deferred);
 		
 		// GET NODES
 		self.assert_not_null(context, 'content_jqo', self.content_jqo);
@@ -50,23 +46,22 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptView, undefined)
 		
 		// LOOP ON BUTTONS VIEWS
 		self.assert_not_empty_array(context, 'self.buttons', self.buttons);
+		var ordered_promises = [];
 		for(var button_key in self.buttons)
 		{
 			var button_view = self.buttons[button_key];
+			self.value(context, 'button_view', button_view);
+			
 			var node_jqo = $('<li>');
 			self.ul_jqo.append(node_jqo);
 			
-			// RENDER VIEW
-			arg_deferred.then( backend.render_view(node_jqo, button_view) );
+			// RENDER CHILD VIEW
+			ordered_promises.push( backend.render_view(node_jqo, button_view) );
 		}
 		
-		// RESOLVE AND GET PROMISE
-		arg_deferred.resolve();
-		var promise = arg_deferred.promise;
 		
-		
-		self.leave(context, 'success: promise is resolved');
-		return promise;
+		self.leave(context, Devapt.msg_success_promise);
+		return Devapt.promise_all(ordered_promises);
 	}
 	
 	
@@ -88,7 +83,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptView, undefined)
 	var DevaptButtonGroupClass = new DevaptClass('DevaptButtonGroup', parent_class, class_settings);
 	
 	// METHODS
-	DevaptButtonGroupClass.add_public_method('render_self', {}, cb_render_self);
+	DevaptButtonGroupClass.add_public_method('render_content_self', {}, cb_render_content_self);
 	
 	// PROPERTIES
 	DevaptButtonGroupClass.add_public_array_property('buttons',	'',		null, true, false, ['view_buttons'], 'string', ',');

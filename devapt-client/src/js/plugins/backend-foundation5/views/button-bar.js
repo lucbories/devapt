@@ -25,18 +25,14 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptView, undefined)
 	 * @public
 	 * @memberof			DevaptButtonBar
 	 * @desc				Render view
-	 * @param {object}		arg_deferred	deferred object
 	 * @return {object}		deferred promise object
 	 */
-	var cb_render_self = function(arg_deferred)
+	var cb_render_content_self = function()
 	{
-		var self = this;
-		var context = 'render_self(deferred)';
+		var self = this;self.trace=true
+		var context = 'render_content_self()';
 		self.enter(context, '');
 		
-		
-		// CHECK DEFEREED
-		self.assert_not_null(context, 'arg_deferred', arg_deferred);
 		
 		// GET NODES
 		self.assert_not_null(context, 'content_jqo', self.content_jqo);
@@ -48,21 +44,23 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptView, undefined)
 		
 		// LOOP ON BUTTON GROUPS VIEWS
 		self.assert_not_empty_array(context, 'self.buttons', self.button_groups);
+		var ordered_promises = [];
+		var current_jqo = null;
 		for(var group_key in self.button_groups)
 		{
 			var group_view = self.button_groups[group_key];
+			self.value(context, 'group_view', group_view);
 			
-			// RENDER VIEW
-			arg_deferred.then( backend.render_view(self.content_jqo, group_view) );
+			current_jqo = $('<div>');
+			self.content_jqo.append(current_jqo);
+			
+			// RENDER CHILD VIEW
+			ordered_promises.push( backend.render_view(current_jqo, group_view) );
 		}
 		
-		// RESOLVE AND GET PROMISE
-		arg_deferred.resolve();
-		var promise = arg_deferred.promise;
 		
-		
-		self.leave(context, 'success: promise is resolved');
-		return promise;
+		self.leave(context, Devapt.msg_success_promise);
+		return Devapt.promise_all(ordered_promises);
 	}
 	
 	
@@ -84,7 +82,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptView, undefined)
 	var DevaptButtonBarClass = new DevaptClass('DevaptButtonBar', parent_class, class_settings);
 	
 	// METHODS
-	DevaptButtonBarClass.add_public_method('render_self', {}, cb_render_self);
+	DevaptButtonBarClass.add_public_method('render_content_self', {}, cb_render_content_self);
 	
 	// PROPERTIES
 	DevaptButtonBarClass.add_public_array_property('button_groups',	'',		null, true, false, ['view_buttons_groups'], 'string', ',');

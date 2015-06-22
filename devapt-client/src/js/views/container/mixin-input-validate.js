@@ -99,10 +99,10 @@ function(Devapt, DevaptTypes, DevaptClass)
 					case 'alphaALPHA_-': validate_pattern = /^[a-zA-Z_-]+$/; break;
 					case 'ALPHA_-': validate_pattern = /^[A-Z_-]+$/; break;
 					
-					case 'alpha_-space': validate_pattern = /^[a-z_- ]+$/; break;
-					case 'Alpha_-space': validate_pattern = /^[A-Z][a-z_- ]+$/; break;
-					case 'alphaALPHA_-space': validate_pattern = /^[a-zA-Z_- ]+$/; break;
-					case 'ALPHA_-space': validate_pattern = /^[A-Z_- ]+$/; break;
+					case 'alpha_-space': validate_pattern = /^[a-z_ -]+$/; break; // BE CAREFULL THE "-"" SIGN HAVE TO BE AT THE END
+					case 'Alpha_-space': validate_pattern = /^[A-Z][a-z_ -]+$/; break; // BE CAREFULL THE "-"" SIGN HAVE TO BE AT THE END
+					case 'alphaALPHA_-space': validate_pattern = /^[a-zA-Z_ -]+$/; break; // BE CAREFULL THE "-"" SIGN HAVE TO BE AT THE END
+					case 'ALPHA_-space': validate_pattern = /^[A-Z_ -]+$/; break; // BE CAREFULL THE "-"" SIGN HAVE TO BE AT THE END
 					
 					case 'alphanum': validate_pattern = /^[a-z0-9]+$/; break;
 					case 'Alphanum': validate_pattern = /^[A-Z][a-z0-9]+$/; break;
@@ -151,7 +151,7 @@ function(Devapt, DevaptTypes, DevaptClass)
 					case 'float':		validate_pattern = /^[-+]?\d*(?:[\.\,]\d+)?$/; break;
 					case 'boolean':		validate_pattern = /^0|1|true|false|on|off$/i; break;
 					case 'email':		validate_pattern = /^[a-zA-Z0-9.!#$%&'*+\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)+$/; break;
-					case 'color':		validate_pattern = /^#?([a-fA-F0-9]{6}|\(\d{1,3},\d{1,3},\d{1,3}\)$/; break; // #FFFFFF or (ddd,ddd,ddd)
+					case 'color':		validate_pattern = /^#?([a-fA-F0-9]{6})|\(\d{1,3},\d{1,3},\d{1,3}\)$/; break; // #FFFFFF or (ddd,ddd,ddd)
 					case 'date':		validate_pattern = /^\d{4}[\/\-]\d{1,2}[\/\-]\d{1,2}$/; break; // YYYY-MM-DD
 					case 'time':		validate_pattern = /^(0[0-9]|1[0-9]|2[0-3])(:[0-5][0-9]){2}$/; break; // HH:MM:SS
 					case 'datetime':	validate_pattern = /^\d{4}[\/\-]\d{1,2}[\/\-]\d{1,2} (0[0-9]|1[0-9]|2[0-3])(:[0-5][0-9]){2}$/; break; // YYYY-MM-DD HH:MM:SS

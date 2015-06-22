@@ -6,20 +6,33 @@
  * 					A view V detects the selection of one or more of its items.
  * 					V call V.select(item index or item labek or item record) for each selected items.
  * 					promise = V.select(args)
- * 						--> V.view_model.ready_promise.select(args) : promise
- * 							--> view_model.select_index(index) or select_label(label) or select_record(record) : promise
- * 								--> view_model.select_record(record) or view_model.set_selected_records(records)
- * 									--> call record.select();
- * 								--> call view.select_item();
+ * 						selected items = V.get_selected_items(args)
+ * 						--> V.view_model.on_container_select(selected items) : promise
+ * 							--> V.view_model.(un)select_record(record);
+ * 							--> V.on_view_model_select(selected item) : promise
  * 					
- *              API:
- *                  ->constructor(object)     : nothing
- *  
- *                  ->select(records)         : Given records are selected into the View object
- *                  ->select_all()            : All view records are selected into the View object
- *                  ->unselect(records)       : Given records are unselected into the View object
- *                  ->unselect_all()          : All view records are unselected into the View object
- *  
+ *              MIXIN API:
+ *                  ->constructor(object)            : nothing
+ *  				
+ *                  ->get_selected_records()         : Get current selected records (Array of Record objects)
+ *                  ->set_selected_records(records)  : Set current selected records (call select_record on all records) (nothing)
+ *                  
+ * 					->select_record(record)          : Select a record into the ViewModel object (nothing)
+ *                  ->unselect_record(record)        : Unselect a recorsinto the ViewModel object (nothing)
+ * 					
+ * 					->new_selected_record(record)    : Return the given Record or create a Record object with a given plain object (Record object)
+ * 					
+ * 					->on_container_select(selected_items)   : React on a container selection change
+ * 						foreach(selected_items)
+ * 							record = self.get_recordset().get_first_record_by_object(selected_item)
+ * 							self.select_record(record) or self.unselect_record(record)
+ * 							self.recordset.free_record(record) if needed
+ * 							view.on_view_model_select(selected_item) or view.on_view_model_unselect(selected_item)
+ * 					->on_container_unselect(selected_items) : React on a container selection change
+ * 					
+ *                  ->on_container_select_all()      : React on a container full selection change
+ *                  ->on_container_unselect_all()    : React on a container full selection change
+ *        
  * @ingroup     DEVAPT_DATAS
  * @date        2015-02-08
  * @version		1.0.x
@@ -80,11 +93,12 @@ function(
 		return self.selection;
 	};
 	
+	
 	/**
 	 * @memberof				DevaptViewModel
 	 * @public
 	 * @method					DevaptViewModel.set_selected_records(records)
-	 * @desc					Set selected records
+	 * @desc					Set selected records (unselect all previous records)
 	 * @param {array}			arg_records		Record array
 	 * @return {nothing}
 	 */
@@ -94,8 +108,21 @@ function(
 		var context = 'set_selected_records(records)';
 		self.enter(context, '');
 		
+		
 		// CHECK RECORDS
 		self.assert_array(context, 'records', arg_records);
+		self.assert_array(context, 'self.selection', self.selection);
+		
+		// UNSELECT ALL RECORDS
+		self.selection.forEach(
+			function(record)
+			{
+				record.unselect();
+			}
+		);
+		
+		self.selection = [];
+		
 		var check_record_cb = function(record)
 		{
 			var check = DevaptTypes.is_object(record) && record.is_record && record.is_valid();
@@ -105,9 +132,9 @@ function(
 			}
 			return check;
 		};
-		var check_records = self.selection.every(check_record_cb);
-		self.assert_true(context, 'check records', check_records);
 		
+		var check_select_records = self.selection.every(check_record_cb);
+		self.assert_true(context, 'check and select records', check_select_records);
 		
 		
 		self.leave(context, Devapt.msg_success);
@@ -238,13 +265,13 @@ function(
 //		console.log(arg_record, context + ':arg_record');
 		
 		// INIT
-		var record = null;
+		// var record = null;
 		
 		// LOOKUP FOR RECORD OF GIVEN VALUES OBJECT
 		var record_promise = null;
 		if (arg_record.is_record)
 		{
-			var record_promise = Devapt.promise_resolved(arg_record);
+			record_promise = Devapt.promise_resolved(arg_record);
 		}
 		else
 		{
@@ -298,12 +325,22 @@ function(
 						{
 							self.value(context, 'field_name', field_name);
 							
-							var field_value = arg_record[field_name];
-							var found = (field_name in loop_record) && loop_record[field_name] == field_value;
-							if (found)
+							var loop_field_value = arg_record[field_name];
+							var loop_found = (field_name in loop_record) && loop_record[field_name] == loop_field_value;
+							if (loop_found)
 							{
 								self.step(context, Devapt.msg_found);
-								return Devapt.promise_resolved(loop_record);
+								var record = self.recordset.get_first_record_by_object(loop_record);
+								if (record)
+								{
+									self.step(context, 'Record found');
+									return Devapt.promise_resolved(record);
+								}
+								
+								self.step(context, 'Record not found');
+								console.error(loop_record, self.name + '.' + context + ':not found');
+								console.log(self.recordset, self.name + '.' + context + ':nrecordset');
+								return Devapt.promise_rejected(record);
 							}
 						}
 					}
@@ -366,18 +403,19 @@ function(
 								for(var field_index in new_record_fields)
 								{
 									var field_name = new_record_fields[field_index];
+									var loop_field_value = null;
 									
 									if ( arg_found_record.has_field(field_name) )
 									{
-										var field_value = arg_found_record.get(field_name);
-										new_record[field_name] = field_value;
+										loop_field_value = arg_found_record.get(field_name);
+										new_record[field_name] = loop_field_value;
 										continue;
 									}
 									
 									if (field_name in datas)
 									{
-										var field_value = datas[field_name];
-										new_record[field_name] = field_value;
+										loop_field_value = datas[field_name];
+										new_record[field_name] = loop_field_value;
 									}
 								}
 //								console.log(new_record, context + ':new_record');
@@ -411,8 +449,8 @@ function(
 	/**
 	 * @memberof				DevaptViewModel
 	 * @public
-	 * @method					self.on_container_select(record)
-	 * @desc					Select a record
+	 * @method					self.on_container_select(items, is unselect)
+	 * @desc					React on a container selection change
 	 * @param {array}			arg_selected_items		array of selected items attributes
 	 * @return {nothing}
 	 */
@@ -429,7 +467,7 @@ function(
 		
 		try
 		{
-			var process_selected_items_results = []
+			var process_selected_items_results = [];
 			var process_selected_item_cb = function(arg_selected_item_promise)
 			{
 				arg_selected_item_promise.then(
@@ -449,11 +487,11 @@ function(
 						self.assert_object(context, 'item_record', item_record);
 						
 						// GET MODEL RECORD FOR CURRENT SELECTED ITEM
-						var record = self.get_recordset().get_first_record_by_object(item_record);
+						var record = item_record.is_record ? item_record : self.get_recordset().get_first_record_by_object(item_record);
 //						self.value(context, 'recordset record', record);
 //						console.debug(self.get_recordset(), context + ':selected item recordset');
 //						console.debug(record, context + ':selected item record');
-						if (record && record.is_record)
+						if (record && record.is_record && ! item_record.is_record)
 						{
 							arg_selected_item.record = record;
 						}
@@ -525,6 +563,10 @@ function(
 										{
 											arg_selected_item.record = arg_record;
 										}
+										else
+										{
+											console.error(arg_record, self.name + '.' + context + ':not a Record');
+										}
 										
 										if (! arg_unselect)
 										{
@@ -537,7 +579,7 @@ function(
 											self.unselect_record(arg_record);
 										}
 									}
-								)
+								);
 							}
 						}
 						
@@ -666,7 +708,7 @@ function(
 				);
 				
 				process_selected_items_results.push(promise);
-			}
+			};
 			
 			self.step(context, 'loop on selected records');
 			self.batch_promise = self.batch_promise.then(
@@ -736,7 +778,7 @@ function(
 				);
 				
 				process_selected_items_results.push(promise);
-			}
+			};
 			
 			self.step(context, 'loop on selected records');
 			self.batch_promise = self.batch_promise.then(

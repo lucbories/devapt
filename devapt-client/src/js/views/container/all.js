@@ -22,7 +22,7 @@ define(
 'views/container/mixin-input-association',
 'views/container/mixin-input-simple',
 'views/container/mixin-input-validate',
-'views/container/container-mixin-model-crud',
+/*'views/container/container-mixin-model-crud',*/
 'views/container/container-mixin-pagination'
 ],
 function()

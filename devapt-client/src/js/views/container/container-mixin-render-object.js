@@ -29,19 +29,28 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptTemplate)
 		 * @param {object}		arg_deferred		deferred object
 		 * @param {object}		arg_item_jqo		
 		 * @param {object}		arg_item_object
+		 * @param {boolean}		arg_update			(optional) if true do not create an other node, only update
 		 * @return {object}		jQuery object node
 		 */
-		render_item_object: function(arg_deferred, arg_item_jqo, arg_item_object)
+		render_item_object: function(arg_deferred, arg_item_jqo, arg_item_object, arg_update)
 		{
 			var self = this;
 			var context = 'render_item_object(deferred,jqo,content)';
 			self.enter(context, '');
 			
 			
+			// CHECK NODE
+			if ( ! DevaptTypes.is_object(arg_item_jqo) )
+			{
+				self.leave(context, Devapt.msg_failure);
+				return null;
+			}
+			
 			// ITERATOR ON FIELDS
+			var result_jqo = null;
 			if (self.items_iterator === 'fields')
 			{
-				var result_jqo = self.render_item_object_fields(arg_deferred, arg_item_jqo, arg_item_object);
+				result_jqo = self.render_item_object_fields(arg_deferred, arg_item_jqo, arg_item_object, arg_update);
 				
 				self.leave(context, Devapt.msg_success);
 				return result_jqo;
@@ -49,7 +58,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptTemplate)
 			
 			if (self.items_iterator === 'records' || self.items_iterator === 'field_editor')
 			{
-				var result_jqo = self.render_item_object_records(arg_deferred, arg_item_jqo, arg_item_object);
+				result_jqo = self.render_item_object_records(arg_deferred, arg_item_jqo, arg_item_object, arg_update);
 				
 				self.leave(context, Devapt.msg_success);
 				return result_jqo;
@@ -68,14 +77,19 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptTemplate)
 		 * @desc				Render an item OBJECT content with records iterator
 		 * @param {object}		arg_deferred		deferred object
 		 * @param {object}		arg_item_jqo		
-		 * @param {object}		arg_item_object
+		 * @param {object}		arg_item_object		plain object
+		 * @param {boolean}		arg_update			(optional) if true do not create an other node, only update
 		 * @return {object}		jQuery object node
 		 */
-		render_item_object_records: function(arg_deferred, arg_item_jqo, arg_item_object)
+		render_item_object_records: function(arg_deferred, arg_item_jqo, arg_item_object, arg_update)
 		{
 			var self = this;
 			var context = 'render_item_object_records(deferred,jqo,content)';
 			self.enter(context, '');
+			
+			
+			// UPDATE ONLY ?
+			arg_update = DevaptTypes.to_boolean(arg_update, false);
 			
 			
 			// BUILD NODE CONTENT
@@ -88,7 +102,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptTemplate)
 			
 			
 			// GET RECORD NODE
-			var record_jqo = self.render_item_record_node(arg_item_jqo);
+			var record_jqo = arg_update ? arg_item_jqo : self.render_item_record_node(arg_item_jqo);
 			
 			
 			// GET HAS INPUTS
@@ -107,6 +121,12 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptTemplate)
 					self.value(context, 'tags_object', tags_object);
 					self.value(context, 'self.items_format', self.items_format);
 					self.value(context, 'content', content);
+					
+					if (arg_update)
+					{
+						// console.log('remove children', self.name + '.' + context + '.update?');
+						record_jqo.children().remove();
+					}
 					self.render_item_text(arg_deferred, record_jqo, content);
 					
 					self.leave(context, Devapt.msg_success);
@@ -125,10 +145,11 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptTemplate)
 			
 			
 			// LOOP ON FIELDS
+			var field_name = null;
 			for(var field_index in self.items_fields)
 			{
 				// GET FIELD ATTRIBUTES
-				var field_name = self.items_fields[field_index];
+				field_name = self.items_fields[field_index];
 				self.value(context, 'field_name', field_name);
 				self.value(context, 'self.items_input_fields', self.items_input_fields);
 				
@@ -141,6 +162,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptTemplate)
 				
 				
 				// GET FIELD NODE
+				// TODO NOT YET IMPLEMENTED
 				var field_jqo = self.render_item_field_node(record_jqo);
 				
 				
@@ -160,7 +182,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptTemplate)
 					
 					// GET INPUT NODE
 					var uid = Devapt.uid();
-					var input_div_jqo = $('<div id="' + field_name + '_' + uid + '_input_id">');
+					var input_div_jqo = window.$('<div id="' + field_name + '_' + uid + '_input_id">');
 					var input_jqo = self.get_input(arg_deferred, field_def_obj, null, field_value, true, access);
 					field_jqo.append(input_div_jqo);
 					
@@ -205,13 +227,13 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptTemplate)
 		 * @param {object}		arg_deferred		deferred object
 		 * @param {object}		arg_item_jqo		
 		 * @param {object}		arg_item_object
+		 * @param {boolean}		arg_update			(optional) if true do not create an other node, only update
 		 * @return {object}		jQuery object node
 		 */
-		render_item_object_fields: function(arg_deferred, arg_item_jqo, arg_item_object)
+		render_item_object_fields: function(arg_deferred, arg_item_jqo, arg_item_object, arg_update)
 		{
 			var self = this;
-			var context = 'render_item_object_fields(deferred,jqo,content)';
-			self.push_trace(self.trace, DevaptMixinRenderObject.mixin_trace_render_items);
+			var context = 'render_item_object_fields(deferred,jqo,content,update)';
 			self.enter(context, '');
 			
 			
@@ -264,9 +286,10 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptTemplate)
 //					}
 //					else
 //					{
+						// TODO UPDATE WITH EXISTING NODE
 						var uid = Devapt.uid();
 						var input_div_html = '<div id="' + field_name + '_' + uid +  '_input_id">';
-						var input_div_jqo = $(input_div_html);
+						var input_div_jqo = window.$(input_div_html);
 						var input_jqo = self.get_input(arg_deferred, field_def_obj, null, field_value, true);
 						
 						input_div_jqo.append(input_jqo);
@@ -307,7 +330,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptTemplate)
 			self.leave(context, Devapt.msg_success);
 			return arg_item_jqo;
 		}
-	}
+	};
 	
 	
 	

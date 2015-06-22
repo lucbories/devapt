@@ -2,17 +2,15 @@
  * @file        datas/model/view_model-mixin-crudable.js
  * @desc        ModelView mixin class for CRUD operations
  * 				
- *              API:
+ *              MIXIN API:
  *                  ->constructor(object)     : nothing
  *  
- *                  ->reload()                : Reload records from the model and update the view
- *                  ->get_values()            : Get values
- *  
- *                  ->create(records)         : Create given records into the model and update the view
- *                  ->read()                  : Get records from the model with the query
- *                  ->read_all()              : Get all records from the model
- *                  ->update(records)         : Update given records into the model and update the view
- *                  ->delete(records)         : Delete given records into the model and update the view
+ *                  ->reload()                : Reload records from the model recordset and refresh the view (Promise of the operation end)
+ * 					
+ *                  ->get_values_recordset()  : Get the recordset (Promise of a RecordSet)
+ *                  ->get_values()            : Get the recordset values (Promise of an array of Record or plain object)
+ *  				
+ *                  ->get_first_record_by_object(object) : Lookup a record with a datas values object (Promise of a Record object)
  *  
  * @ingroup     DEVAPT_DATAS
  * @date        2015-02-02
@@ -126,7 +124,7 @@ function(
 		var promise = self.ready_promise.spread(
 			function(arg_model, arg_view)
 			{
-				var items = [];
+				// var items = [];
 				self.assert_not_empty_string(context, 'arg_view.items_iterator', arg_view.items_iterator);
 				
 				switch(arg_view.items_iterator)
@@ -193,6 +191,13 @@ function(
 					{
 						items = self.get_recordset().get_records();
 						// self.value(context, 'items', items);
+						
+						if (arg_view.items_source === 'inline')
+						{
+							items = items.map(
+								function (item) { return ('value' in item) ? item.get('value') : undefined; }
+							);
+						}
 						return Devapt.promise_resolved(items);
 					}
 					
@@ -347,6 +352,7 @@ function(
 	var parent_class = null;
 	var DevaptViewModelMixinCrudableClass = new DevaptClass('DevaptViewModelMixinCrudable', parent_class, class_settings);
 	
+	
 	// METHODS
 	DevaptViewModelMixinCrudableClass.infos.ctor = cb_constructor;
 	
@@ -357,7 +363,6 @@ function(
 	
 	DevaptViewModelMixinCrudableClass.add_public_method('get_first_record_by_object', {}, cb_get_first_record_by_object);
 	
-	// MIXINS
 	
 	// PROPERTIES
 	

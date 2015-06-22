@@ -502,7 +502,7 @@ function(
 				{
 					self.step(context, 'view is rendering or rendered');
 					
-					render_promise = Devapt.promise(self.mixin_renderable_defer)
+					render_promise = Devapt.promise(self.mixin_renderable_defer);
 				}
 				
 				render_promise = render_promise.then(

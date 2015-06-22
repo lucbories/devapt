@@ -29,9 +29,6 @@ function(Devapt, DevaptTypes, DevaptResources,
 	 * @class				DevaptField
 	 * @desc				Field class constructor
 	 * @method				DevaptField.constructor
-	 * @param {string}		arg_name		object name
-	 * @param {object|null}	arg_options		associative array of name/value options
-	 * @return {nothing}
 	 */
 	
 	

@@ -62,14 +62,14 @@ function(Devapt, DevaptTypes, DevaptClass, MD5, SHA1)
 			var node_jqo = null;
 			switch(type_str)
 			{
-				case 'string':		node_jqo = $('<input type="text">').attr('name', name_str).addClass('devapt_input_string').val(value_str); break;
-				case 'integer':		node_jqo = $('<input type="text">').attr('name', name_str).addClass('devapt_input_integer').val(value_str); break;
-				case 'float':		node_jqo = $('<input type="text">').attr('name', name_str).addClass('devapt_input_float').val(value_str); break;
-				case 'boolean':		node_jqo = $('<input type="text">').attr('name', name_str).addClass('devapt_input_boolean').val(value_str); break;
-				case 'email':		node_jqo = $('<input type="text">').attr('name', name_str).addClass('devapt_input_email').val(value_str); break;
-				case 'date':		node_jqo = $('<input type="text">').attr('name', name_str).addClass('devapt_input_date').val(value_str); break;
-				case 'time':		node_jqo = $('<input type="text">').attr('name', name_str).addClass('devapt_input_time').val(value_str); break;
-				case 'datetime':	node_jqo = $('<input type="text">').attr('name', name_str).addClass('devapt_input_datetime').val(value_str); break;
+				case 'string':		node_jqo = window.$('<input type="text">').attr('name', name_str).addClass('devapt_input_string').val(value_str); break;
+				case 'integer':		node_jqo = window.$('<input type="text">').attr('name', name_str).addClass('devapt_input_integer').val(value_str); break;
+				case 'float':		node_jqo = window.$('<input type="text">').attr('name', name_str).addClass('devapt_input_float').val(value_str); break;
+				case 'boolean':		node_jqo = window.$('<input type="text">').attr('name', name_str).addClass('devapt_input_boolean').val(value_str); break;
+				case 'email':		node_jqo = window.$('<input type="text">').attr('name', name_str).addClass('devapt_input_email').val(value_str); break;
+				case 'date':		node_jqo = window.$('<input type="text">').attr('name', name_str).addClass('devapt_input_date').val(value_str); break;
+				case 'time':		node_jqo = window.$('<input type="text">').attr('name', name_str).addClass('devapt_input_time').val(value_str); break;
+				case 'datetime':	node_jqo = window.$('<input type="text">').attr('name', name_str).addClass('devapt_input_datetime').val(value_str); break;
 			}
 			
 			
@@ -98,10 +98,10 @@ function(Devapt, DevaptTypes, DevaptClass, MD5, SHA1)
 			
 			// STANDARD INPUT EVENT CALLBACK
 			var change_cb = function(event) {
-				self.trace=true;
+				// self.trace=true;
 				self.step(context, 'on change callback');
 				
-				var event_node_jqo = $(event.target);
+				var event_node_jqo = window.$(event.target);
 				var value_filled = event_node_jqo.data('value_filled');
 				var value = event_node_jqo.val();
 				self.value(context, 'value_filled', value_filled);
@@ -180,10 +180,10 @@ function(Devapt, DevaptTypes, DevaptClass, MD5, SHA1)
 			
 			
 			// GET RESULT INPUT NODE
-			var node_jqo = $('<div>').attr('name', name_str).addClass('devapt_input_password');
-			var pass0_jqo = $('<input type="hidden">').attr('name', name_str + '_pass0').val(value_str);
-			var pass1_jqo = $('<input type="password">').attr('name', name_str + '_pass1');
-			var pass2_jqo = $('<input type="password">').attr('name', name_str + '_pass2');
+			var node_jqo = window.$('<div>').attr('name', name_str).addClass('devapt_input_password');
+			var pass0_jqo = window.$('<input type="hidden">').attr('name', name_str + '_pass0').val(value_str);
+			var pass1_jqo = window.$('<input type="password">').attr('name', name_str + '_pass1');
+			var pass2_jqo = window.$('<input type="password">').attr('name', name_str + '_pass2');
 			node_jqo.append(pass0_jqo).append(pass1_jqo).append(pass2_jqo);
 			
 			
@@ -214,12 +214,12 @@ function(Devapt, DevaptTypes, DevaptClass, MD5, SHA1)
 			var change_pass_cb = function(event) {
 				self.step(context, 'change password callback');
 				
-				var node_jqo = $(event.target);
+				var node_jqo = window.$(event.target);
 				var value_filled = node_jqo.data('value_filled');
 				var value = null;
 				
-				var input0_jqo = $('input:eq(0)', node_jqo.parent());
-				var input1_jqo = $('input:eq(1)', node_jqo.parent());
+				var input0_jqo = window.$('input:eq(0)', node_jqo.parent());
+				var input1_jqo = window.$('input:eq(1)', node_jqo.parent());
 				var input2_jqo = node_jqo;
 				
 				// CHECK PASSWORD CONFORMATION

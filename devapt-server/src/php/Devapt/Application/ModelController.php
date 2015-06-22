@@ -232,7 +232,7 @@ class ModelController extends AbstractController
 		
 		
 		// INIT MODEL RESULT
-		$model_result = array('status'=>'error', 'count'=>'0', 'error'=>'bad action');
+		$model_result = array('status'=>'error', 'count'=>'0', 'error_msg'=>'bad action');
 		
 		
 		// PAGE HEADER

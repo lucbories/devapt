@@ -81,8 +81,7 @@ class ResourceController extends AbstractController
 		// LIST ACTION
 		if ($arg_action_name === self::$RESOURCES_ACTION_LIST)
 		{
-			$resources = ResourcesBroker::getResourcesNames($arg_resource_name);
-			$resource_json_str = implode(',', $resources);
+			$resource_json_str = ResourcesBroker::getResourcesNamesJson($arg_resource_name);
 		}
 		
 		// GET ACTION

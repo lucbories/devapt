@@ -1,10 +1,12 @@
 TODO
 
-SECURITY LOGIN PAGE AND CONTROLLER
-SECURITY TOKEN
-SECURITY PWD HASH
+SECURITY PAGE LOCKED ON EXPIRATION
 SECURITY DATAS CRYPT
 
+do not remove all items of a form for a fields_iterator: reset inputs
+records: do not create a new record on each request: lookup a map !
+records: cache with expiration
+backend security: add a create and a delete button
 
 
 FOSRest

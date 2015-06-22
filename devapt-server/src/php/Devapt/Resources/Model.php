@@ -863,7 +863,7 @@ class Model extends AbstractResource
 	/**
 	 * @brief		Read datas
 	 * @param[in]	arg_query		query (object)
-	 * @return		array			model result as array('status'=>'error', 'count'=>'0', 'error'=>'bad action', 'records':[]);
+	 * @return		array			model result as array('status'=>'error', 'count'=>'0', 'error_msg'=>'bad action', 'records':[]);
 	 */
 	public function read($arg_query)
 	{
@@ -876,7 +876,7 @@ class Model extends AbstractResource
 		
 		
 		// INIT MODEL RESULT
-		$model_result = array('status'=>'error', 'count'=>'0', 'error'=>'engine failed', 'records'=>array());
+		$model_result = array('status'=>'error', 'count'=>'0', 'error_msg'=>'engine failed', 'records'=>array());
 		
 		
 		// READ DATAS
@@ -886,11 +886,11 @@ class Model extends AbstractResource
 			$model_result['count']		= count($records);
 			$model_result['records']	= $records;
 			$model_result['status']		= 'ok';
-			$model_result['error']		= '';
+			$model_result['error_msg']	= '';
 		}
 		if ( is_string($records) )
 		{
-			$model_result['error']		= $records;
+			$model_result['error_msg']	= $records;
 		}
 		
 		
@@ -901,7 +901,7 @@ class Model extends AbstractResource
 	/**
 	 * @brief		Create datas
 	 * @param[in]	arg_query		query (object)
-	 * @return		array			model result as array('status'=>'error', 'count'=>'0', 'error'=>'bad action', 'records':[]);
+	 * @return		array			model result as array('status'=>'error', 'count'=>'0', 'error_msg'=>'bad action', 'records':[]);
 	 */
 	public function create($arg_query)
 	{
@@ -914,7 +914,7 @@ class Model extends AbstractResource
 		
 		
 		// INIT MODEL RESULT
-		$model_result = array('status'=>'error', 'count'=>'0', 'error'=>'engine failed', 'records'=>array());
+		$model_result = array('status'=>'error', 'count'=>'0', 'error_msg'=>'engine failed', 'records'=>array());
 		
 		
 		// READ DATAS
@@ -924,7 +924,7 @@ class Model extends AbstractResource
 			$model_result['count']		= $count;
 			$model_result['records']	= [];
 			$model_result['status']		= 'ok';
-			$model_result['error']		= '';
+			$model_result['error_msg']	= '';
 		}
 		
 		
@@ -935,7 +935,7 @@ class Model extends AbstractResource
 	/**
 	 * @brief		Update datas
 	 * @param[in]	arg_query		query (object)
-	 * @return		array			model result as array('status'=>'error', 'count'=>'0', 'error'=>'bad action', 'records':[]);
+	 * @return		array			model result as array('status'=>'error', 'count'=>'0', 'error_msg'=>'bad action', 'records':[]);
 	 */
 	public function update($arg_query)
 	{
@@ -948,7 +948,7 @@ class Model extends AbstractResource
 		
 		
 		// INIT MODEL RESULT
-		$model_result = array('status'=>'error', 'count'=>'0', 'error'=>'engine failed', 'records'=>array());
+		$model_result = array('status'=>'error', 'count'=>'0', 'error_msg'=>'engine failed', 'records'=>array());
 		
 		
 		// READ DATAS
@@ -958,7 +958,7 @@ class Model extends AbstractResource
 			$model_result['count']		= $count;
 			$model_result['records']	= [];
 			$model_result['status']		= 'ok';
-			$model_result['error']		= '';
+			$model_result['error_msg']		= '';
 		}
 		
 		
@@ -969,7 +969,7 @@ class Model extends AbstractResource
 	/**
 	 * @brief		Delete datas
 	 * @param[in]	arg_query		query (object)
-	 * @return		array			model result as array('status'=>'error', 'count'=>'0', 'error'=>'bad action', 'records':[]);
+	 * @return		array			model result as array('status'=>'error', 'count'=>'0', 'error_msg'=>'bad action', 'records':[]);
 	 */
 	public function delete($arg_query)
 	{
@@ -982,7 +982,7 @@ class Model extends AbstractResource
 		
 		
 		// INIT MODEL RESULT
-		$model_result = array('status'=>'error', 'count'=>'0', 'error'=>'engine failed', 'records'=>array());
+		$model_result = array('status'=>'error', 'count'=>'0', 'error_msg'=>'engine failed', 'records'=>array());
 		
 		
 		// READ DATAS
@@ -992,7 +992,7 @@ class Model extends AbstractResource
 			$model_result['count']		= $count;
 			$model_result['records']	= [];
 			$model_result['status']		= 'ok';
-			$model_result['error']		= '';
+			$model_result['error_msg']		= '';
 		}
 		
 		

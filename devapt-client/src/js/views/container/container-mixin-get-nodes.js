@@ -66,7 +66,7 @@ function(Devapt, DevaptTypes, DevaptClass)
 			self.enter(context, '');
 			
 			
-			var nodes_jqo = $(self.items_jquery_filter, self.items_jquery_parent);
+			var nodes_jqo = window.$(self.items_jquery_filter, self.items_jquery_parent);
 			
 			
 			self.leave(context, Devapt.msg_success);
@@ -90,7 +90,7 @@ function(Devapt, DevaptTypes, DevaptClass)
 			self.enter(context, '');
 			
 			
-			var node_jqo = $(self.items_jquery_filter, self.items_jquery_parent).eq(arg_node_item_index);
+			var node_jqo = window.$(self.items_jquery_filter, self.items_jquery_parent).eq(arg_node_item_index);
 			
 			
 			self.leave(context, Devapt.msg_success);
@@ -126,9 +126,78 @@ function(Devapt, DevaptTypes, DevaptClass)
 		/**
 		 * @public
 		 * @memberof			DevaptMixinGetNodes
-		 * @desc				Get a container item node by the node item text
-		 * @param {object}		arg_field_name				field name
-		 * @param {object}		arg_field_value				field value
+		 * @desc				Get a container item node by a record
+		 * @param {object}		arg_record				record object
+		 * @return {object}		node jQuery object
+		 */
+		get_node_by_record: function(arg_record)
+		{
+			var self = this;
+			var context = 'get_node_by_record(record)';
+			self.push_trace(self.trace, DevaptMixinGetNodes.mixin_trace_get_nodes);
+			self.enter(context, '');
+			
+			
+			// CHECK RECORD
+			if (! arg_record || ! arg_record.is_record)
+			{
+				console.error(arg_record, self.name + '.' + context + ':record');
+				self.leave(context, Devapt.msg_failure);
+				self.pop_trace();
+				return null;
+			}
+			
+			// LOOKUP NODE
+			var node_jqo = null;
+			var nodes_jqo = self.get_all_nodes();
+			if ( DevaptTypes.is_not_empty_object(nodes_jqo) )
+			{
+				self.step(context, 'all nodes is an array');
+				self.value(context, 'nodes_jqo.length', nodes_jqo.length);
+				
+				for(var node_index = 0 ; node_index < nodes_jqo.length ; node_index++)
+				{
+					self.value(context, 'loop on node index', node_index);
+					
+					var loop_record = self.items_records[node_index];
+					self.value(context, 'loop_record', loop_record);
+					
+					if ( DevaptTypes.is_object(loop_record)  && loop_record.is_record )
+					{
+						self.step(context, 'loop record is an object');
+						
+						if ( arg_record.get_id() === loop_record.get_id() )
+						{
+							self.step(context, 'record if found with its id');
+							node_jqo = window.$( nodes_jqo[node_index] );
+							break;
+						}
+					}
+					else
+					{
+						self.step(context, 'loop record is not an object');
+					}
+				}
+			}
+			else
+			{
+				self.step(context, 'all nodes is not an array');
+				console.error(nodes_jqo);
+			}
+			
+			
+			self.leave(context, Devapt.msg_success);
+			self.pop_trace();
+			return node_jqo;
+		},
+			
+		
+		/**
+		 * @public
+		 * @memberof			DevaptMixinGetNodes
+		 * @desc				Get a container item node by a field value
+		 * @param {string}		arg_field_name				field name
+		 * @param {string}		arg_field_value				field value
 		 * @return {object}		node jQuery object
 		 */
 		get_node_by_field_value: function(arg_field_name, arg_field_value)
@@ -150,7 +219,7 @@ function(Devapt, DevaptTypes, DevaptClass)
 				{
 					self.value(context, 'loop on node index', node_index);
 					
-					// var loop_node_jqo = $( nodes_jqo[node_index] );
+					// var loop_node_jqo = window.$( nodes_jqo[node_index] );
 					// var loop_record = loop_node_jqo.data('record');
 					var loop_record = self.items_records[node_index];
 					self.value(context, 'loop_record', loop_record);
@@ -161,8 +230,7 @@ function(Devapt, DevaptTypes, DevaptClass)
 						if (field_value === arg_field_value)
 						{
 							self.step(context, 'record field value = arg field value');
-							var loop_node_jqo = $( nodes_jqo[node_index] );
-							node_jqo = loop_node_jqo;
+							node_jqo = window.$( nodes_jqo[node_index] );
 							break;
 						}
 					}
@@ -211,6 +279,7 @@ function(Devapt, DevaptTypes, DevaptClass)
 	DevaptMixinGetNodesClass.add_public_method('get_all_nodes', {}, DevaptMixinGetNodes.get_all_nodes);
 	DevaptMixinGetNodesClass.add_public_method('get_node_by_index', {}, DevaptMixinGetNodes.get_node_by_index);
 	DevaptMixinGetNodesClass.add_public_method('get_node_by_content', {}, DevaptMixinGetNodes.get_node_by_content);
+	DevaptMixinGetNodesClass.add_public_method('get_node_by_record', {}, DevaptMixinGetNodes.get_node_by_record);
 	DevaptMixinGetNodesClass.add_public_method('get_node_by_field_value', {}, DevaptMixinGetNodes.get_node_by_field_value);
 	
 	DevaptMixinGetNodesClass.build_class();

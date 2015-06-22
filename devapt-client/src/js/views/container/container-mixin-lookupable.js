@@ -186,7 +186,7 @@ function(
 	/**
 	 * @memberof				DevaptContainerMixinLookupable
 	 * @private
-	 * @method					cb_get_select_item_by_record(view object, record)
+	 * @method					get_select_item_by_record(record)
 	 * @desc					Get selected item attributes by its record
 	 * @param {object}			arg_record		selected item node record
 	 * @return {object}			A promise of a selected item record { index:..., node_jqo:..., record:..., label:... }
@@ -316,7 +316,7 @@ function(
 								var loop_value_record = items_records[values_index];
 								loop_value_record = loop_value_record.is_record ? items_records[values_index].get_datas() : loop_value_record;
 								
-								var loop_value_field = loop_value_record[field_name];
+								// var loop_value_field = loop_value_record[field_name];
 								
 								// TEST IF CURRENT ITEM FIELD VALUE IS THE SAME AS THE SELECTION FIELD VALUE
 								if (loop_value_record[field_name] === field_value)

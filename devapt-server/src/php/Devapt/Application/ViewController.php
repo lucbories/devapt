@@ -31,7 +31,7 @@ class ViewController extends AbstractController
 	// STATIC ATTRIBUTES
 	
 	/// @brief TRACE FLAG
-	static public $TRACE_VIEW_CONTROLLER = true;
+	static public $TRACE_VIEW_CONTROLLER = false;
 	
 	
     /**
@@ -96,6 +96,32 @@ class ViewController extends AbstractController
 			$content = $arg_response->getContent();
 			$page_footer_content = PageFooterViewRenderer::render('default', $arg_response);
 			$arg_response->setContent($content.$page_footer_content);
+		}
+		
+		// IS JSONP ?
+		$jsonp_callback = $arg_request->getQuery('callback', null);
+		$is_jsonp = is_string($jsonp_callback) ? true : false;
+		
+		
+		// SET RESPONSE CONTENT
+		if ($is_jsonp)
+		{
+			$result_string = $arg_response->getContent();
+			Trace::value($context, 'Response content result', $result_string, self::$TRACE_VIEW_CONTROLLER);
+			$result_string = $jsonp_callback.'('.$result_string.');';
+			$arg_response->setContent($result_string);
+		}
+		
+		// SET RESPONSE HEADER
+		$charset		= 'utf-8'; // TODO: configure charset
+		$contentType	= $is_jsonp ? 'application/javascript' : 'text/html';
+		$contentType	.= '; charset=' . $charset;
+		$headers = $arg_response->getHeaders();
+		$headers->addHeaderLine('content-type', $contentType);
+		$multibyteCharsets	= array(); // TODO: check usage
+		if ( in_array(strtoupper($charset), $multibyteCharsets) )
+		{
+			$headers->addHeaderLine('content-transfer-encoding', 'BINARY'); // TODO: check usage
 		}
 		
 		// SEND RENDERED VIEW

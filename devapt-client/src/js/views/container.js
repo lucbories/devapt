@@ -60,7 +60,7 @@ define( [
 	'views/container/container-mixin-filtered', 'views/container/container-mixin-pagination',
 	'views/container/container-mixin-render-item', 'views/container/container-mixin-get-nodes',
 	'views/container/container-mixin-utils',
-	'views/container/container-mixin-input', 'views/container/container-mixin-model-crud'],
+	'views/container/container-mixin-input', /*'views/container/container-mixin-model-crud',*/ 'views/container/container-mixin-crud'],
 function(
 	Devapt, DevaptTypes, DevaptClass,
 	DevaptView, DevaptMixinBind,
@@ -69,13 +69,16 @@ function(
 	DevaptMixinFiltered, DevaptMixinPagination,
 	DevaptMixinRenderItem, DevaptMixinGetNodes,
 	DevaptMixinContainerUtils,
-	DevaptMixinInput, DevaptMixinModelCrud)
+	DevaptMixinInput, /*DevaptMixinModelCrud,*/ DevaptMixinCrud)
 {
 	/**
 	 * @public
 	 * @class				DevaptContainer
 	 * @desc				Container view base class (rendering, selection, view model, pagination, filtering, crud, input)
 	 */
+	
+	
+	var $ = window.$;
 	
 	
 	/**
@@ -149,7 +152,7 @@ function(
 				{
 					self.items_model_obj = arg_model;
 				}
-			)
+			);
 		}
 		
 		
@@ -226,7 +229,7 @@ function(
 		var promise = slice_promise.then(
 			function()
 			{
-				console.log('refresh:READ AND RENDER ITEMS');
+				// console.log('refresh:READ AND RENDER ITEMS');
 				
 				return self.render_items();
 			}
@@ -246,25 +249,25 @@ function(
 					var refresh_cb = function ()
 					{
 						return self.refresh();
-					}
+					};
 					
 					setTimeout(refresh_cb, self.items_refresh.frequency*1000);
 				}
 				
 				// UPDATE PAGER
-				var items_count = $(self.items_jquery_filter, self.items_jquery_parent).filter('.devapt-container-visible').length;
+				var items_count = window.$(self.items_jquery_filter, self.items_jquery_parent).filter('.devapt-container-visible').length;
 				if (self.mixin_pagination_apply_count === 0 || items_count_before !== items_count)
 				{
 					self.fire_event('devapt.pagination.update_pagination', [ {'begin':0, 'end':items_count} ]);
 					
 					// END REFRESH PROCESS
-					console.log('refresh:END REFRESH PROCESS');
+					// console.log('refresh:END REFRESH PROCESS');
 					self.fire_event('devapt.container.refresh.end');
 				}
 				else
 				{
 					// END REFRESH PROCESS
-					console.log('refresh:END REFRESH PROCESS');
+					// console.log('refresh:END REFRESH PROCESS');
 					self.fire_event('devapt.container.refresh.end');
 				}
 			}
@@ -272,7 +275,7 @@ function(
 		
 		
 		self.leave(context, Devapt.msg_success_promise);
-		return promise
+		return promise;
 	};
 	
 	
@@ -339,7 +342,7 @@ function(
 			var refresh_cb = function ()
 			{
 				return self.refresh();
-			}
+			};
 			
 			setTimeout(refresh_cb, self.items_refresh.frequency*1000);
 		}
@@ -380,10 +383,6 @@ function(
 		self.enter(context, '');
 		
 		
-		// CHECK DEFEREED
-		var arg_deferred = Devapt.defer();
-		self.assert_not_null(context, 'arg_deferred', arg_deferred);
-		
 		// CHECK PARENT NODE
 		self.assert_not_null(context, 'parent_jqo', self.parent_jqo);
 		
@@ -405,40 +404,21 @@ function(
 			
 			// RENDER END
 			self.render_end();
-			arg_deferred.resolve();
-			// self.is_rendering = false;
-			// self.is_rendered = true;
 			
 			self.leave(context, Devapt.msg_success_promise);
-			return Devapt.promise(arg_deferred);
+			return Devapt.promise_resolved();
 		}
 		
 		self.step(context, 'not(renders_count=1 && autoload=false)');
 		
 		// RENDER ITEMS
-		var items_promise = self.render_items(arg_deferred);
+		var items_promise = self.render_items();
+		// console.log(items_promise, self.name + '.' + context + ':items_promise');
 		items_promise.then(
 			function()
 			{
-				self.step(context, 'render items promise');
-				
-				// INIT CONTAINER BINDINGS
-				var init_bind_promise = self.enable_bindings();
-				init_bind_promise.then(
-					function()
-					{
-						// RENDER END
-						self.render_end();
-						
-						// UPDATE PAGINATION
-						self.step(context, 'fire:devapt.pagination.update_pagination');
-						
-						var items_count = $(self.items_jquery_filter, self.items_jquery_parent).filter('.devapt-container-visible').length;
-						
-						self.fire_event('devapt.render.content', [items_count]);
-						self.fire_event('devapt.pagination.update_pagination', [ {'begin':0, 'end':items_count} ]);
-					}
-				);
+				// RENDER END
+				self.render_end();
 			}
 		);
 		
@@ -446,6 +426,7 @@ function(
 		self.leave(context, Devapt.msg_success_promise);
 		return items_promise;
 	};
+	
 	
 	
 	/**
@@ -458,6 +439,63 @@ function(
 	{
 		var self = this;
 		var context = 'render_items()';
+		self.enter(context, '');
+		
+		
+		var promise = self.render_items_self();
+		
+		promise = promise.then(
+			function()
+			{
+				self.step(context, 'render items promise');
+				// console.log('render items promise', self.name + ':' + context);
+				
+				// INIT CONTAINER BINDINGS
+				if (! self.mixin_bind_initialized)
+				{
+					return self.enable_bindings();
+				}
+			},
+			function()
+			{
+				console.error(self, context + ':render_items failure');
+			}
+		);
+		
+		promise = promise.then(
+			function()
+			{
+				// UPDATE PAGINATION
+				self.step(context, 'fire:devapt.pagination.update_pagination');
+				
+				var items_count = $(self.items_jquery_filter, self.items_jquery_parent).filter('.devapt-container-visible').length;
+				
+				self.fire_event('devapt.render.content', [items_count]);
+				self.fire_event('devapt.pagination.update_pagination', [ {'begin':0, 'end':items_count} ]);
+			},
+			function()
+			{
+				console.error(self, context + ':enable_bindings failure');
+			}
+		);
+		
+		
+		self.leave(context, Devapt.msg_success_promise);
+		return promise;
+	};
+	
+	
+	
+	/**
+	 * @private
+	 * @memberof			DevaptContainer
+	 * @desc				Render view items (internal)
+	 * @return {object}		deferred promise object
+	 */
+	var cb_render_items_self = function()
+	{
+		var self = this;
+		var context = 'render_items_self()';
 		self.enter(context, '');
 		
 		
@@ -476,17 +514,29 @@ function(
 						return view_model.reload().then(
 							function(recordset)
 							{
-//								console.log(recordset, context + ':recordset');
+								// console.log(recordset, context + ':recordset');
 								
 								var items = view_model.get_values();
 								
-//								console.log(items, context + ':items');
+								// console.log(items, self.name + '.' + context + ':items');
 								
 								return items;
+							},
+							function()
+							{
+								console.error(self, self.name + '.' + context + ':reload failure');
 							}
 						);
+					},
+					function()
+					{
+						console.error(self, self.name + '.' + context + ':view_model ready failure');
 					}
 				);
+			},
+			function()
+			{
+				console.error(self, self.name + '.' + context + ':view_model failure');
 			}
 		);
 		
@@ -502,6 +552,10 @@ function(
 						self.step(context, 'view_model get types array');
 						
 						return view_model.get_items_types();
+					},
+					function()
+					{
+						console.error(self, self.name + '.' + context + ':view_model ready failure');
 					}
 				);
 			}
@@ -509,13 +563,15 @@ function(
 		
 		// WAITING FOR ITEMS AND TYPES
 		var all_promise = Devapt.promise_all([items_promise, types_promise]);
+		var trace= self.trace;
 		
 		// PROCESS ITEMS
 		var render_promise = all_promise.spread(
 			function(items, types)
 			{
+				self.trace = trace;
 				self.step(context, 'get items and types promise done');
-//				console.log(recordset, self.name + '.' + context + '.recordset');
+				// console.log(recordset, self.name + '.' + context + '.recordset');
 				// console.log(items, self.name + '.' + context + '.items');
 				// console.log(types, self.name + '.' + context + '.types');
 				
@@ -560,7 +616,7 @@ function(
 						var item = items[item_index];
 						item = item.is_record ? item.get_datas() : item;
 						// self.value(context, 'item at [' + item_index + ']', item);
-//						console.debug(item, context + ':item');
+						// console.debug(item, self.name + '.' + context + ':item');
 						
 						// GET CURRENT TYPE
 						var type = default_type;
@@ -585,7 +641,7 @@ function(
 							}
 						}
 						self.value(context, 'type at [' + item_index + ']', type);
-						// console.log(type, context + ':type');
+						// console.debug(type, self.name + '.' + context + ':type');
 						
 						if ( DevaptTypes.is_object(item) && type === 'view' && item.value )
 						{
@@ -598,9 +654,8 @@ function(
 						// items_defers.push(item_defer); // TODO
 						if ( ! self.render_item(arg_deferred, item, index_start + item_index, type) )
 						{
-							self.step(context, 'deferred.reject()');
-							arg_deferred.reject();
-							break;
+							self.error(context, 'get items and types promise done (END): render is rejected');
+							return Devapt.promise_rejected();
 						}
 						
 						// SEND EVENT
@@ -623,7 +678,7 @@ function(
 				}
 				catch(e)
 				{
-					console.error(e, context + ':PROCESS ITEMS');
+					console.error(e, self.name + '.' + context + ':PROCESS ITEMS');
 				}
 				
 				
@@ -631,12 +686,73 @@ function(
 				self.step(context, 'deferred.reject(): bad items count');
 				self.step(context, 'get items and types promise done (END): render is rejected');
 				return Devapt.promise_rejected();
+			},
+			function()
+			{
+				console.error(self, self.name + '.' + context + ':spread items/types failure');
 			}
 		);
 		
 		
 		self.leave(context, Devapt.msg_success_promise);
 		return render_promise;
+	};
+	
+	
+	/**
+	 * @public
+	 * @memberof			DevaptContainer
+	 * @desc				Append an item into the container and render it
+	 * @param {anything}	arg_item	item to append
+	 * @param {string}		arg_type	item type to append
+	 * @return {object}		deferred promise object
+	 */
+	var cb_append_item = function(arg_item, arg_type)
+	{
+		var self = this;
+		var context = 'append_item(item,type)';
+		self.enter(context, '');
+		
+		
+		// APPEND ITEM IN ITEMS COLLECTION
+		var item_index = self.items_records_count;
+		self.items_records.push(arg_item);
+		self.items_records_count = self.items_records.length;
+		
+		// GET ITEM TYPE
+		if (arg_item === 'divider')
+		{
+			arg_type = 'divider';
+		}
+		if ( DevaptTypes.is_null(arg_type) )
+		{
+			if ( DevaptTypes.is_array(item) )
+			{
+				arg_type = 'record';
+			}
+			else if ( DevaptTypes.is_object(item) )
+			{
+				arg_type = 'object';
+			}
+		}
+		
+		// RENDER CURRENT ITEM
+		// TODO REMOVE DEFERRED
+		var arg_deferred = Devapt.defer();
+		// items_defers.push(item_defer); // TODO
+		if ( ! self.render_item(arg_deferred, arg_item, item_index, arg_type) )
+		{
+			self.error(context, 'get items and types promise done (END): render is rejected');
+			return Devapt.promise_rejected();
+		}
+		
+		// SEND EVENT
+		self.step(context, 'fire event: devapt.container.render.item');
+		self.fire_event('devapt.container.render.item', [item_index]);
+		
+		
+		self.leave(context, Devapt.msg_success_promise);
+		return Devapt.promise_resolved();
 	};
 	
 	
@@ -688,7 +804,7 @@ function(
 	 */
 	var cb_to_string_self = function()
 	{
-		var self = this;
+		// var self = this;
 		return 'container view class';
 	};
 	
@@ -706,8 +822,8 @@ function(
 		},
 		properties:{
 		},
-		mixins:[DevaptContainerMixinSelectable, DevaptMixinModelCrud, DevaptMixinFiltered, DevaptMixinPagination,
-			DevaptMixinRenderItem, DevaptMixinGetNodes, DevaptMixinContainerUtils, DevaptMixinInput]
+		mixins:[DevaptContainerMixinSelectable, /*DevaptMixinModelCrud,*/ DevaptMixinFiltered, DevaptMixinPagination,
+			DevaptMixinRenderItem, DevaptMixinGetNodes, DevaptMixinContainerUtils, DevaptMixinInput, DevaptMixinCrud]
 	};
 	var parent_class = DevaptView;
 	var DevaptContainerClass = new DevaptClass('DevaptContainer', parent_class, class_settings);
@@ -736,7 +852,9 @@ function(
 	
 	DevaptContainerClass.add_public_method('render_content_self', {}, cb_render_content_self);
 	DevaptContainerClass.add_public_method('render_items', {}, cb_render_items);
+	DevaptContainerClass.add_public_method('render_items_self', {}, cb_render_items_self);
 	
+	DevaptContainerClass.add_public_method('append_item', {}, cb_append_item);
 	DevaptContainerClass.add_public_method('fill_items', {}, cb_fill_items);
 	
 	DevaptContainerClass.add_public_method('to_string_self', {}, cb_to_string_self);
@@ -761,7 +879,7 @@ function(
 
 	DevaptContainerClass.add_public_bool_property('items_distinct',			'',	false, false, false, []); // items are distinct ?
 	DevaptContainerClass.add_public_str_property('items_distinct_field',	'',	null, false, false, []); // items are distinct with given field name
-	DevaptContainerClass.add_public_str_property('items_iterator',			'', 'records', false, false, []); // items iterator : records / fields
+	DevaptContainerClass.add_public_str_property('items_iterator',			'', 'records', false, false, []); // items iterator : records / fields / field_editor
 	DevaptContainerClass.add_public_array_property('items_fields',			'', [], false, false, [], 'string', ','); // item fields
 	
 	DevaptContainerClass.add_public_str_property('items_format',			'', null, false, false, []); // item format
@@ -781,4 +899,4 @@ function(
 	
 	
 	return DevaptContainerClass;
-});
+} );

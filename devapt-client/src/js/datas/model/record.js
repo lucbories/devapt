@@ -298,9 +298,16 @@ function(Devapt,
 			}
 		}
 		
-		
+		// UPDATE RECORD STATUS
 		self.update_status();
 		
+		// RECORD EXISTS IN STORAGE ENGINE (DB)
+		if ( self.get_id() )
+		{
+			self.is_created = true;
+		}
+		
+		// CHECK RECORD DATAS
 		if ( self.is_ok() )
 		{
 			self.leave(context, Devapt.msg_success_promise);
@@ -343,11 +350,20 @@ function(Devapt,
 		}
 		
 		// MODEL OPERATION
-		var promise = self.recordset.model.update( [self] );
+		var promise = null;
+		if (self.is_created)
+		{
+			promise = self.recordset.model.update( [self] );
+		}
+		else
+		{
+			promise = self.recordset.model.create( [self] );
+		}
 		promise.then(
 			function()
 			{
 				self.is_dirty = false;
+				self.is_created = true;
 			}
 		);
 		
@@ -415,7 +431,7 @@ function(Devapt,
 		
 		self.assert_object(context, 'recordset', self.recordset);
 		self.assert_object(context, 'datas', self.datas);
-		var id = self.datas[self.recordset.id_field_name];
+		var id = (self.recordset.id_field_name in self.datas) ? self.datas[self.recordset.id_field_name] : null;
 		
 		self.leave(context, Devapt.msg_success);
 		return id;
@@ -459,7 +475,7 @@ function(Devapt,
 		
 		var found = arg_field_name in self.datas;
 		
-		self.leave(context, found ? Devapt.msg_found : Devapt.msg_not_found)
+		self.leave(context, found ? Devapt.msg_found : Devapt.msg_not_found);
 		return found;
 	};
 	
@@ -483,7 +499,7 @@ function(Devapt,
 		var field_value = found ? self.datas[arg_field_name] : null;
 		found = found && (field_value == arg_field_value);
 		
-		self.leave(context, found ? Devapt.msg_found : Devapt.msg_not_found)
+		self.leave(context, found ? Devapt.msg_found : Devapt.msg_not_found);
 		return found;
 	};
 	
@@ -618,6 +634,54 @@ function(Devapt,
 	
 	
 	
+	/**
+	 * @memberof				DevaptRecord
+	 * @public
+	 * @method					DevaptRecord.fill_with_defaults()
+	 * @desc					Fill record with fields default values
+	 * @return {boolean}
+	 */
+	var cb_fill_with_defaults = function ()
+	{
+		var self = this;
+		var context = 'fill_with_defaults()';
+		self.enter(context, '');
+		
+		
+		// CHECK MODEL
+		self.assert_object(context, 'recordset', self.recordset);
+		self.assert_object(context, 'model', self.recordset.model);
+		
+		// TARGET DATAS
+		var datas = {};
+		
+		// LOOP ON MODEL FIELDS
+		var fields = self.recordset.model.fields;
+		for(var field_index in fields)
+		{
+			var field = fields[field_index];
+			
+			if ( field.is_pk )
+			{
+				continue;
+			}
+			
+			var default_value = field.field_value.default;
+			self.value(context, 'field_name', field.name);
+			self.value(context, 'default_value', default_value);
+			
+			datas[field.name] = default_value;
+		}
+		
+		self.load(datas);
+		
+		
+		self.leave(context, Devapt.msg_success);
+		return true;
+	};
+	
+	
+	
 	/* --------------------------------------------- SELECT OPERATIONS ------------------------------------------------ */
 	
 	/**
@@ -632,6 +696,8 @@ function(Devapt,
 		var self = this;
 		var context = 'select()';
 		self.enter(context, '');
+		
+		// NOTHING TO DO
 		
 		self.leave(context, Devapt.msg_success);
 	};
@@ -648,6 +714,13 @@ function(Devapt,
 		var self = this;
 		var context = 'unselect()';
 		self.enter(context, '');
+		
+		
+		if (self.is_dirty || ! self.is_created)
+		{
+			self.save();
+		}
+		
 		
 		self.leave(context, Devapt.msg_success);
 	};
@@ -682,7 +755,7 @@ function(Devapt,
 			}
 		}
 		return str;
-	}
+	};
 	
 	
 	
@@ -720,6 +793,7 @@ function(Devapt,
 	DevaptRecordClass.add_public_method('get_fields_values', {}, cb_get_fields_values);
 	DevaptRecordClass.add_public_method('get', {}, cb_get);
 	DevaptRecordClass.add_public_method('set', {}, cb_set);
+	DevaptRecordClass.add_public_method('fill_with_defaults', {}, cb_fill_with_defaults);
 	
 	DevaptRecordClass.add_public_method('select', {}, cb_select);
 	DevaptRecordClass.add_public_method('unselect', {}, cb_unselect);
@@ -729,6 +803,7 @@ function(Devapt,
 	// PROPERTIES
 	DevaptRecordClass.add_public_bool_property('is_record', 'object is a Record object', true, false, true, []);
 	DevaptRecordClass.add_public_bool_property('is_dirty', 'object Record should be saved', true, false, true, []);
+	DevaptRecordClass.add_public_bool_property('is_created', 'object Record exists in storage engine (db)', false, false, true, []);
 	DevaptRecordClass.add_public_object_property('recordset', 'Recordset of the record', null, false, false, [], 'object', '|');
 	DevaptRecordClass.add_public_object_property('datas', 'source datas', null, false, false, [], 'object', '|');
 	

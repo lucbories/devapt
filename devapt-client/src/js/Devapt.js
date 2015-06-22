@@ -22,12 +22,11 @@
  * 						Devapt.get_plugin(name): (object)
  * 						
  * 					BACKEND
- * 						Devapt.current_backend
- * 						Devapt.get_current_backend
- * 						Devapt.has_current_backend
- * 						Devapt.set_current_backend
- * 						Devapt.is_valid_backend
- * 						Devapt.get_current_backend
+ * 						Devapt.current_backend: (object)
+ * 						Devapt.get_current_backend(): (object)
+ * 						Devapt.has_current_backend(): (boolean)
+ * 						Devapt.set_current_backend(backend object): (boolean)
+ * 						Devapt.is_valid_backend(backend object): (boolean)
  * 						
  * 					UTILS
  * 						Devapt.get_prototype_name()
@@ -84,7 +83,7 @@ function($, DevaptInit, CryptoMD5, CryptoSHA1, Q, DevaptFactory)
 	 */
 	var Devapt = function()
 	{
-	}
+	};
 	
 	
 	/**
@@ -108,7 +107,7 @@ function($, DevaptInit, CryptoMD5, CryptoSHA1, Q, DevaptFactory)
 	Devapt.jQuery = function()
 	{
 		return $;
-	}
+	};
 	
 	
 	/**
@@ -190,7 +189,7 @@ function($, DevaptInit, CryptoMD5, CryptoSHA1, Q, DevaptFactory)
 		}
 		
 		return null;
-	}
+	};
 	
 	/**
 	 * @memberof  			Devapt
@@ -226,6 +225,7 @@ function($, DevaptInit, CryptoMD5, CryptoSHA1, Q, DevaptFactory)
 			cache		: true,
 			type		: arg_method,
 			dataType	: 'json',
+			// contentType	: 'json',
 			url			: arg_url,
 			timeout		: 5000,
 			data		: arg_datas,
@@ -246,7 +246,7 @@ function($, DevaptInit, CryptoMD5, CryptoSHA1, Q, DevaptFactory)
 		};
 		
 		// MERGE AJAX OPTIONS
-		var options = jQuery.extend(default_options, arg_options);
+		var options = window.$.extend(default_options, arg_options);
 		// console.log(options, 'Devapt.ajax: options');
 		
 		// SEND AJAX REQUEST
@@ -275,7 +275,7 @@ function($, DevaptInit, CryptoMD5, CryptoSHA1, Q, DevaptFactory)
 		ajax_promise.then(success_cb, failure_cb);
 		
 		return ajax_promise;
-	}
+	};
 	
 	/**
 	 * @memberof  			Devapt
@@ -292,7 +292,7 @@ function($, DevaptInit, CryptoMD5, CryptoSHA1, Q, DevaptFactory)
 	Devapt.ajax_get = function(arg_url, arg_datas, arg_options, arg_token)
 	{
 		return Devapt.ajax('GET', arg_url, arg_datas, arg_options, arg_token);
-	}
+	};
 	
 	/**
 	 * @memberof  			Devapt
@@ -309,7 +309,7 @@ function($, DevaptInit, CryptoMD5, CryptoSHA1, Q, DevaptFactory)
 	Devapt.ajax_put = function(arg_url, arg_datas, arg_options, arg_token)
 	{
 		return Devapt.ajax('PUT', arg_url, arg_datas, arg_options, arg_token);
-	}
+	};
 	
 	/**
 	 * @memberof  			Devapt
@@ -326,7 +326,7 @@ function($, DevaptInit, CryptoMD5, CryptoSHA1, Q, DevaptFactory)
 	Devapt.ajax_post = function(arg_url, arg_datas, arg_options, arg_token)
 	{
 		return Devapt.ajax('POST', arg_url, arg_datas, arg_options, arg_token);
-	}
+	};
 	
 	/**
 	 * @memberof  			Devapt
@@ -342,7 +342,7 @@ function($, DevaptInit, CryptoMD5, CryptoSHA1, Q, DevaptFactory)
 	Devapt.ajax_delete = function(arg_url, arg_datas, arg_options, arg_token)
 	{
 		return Devapt.ajax('DELETE', arg_url, arg_datas, arg_options, arg_token);
-	}
+	};
 	
 	
 	
@@ -368,7 +368,7 @@ function($, DevaptInit, CryptoMD5, CryptoSHA1, Q, DevaptFactory)
 	Devapt.get_plugin_manager = function()
 	{
 		return Devapt.plugin_manager;
-	}
+	};
 	
 	
 	
@@ -394,7 +394,7 @@ function($, DevaptInit, CryptoMD5, CryptoSHA1, Q, DevaptFactory)
 	Devapt.get_current_backend = function()
 	{
 		return Devapt.current_backend;
-	}
+	};
 	
 	
 	/**
@@ -408,7 +408,7 @@ function($, DevaptInit, CryptoMD5, CryptoSHA1, Q, DevaptFactory)
 	Devapt.has_current_backend = function()
 	{
 		return Devapt.current_backend !== null;
-	}
+	};
 	
 	
 	/**
@@ -430,7 +430,7 @@ function($, DevaptInit, CryptoMD5, CryptoSHA1, Q, DevaptFactory)
 		
 		console.error('Devapt.set_current_backend : bad backend object');
 		return false;
-	}
+	};
 	
 	
 	/**
@@ -487,22 +487,7 @@ function($, DevaptInit, CryptoMD5, CryptoSHA1, Q, DevaptFactory)
 		}
 		
 		return true;
-	}
-	
-	
-	
-	/**
-	 * @memberof  			Devapt
-	 * @public
-	 * @static
-	 * @method				Devapt.get_current_backend
-	 * @desc				Get the current backend
-	 * @return {object}		A backend object
-	 */
-	Devapt.get_current_backend = function()
-	{
-		return Devapt.current_backend;
-	}
+	};
 	
 	
 	
@@ -526,8 +511,8 @@ function($, DevaptInit, CryptoMD5, CryptoSHA1, Q, DevaptFactory)
 			return (results && results.length > 1) ? results[1] : null;
 		}
 		
-		return arg_prototype.name
-	}
+		return arg_prototype.name;
+	};
 	
 	/**
 	 * @memberof			Devapt
@@ -547,7 +532,7 @@ function($, DevaptInit, CryptoMD5, CryptoSHA1, Q, DevaptFactory)
 		{
 			// CHECK ARRAY
 			var css_files = arg_css_files;
-			var arg_is_string = typeof arg_css_files == 'string' || typeof arg_css_files == 'String';
+			var arg_is_string = (typeof arg_css_files) == 'string' || (typeof arg_css_files) == 'String';
 			if (arg_is_string)
 			{
 				css_files = [ arg_css_files ];
@@ -570,7 +555,7 @@ function($, DevaptInit, CryptoMD5, CryptoSHA1, Q, DevaptFactory)
 				);
 			}
 		}
-	}
+	};
 	
 	/**
 	 * @memberof			Devapt
@@ -589,7 +574,7 @@ function($, DevaptInit, CryptoMD5, CryptoSHA1, Q, DevaptFactory)
 		if (arg_assets_urls)
 		{
 			// CHECK ARRAY
-			var is_string = typeof arg_css_files == 'string' || typeof arg_css_files == 'String';
+			var is_string = (typeof arg_assets_urls) == 'string' || (typeof arg_assets_urls) == 'String';
 			if (is_string)
 			{
 				arg_assets_urls = [ arg_assets_urls ];
@@ -612,7 +597,7 @@ function($, DevaptInit, CryptoMD5, CryptoSHA1, Q, DevaptFactory)
 				);
 			}
 		}
-	}
+	};
 	
 	
 	// -------------------------------------------------- UID ---------------------------------------------------------
@@ -630,7 +615,7 @@ function($, DevaptInit, CryptoMD5, CryptoSHA1, Q, DevaptFactory)
 	{
 		private_uid++;
 		return private_uid;
-	}
+	};
 	
 	/**
 	 * @memberof			Devapt
@@ -644,7 +629,7 @@ function($, DevaptInit, CryptoMD5, CryptoSHA1, Q, DevaptFactory)
 	Devapt.get_unique_name = function(arg_prefix)
 	{
 		return arg_prefix + '_' + Devapt.uid();
-	}
+	};
 	
 	
 	
@@ -670,7 +655,7 @@ function($, DevaptInit, CryptoMD5, CryptoSHA1, Q, DevaptFactory)
 		arg_using_object.gc_use(arg_used_object);
 		
 		return null;
-	}
+	};
 	
 	
 	
@@ -696,12 +681,12 @@ function($, DevaptInit, CryptoMD5, CryptoSHA1, Q, DevaptFactory)
 		// console.log(CryptoJS, 'CryptoJS');
 		switch(arg_method_name.toLocaleLowerCase())
 		{
-			case 'md5':		return CryptoJS.MD5(arg_value).toString();
-			case 'sha1':	return CryptoJS.SHA1(arg_value).toString();
+			case 'md5':		return window.CryptoJS.MD5(arg_value).toString();
+			case 'sha1':	return window.CryptoJS.SHA1(arg_value).toString();
 		}
 		
 		return null;
-	}
+	};
 	
 	
 	
@@ -719,7 +704,7 @@ function($, DevaptInit, CryptoMD5, CryptoSHA1, Q, DevaptFactory)
 	Devapt.is_defer = function(arg_value)
 	{
 		return arg_value ? !!arg_value.resolve : false;
-	}
+	};
 	
 	/**
 	 * @memberof			Devapt
@@ -733,7 +718,7 @@ function($, DevaptInit, CryptoMD5, CryptoSHA1, Q, DevaptFactory)
 	Devapt.is_promise = function(arg_value)
 	{
 		return Q.isPromise(arg_value);
-	}
+	};
 	
 	/**
 	 * @memberof			Devapt
@@ -751,7 +736,7 @@ function($, DevaptInit, CryptoMD5, CryptoSHA1, Q, DevaptFactory)
 			return Q(arg_value);
 		}
 		return Q.defer();
-	}
+	};
 	
 	/**
 	 * @memberof			Devapt
@@ -769,7 +754,7 @@ function($, DevaptInit, CryptoMD5, CryptoSHA1, Q, DevaptFactory)
 			return arg_value.promise;
 		}
 		return Q(arg_value);
-	}
+	};
 	
 	/**
 	 * @memberof			Devapt
@@ -785,7 +770,7 @@ function($, DevaptInit, CryptoMD5, CryptoSHA1, Q, DevaptFactory)
 		var defer = Q.defer();
 		defer.resolve(arg_resolved_value);
 		return defer.promise;
-	}
+	};
 	
 	/**
 	 * @memberof			Devapt
@@ -801,7 +786,7 @@ function($, DevaptInit, CryptoMD5, CryptoSHA1, Q, DevaptFactory)
 		var defer = Q.defer();
 		defer.reject(arg_reject_reason);
 		return defer.promise;
-	}
+	};
 	
 	/**
 	 * @memberof			Devapt
@@ -815,7 +800,7 @@ function($, DevaptInit, CryptoMD5, CryptoSHA1, Q, DevaptFactory)
 	Devapt.promise_all = function(arg_promises)
 	{
 		return Q.all(arg_promises);
-	}
+	};
 	
 	
 	
@@ -861,7 +846,7 @@ function($, DevaptInit, CryptoMD5, CryptoSHA1, Q, DevaptFactory)
 		}
 		
 		return Devapt.promise(defer);
-	}
+	};
 	
 	
 	/**
@@ -875,7 +860,7 @@ function($, DevaptInit, CryptoMD5, CryptoSHA1, Q, DevaptFactory)
 	 */
 	Devapt.get_requires = function(arg_class_name)
 	{
-		var dependancies = [];
+		// var dependancies = [];
 		
 		
 		// LOOKUP DEPENDANCIES
@@ -915,7 +900,7 @@ function($, DevaptInit, CryptoMD5, CryptoSHA1, Q, DevaptFactory)
 		
 		// console.info('Devapt.get_requires: lookup_promise');
 		return lookup_promise;
-	}
+	};
 	
 	
 	/**
@@ -992,7 +977,7 @@ function($, DevaptInit, CryptoMD5, CryptoSHA1, Q, DevaptFactory)
 		
 		
 		return create_promise;
-	}
+	};
 	
 	
 	return Devapt;

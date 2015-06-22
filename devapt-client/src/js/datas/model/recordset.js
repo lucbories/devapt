@@ -145,7 +145,7 @@ function(Devapt, DevaptTypes,
 	/**
 	 * @memberof				DevaptRecordSet
 	 * @public
-	 * @method					DevaptRecordSet.get_empty_record()
+	 * @method					DevaptRecordSet.new_record()
 	 * @desc					Get an empty Record object (create it or reuse it)
 	 * @return {object}
 	 */
@@ -184,6 +184,55 @@ function(Devapt, DevaptTypes,
 	};
 	
 	
+	/**
+	 * @memberof				DevaptRecordSet
+	 * @public
+	 * @method					DevaptRecordSet.init_record()
+	 * @desc					Fill an Record object with fields default value
+	 * @param {object}			arg_record		A Record object
+	 * @return {object}
+	 */
+	var cb_init_record = function (arg_record)
+	{
+		var self = this;
+		var context = 'init_record(record)';
+		self.enter(context, '');
+		
+		
+		// CHECK RECORD
+		self.assert_object(context, 'arg_record', arg_record);
+		self.assert_true(context, 'arg_record.is_record', arg_record.is_record);
+		
+		/*var datas = {};
+		
+		// LOOP ON MODEL FIELDS
+		var fields = self.model.fields;
+		for(var field_name in fields)
+		{
+			var field = fields[field_name];
+			
+			if ( field.is_pk )
+			{
+				continue;
+			}
+			
+			var default_value = field.field_value.default;
+			self.value(context, 'field_name', field_name);
+			self.value(context, 'default_value', default_value);
+			
+			datas[field_name] = default_value;
+		}
+		
+		arg_record.load(datas);*/
+		
+		arg_record.fill_with_defaults();
+		
+		
+		self.leave(context, Devapt.msg_success);
+		return arg_record;
+	};
+	
+				
 	
 	/* --------------------------------------------- LOOKUP OPERATIONS ------------------------------------------------ */
 	
@@ -413,15 +462,17 @@ function(Devapt, DevaptTypes,
 		
 		try
 		{
+			var record = null;
+			
 			// FIELD NAME IS ID FIELD NAME
 			if (arg_field_name === self.id_field_name)
 			{
 				self.step(context, 'FIELD NAME IS ID FIELD NAME');
 				
-				var record = self.get_record_by_id(arg_field_value);
+				record = self.get_record_by_id(arg_field_value);
 				
 				self.leave(context, record ? Devapt.msg_found : Devapt.msg_not_found);
-				return record;
+				return [record];
 			}
 			
 			// BAD FIELD NAME
@@ -438,7 +489,14 @@ function(Devapt, DevaptTypes,
 			var found_records = [];
 			for(var record_index in arg_records)
 			{
-				var record = arg_records[record_index];
+				// GET AND CHECK CURRENT RECORD
+				record = arg_records[record_index];
+				if (! DevaptTypes.is_object(record) || ! record.is_record)
+				{
+					continue;
+				}
+				
+				// GET RECORD FIELD VALUE
 				var record_value = record.get(arg_field_name);
 				self.value(context, 'record.name', record.name);
 				self.value(context, 'record.datas', record.datas);
@@ -470,7 +528,7 @@ function(Devapt, DevaptTypes,
 	 * @public
 	 * @method					self.get_first_record_by_object(arg_object)
 	 * @desc					Get a Record with its values
-	 * @param {anything}		arg_field_value		lookup field value
+	 * @param {anything}		arg_object		plain object
 	 * @return {object}			Found Record object or null if not found
 	 */
 	var cb_get_first_record_by_object = function(arg_object)
@@ -525,8 +583,8 @@ function(Devapt, DevaptTypes,
 			}
 			
 			// LOOP ON OTHER FIELDS
-			var fields = self.model.fields;
-			var filters_count = Object.keys(arg_object).length;
+			// var fields = self.model.fields;
+			// var filters_count = Object.keys(arg_object).length;
 			var found_records = self.records;
 			for(var field_name in arg_object)
 			{
@@ -864,7 +922,7 @@ function(Devapt, DevaptTypes,
 	 * @public
 	 * @method					DevaptRecordSet.append(datas)
 	 * @desc					Create records into the model and append them to the recordset
-	 * @param {object|array}	arg_datas			one record object or an array of objects
+	 * @param {object|array}	arg_datas		one plain object or an array of plain objects
 	 * @return {object}			Promise of the operation
 	 */
 	var cb_append = function (arg_datas)
@@ -1131,6 +1189,7 @@ function(Devapt, DevaptTypes,
 	
 	DevaptRecordSetClass.add_public_method('new_record', {}, cb_new_record);
 	DevaptRecordSetClass.add_public_method('free_record', {}, cb_free_record);
+	DevaptRecordSetClass.add_public_method('init_record', {}, cb_init_record);
 	
 	DevaptRecordSetClass.add_public_method('update_records_map', {}, cb_update_records_map);
 	DevaptRecordSetClass.add_public_method('has_record', {}, cb_has_record);

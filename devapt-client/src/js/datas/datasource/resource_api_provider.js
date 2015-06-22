@@ -61,7 +61,8 @@ function(Devapt, DevaptTypes,
 		var url_base = Devapt.app.get_url_base();
 		
 		var record_get_resource = {
-			resource_name:'resources',
+			controller:'resources',
+			resource_name:'myresource',
 			action:'get_resource',
 			method:'GET',
 			format:'devapt_resource_api_2',
@@ -69,7 +70,8 @@ function(Devapt, DevaptTypes,
 		};
 		
 		var record_list_all = {
-			resource_name:'resources',
+			controller:'resources',
+			resource_name:'all',
 			action:'list',
 			method:'GET',
 			format:'devapt_resource_api_2',
@@ -77,7 +79,8 @@ function(Devapt, DevaptTypes,
 		};
 		
 		var record_list_views = {
-			resource_name:'resources',
+			controller:'resources',
+			resource_name:'views',
 			action:'list',
 			method:'GET',
 			format:'devapt_resource_api_2',
@@ -85,7 +88,8 @@ function(Devapt, DevaptTypes,
 		};
 		
 		var record_list_models = {
-			resource_name:'resources',
+			controller:'resources',
+			resource_name:'models',
 			action:'list',
 			method:'GET',
 			format:'devapt_resource_api_2',
@@ -93,7 +97,8 @@ function(Devapt, DevaptTypes,
 		};
 		
 		var record_list_menus = {
-			resource_name:'resources',
+			controller:'resources',
+			resource_name:'menus',
 			action:'list',
 			method:'GET',
 			format:'devapt_resource_api_2',
@@ -101,7 +106,8 @@ function(Devapt, DevaptTypes,
 		};
 		
 		var record_list_menubars = {
-			resource_name:'resources',
+			controller:'resources',
+			resource_name:'menubars',
 			action:'list',
 			method:'GET',
 			format:'devapt_resource_api_2',
@@ -109,7 +115,8 @@ function(Devapt, DevaptTypes,
 		};
 		
 		var record_list_loggers = {
-			resource_name:'resources',
+			controller:'resources',
+			resource_name:'loggers',
 			action:'list',
 			method:'GET',
 			format:'devapt_resource_api_2',
@@ -158,7 +165,7 @@ function(Devapt, DevaptTypes,
 	{
 		// var self = this;
 		
-		return arg_value;
+		return arg_record;
 	};
 	
 	/**
@@ -212,6 +219,10 @@ function(Devapt, DevaptTypes,
 						"type":"Integer",
 						"label":"Id",
 						"is_pk":true
+					},
+					"controller":{
+						"type":"String",
+						"label":"Controller name"
 					},
 					"resource_name":{
 						"type":"String",

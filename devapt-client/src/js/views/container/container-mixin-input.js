@@ -135,6 +135,7 @@ function(Devapt, DevaptTypes, DevaptClass,
 			if (arg_previous_value === arg_new_value)
 			{
 				self.leave(context, 'nothing to do');
+				self.pop_trace();
 				return;
 			}
 			
@@ -156,6 +157,7 @@ function(Devapt, DevaptTypes, DevaptClass,
 		//							items = arg_view_model.get_recordset().get_records();
 									
 									self.step(context, Devapt.msg_default_implementation);
+									self.pop_trace();
 									return;
 								}
 								
@@ -170,11 +172,14 @@ function(Devapt, DevaptTypes, DevaptClass,
 									if ( ! DevaptTypes.is_object(record) )
 									{
 										self.step(context, 'current record is not found');
+										self.pop_trace();
 										return;
 									}
 									
 									record.set(arg_field_obj.name, arg_new_value);
 									record.save();
+									
+									self.record_updated(record);
 									
 									break;
 								}
@@ -189,6 +194,7 @@ function(Devapt, DevaptTypes, DevaptClass,
 									// TODO ?
 									
 									self.step(context, Devapt.msg_default_implementation);
+									self.pop_trace();
 									return;
 								}
 							}
@@ -196,6 +202,7 @@ function(Devapt, DevaptTypes, DevaptClass,
 					);
 				}
 			);
+			promise = null; // UNUSED VARIABLE
 			
 			
 			self.leave(context, Devapt.msg_success);
@@ -238,6 +245,7 @@ function(Devapt, DevaptTypes, DevaptClass,
 			
 			// INIT INPUT VALUE
 			var value_str = DevaptTypes.to_string(arg_value, '');
+			var node_jqo = null;
 			
 			
 			// GET FIELD ATTRIBUTES OBJECT
@@ -245,7 +253,7 @@ function(Devapt, DevaptTypes, DevaptClass,
 			var field_obj = arg_field_orig;
 			if ( DevaptTypes.is_object(arg_field_custom) )
 			{
-				field_obj = $.extend(true, self.clone_object(arg_field_orig), arg_field_custom);
+				field_obj = window.$.extend(true, self.clone_object(arg_field_orig), arg_field_custom);
 			}
 			
 			
@@ -266,7 +274,7 @@ function(Devapt, DevaptTypes, DevaptClass,
 			{
 				self.step(context, 'input field has foreign or join link');
 				
-				var node_jqo = self.get_association_input(arg_deferred, field_obj, value_str, arg_access);
+				node_jqo = self.get_association_input(arg_deferred, field_obj, value_str, arg_access);
 				
 				self.leave(context, Devapt.msg_success);
 				self.pop_trace();
@@ -276,7 +284,6 @@ function(Devapt, DevaptTypes, DevaptClass,
 			
 			// GET STANDARD INPUT
 			var type_str = DevaptTypes.to_string(field_obj.field_value.type, 'string').toLocaleLowerCase();
-			var node_jqo = null;
 			switch(type_str)
 			{
 				case 'password':
@@ -296,14 +303,14 @@ function(Devapt, DevaptTypes, DevaptClass,
 			{
 				self.step(context, 'field has label');
 				
-				var div_jqo = $('<div>');
+				var div_jqo = window.$('<div>');
 				if ( ! DevaptTypes.is_not_empty_str( node_jqo.attr('id') ) )
 				{
 					self.step(context, 'set node id');
 					node_jqo.attr('id', field_obj.name + '_input_' + self.get_view_id());
 				}
 				
-				var label_jqo = $('<label for="' + node_jqo.attr('id') + '">');
+				var label_jqo = window.$('<label for="' + node_jqo.attr('id') + '">');
 				label_jqo.text(field_obj.label);
 				div_jqo.append(label_jqo);
 				div_jqo.append(node_jqo);

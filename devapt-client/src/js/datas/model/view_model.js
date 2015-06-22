@@ -22,41 +22,25 @@
  * 					VM replace its previous SharedRecordSet R1 by R2 (if R1<>R2).
  * 					VM call refresh operation on V with R2 (if R1<>R2).
  * 				
- *              API:
+ *              API: see MIXINS API for DevaptViewModelMixinCrudable and DevaptViewModelMixinSelectable
  *                  ->constructor(object)     : nothing
- *  
- *                  ->get_status()            : string
- *                  ->get_error()             : string
- *                  ->is_valid()              : boolean (query, model, view, records are valid object and status is 'ok')
- *                  ->is_ok()                 : boolean (status is 'ok')
- *                  ->is_error()              : boolean (status is 'error')
- *  
- *                  ->get_recordset()         : Current SharedRecordSet object (shared between many ViewModel instances)
- *                 // ->get_query()             : Query object (one Query per View)
- *                 // ->get_model()             : Model object (shared between many ViewModel instances)
- *                 // ->get_view()              : View object (one ViewModel per View)
- *  
- *                  ->reload()                : Reload all query model records and refresh the view
- *  
- *                  ->create(records)         : Create given records into the model and update the view
- *                  ->read()                  : Get records from the model with the query
- *                  ->read_all()              : Get all records from the model
- *                  ->update(records)         : Update given records into the model and update the view
- *                  ->delete(records)         : Delete given records into the model and update the view
  *  				
- *                  ->select_record(record)         : 
- *                  ->unselect_record(record)         : 
- *  				->get_selected_records()       :
- *  				->set_selected_records(records):
- *  				->get_selected_record(record)  :
- *  				->on_container_select(items)   :
+ * 					->is_valid()              : Test if the object properties are valid (boolean)
+ * 					
+ *  				->get_recordset()         : Get the ViewModel datas set of records (Recordset)
+ * 					
+ *                  ->get_linked_record()       : Get linked record object (Object)
+ *                  ->set_linked_record(record) : Set linked record object (nothing)
+ * 					
+ *                  ->get_items_types()       : Get container view items types (html, view, text...) (Array)
+ *                  ->get_fields_types()      : Get record fields types array with type in 'string', 'integer', 'object'... (Array)
  *  				
- *                  ->select_all()            : All view records are selected into the View object
- *                  ->unselect(records)       : Given records are unselected into the View object
- *                  ->unselect_all()          : All view records are unselected into the View object
- *  
- *                  ->get_items_types()       : get container view items types (html, view, text...)
- *  
+ *              TODO    ->create(records)     : Create given records into the model and update the view
+ *              TODO    ->read()              : Get records from the model with the query
+ *              TODO    ->read_all()          : Get all records from the model
+ *              TODO    ->update(records)     : Update given records into the model and update the view
+ *              TODO    ->delete(records)     : Delete given records into the model and update the view
+ *  				
  * @ingroup     DEVAPT_DATAS
  * @date        2015-02-02
  * @version		1.0.x
@@ -140,7 +124,7 @@ function(
 	 * @memberof				DevaptViewModel
 	 * @public
 	 * @method					DevaptViewModel.is_valid()
-	 * @desc					Test if the storage engine is valid
+	 * @desc					Test if the object properties are valid
 	 * @return {boolean}		Is valid ?
 	 */
 	var cb_is_valid = function()
@@ -211,7 +195,7 @@ function(
 							self.step(context, 'inline source format is json');
 							
 							var json_str = self.view.items_inline.join(',');
-							var json_obj = $.parseJSON(json_str);
+							var json_obj = window.$.parseJSON(json_str);
 							
 							items = json_obj;
 						}
@@ -416,7 +400,7 @@ function(
 						}
 						
 						// ADD ID FIELD IF NEEDED
-						self.recordset.query.fields
+						self.recordset.query.fields;
 						if (!pk_field_found)
 						{
 							self.recordset.query.fields.push(pk_field_name);
@@ -600,7 +584,7 @@ function(
 	var cb_get_recordset = function ()
 	{
 		var self = this;
-		self.step('get recordset', '');
+		self.step('get_recordset', '');
 		
 		return self.recordset;
 	};
@@ -711,7 +695,6 @@ function(
 	
 		// RECORDSET OPERATIONS
 	DevaptViewModelClass.add_public_method('get_recordset', {}, cb_get_recordset);
-//	DevaptViewModelClass.add_public_method('get_selection_recordset', {}, cb_get_selection_recordset);
 	
 		// LINK OPERATIONS
 	DevaptViewModelClass.add_public_method('get_linked_record', {}, cb_get_linked_record);

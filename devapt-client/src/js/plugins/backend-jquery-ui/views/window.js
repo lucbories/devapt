@@ -20,6 +20,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptView, undefined)
 	 * @desc				Label view class
 	 */
 	
+	var $ = window.$;
 	
 	/**
 	 * @public
@@ -30,7 +31,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptView, undefined)
 	 */
 	var cb_render_self = function(arg_deferred)
 	{
-		var self = this;self.trace=true;
+		var self = this;
 		var context = 'render_self(deferred)';
 		self.enter(context, '');
 		
@@ -102,7 +103,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptView, undefined)
 		
 		self.leave(context, Devapt.msg_success_promise);
 		return content_promise;
-	}
+	};
 	
 	
 	/**
@@ -122,7 +123,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptView, undefined)
 		
 		self.leave(context, Devapt.msg_success_promise);
 		return true;
-	}
+	};
 	
 	
 	

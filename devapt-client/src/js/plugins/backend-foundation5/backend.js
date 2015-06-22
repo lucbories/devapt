@@ -93,7 +93,7 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptResources, DevaptFactory, Deva
 	DevaptFoundation5Backend.get_template_std_tags = function()
 	{
 		return DevaptFoundation5Backend.backend_template_std_tags;
-	}
+	};
 	
 	
 	/**
@@ -119,7 +119,7 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptResources, DevaptFactory, Deva
 		
 		DevaptTraces.trace_leave(context, '', DevaptFoundation5Backend.backend_trace);
 		return record;
-	}
+	};
 	
 	
 	
@@ -169,7 +169,7 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptResources, DevaptFactory, Deva
 		
 		DevaptTraces.trace_leave(context, 'promise is async', DevaptFoundation5Backend.backend_trace);
 		return promise;
-	}
+	};
 	
 	
 	
@@ -301,7 +301,7 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptResources, DevaptFactory, Deva
 							
 							// GET VIEW NODE ID
 							var view_id = view.get_view_id();
-							var view_jqo = $('#' + view_id);
+							var view_jqo = window.$('#' + view_id);
 							// console.info(view_jqo, 'backend.render_view:view_jqo[' + view.name + ']');
 							
 							// SHOW EXISTING VIEW
@@ -318,7 +318,7 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptResources, DevaptFactory, Deva
 						var render_promise = view.render();
 						
 						DevaptTraces.trace_leave(context, 'success: promise is resolved: then callback: async render promise [' + view.name + ']', DevaptFoundation5Backend.backend_trace);
-						return render_promise
+						return render_promise;
 					}
 					catch(e)
 					{
@@ -338,7 +338,7 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptResources, DevaptFactory, Deva
 		
 		DevaptTraces.trace_leave(context, 'async promise render', DevaptFoundation5Backend.backend_trace);
 		return promise;
-	}
+	};
 	
 	
 	/**
@@ -355,7 +355,7 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptResources, DevaptFactory, Deva
 		DevaptTraces.trace_enter(context, '', DevaptFoundation5Backend.backend_trace);
 		
 		
-		var content_jqo = $('<div id="login_view_id" class="row">');
+		var content_jqo = window.$('<div id="login_view_id" class="row">');
 		var html = '\
 	<div class="three columns">\
 	</div>\
@@ -382,10 +382,10 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptResources, DevaptFactory, Deva
 				// <img src="modules/security/public/images/user-group-icon.png" alt="login icon" style="line-height:64px; height:64px; vertical-align:middle;"></img>\
 		
 		// TODO GET IDs FROM APP CONFIG
-		$('#menubars_id').children().hide();
-		$('#breadcrumbs_id').children().hide();
-		$('#page_content_id').children().hide();
-		$('#page_content_id').append(content_jqo);
+		window.$('#menubars_id').children().hide();
+		window.$('#page_breadcrumbs_id').children().hide();
+		window.$('#page_content_id').children().hide();
+		window.$('#page_content_id').append(content_jqo);
 		content_jqo.html(html);
 		
 		function on_login()
@@ -393,25 +393,26 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptResources, DevaptFactory, Deva
 			require(['Devapt', 'core/security'],
 				function(Devapt, DevaptSecurity)
 				{
-					var login = $('#login').val();
-					var pwd = $('#password').val();
+					var login = window.$('#login').val();
+					var pwd = window.$('#password').val();
 					
 					content_jqo.remove();
 					
 					// TODO
 					var login_promise = DevaptSecurity.login(login, pwd);
+					login_promise = null;
 				}
 			);
 			
 			return false;
 		}
 		
-		$('#submit').on('click', on_login);
+		window.$('#submit').on('click', on_login);
 		
 		
 		DevaptTraces.trace_leave(context, '', DevaptFoundation5Backend.backend_trace);
 		return Devapt.promise_resolved();
-	}
+	};
 	
 	
 	/**
@@ -441,7 +442,7 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptResources, DevaptFactory, Deva
 		
 		DevaptTraces.trace_leave(context, '', DevaptFoundation5Backend.backend_trace);
 		return logout_promise;
-	}
+	};
 	
 	
 	/**
@@ -470,7 +471,7 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptResources, DevaptFactory, Deva
 		
 		DevaptTraces.trace_leave(context, '', DevaptFoundation5Backend.backend_trace);
 		return promise;
-	}
+	};
 	
 	
 	/**
@@ -541,7 +542,7 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptResources, DevaptFactory, Deva
 		
 		DevaptTraces.trace_leave(context, '', DevaptFoundation5Backend.backend_trace);
 		return node_jqo;
-	}
+	};
 	
 	
 	/**
@@ -561,13 +562,13 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptResources, DevaptFactory, Deva
 		
 		// alert('error:' + arg_message);
 		
-		var notify_jqo = $('#notify_alert_id');
+		var notify_jqo = window.$('#notify_alert_id');
 		if ( ! notify_jqo || notify_jqo.length === 0 )
 		{
-			var div_tag = $('<div data-alert class="alert-box warning radius">');
-			var a_tag = $('<a href="#" class="close">&times;</a>');
+			var div_tag = window.$('<div data-alert class="alert-box warning radius">');
+			var a_tag = window.$('<a href="#" class="close">&times;</a>');
 			
-			$('#page_breadcrumbs_id').append(div_tag);
+			window.$('#page_breadcrumbs_id').append(div_tag);
 			div_tag.append(a_tag);
 			a_tag.click( function()
 				{
@@ -581,7 +582,7 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptResources, DevaptFactory, Deva
 		}
 		
 		// APPEND A MESSAGE
-		notify_jqo.append( $('<p>').text(arg_message) );
+		notify_jqo.append( window.$('<p>').text(arg_message) );
 		notify_jqo.show();
 		setTimeout( function()
 			{
@@ -593,7 +594,7 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptResources, DevaptFactory, Deva
 		
 		
 		DevaptTraces.trace_leave(context, '', DevaptFoundation5Backend.backend_trace);
-	}
+	};
 	
 	
 	/**
@@ -613,13 +614,13 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptResources, DevaptFactory, Deva
 		
 		// alert('alert:' + arg_message);
 		
-		var notify_jqo = $('#notify_alert_id');
+		var notify_jqo = window.$('#notify_alert_id');
 		if ( ! notify_jqo || notify_jqo.length === 0 )
 		{
-			var div_tag = $('<div data-alert class="alert-box alert radius">');
-			var a_tag = $('<a href="#" class="close">&times;</a>');
+			var div_tag = window.$('<div data-alert class="alert-box alert radius">');
+			var a_tag = window.$('<a href="#" class="close">&times;</a>');
 			
-			$('#page_breadcrumbs_id').append(div_tag);
+			window.$('#page_breadcrumbs_id').append(div_tag);
 			div_tag.append(a_tag);
 			a_tag.click( function()
 				{
@@ -633,7 +634,7 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptResources, DevaptFactory, Deva
 		}
 		
 		// APPEND A MESSAGE
-		notify_jqo.append( $('<p>').text(arg_message) );
+		notify_jqo.append( window.$('<p>').text(arg_message) );
 		notify_jqo.show();
 		setTimeout( function()
 			{
@@ -645,7 +646,7 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptResources, DevaptFactory, Deva
 		
 		
 		DevaptTraces.trace_leave(context, '', DevaptFoundation5Backend.backend_trace);
-	}
+	};
 	
 	
 	/**
@@ -665,13 +666,13 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptResources, DevaptFactory, Deva
 		
 		// alert('info:' + arg_message);
 		
-		var notify_jqo = $('#notify_info_id');
+		var notify_jqo = window.$('#notify_info_id');
 		if ( ! notify_jqo || notify_jqo.length === 0 )
 		{
-			var div_tag = $('<div id="notify_info_id" data-alert class="alert-box info radius">');
-			var a_tag = $('<a href="#" class="close">&times;</a>');
+			var div_tag = window.$('<div id="notify_info_id" data-alert class="alert-box info radius">');
+			var a_tag = window.$('<a href="#" class="close">&times;</a>');
 			
-			$('#page_breadcrumbs_id').append(div_tag);
+			window.$('#page_breadcrumbs_id').append(div_tag);
 			div_tag.append(a_tag);
 			a_tag.click( function()
 				{
@@ -685,7 +686,7 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptResources, DevaptFactory, Deva
 		}
 		
 		// APPEND A MESSAGE
-		notify_jqo.append( $('<p>').text(arg_message) );
+		notify_jqo.append( window.$('<p>').text(arg_message) );
 		notify_jqo.show();
 		setTimeout( function()
 			{
@@ -697,7 +698,7 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptResources, DevaptFactory, Deva
 		
 		
 		DevaptTraces.trace_leave(context, '', DevaptFoundation5Backend.backend_trace);
-	}
+	};
 	
 	
 	return DevaptFoundation5Backend;

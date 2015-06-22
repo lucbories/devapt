@@ -72,6 +72,7 @@ define([/*'Devapt', */'core/traces'], function(/*Devapt, */DevaptTraces)
 		}
 		
 		DevaptTraces.error( { source: 'DevaptTypes.type_of', text: 'unknow type of [' + arg_value + ']' } );
+		return null;
 	}
 	
 	/**

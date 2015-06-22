@@ -67,7 +67,7 @@ function(Devapt, DevaptTypes,
 			var model = model_instances[model_index];
 				
 			var server_api = model.get_server_api();
-			console.log(server_api);
+			// console.log(server_api);
 			if (server_api.is_local)
 			{
 				continue;

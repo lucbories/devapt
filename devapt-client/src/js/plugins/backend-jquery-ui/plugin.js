@@ -24,8 +24,8 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptPlugin,
 	
 	
 	var classes_map = {
-		'Window':['plugins/backend-jquery-ui/views/window'],
-		'JsonTree':['plugins/backend-jquery-ui/views/jsontree']
+		'Window':['plugins/backend-jquery-ui/views/window']/*,
+		'JsonTree':['plugins/backend-jquery-ui/views/jsontree']*/
 	};
 	
 	

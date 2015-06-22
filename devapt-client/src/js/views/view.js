@@ -32,6 +32,8 @@ function(
 	 * @desc				View class
 	 */
 	
+	var $ = window.$;
+	
 	
 	/**
 	 * @public
@@ -102,7 +104,7 @@ function(
 		self.leave(context, Devapt.msg_success);
 		// self.trace = false;
 		return true;
-	}
+	};
 	
 	
 	/**
@@ -141,7 +143,7 @@ function(
 		
 		
 		self.leave(context, Devapt.msg_success);
-	}
+	};
 	
 	
 	/**
@@ -154,7 +156,7 @@ function(
 	{
 		var self = this;
 		return DevaptTypes.is_not_empty_str(self.view_id) ? self.view_id : self.name + '_view_id';
-	}
+	};
 	
 	
 	
@@ -164,7 +166,7 @@ function(
 	 * @desc				Render view
 	 * @return {object}		deferred promise object
 	 */
-	var cb_render = function()
+/*	var cb_render = function()
 	{
 		var self = this;
 		// self.trace = true;
@@ -276,7 +278,7 @@ function(
 		
 		self.leave(context, 'render without template');
 		return promise;
-	}
+	};*/
 	
 	
 	
@@ -287,7 +289,7 @@ function(
 	 * @param {object}		arg_deferred	deferred object
 	 * @return {object}		deferred promise object
 	 */
-	var cb_render_self = function(arg_deferred)
+/*	var cb_render_self = function(arg_deferred)
 	{
 		var self = this;
 		var context = 'render_self(deferred)';
@@ -304,7 +306,7 @@ function(
 		
 		self.leave(context, 'success (not implemented)');
 		return Devapt.promise(arg_deferred);
-	}
+	};*/
 	
 	
 	
@@ -330,7 +332,7 @@ function(
 		
 		self.leave(context, Devapt.msg_success);
 		return true;
-	}
+	};
 	
 	
 	
@@ -356,7 +358,7 @@ function(
 		
 		self.leave(context, Devapt.msg_success);
 		return true;
-	}
+	};
 	
 	
 	
@@ -382,7 +384,7 @@ function(
 		
 		self.leave(context, Devapt.msg_success);
 		return true;
-	}
+	};
 	
 	
 	
@@ -404,7 +406,7 @@ function(
 		
 		self.leave(context, Devapt.msg_success);
 		return arg_sentance_str;
-	}
+	};
 	
 	
 	
@@ -428,7 +430,7 @@ function(
 		
 		self.leave(context, Devapt.msg_success);
 		return true;
-	}
+	};
 	
 	
 	
@@ -454,7 +456,7 @@ function(
 		
 		self.leave(context, Devapt.msg_success);
 		return true;
-	}
+	};
 	
 	
 	
@@ -478,7 +480,7 @@ function(
 		
 		self.leave(context, Devapt.msg_success);
 		return true;
-	}
+	};
 	
 	
 	
@@ -502,7 +504,7 @@ function(
 		
 		self.leave(context, Devapt.msg_success);
 		return true;
-	}
+	};
 	
 	
 	/**
@@ -514,9 +516,9 @@ function(
 	 */
 	var cb_to_string_self = function()
 	{
-		var self = this;
+		// var self = this;
 		return 'base view class';
-	}
+	};
 	
 	
 	/**
@@ -540,7 +542,7 @@ function(
 		}
 		
 		alert('error:' + arg_message);
-	}
+	};
 	
 	
 	/**
@@ -564,7 +566,7 @@ function(
 		}
 		
 		alert('alert:' + arg_message);
-	}
+	};
 	
 	
 	/**
@@ -588,7 +590,7 @@ function(
 		}
 		
 		alert('info:' + arg_message);
-	}
+	};
 	
 	
 	
@@ -633,7 +635,7 @@ function(
 		
 		self.leave(context, Devapt.msg_success);
 		return self.server_api;
-	}
+	};
 	
 	
 	

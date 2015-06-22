@@ -35,7 +35,7 @@
         <header id="page_header_id" class="row devapt_display devapt_page_header">
 			<div id="menubars_id">
 			</div>
-			<article id="breadcrumbs_id" class='devapt_display' style="margin-top:20px;">
+			<article id="page_breadcrumbs_id" class='devapt_display' style="margin-top:20px;">
 			</article>
         </header>
 		
