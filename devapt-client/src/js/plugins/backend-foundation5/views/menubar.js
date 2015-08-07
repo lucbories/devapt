@@ -24,7 +24,7 @@
  * @license		Apache License Version 2.0, January 2004; see LICENSE.txt or http://www.apache.org/licenses/
  */
 
-'use strict'
+'use strict';
 define(
 ['Devapt', 'core/types', 'object/class', 'object/classes', 'core/resources', 'views/view', 'core/application', 'core/nav-history', 'plugins/backend-foundation5/foundation-init'],
 function(Devapt, DevaptTypes, DevaptClass, DevaptClasses, DevaptResources, DevaptView, DevaptApplication, DevaptNavHistory, undefined)
@@ -34,6 +34,8 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptClasses, DevaptResources, Devap
 	 * @class				DevaptMenubar
 	 * @desc				Menubar view class
 	 */
+	
+	var $ = window.$;
 	
 	/**
 	 * @public
@@ -60,7 +62,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptClasses, DevaptResources, Devap
 		
 		
 		self.leave(context, 'success');
-	}
+	};
 	
 	
 	
@@ -92,16 +94,9 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptClasses, DevaptResources, Devap
 		self.assert_not_null(context, 'content_jqo', self.content_jqo);
 		self.nav_jqo = $('<nav>');
 		self.content_jqo.append(self.nav_jqo);
-		// console.log(self.parent_jqo, 'self.parent_jqo');
-		// console.log(self.content_jqo, 'self.content_jqo');
-		// self.parent_jqo.prepend(self.content_jqo);
-		
-		// GET MENUBAR NAME
-		self.assert_not_empty_string(context, 'self.menubar_name', self.menubar_name);
 		
 		
 		// CHECK MENUBAR DECLARATION
-		// self.menubar_declaration = menubar_declaration;
 		self.assert_not_empty_value(context, 'self.menubar_declaration', self.menubar_declaration);
 		
 		
@@ -160,7 +155,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptClasses, DevaptResources, Devap
 		
 		self.leave(context, 'success: render promise is async');
 		return Devapt.promise(arg_deferred);
-	}
+	};
 	
 	
 	
@@ -292,7 +287,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptClasses, DevaptResources, Devap
 		
 		self.leave(context, 'success');
 		return true;
-	}
+	};
 	
 	
 	
@@ -340,7 +335,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptClasses, DevaptResources, Devap
 		
 		self.leave(context, 'success');
 		return true;
-	}
+	};
 	
 	
 	
@@ -420,7 +415,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptClasses, DevaptResources, Devap
 		self.leave(context, 'success');
 		// self.trace=false;
 		return true;
-	}
+	};
 	
 	
 	
@@ -444,8 +439,8 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptClasses, DevaptResources, Devap
 		var menubar_name	= DevaptTypes.to_string(arg_menu_declaration['name'], '');
 		var menu_id			= menubar_name + '_id';
 		var label			= DevaptTypes.to_string(arg_menu_declaration['label'], '');
-		var view_name		= DevaptTypes.to_string(arg_menu_declaration['default_view', '']);
-		var view_label		= DevaptTypes.to_string(arg_menu_declaration['default_label'], '');
+		// var view_name		= DevaptTypes.to_string(arg_menu_declaration['default_view', '']);
+		// var view_label		= DevaptTypes.to_string(arg_menu_declaration['default_label'], '');
 		
 		var menu_jqo		= $('<li>');
 		var menu_a_jqo = $('<a>');
@@ -500,7 +495,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptClasses, DevaptResources, Devap
 							// self.trace=false;
 						}
 					);
-				}
+				};
 			}
 		)(menubar_name, arg_menu_declaration);
 		menu_a_jqo.click(switch_cb);
@@ -509,7 +504,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptClasses, DevaptResources, Devap
 		self.leave(context, 'success');
 		// self.trace=false;
 		return true;
-	}
+	};
 	
 		
 	
@@ -563,14 +558,14 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptClasses, DevaptResources, Devap
 		self.step(context, 'get menu attributes');
 		// var position	= DevaptTypes.to_list_item(arg_menu_declaration['position'], ['left', 'right'], 'left');
 		var menu_name	= DevaptTypes.to_string(arg_menu_declaration['menu_name'], '');
-		var index		= DevaptTypes.to_integer(arg_menu_declaration['index'], -1);
+		// var index		= DevaptTypes.to_integer(arg_menu_declaration['index'], -1);
 		var label		= DevaptTypes.to_string(arg_menu_declaration['label'], '');
 		var tooltip		= DevaptTypes.to_string(arg_menu_declaration['tooltip'], '');
 		var type		= DevaptTypes.to_string(arg_menu_declaration['type'], '');
 		
-		var icon		= DevaptTypes.is_object(arg_menu_declaration['icon']) ? arg_menu_declaration['icon'] : {};
-		var icon_url	= DevaptTypes.to_string(icon['url'], null);
-		var icon_alt	= DevaptTypes.to_string(icon['alt'], null);
+		// var icon		= DevaptTypes.is_object(arg_menu_declaration['icon']) ? arg_menu_declaration['icon'] : {};
+		// var icon_url	= DevaptTypes.to_string(icon['url'], null);
+		// var icon_alt	= DevaptTypes.to_string(icon['alt'], null);
 		
 		var display		= DevaptTypes.is_object(arg_menu_declaration['display']) ? arg_menu_declaration['display'] : {};
 		var display_url	= DevaptTypes.to_string(display['url'], null);
@@ -580,6 +575,10 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptClasses, DevaptResources, Devap
 		var display_js	= DevaptTypes.to_string(display['js'], null);
 		
 		var menu_id		= menu_name + '_id';
+		
+		var div_button_jqo = null;
+		var option_button_url = null;
+		var option_button_onclick = null;
 		
 		
 		// GET CONTAINER NODE
@@ -610,7 +609,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptClasses, DevaptResources, Devap
 			
 			
 			// MENU BUTTON
-			var div_button_jqo = $('<a>');
+			div_button_jqo = $('<a>');
 			menu_jqo.append(div_button_jqo);
 			div_button_jqo.addClass('button');
 			
@@ -618,11 +617,11 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptClasses, DevaptResources, Devap
 			div_button_jqo.text(label);
 			
 			// MENU BUTTON OPTION: URL
-			var option_button_url = DevaptTypes.to_string(arg_menu_declaration['menu_button_url'], '#');
+			option_button_url = DevaptTypes.to_string(arg_menu_declaration['menu_button_url'], '#');
 			div_button_jqo.attr('href', option_button_url);
 			
 			// MENU BUTTON OPTION: ONCLICK
-			var option_button_onclick = DevaptTypes.to_string(arg_menu_declaration['menu_button_onclick'], '#');
+			option_button_onclick = DevaptTypes.to_string(arg_menu_declaration['menu_button_onclick'], '#');
 			div_button_jqo.attr('onclick', option_button_onclick);
 			
 			
@@ -655,7 +654,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptClasses, DevaptResources, Devap
 			div_input_row_jqo.append(div_button_col_jqo);
 			
 			// SEARCH BUTTON
-			var div_button_jqo = $('<a>');
+			div_button_jqo = $('<a>');
 			div_button_col_jqo.append(div_button_jqo);
 			div_button_jqo.addClass('button expand');
 			
@@ -672,11 +671,11 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptClasses, DevaptResources, Devap
 			div_button_jqo.text(option_button_label);
 			
 			// SEARCH BUTTON OPTION: URL
-			var option_button_url = DevaptTypes.to_string(arg_menu_declaration['search_button_url'], '#');
+			option_button_url = DevaptTypes.to_string(arg_menu_declaration['search_button_url'], '#');
 			div_button_jqo.attr('href', option_button_url);
 			
 			// SEARCH BUTTON OPTION: ONCLICK
-			var option_button_onclick = DevaptTypes.to_string(arg_menu_declaration['search_button_onclick'], '#');
+			option_button_onclick = DevaptTypes.to_string(arg_menu_declaration['search_button_onclick'], '#');
 			div_button_jqo.attr('onclick', option_button_onclick);
 			
 			// SEARCH INPUT OPTION: WIDTH
@@ -724,7 +723,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptClasses, DevaptResources, Devap
 							var menubar_name	= self.name;
 							// DevaptNavHistory.set_page_view_content(content_label, content_id, view_name, page_title, page_location, force_render, menubar_name);
 							DevaptNavHistory.set_view_content(content_label, content_id, view_name, page_title, page_location, force_render, menubar_name);
-						}
+						};
 					}
 				)(display_view, label, display_cont);
 				menu_a_jqo.click(update_view_cb);
@@ -799,7 +798,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptClasses, DevaptResources, Devap
 		
 		self.leave(context, 'success');
 		return true;
-	}
+	};
 	
 	
 	
@@ -818,7 +817,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptClasses, DevaptResources, Devap
 		
 		self.leave(context, 'success');
 		return true;
-	}
+	};
 	
 	// TESTS
 	/*

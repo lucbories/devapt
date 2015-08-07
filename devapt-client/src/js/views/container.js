@@ -60,7 +60,7 @@ define( [
 	'views/container/container-mixin-filtered', 'views/container/container-mixin-pagination',
 	'views/container/container-mixin-render-item', 'views/container/container-mixin-get-nodes',
 	'views/container/container-mixin-utils',
-	'views/container/container-mixin-input', /*'views/container/container-mixin-model-crud',*/ 'views/container/container-mixin-crud'],
+	'views/container/container-mixin-input', 'views/container/container-mixin-items', /*'views/container/container-mixin-model-crud',*/ 'views/container/container-mixin-crud'],
 function(
 	Devapt, DevaptTypes, DevaptClass,
 	DevaptView, DevaptMixinBind,
@@ -69,7 +69,7 @@ function(
 	DevaptMixinFiltered, DevaptMixinPagination,
 	DevaptMixinRenderItem, DevaptMixinGetNodes,
 	DevaptMixinContainerUtils,
-	DevaptMixinInput, /*DevaptMixinModelCrud,*/ DevaptMixinCrud)
+	DevaptMixinInput, DevaptMixinItems, /*DevaptMixinModelCrud,*/ DevaptMixinCrud)
 {
 	/**
 	 * @public
@@ -567,100 +567,87 @@ function(
 		
 		// PROCESS ITEMS
 		var render_promise = all_promise.spread(
-			function(items, types)
+			function(arg_items, arg_types)
 			{
 				self.trace = trace;
 				self.step(context, 'get items and types promise done');
 				// console.log(recordset, self.name + '.' + context + '.recordset');
-				// console.log(items, self.name + '.' + context + '.items');
-				// console.log(types, self.name + '.' + context + '.types');
+				// console.log(arg_items, self.name + '.' + context + '.items');
+				// console.log(arg_types, self.name + '.' + context + '.types');
 				
 				try
 				{
-					var items_count = items.length;
+					// INIT ITEMS
+					var items_count = arg_items.length;
 					var index_start = 0;
 					
-					if (self.items_records.length > 0)
-					{
-						index_start = self.items_records.length;
-						if (items_count > 0)
-						{
-							// APPEND ITEMS
-							self.items_records = self.items_records.concat(items);
-							self.items_records_count = self.items_records.length;
-						}
-					}
-					else
-					{
-						self.items_records = items;
-						self.items_records_count = items_count;
-					}
-//					self.value(context, 'items', items);
-//					self.value(context, 'items_count', items_count);
-//					console.debug(items, context + ':items');
-//					console.debug(self.items_records, context + ':items_records');
-					
-					var types_count = types.length;
+					// INIT TYPES
+					var types_count = arg_types.length;
 					var default_type = null;
-					self.value(context, 'types', types);
+					self.value(context, 'types', arg_types);
+					
 					
 					// LOOP ON ITEMS
 					self.step(context, 'loop on items');
-					var item_index = 0;
-					// var items_defers = []; // TODO USE ITEMS DEFERS ?
-					for( ; item_index < items_count ; ++item_index)
+					
+					var loop_item_index = index_start;
+					var loop_container_item = null;
+					var loop_item_content = null;
+					var loop_item_jqo = null;
+					var loop_item_type = null;
+					var loop_item_render_promise = null;
+					var loop_item_render_success_cb = function(arg_self, arg_context, arg_index)
 					{
-						self.step(context, 'loop on item at [' + item_index + ']');
+						return function()
+						{
+							// SEND EVENT
+							arg_self.step(context, 'fire event: devapt.container.render.item');
+							arg_self.fire_event('devapt.container.render.item', [arg_index]);
+						};
+					};
+					var loop_item_render_failure_cb = function(arg_self, arg_context, arg_index)
+					{
+						return function()
+						{
+							arg_self.error(arg_context, 'item render failure');
+						};
+					};
+					
+					for( ; loop_item_index < items_count ; ++loop_item_index)
+					{
+						self.step(context, 'loop on item at [' + loop_item_index + ']');
 						
-						// GET CURRENT ITEM
-						var item = items[item_index];
-						item = item.is_record ? item.get_datas() : item;
-						// self.value(context, 'item at [' + item_index + ']', item);
-						// console.debug(item, self.name + '.' + context + ':item');
+						// GET CURRENT ITEM CONTENT
+						loop_item_content = arg_items[loop_item_index - index_start];
+						loop_item_content = loop_item_content.is_record ? loop_item_content.get_datas() : loop_item_content;
+						// self.value(context, 'item at [' + loop_item_index + ']', loop_item_content);
+						// console.debug(loop_item_content, self.name + '.' + context + ':item');
 						
-						// GET CURRENT TYPE
-						var type = default_type;
-						if ( DevaptTypes.is_array(types) && types_count > item_index )
+						// GET CURRENT ITEM TYPE
+						loop_item_type = default_type;
+						if ( DevaptTypes.is_array(arg_types) && types_count > loop_item_index )
 						{
-							type = types[item_index];
-							default_type = type;
+							loop_item_type = arg_types[loop_item_index];
+							default_type = loop_item_type;
 						}
-						if (item === 'divider')
-						{
-							type = 'divider';
-						}
-						if ( DevaptTypes.is_null(type) )
-						{
-							if ( DevaptTypes.is_array(item) )
-							{
-								type = 'record';
-							}
-							else if ( DevaptTypes.is_object(item) )
-							{
-								type = 'object';
-							}
-						}
-						self.value(context, 'type at [' + item_index + ']', type);
-						// console.debug(type, self.name + '.' + context + ':type');
 						
-						if ( DevaptTypes.is_object(item) && type === 'view' && item.value )
-						{
-							item = item.value;
-						}
+						// RENDER EMPTY CONTAINER ITEM NODE
+						loop_item_jqo = self.render_item_node(loop_item_index);
+						loop_item_jqo.addClass('devapt-container-visible');
+						
+						// CREATE NEW CONTAINER ITEM
+						loop_container_item = self.new_item( {item_type:loop_item_type, content:loop_item_content, index:loop_item_index, node:loop_item_jqo} );
+						self.assert_true(context, 'update_item_type at[' + loop_item_index + ']', self.update_item_type(loop_container_item) );
+						self.assert_true(context, 'append_item_type at[' + loop_item_index + ']', self.append_item(loop_container_item) );
+						self.assert_true(context, 'append_item_node at[' + loop_item_index + ']', self.append_item_node(loop_container_item) );
 						
 						// RENDER CURRENT ITEM
-						// TODO REMOVE DEFERRED
-						var arg_deferred = Devapt.defer();
-						// items_defers.push(item_defer); // TODO
-						if ( ! self.render_item(arg_deferred, item, index_start + item_index, type) )
-						{
-							self.error(context, 'get items and types promise done (END): render is rejected');
-							return Devapt.promise_rejected();
-						}
-						
-						// SEND EVENT
-						self.step(context, 'fire event: devapt.container.render.item');
-						self.fire_event('devapt.container.render.item', [index_start + item_index]);
+						loop_item_render_promise = self.render_item(loop_container_item);
+						console.debug(loop_item_render_promise, 'loop_item_render_promise');
+						loop_item_render_promise.then(
+							loop_item_render_success_cb(self, context, loop_item_index),
+							loop_item_render_failure_cb(self, context, loop_item_index)
+						);
 					}
 					
 					
@@ -670,7 +657,7 @@ function(
 					
 					
 					// RENDER IS RESOLVED
-					if ( item_index === items_count )
+					if (loop_item_index === items_count)
 					{
 						self.step(context, 'get items and types promise done (END): render is resolved');
 						return Devapt.promise_resolved();
@@ -707,7 +694,7 @@ function(
 	 * @param {string}		arg_type	item type to append
 	 * @return {object}		deferred promise object
 	 */
-	var cb_append_item = function(arg_item, arg_type)
+/*	var cb_append_item = function(arg_item, arg_type)
 	{
 		var self = this;
 		var context = 'append_item(item,type)';
@@ -753,7 +740,7 @@ function(
 		
 		self.leave(context, Devapt.msg_success_promise);
 		return Devapt.promise_resolved();
-	};
+	};*/
 	
 	
 	/**
@@ -823,7 +810,7 @@ function(
 		properties:{
 		},
 		mixins:[DevaptContainerMixinSelectable, /*DevaptMixinModelCrud,*/ DevaptMixinFiltered, DevaptMixinPagination,
-			DevaptMixinRenderItem, DevaptMixinGetNodes, DevaptMixinContainerUtils, DevaptMixinInput, DevaptMixinCrud]
+			DevaptMixinRenderItem, DevaptMixinGetNodes, DevaptMixinContainerUtils, DevaptMixinInput, DevaptMixinItems, DevaptMixinCrud]
 	};
 	var parent_class = DevaptView;
 	var DevaptContainerClass = new DevaptClass('DevaptContainer', parent_class, class_settings);
@@ -854,7 +841,7 @@ function(
 	DevaptContainerClass.add_public_method('render_items', {}, cb_render_items);
 	DevaptContainerClass.add_public_method('render_items_self', {}, cb_render_items_self);
 	
-	DevaptContainerClass.add_public_method('append_item', {}, cb_append_item);
+	// DevaptContainerClass.add_public_method('append_item', {}, cb_append_item);
 	DevaptContainerClass.add_public_method('fill_items', {}, cb_fill_items);
 	
 	DevaptContainerClass.add_public_method('to_string_self', {}, cb_to_string_self);

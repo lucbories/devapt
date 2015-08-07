@@ -206,18 +206,17 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptContainer, undefined)
 	 * @public
 	 * @memberof			DevaptPGrid
 	 * @desc				Append an item to the view
-	 * @param {object}		arg_item_jqo		item jQuery object
-	 * @param {object}		arg_item_record		item record
+	 * @param {object}		arg_container_item		A plain object of a container item
 	 * @return {nothing}
 	 */
-	var cb_append_item_node = function(arg_item_jqo, arg_item_record)
+	var cb_append_item_node = function(arg_container_item)
 	{
 		var self = this;
-		var context = 'append_item_node(item node, record)';
+		var context = 'append_item_node(item)';
 		self.enter(context, '');
 		
 		
-		var arg_item_index = arg_item_record.index;
+		var arg_item_index = arg_container_item.index;
 		var position = self.items_positions[self.items_positions.length - 1];
 		if (self.items_positions.length > arg_item_index)
 		{
@@ -275,7 +274,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptContainer, undefined)
 				break;
 		}
 		
-		node_jqo.append(arg_item_jqo);
+		node_jqo.append(arg_container_item.node);
 		
 		
 		self.leave(context, Devapt.msg_success);

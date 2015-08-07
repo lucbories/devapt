@@ -174,23 +174,22 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptContainer, undefined)
 	 * @public
 	 * @memberof			DevaptContainer
 	 * @desc				Append an item to the view
-	 * @param {object}		arg_item_jqo		item jQuery object
-	 * @param {object}		arg_item_record		item record
+	 * @param {object}		arg_container_item		A plain object of a container item
 	 * @return {nothing}
 	 */
-	var cb_append_item_node = function(arg_item_jqo, arg_item_record)
+	var cb_append_item_node = function(arg_container_item)
 	{
 		var self = this;
-		var context = 'render_self(deferred)';
+		var context = 'append_item_node(item)';
 		self.enter(context, '');
 		
 		
 		// GET ITEM OPTIONS
-		var item_options = self.get_item_options(arg_item_record.index, { label:'tab ' + arg_item_record.index, active:false });
+		var item_options = self.get_item_options(arg_container_item.index, { label:'tab ' + arg_container_item.index, active:false });
 		
 		
 		// TABS CONTENT
-		self.tabs_content_jqo.append(arg_item_jqo);
+		self.tabs_content_jqo.append(arg_container_item.node);
 		
 		
 		// TABS MENU

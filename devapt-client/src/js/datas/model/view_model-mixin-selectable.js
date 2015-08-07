@@ -339,7 +339,7 @@ function(
 								
 								self.step(context, 'Record not found');
 								console.error(loop_record, self.name + '.' + context + ':not found');
-								console.log(self.recordset, self.name + '.' + context + ':nrecordset');
+								console.log(self.recordset, self.name + '.' + context + ':recordset');
 								return Devapt.promise_rejected(record);
 							}
 						}

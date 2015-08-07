@@ -78,6 +78,9 @@ function(Devapt,
 //			self.is_dirty = ! is_loaded;
 		}
 		
+		// INIT ATTACHED VIEWS MAP
+		self.attached_views_map = {};
+		
 		
 		// CONSTRUCTOR END
 		self.leave(context, 'success');
@@ -726,6 +729,147 @@ function(Devapt,
 	};
 	
 	
+	
+	/* --------------------------------------------- ATTACHED VIEWS ------------------------------------------------ */
+	
+	/**
+	 * @memberof				DevaptRecord
+	 * @public
+	 * @method					self.attach_view(arg_view, arg_options)
+	 * @desc					Register a view which use this record and set some view relative attributes
+	 * @param {object}			arg_view		A View object
+	 * @param {object}			arg_options		Plain object attribtues (optional)
+	 * @return {nothing}
+	 */
+	var cb_attach_view = function (arg_view, arg_options)
+	{
+		var self = this;
+		var context = 'attach_view(view,options)';
+		self.enter(context, '');
+		
+		
+		// CHECK ARGS
+		self.assert_object(context, 'view', arg_view);
+		if (arg_view.name in self.attached_views_map)
+		{
+			self.leave(context, 'Already attached');
+			return true;
+		}
+		
+		// ATTACH
+		var options = DevaptTypes.is_object(arg_options) ? arg_options : {};
+		options.view = arg_view;
+		self.attached_views_map[arg_view.name] = options;
+		
+		
+		self.leave(context, Devapt.msg_success);
+		return true;
+	};
+	
+	/**
+	 * @memberof				DevaptRecord
+	 * @public
+	 * @method					self.detach_view(arg_view)
+	 * @desc					Unegister a view which use this record
+	 * @param {object}			arg_view		A View object
+	 * @return {boolean}
+	 */
+	var cb_detach_view = function (arg_view)
+	{
+		var self = this;
+		var context = 'detach_view(view)';
+		self.enter(context, '');
+		
+		
+		// CHECK ARGS
+		self.assert_object(context, 'view', arg_view);
+		
+		// TEST AND PROCESS
+		if (arg_view.name in self.attached_views_map)
+		{
+			// DETACH VIEW
+			var options = self.attached_views_map[arg_view.name];
+			options.view = null;
+			delete self.attached_views_map[arg_view.name];
+			
+			self.leave(context, Devapt.msg_success);
+			return true;
+		}
+		
+		
+		self.leave(context, Devapt.msg_not_found);
+		return false;
+	};
+	
+	/**
+	 * @memberof				DevaptRecord
+	 * @public
+	 * @method					self.get_view_attributes()
+	 * @desc					Get attached view record attributes
+	 * @param {object}			arg_view		A View object
+	 * @return {object}			
+	 */
+	var cb_get_view_attributes = function (arg_view)
+	{
+		var self = this;
+		var context = 'get_view_attributes(view)';
+		self.enter(context, '');
+		
+		
+		// CHECK ARGS
+		self.assert_object(context, 'view', arg_view);
+		
+		// TEST AND PROCESS
+		if (arg_view.name in self.attached_views_map)
+		{
+			self.leave(context, Devapt.msg_found);
+			return self.attached_views_map[arg_view.name];
+		}
+		
+		
+		self.leave(context, Devapt.msg_not_found);
+		return null;
+	};
+	
+	/**
+	 * @memberof				DevaptRecord
+	 * @public
+	 * @method					self.set_view_attributes()
+	 * @desc					Set/Replace attached view record attributes
+	 * @param {object}			arg_view		A View object
+	 * @param {object}			arg_options		Plain object attribtues (optional)
+	 * @return {nothing}
+	 */
+	var cb_set_view_attributes = function (arg_view, arg_options)
+	{
+		var self = this;
+		var context = 'set_view_attributes(view,options)';
+		self.enter(context, '');
+		
+		
+		// CHECK ARGS
+		self.assert_object(context, 'view', arg_view);
+		
+		// TEST AND PROCESS
+		if (arg_view.name in self.attached_views_map)
+		{
+			var options = DevaptTypes.is_object(arg_options) ? arg_options : {};
+			options.view = arg_view;
+			self.attached_views_map[arg_view.name] = options;
+			
+			self.leave(context, 'Already attached');
+			return true;
+		}
+		
+		
+		self.leave(context, Devapt.msg_not_found);
+		return false;
+	};
+	
+	
+	
+	/* --------------------------------------------- DUMP ------------------------------------------------ */
+	
 	/**
 	 * @memberof			DevaptRecord
 	 * @public
@@ -797,6 +941,11 @@ function(Devapt,
 	
 	DevaptRecordClass.add_public_method('select', {}, cb_select);
 	DevaptRecordClass.add_public_method('unselect', {}, cb_unselect);
+	
+	DevaptRecordClass.add_public_method('attach_view', {}, cb_attach_view);
+	DevaptRecordClass.add_public_method('detach_view', {}, cb_detach_view);
+	DevaptRecordClass.add_public_method('get_view_attributes', {}, cb_get_view_attributes);
+	DevaptRecordClass.add_public_method('set_view_attributes', {}, cb_set_view_attributes);
 	
 	DevaptRecordClass.add_public_method('to_string', {}, cb_to_string);
 	

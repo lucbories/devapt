@@ -85,12 +85,14 @@ function(Devapt, DevaptTypes, DevaptClass)
 			
 			// APPEND RECORD TO THE CONTAINER
 			self.append_item(arg_record.datas, 'object');
+			var item_index = self.items_records.length - 1;
+			var item_jqo = self.items_objects[item_index];
 			
 			// SELECT NEW RECORD
 			self.view_model_promise.then(
 				function(arg_view_model)
 				{
-					var selected_item = { index:null, record: arg_record, node_jqo:null };
+					var selected_item = { index:item_index, record:arg_record, node_jqo:item_jqo };
 					arg_view_model.set_selected_records([selected_item]);
 				}
 			);

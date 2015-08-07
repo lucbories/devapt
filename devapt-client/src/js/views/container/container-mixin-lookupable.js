@@ -62,7 +62,7 @@ function(
 	 * @param {integer}			arg_index		selected item index
 	 * @return {object}			A promise of a selected item record { index:..., node_jqo:..., record:..., label:..., already_selected:... }
 	 */
-	var cb_get_select_item_by_index = function (arg_index)
+/*	var cb_get_select_item_by_index = function (arg_index)
 	{
 		var self = this;
 		var context = 'get_select_item_by_index(index)';
@@ -78,14 +78,23 @@ function(
 		
 		// GET SELECTED JQUERY NODE WITH GIVEN INDEX
 		self.step(context, 'get selected jQuery node');
-		var item_object = self.items_objects[arg_index];
-		if ( ! item_object )
+		if ( ! (arg_index in self.mixin_items_collection_by_index) )
+		{
+			self.error(context + ':node not found');
+			self.leave(context, Devapt.msg_failure);
+			return Devapt.promise_rejected(context + ':node not found');
+		}
+		
+		// GET CONTAINER ITEM
+		var container_item = self.mixin_items_collection_by_index[arg_index];
+		if ( ! container_item )
 		{
 			console.log(arg_index, context + ':index');
 			console.error(self, context);
 			return Devapt.promise_rejected();
 		}
-		selected_item.node_jqo = item_object.node;
+		
+		selected_item.node_jqo = container_item.node;
 		if ( ! selected_item.node_jqo)
 		{
 			self.error(context + ':node not found');
@@ -113,7 +122,7 @@ function(
 		
 		self.leave(context, Devapt.msg_success);
 		return Devapt.promise_resolved(selected_item);
-	};
+	};*/
 	
 	
 	/**
@@ -124,7 +133,7 @@ function(
 	 * @param {string}			arg_label		selected item node label
 	 * @return {object}			A promise of a selected item record { index:..., node_jqo:..., record:..., label:... }
 	 */
-	var cb_get_select_item_by_label = function (arg_label)
+/*	var cb_get_select_item_by_label = function (arg_label)
 	{
 		var self = this;
 		var context = 'get_select_item_by_label(label)';
@@ -180,7 +189,7 @@ function(
 		
 		self.leave(context, Devapt.msg_success);
 		return Devapt.promise_resolved(selected_item);
-	};
+	};*/
 	
 	
 	/**
@@ -386,8 +395,8 @@ function(
 	// METHODS
 	DevaptContainerMixinLookupableClass.infos.ctor = cb_constructor;
 	
-	DevaptContainerMixinLookupableClass.add_public_method('get_select_item_by_index', {}, cb_get_select_item_by_index);
-	DevaptContainerMixinLookupableClass.add_public_method('get_select_item_by_label', {}, cb_get_select_item_by_label);
+	// DevaptContainerMixinLookupableClass.add_public_method('get_select_item_by_index', {}, cb_get_select_item_by_index);
+	// DevaptContainerMixinLookupableClass.add_public_method('get_select_item_by_label', {}, cb_get_select_item_by_label);
 	DevaptContainerMixinLookupableClass.add_public_method('get_select_item_by_record', {}, cb_get_select_item_by_record);
 	
 	

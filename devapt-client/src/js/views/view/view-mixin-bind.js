@@ -651,7 +651,7 @@ function(Devapt, DevaptTypes, DevaptTraces, DevaptClass, DevaptResources)
 							
 							// GET RECORD
 							var item_record = event_opds_map['record'];
-//							console.log(item_record, context + 'ON ACTION CALLBACK:record');
+							console.log(item_record, context + 'ON ACTION CALLBACK:record');
 							
 							// ADD FILTER
 							arg_closure_self.step(context, 'ON ACTION CALLBACK:add field value filter');
@@ -675,6 +675,12 @@ function(Devapt, DevaptTypes, DevaptTraces, DevaptClass, DevaptResources)
 									return record_promise.then(
 										function(record)
 										{
+											// TODO NEWLY CREATED ITEM
+											if (!record)
+											{
+												return Devapt.promise_rejected();
+											}
+											
 											arg_closure_self.value(context, 'recordset record', record);
 											arg_closure_self.assert_object(context, 'record', record);
 											arg_closure_self.assert_true(context, 'record.is_record', record.is_record);

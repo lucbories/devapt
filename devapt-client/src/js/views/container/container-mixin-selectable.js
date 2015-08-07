@@ -94,20 +94,27 @@ function(
 		
 		
 		var selected_item_promise = null;
+		var container_item = null;
 		
 		try
 		{
+			// GET SELECTED ITEM BY ITS INDEX
 			if ( DevaptTypes.to_integer(arg_selection, -1) >= 0 )
 			{
 				self.value(context, 'selected_value is integer', arg_selection);
-				selected_item_promise = self.get_select_item_by_index(arg_selection);
+				// selected_item_promise = self.get_select_item_by_index(arg_selection);
+				container_item = self.get_item_by_index(arg_selection);
+				container_item.is_selected = self.is_selected_item_node(container_item);
+				selected_item_promise = Devapt.promise_resolved(container_item);
 			}
 			
 			// GET SELECTED ITEM BY ITS LABEL
 			else if ( DevaptTypes.is_string(arg_selection) )
 			{
 				self.value(context, 'selected_value is string', arg_selection);
-				selected_item_promise = self.get_select_item_by_label(arg_selection);
+				// selected_item_promise = self.get_select_item_by_label(arg_selection);
+				container_item = self.get_item_by_label(arg_selection);
+				selected_item_promise = Devapt.promise_resolved(container_item);
 			}
 			
 			// GET SELECTED ITEM BY ITS RECORD

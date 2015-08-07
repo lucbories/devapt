@@ -142,26 +142,24 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptContainer, undefined)
 	 * @public
 	 * @memberof			DevaptContainer
 	 * @desc				Append an item to the view
-	 * @param {object}		arg_item_jqo		item jQuery object
-	 * @param {object}		arg_item_record		item record
+	 * @param {object}		arg_container_item		A plain object of a container item
 	 * @return {nothing}
 	 */
-	var cb_append_item_node = function(arg_item_jqo, arg_item_record)
+	var cb_append_item_node = function(arg_container_item)
 	{
 		var self = this;
-		var context = 'append_item_node(jqo,record)';
+		var context = 'append_item_node(item)';
 		self.enter(context, '');
-		self.assert_object(context, 'node', arg_item_jqo);
-		self.assert_object(context, 'record', arg_item_record);
+		self.assert_object(context, 'item', arg_container_item);
 		
 		
 		// GET ITEM OPTIONS
 		self.step(context, 'get item options');
-		var item_options = self.get_item_options(arg_item_record.index, { label:'accordion ' + arg_item_record.index, active:false });
+		var item_options = self.get_item_options(arg_container_item.index, { label:'accordion ' + arg_container_item.index, active:false });
 		
 		// ACCORDION CONTENT
 		self.step(context, 'get id and label');
-		var id = self.name + '_content_' + arg_item_record.index + '_id';
+		var id = self.name + '_content_' + arg_container_item.index + '_id';
 		var item_label = item_options.label;
 		
 		self.step(context, 'init node');
@@ -169,7 +167,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptContainer, undefined)
 		node_jqo.addClass('accordion-navigation');
 		if (item_options.active)
 		{
-			arg_item_jqo.addClass('active');
+			arg_container_item.node.addClass('active');
 		}
 		
 		var a_jqo = $('<a>');
@@ -179,7 +177,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptContainer, undefined)
 		
 		var div_jqo = $('<div>');
 		div_jqo.addClass('content');
-		div_jqo.append(arg_item_jqo);
+		div_jqo.append(arg_container_item.node);
 		
 		node_jqo.append(div_jqo);
 		self.content_jqo.append(node_jqo);

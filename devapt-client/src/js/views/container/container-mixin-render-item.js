@@ -41,7 +41,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptTemplate,
 			
 			self.leave(context, Devapt.msg_default_empty_implementation);
 			self.pop_trace();
-			return $('<div>');
+			return window.$('<div>');
 		},
 		
 		
@@ -92,143 +92,33 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptTemplate,
 		/**
 		 * @public
 		 * @memberof			DevaptMixinRenderItem
-		 * @desc				End the render of the container
-		 * @param {object}			arg_deferred		deferred object
-		 * @param {string|object}	arg_item_content	item content
-		 * @param {integer} 		arg_item_index		item index
-		 * @param {string} 			arg_item_type		item type
+		 * @desc				Append an item to the view
+		 * @param {object}		arg_container_item		A plain object of a container item
 		 * @return {boolean}
 		 */
-		render_item: function(arg_deferred, arg_item_content, arg_item_index, arg_item_type)
+		append_item_node: function(arg_container_item)
 		{
 			var self = this;
-			var context = 'render_item(deferred,content,index,type)';
+			var context = 'append_item_node(item)';
 			self.enter(context, '');
-			self.value(context, 'arg_item_content', arg_item_content);
-			self.value(context, 'arg_item_index', arg_item_index);
 			
 			
-			// CREATE EMPTY ITEMNODE
-			var node_jqo = self.render_item_node(arg_item_index);
-			node_jqo.addClass('devapt-container-visible');
+			// CHECK ARGS
+			self.assert_object(context, 'item', arg_container_item);
+			self.assert_true(context, 'item.is_container_item', arg_container_item.is_container_item);
 			
-			// APPEND ITEM NODE
-			var record = {
-				index: arg_item_index,
-				type: arg_item_type,
-				position: false,
-				is_active:false,
-				width: false,
-				heigth: false,
-				node: node_jqo
-			};
-			// console.log(record, context + ':record:' + self.name);
-			self.items_objects.push(record);
 			
-			// FILL ITEM NODE
-			// console.log(arg_item_type, 'arg_item_type');
-			switch(arg_item_type)
+			if ( ! self.items_jquery_parent)
 			{
-				case 'divider':
-				{
-					if ( ! self.has_divider )
-					{
-						self.leave(context, 'bad divider item');
-						// self.pop_trace();
-						return false;
-					}
-					self.assert_function(context, 'self.render_item_divider', self.render_item_divider);
-					node_jqo = self.render_item_divider(arg_deferred, node_jqo, arg_item_content);
-					break;
-				}
-				case 'html':
-				{
-					self.assert_function(context, 'self.render_item_html', self.render_item_html);
-					node_jqo = self.render_item_html(arg_deferred, node_jqo, arg_item_content);
-					break;
-				}
-				case 'text':
-				{
-					self.assert_function(context, 'self.render_item_text', self.render_item_text);
-					// console.log(node_jqo, context + ':node_jqo text before:' + self.name + ' for ' + arg_item_content);
-					node_jqo = self.render_item_text(arg_deferred, node_jqo, arg_item_content);
-					// console.log(node_jqo, context + ':node_jqo text after:' + self.name + ' for ' + arg_item_content);
-					break;
-				}
-				case 'view':
-				{
-					self.step(context, 'render a view');
-					self.value(context, 'arg_item_content', arg_item_content);
-					
-					try
-					{
-						self.assert_function(context, 'self.render_item_view', self.render_item_view);
-						
-						var view_promise = self.render_item_view(arg_deferred, node_jqo, arg_item_content);
-						// console.log(node_jqo, context + ':node_jqo view after:' + self.name + ' for ' + arg_item_content);
-					}
-					catch(e)
-					{
-						console.error(e, context + ':view');
-					}
-					
-					break;
-				}
-				case 'record':
-				case 'object':
-				{
-					self.assert_function(context, 'self.render_item_object', self.render_item_object);
-					arg_item_content.container_item_index = arg_item_index;
-					node_jqo = self.render_item_object(arg_deferred, node_jqo, arg_item_content);
-					break;
-				}
-				case 'array':
-				{
-					self.assert_function(context, 'self.render_item_array', self.render_item_array);
-					
-					// ITEM RECORD
-					var values_array = arg_item_content;
-					if ( DevaptTypes.is_string(arg_item_content) )
-					{
-						values_array = arg_item_content.split('|', arg_item_content);
-					}
-					
-					if ( ! DevaptTypes.is_array(values_array) )
-					{
-						break;
-					}
-					
-					node_jqo = self.render_item_array(arg_deferred, node_jqo, values_array);
-					break;
-				}
-				case 'callback':
-				{
-					self.assert_function(context, 'self.render_item_callback', self.render_item_callback);
-					node_jqo = self.render_item_callback(arg_deferred, node_jqo, arg_item_content);
-					break;
-				}
-				default:
-				{
-					self.error('bad item type [' + arg_item_type + '] for [' + self.name + ']');
-					self.leave(context, Devapt.msg_failure);
-					return false;
-				}
+				console.error(self.name, 'bad self.items_jquery_parent');
+				console.log(arg_container_item.node, 'arg_item_jqo');
+				
+				self.leave(context, Devapt.msg_failure);
+				return false;
 			}
 			
-			// APPEND ITEM NODE
-			// var record = {
-				// index: arg_item_index,
-				// type: arg_item_type,
-				// position: false,
-				// is_active:false,
-				// width: false,
-				// heigth: false,
-				// node: node_jqo
-			// };
-			// console.log(record, context + ':record:' + self.name);
-			record.node = node_jqo;
-			self.append_item_node(node_jqo, record);
-			// self.items_objects.push(record);
+			self.items_jquery_parent.append(arg_container_item.node);
+			
 			
 			self.leave(context, Devapt.msg_success);
 			return true;
@@ -238,34 +128,32 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptTemplate,
 		/**
 		 * @public
 		 * @memberof			DevaptMixinRenderItem
-		 * @desc				Append an item to the view
-		 * @param {object}		arg_item_jqo		item jQuery object
-		 * @param {object}		arg_item_record		item record (used in child class implementation)
-		 * @return {nothing}
+		 * @desc				Test a an item is selected
+		 * @param {object}		arg_container_item		A plain object of a container item
+		 * @return {boolean}
 		 */
-		append_item_node: function(arg_item_jqo, arg_item_record)
+		is_selected_item_node: function(arg_container_item)
 		{
 			var self = this;
-			var context = 'append_item_node(item node, record)';
+			var context = 'is_selected_item_node(item)';
 			self.enter(context, '');
 			
 			
-			// console.log(arg_item_jqo, context + ':arg_item_jqo:' + self.name);
-			if ( ! self.items_jquery_parent)
-			{
-				console.error(self.name, 'bad self.items_jquery_parent');
-				console.log(arg_item_jqo, 'arg_item_jqo');
-				
-				self.leave(context, Devapt.msg_failure);
-				return false;
-			}
-			self.items_jquery_parent.append(arg_item_jqo);
+			// CHECK ARGS
+			self.assert_object(context, 'item', arg_container_item);
+			self.assert_true(context, 'item.is_container_item', arg_container_item.is_container_item);
+			self.assert_not_empty_string(context, 'item.id', arg_container_item.id);
+			self.assert_integer(context, 'item.index', arg_container_item.index);
+			self.assert_true(context, 'item index >= 0', arg_container_item.index >= 0);
+			
+			
+			arg_container_item.is_selected = self.has_item_node_css_class(arg_container_item.node_jqo, 'selected');
 			
 			
 			self.leave(context, Devapt.msg_success);
 			return true;
 		}
-	}
+	};
 	
 	
 	
@@ -287,8 +175,9 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptTemplate,
 	DevaptMixinRenderItemClass.add_public_method('render_item_node', {}, DevaptMixinRenderItem.render_item_node);
 	DevaptMixinRenderItemClass.add_public_method('render_item_record_node', {}, DevaptMixinRenderItem.render_item_record_node);
 	DevaptMixinRenderItemClass.add_public_method('render_item_field_node', {}, DevaptMixinRenderItem.render_item_field_node);
-	DevaptMixinRenderItemClass.add_public_method('render_item', {}, DevaptMixinRenderItem.render_item);
+	// DevaptMixinRenderItemClass.add_public_method('render_item', {}, DevaptMixinRenderItem.render_item);
 	DevaptMixinRenderItemClass.add_public_method('append_item_node', {}, DevaptMixinRenderItem.append_item_node);
+	DevaptMixinRenderItemClass.add_public_method('is_selected_item_node', {}, DevaptMixinRenderItem.is_selected_item_node);
 	
 	// PROPERTIES
 	
