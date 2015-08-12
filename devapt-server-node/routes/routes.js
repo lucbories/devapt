@@ -52,7 +52,7 @@ var init_cb = function(arg_server)
           }
         }
       );
-      console.log(model.includes, 'model.includes');
+      
       var epilogue_settings = {
         model: model.model,
         endpoints: ['/' + arg_value, '/' + arg_value + '/:' + model.model.primaryKeyAttribute],

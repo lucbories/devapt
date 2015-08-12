@@ -40,15 +40,30 @@ var db_ready_promise = databases.init(server);
 
 
 // INITIALIZE MODELS
-var models_ready = models.init(server);
+var models_ready = db_ready_promise.then(
+  function()
+  {
+    return models.init(server);
+  }
+);
 
 
 // INITIALIZE REST ROUTES
-var routes_promise = routes.init(server);
+var routes_promise = models_ready.then(
+  function()
+  {
+    return routes.init(server);
+  }
+);
 
 
 // INITIALIZE AUTHENTICATION
-var authentication_promise = authentication.init(server);
+var authentication_promise = routes_promise.then(
+  function()
+  {
+    return authentication.init(server);
+  }
+);
 
 
 // RUN TESTS
@@ -87,6 +102,6 @@ models_ready.then(
 
 // EXPORT A PROMISE
 module.exports = {
-  ready_promise: Q.all([db_ready_promise, models_ready, routes_promise, authentication_promise]),
+  ready_promise: authentication_promise, // Q.all([db_ready_promise, models_ready, routes_promise, authentication_promise]),
   server: server
 }

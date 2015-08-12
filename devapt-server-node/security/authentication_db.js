@@ -23,7 +23,16 @@ assert.ok(cfg_auth && cfg_auth.password, 'bad authentication configuration (need
       application.security.authentication.password=password
 */
 // GET AUTHENTICATION CONFIGURATION
+var mode = cfg_auth.mode;
 var model_name = cfg_auth.model;
+var model_username = cfg_auth.username;
+var model_password = cfg_auth.password;
+
+
+// GET MODEL
+var auth_model_obj = models.get_model(model_name);
+assert.ok(auth_model_obj, 'Authentication model resource');
+
 
 // DEFINE EXPORTED MODULE API
 var API = {};
@@ -32,9 +41,7 @@ var API = {};
 // INIT AUTHENTICATION 
 API.init = function(arg_server)
 {
-  this.ready_promise = auth_db.sync({ force:false });
-  
-  return this.ready_promise;
+  return models.ready_promise;
 };
 
 
@@ -42,9 +49,9 @@ API.init = function(arg_server)
 API.authenticate = function(arg_login, arg_password)
 {
   var query = {
-    where: { 'login': arg_login },
-    attributes: ['login', 'password']
+    attributes: [model_username, model_password]
   };
+  query.where[model_username] = arg_login;
   
   var success_cb = function(arg_user)
   {
@@ -61,7 +68,7 @@ API.authenticate = function(arg_login, arg_password)
     return false;
   };
   
-  var promise = users_model.findOne(query);
+  var promise = auth_model_obj.findOne(query);
   promise.then(success_cb, failure_cb);
   
   return promise;

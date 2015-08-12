@@ -22,7 +22,7 @@ module.exports = {
   {
     var self = this;
     
-    console.log(cfg_models, 'cfg_models');
+    console.log('init models');
     
     // LOAD MODELS
     Object.keys(cfg_models).forEach(
@@ -68,7 +68,7 @@ module.exports = {
   {
     var self = this;
     
-    console.log(arg_asso_cfg, 'arg_asso_cfg');
+    // console.log(arg_asso_cfg, 'arg_asso_cfg');
     
     // GET ASSOCIATION MODE
     var mode = arg_asso_cfg.mode;
@@ -104,10 +104,11 @@ module.exports = {
         through: {
           model:many_model_obj
         },
+        as:arg_asso_cfg.name,
         foreignKey: left_model_key,
         constraints: false
       };
-      left_model_record.includes.push( { model: right_model_obj, attributes:right_model_fields } );
+      left_model_record.includes.push( { model: right_model_obj, as:arg_asso_cfg.name, attributes:right_model_fields } );
       left_model_obj.belongsToMany(right_model_obj, asso_settings_left);
       
       
@@ -115,7 +116,6 @@ module.exports = {
       var asso_settings_right = {
         through: {
           model:many_model_obj
-          
         },
         foreignKey: right_model_key,
         constraints: false
@@ -249,6 +249,7 @@ module.exports = {
           function(arg_value, arg_index, arg_array)
           {
             association_record = cfg_associations[arg_value];
+            association_record.name = arg_value;
             association_record.left_model = arg_model_name;
             association_record.left_table = crud_table;
             if (arg_load_associations)
@@ -264,8 +265,11 @@ module.exports = {
       }
       
       
-      // LOOP ON CONNEXIONS
-      return self.add_model(cx_name, arg_model_name, arg_server, model, roles, []);
+      // REGISTER MODEL
+      if (model)
+      {
+        return self.add_model(cx_name, arg_model_name, arg_server, model, roles, []);
+      }
     }
     
     console.error(cfg_models, 'models.cfg_models');

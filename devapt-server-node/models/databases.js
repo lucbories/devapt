@@ -11,24 +11,29 @@ var databases = {};
 
 
 // GET APP CONFIG
-var cfg_auth = app_config.application.security.authentication;
-
-
-// GET CONNEXIONS
-var auth_cx_name = cfg_auth.connexion;
-var cfg_connexions = app_config.application.connexions
+var cfg_connexions = app_config.application.connexions;
+assert.ok(cfg_connexions, 'cfg_connexions');
+// console.log(cfg_connexions, 'app_config.application.connexions');
 
 
 // EXPORT API
 module.exports = {
   init: function(arg_server)
   {
-    if (auth_cx_name)
-    {
-      return this.load_database(auth_cx_name, arg_server);
-    }
+    var self = this;
     
-    return Q(true);
+    console.log('init databases');
+    
+    var promises = [];
+    Object.keys(cfg_connexions).forEach(
+      function(arg_value, arg_index, arg_array)
+      {
+        promises.push( self.load_database(arg_value, arg_server) );
+      }
+    );
+    return Q.all(promises);
+    
+    return Q(false);
   },
   
   
@@ -160,10 +165,10 @@ module.exports = {
   },
   
   
-  get_auth_database: function()
-  {
-    return this.get_database(auth_cx_name);
-  },
+  // get_auth_database: function()
+  // {
+  //   return this.get_database(auth_cx_name);
+  // },
   
   
   get_databases: function()

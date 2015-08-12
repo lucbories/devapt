@@ -1,6 +1,7 @@
 'use strict';
 
-var parser = require('./ini_parser');
+var parser = require('./ini_parser'),
+	assert = require('assert');
 
 
 // DEFINE FILE NAME
@@ -34,15 +35,17 @@ if ('resources' in app_config.application)
 		throw Error(msg);
 	}
 }
-if ('connexions' in app_config.application.resources)
+if ('connexions' in app_config.application.security)
 {
-	var connexions = app_config.application.resources.connexions;
+	var connexions = app_config.application.security.connexions;
 	if ((typeof connexions) !== 'object')
 	{
 		var module_type = (typeof connexions).toString();
 		var msg = 'Bad type for application.resources.connexions [' + module_type + ']';
 		throw Error(msg);
 	}
+	assert.ok(connexions.files, 'connexions.files');
+	connexions = connexions.files;
 	
 	var res_type = 'connexions';
 	// var res_obj = null;
