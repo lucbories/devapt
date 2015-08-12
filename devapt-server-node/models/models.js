@@ -22,11 +22,16 @@ module.exports = {
   {
     var self = this;
     
+    console.log(cfg_models, 'cfg_models');
+    
     // LOAD MODELS
     Object.keys(cfg_models).forEach(
       function(arg_value, arg_index, arg_array)
       {
-        self.load_model(arg_value, arg_server, false);
+        // if ( !!!arg_value.autoload )
+        // {
+          self.load_model(arg_value, arg_server, false);
+        // }
       }
     );
     
@@ -46,44 +51,139 @@ module.exports = {
   
   /*
     // ASSOCIATION CONFIGURATION RECORD FORMAT
-        associations.join_users.mode=many_to_many
-        ; associations.join_users.left.model=MODEL_AUTH_ROLES_USERS (this model)
-        ; associations.join_users.left.key=id_user (primary key field)
-        associations.join_users.right.model=MODEL_AUTH_USERS
-        ; associations.join_users.right.table=users (default model crud table)
-        ; associations.join_users.right.key=id_user
-        
-        // User.hasMany(Role, {through: 'user_has_roles', foreignKey: 'user_role_user_id'});
+        EXAMPLE OF roles ASSOCIATION LOADED CONFIGURATION
+          associations.roles.mode=many_to_many
+          associations.roles.model=MODEL_AUTH_MANY_USERS_ROLES
+          associations.roles.left_key=id_user
+          associations.roles.right_model=MODEL_AUTH_USERS_ROLES
+          associations.roles.right_key=id_role
+          associations.roles.right_fields[]=roles_id_role
+          associations.roles.right_fields[]=role_label
+          
+        AUTO FILLED BY MODEL LOADING:
+          associations.roles.left_model=...
+          associations.roles.left_table=...
    */
   load_association: function(arg_asso_cfg)
   {
+    var self = this;
+    
+    console.log(arg_asso_cfg, 'arg_asso_cfg');
+    
     // GET ASSOCIATION MODE
-    var name = arg_asso_cfg.name;
     var mode = arg_asso_cfg.mode;
     
-    // GET MODELS
-    var left_model = self.get_model(arg_asso_cfg.left.model);
-    assert.ok(left_model, 'bad association left model for name [' + arg_asso_cfg.left.model + ']');
+    // GET LEFT PART
+    var left_model_name = arg_asso_cfg.left_model;
+    var left_model_record = self.get_model(left_model_name);
+    var left_model_key = arg_asso_cfg.left_key;
+    assert.ok(left_model_record && left_model_record.model, 'bad association left model for name [' + left_model_name + ']');
+    var left_model_obj = left_model_record.model;
     
-    var right_model = self.get_model(arg_asso_cfg.right.model);
-    assert.ok(right_model, 'bad association right modelfor name [' + arg_asso_cfg.right.model + ']');
+    // GET RIGHT PART
+    var right_model_name = arg_asso_cfg.right_model;
+    var right_model_record = self.get_model(right_model_name);
+    var right_model_key = arg_asso_cfg.right_key;
+    var right_model_fields = arg_asso_cfg.right_fields;
+    assert.ok(right_model_record && right_model_record.model, 'bad association right model for name [' + right_model_name + ']');
+    var right_model_obj = right_model_record.model;
     
-    // GET TABLES AND FIELDS
-    // var left_table = arg_asso_cfg.left.table;
-    var left_key = arg_asso_cfg.left.key;
+    // GET MANY PART
+    var many_model_name = arg_asso_cfg.model;
+    var many_model_obj = self.get_model(many_model_name);
+    assert.ok(many_model_obj && many_model_obj.model, 'bad association many model for name [' + many_model_name + ']');
+    many_model_obj = many_model_obj.model;
     
-    // var right_table = arg_asso_cfg.right.table;
-    var right_key = arg_asso_cfg.right.key;
-    
-    var middle_table = arg_asso_cfg.middle.table;
     
     if (mode === 'many_to_many')
     {
-      console.log('add many_to_many from %s: %s %s', middle_table, arg_asso_cfg.left.model, arg_asso_cfg.right.model);
+      // console.log('add many_to_many with %s: left:%s right:%s', many_model_table, left_model_table, right_model_table);
       
-      left_model.model.belongsToMany(right_model.model, { through: middle_table, foreignKey: left_key });
-      right_model.model.belongsToMany(left_model.model, { through: middle_table, foreignKey: right_key });
+      // SET ASSOCIATION ON THE LEFT SIDE (QUERYABLE MODEL)
+      var asso_settings_left = {
+        through: {
+          model:many_model_obj
+        },
+        foreignKey: left_model_key,
+        constraints: false
+      };
+      left_model_record.includes.push( { model: right_model_obj, attributes:right_model_fields } );
+      left_model_obj.belongsToMany(right_model_obj, asso_settings_left);
+      
+      
+      // SET RIGHT ASSOCIATION
+      var asso_settings_right = {
+        through: {
+          model:many_model_obj
+          
+        },
+        foreignKey: right_model_key,
+        constraints: false
+      };
+      right_model_obj.belongsToMany(left_model_obj, asso_settings_right);
     }
+  },
+  
+  
+  load_fields: function(arg_model_name, arg_crud_table, arg_fields_cfg)
+  {
+    console.info('loading fields for model', arg_model_name);
+    
+    var self = this;
+    
+    var cfg_field = null;
+    var cfg_type = null;
+    var cfg_label = null;
+    var cfg_is_editable = false
+    var cfg_is_visible = true
+    var cfg_sql_is_primary_key = false
+    var cfg_sql_is_expression = false
+    var cfg_sql_column = null;
+    var cfg_sql_table = null;
+    
+    var fields = {};
+    
+    var field = null;
+    
+    Object.keys(arg_fields_cfg).forEach(
+      function(arg_value, arg_index, arg_array)
+      {
+        cfg_field = arg_fields_cfg[arg_value];
+        
+        cfg_type = self.get_field_type(cfg_field.type);
+        cfg_label = cfg_field.label;
+        cfg_is_editable = self.to_boolean(cfg_field.is_editable, false);
+        cfg_is_visible = self.to_boolean(cfg_field.is_visible, true);
+        cfg_sql_is_primary_key = self.to_boolean(cfg_field.sql_is_primary_key, false);
+        cfg_sql_is_expression = self.to_boolean(cfg_field.sql_is_expression, false);
+        cfg_sql_column = cfg_field.sql_column;
+        cfg_sql_table = cfg_field.sql_table ? cfg_field.sql_table : arg_crud_table;
+        
+        if (cfg_sql_table === arg_crud_table)
+        {
+          field = {
+            field: cfg_sql_column ? cfg_sql_column : arg_value,
+            type:cfg_type,
+            primaryKey: cfg_sql_is_primary_key,
+            autoIncrement:cfg_sql_is_primary_key,
+            allowNull:false
+          };
+        }
+        else
+        {
+          console.error('bad model [%s] configuration for field [%s]', arg_model_name, arg_value);
+          console.log(cfg_field, 'cfg_field');
+          console.log(cfg_sql_table, 'cfg_sql_table');
+          throw Error('error');
+          return;
+        }
+        
+        fields[arg_value] = field;
+        // console.log(field, 'field');
+      }
+    );
+    
+    return fields;
   },
   
   
@@ -99,53 +199,25 @@ module.exports = {
       var cfg_fields = cfg_model.fields;
       // console.log(cfg_model, 'cfg_model');
       
-      var cfg_field = null;
-      var cfg_type = null;
-      var cfg_label = null;
-      var cfg_is_editable = false
-      var cfg_is_visible = true
-      var cfg_sql_is_primary_key = false
-      var cfg_sql_is_expression = false
-      var cfg_sql_column = null;
-      var cfg_sql_table = null;
       
-      var fields = {};
-      
-      var field = null;
       // var driver = cfg_model.driver // IGNORED: NOT USED ON NODES
       var cx_name = cfg_model.connexion;
+      // var engine_name = cfg_model['engine.name']; // IGNORED, FOR CLIENT ONLY
+      // var engine_source= cfg_model['engine.source']; // IGNORED, FOR CLIENT ONLY
+      
+      
+      // GET ASSOCIATIONS
+      var cfg_associations = cfg_model.associations;
+      // console.log(cfg_associations, 'cfg_associations');
+      // var includes = [];
+      
+      
+      // SET ACCESS
       var role_read = cfg_model.role_read;
       var role_create = cfg_model.role_create;
       var role_update = cfg_model.role_update;
       var role_delete = cfg_model.role_delete;
       var crud_table = cfg_model.crud_table;
-      // var engine_name = cfg_model['engine.name']; // IGNORED, FOR CLIENT ONLY
-      // var engine_source= cfg_model['engine.source']; // IGNORED, FOR CLIENT ONLY
-      
-      
-      // ASSOCIATIONS
-      var cfg_associations = cfg_model.associations;
-      
-      
-      /*
-       // It is possible to create foreign keys:
-       bar_id: {
-         type: Sequelize.INTEGER,
-      
-         references: {
-           // This is a reference to another model
-           model: Bar,
-      
-           // This is the column name of the referenced model
-           key: 'id',
-      
-           // This declares when to check the foreign key constraint. PostgreSQL only.
-           deferrable: Sequelize.Deferrable.INITIALLY_IMMEDIATE
-         }
-       }*/
-      
-      
-      // SET ACCESS
       var roles = {
         create:role_create,
         read:role_read,
@@ -155,84 +227,14 @@ module.exports = {
       
       
       // LOOP ON FIELDS
-      var loop_asso = null;
-      Object.keys(cfg_fields).forEach(
-        function(arg_value, arg_index, arg_array)
-        {
-          cfg_field = cfg_fields[arg_value];
-          
-          cfg_type = self.get_field_type(cfg_field.type);
-          cfg_label = cfg_field.label;
-          cfg_is_editable = self.to_boolean(cfg_field.is_editable, false);
-          cfg_is_visible = self.to_boolean(cfg_field.is_visible, true);
-          cfg_sql_is_primary_key = self.to_boolean(cfg_field.sql_is_primary_key, false);
-          cfg_sql_is_expression = self.to_boolean(cfg_field.sql_is_expression, false);
-          cfg_sql_column = cfg_field.sql_column;
-          cfg_sql_table = cfg_field.sql_table ? cfg_field.sql_table : crud_table;
-          
-          if (cfg_sql_table === crud_table)
-          {
-            field = {
-              field: cfg_sql_column ? cfg_sql_column : arg_value,
-              type:cfg_type,
-              primaryKey: cfg_sql_is_primary_key,
-              autoIncrement:cfg_sql_is_primary_key,
-              allowNull:false
-            };
-          }
-          else if (cfg_associations && (cfg_sql_table in cfg_associations) )
-          {
-            loop_asso = cfg_associations[cfg_sql_table];
-            
-            field = {
-              field: loop_asso.source.column,
-              type: Sequelize.INTEGER,
-              
-              references: {
-                // This is a reference to another model
-                model: loop_asso.model,
-            
-                // This is the column name of the referenced model
-                key: loop_asso.target.column,
-            
-                // This declares when to check the foreign key constraint. PostgreSQL only.
-                deferrable: Sequelize.Deferrable.INITIALLY_IMMEDIATE
-              }
-            };
-            fields[arg_value] = field;
-            // console.log(field, 'joined field');
-            
-            field = {
-              field: cfg_sql_column ? cfg_sql_column : arg_value,
-              type: Sequelize.INTEGER,
-              
-              get: function()
-              {
-                // this.
-                console.log('get joined values for %s', arg_value);
-              }
-            };
-            // console.log(field, 'joined field');
-          }
-          else
-          {
-            console.error('bad model [%s] configuration for field [%s]', arg_model_name, arg_value);
-            console.log(cfg_field, 'cfg_field');
-            console.log(cfg_sql_table, 'cfg_sql_table');
-            throw Error('error');
-            return;
-          }
-          
-          // console.log(field, 'field');
-          
-          fields[arg_value] = field;
-        }
-      );
+      var fields = self.load_fields(arg_model_name, crud_table, cfg_fields);
       
       
       // CREATE MODEL
       var settings = {
         timestamps: false,
+        underscored: true,
+        freezeTableName: true,
         tableName: crud_table
       };
       var db = databases.get_database(cx_name);
@@ -243,11 +245,12 @@ module.exports = {
       var association_record = null;
       if (cfg_associations)
       {
-        cfg_associations.forEach(
+        Object.keys(cfg_associations).forEach(
           function(arg_value, arg_index, arg_array)
           {
-             association_record = cfg_associations[arg_index];
-             association_record.name = arg_value;
+            association_record = cfg_associations[arg_value];
+            association_record.left_model = arg_model_name;
+            association_record.left_table = crud_table;
             if (arg_load_associations)
             {
               self.load_association(association_record);
@@ -260,8 +263,9 @@ module.exports = {
         );
       }
       
+      
       // LOOP ON CONNEXIONS
-      return self.add_model(cx_name, arg_model_name, arg_server, model, roles);
+      return self.add_model(cx_name, arg_model_name, arg_server, model, roles, []);
     }
     
     console.error(cfg_models, 'models.cfg_models');
@@ -320,7 +324,7 @@ module.exports = {
   },
   
   
-  add_model: function(arg_cx_name, arg_model_name, arg_server, arg_model, arg_roles)
+  add_model: function(arg_cx_name, arg_model_name, arg_server, arg_model, arg_roles, arg_includes)
   {
     console.info('adding model', arg_model_name);
     
@@ -334,7 +338,8 @@ module.exports = {
       database:arg_cx_name,
       name:arg_model_name,
       model:arg_model,
-      roles:arg_roles
+      roles:arg_roles,
+      includes: arg_includes
     }
     
     return Q(true);

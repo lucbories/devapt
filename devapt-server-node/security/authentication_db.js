@@ -1,75 +1,107 @@
 'use strict';
 
-var auth_db = require('../models/auth_db'),
-    Q = require('q'),
-    users_model = require('../models/users');
+var Q = require('q'),
+    assert = require('assert'),
+    models = require('../models/models'),
+    app_config = require('../config/app_config');
 
 
-// EXPORT AUTHENTICATION OBJECT
-module.exports = {
-  init: function(arg_server)
-  {
-    this.ready_promise = auth_db.sync({ force:false });
-    
-    return this.ready_promise;
-  },
+// GET APP CONFIG
+var cfg_auth = app_config.application.security.authentication;
+assert.ok(cfg_auth && cfg_auth.mode, 'bad authentication configuration (need application.security.authentication.mode)');
+assert.ok(cfg_auth && cfg_auth.model, 'bad authentication configuration (need application.security.authentication.model)');
+assert.ok(cfg_auth && cfg_auth.username, 'bad authentication configuration (need application.security.authentication.username)');
+assert.ok(cfg_auth && cfg_auth.password, 'bad authentication configuration (need application.security.authentication.password)');
+
+
+
+/* EXAMPLE OF CONFIGURATION:
+      application.security.authentication.enabled=true
+      application.security.authentication.mode=database
+      application.security.authentication.model=AUTH_MODEL_USERS
+      application.security.authentication.username=login
+      application.security.authentication.password=password
+*/
+// GET AUTHENTICATION CONFIGURATION
+var model_name = cfg_auth.model;
+
+// DEFINE EXPORTED MODULE API
+var API = {};
+
+
+// INIT AUTHENTICATION 
+API.init = function(arg_server)
+{
+  this.ready_promise = auth_db.sync({ force:false });
   
-  
-  authenticate: function(arg_login, arg_password)
-  {
-    var query = {
-      where: { 'login': arg_login },
-      attributes: ['login', 'password']
-    };
-    
-    var success_cb = function(arg_user)
-    {
-      console.log(arg_user, 'authenticate.user');
-      if (arg_user.password === arg_password)
-      {
-        return true;
-      }
-      return false;
-    };
-    
-    var failure_cb = function()
-    {
-      return false;
-    };
-    
-    var promise = users_model.findOne(query);
-    promise.then(success_cb, failure_cb);
-    
-    return promise;
-  },
-  
-  
-  login: function(arg_login, arg_password)
-  {
-    return this.authenticate(arg_login, arg_password);
-  },
-  
-  
-  logout: function(arg_login)
-  {
-    return Q(false);
-  },
-  
-  
-  get_token: function(arg_login, arg_password)
-  {
-    return Q(null);
-  },
-  
-  
-  renew_token: function(arg_login, arg_token)
-  {
-    return Q(null);
-  },
-  
-  
-  check_token: function(arg_login, arg_token)
-  {
-    return Q(null);
-  }
+  return this.ready_promise;
 };
+
+
+// AUTHENTICATE A USER
+API.authenticate = function(arg_login, arg_password)
+{
+  var query = {
+    where: { 'login': arg_login },
+    attributes: ['login', 'password']
+  };
+  
+  var success_cb = function(arg_user)
+  {
+    console.log(arg_user, 'authenticate.user');
+    if (arg_user.password === arg_password)
+    {
+      return true;
+    }
+    return false;
+  };
+  
+  var failure_cb = function()
+  {
+    return false;
+  };
+  
+  var promise = users_model.findOne(query);
+  promise.then(success_cb, failure_cb);
+  
+  return promise;
+};
+
+
+// LOGIN A USER AND START A SESSION (NOT YET AVAILABLE)
+API.login = function(arg_login, arg_password)
+{
+  return this.authenticate(arg_login, arg_password);
+};
+
+
+// LOGOUT A USER AND END A SESSION (NOT YET AVAILABLE)
+API.logout = function(arg_login)
+{
+  return Q(false);
+};
+
+
+// GET A USER TOKEN
+API.get_token = function(arg_login, arg_password)
+{
+  return Q(null);
+};
+
+
+// RENEW A USER TOKEN
+API.renew_token = function(arg_login, arg_token)
+{
+  return Q(null);
+};
+
+
+// CHECK A USER TOKEN
+API.check_token = function(arg_login, arg_token)
+{
+  return Q(null);
+};
+
+
+// EXPORT AUTHENTICATION MODULE API
+module.exports = API;

@@ -20,3 +20,4 @@ composer.phar
 db_connexions.ini
 unused_*
 todo_*
+old_*

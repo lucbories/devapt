@@ -86,7 +86,7 @@ module.exports = {
         host:cx_obj.host,
         port:cx_obj.port,
         
-        logging:false,
+        logging:console.log, // OR false
         
         pool: {
           max: cx_obj.pool_max ? cx_obj.pool_max : 5,

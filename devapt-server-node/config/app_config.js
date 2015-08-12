@@ -92,6 +92,7 @@ if ('modules' in app_config.application)
 			
 			// LOAD RESOURCES
 			var res_type = null;
+			var res_typeof = null;
 			var res_obj = null;
 			var res_config = null
 			var res_filename = null;
@@ -134,7 +135,8 @@ if ('modules' in app_config.application)
 			{
 				res_type = 'models';
 				res_obj = module_obj[res_type];
-				if ((typeof res_obj) !== 'object')
+				res_typeof = typeof res_obj;
+				if (res_typeof !== 'object')
 				{
 					throw Error('Bad format for application.modules.[' + res_type + ']');
 				}
@@ -168,7 +170,8 @@ if ('modules' in app_config.application)
 			{
 				res_type = 'menubars';
 				res_obj = module_obj[res_type];
-				if ((typeof res_obj) !== 'object')
+				res_typeof = typeof res_obj;
+				if (res_typeof !== 'object')
 				{
 					throw Error('Bad format for application.modules.[' + res_type + ']');
 				}
@@ -202,7 +205,8 @@ if ('modules' in app_config.application)
 			{
 				res_type = 'menus';
 				res_obj = module_obj[res_type];
-				if ((typeof res_obj) !== 'object')
+				res_typeof = typeof res_obj;
+				if (res_typeof !== 'object')
 				{
 					throw Error('Bad format for application.modules.[' + res_type + ']');
 				}

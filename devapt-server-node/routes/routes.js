@@ -40,9 +40,23 @@ var init_cb = function(arg_server)
       roles = model.roles;
       
       // CREATE REST RESOURCE
+      model.includes.forEach(
+        function(arg_value, arg_index, arg_array)
+        {
+          var loop_model = arg_array[arg_index].model;
+          // console.log(loop_model, 'loop_model');
+          // console.log((typeof loop_model), '(typeof loop_model)');
+          if ( (typeof loop_model).toLocaleLowerCase() === 'string' )
+          {
+            model.includes[arg_index].model = models.get_model(loop_model).model;
+          }
+        }
+      );
+      console.log(model.includes, 'model.includes');
       var epilogue_settings = {
         model: model.model,
-        endpoints: ['/' + arg_value, '/' + arg_value + '/:' + model.model.primaryKeyAttribute]
+        endpoints: ['/' + arg_value, '/' + arg_value + '/:' + model.model.primaryKeyAttribute],
+        include: model.includes
       };
       var model_resource = db.epilogue.resource(epilogue_settings);
       
