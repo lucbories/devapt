@@ -10,6 +10,8 @@ var Q = require('q'),
 
 var init_cb = function(arg_server)
 {
+  console.info('init routes');
+  
   var models_names = models.get_models();
   var model = null;
   var db = null;
@@ -118,7 +120,7 @@ var init_cb = function(arg_server)
           throw new ForbiddenError("can't delete an item for model [" + arg_value + "]");
       });
     }
-  )
+  );
   
   return Q(true);
 };

@@ -23,7 +23,7 @@ var db = lowdb(json_full_path, db_settings);
 module.exports = {
   init: function(arg_server)
   {
-    // console.log('init jsonfile authentication');
+    console.info('init authentication (jsonfile)');
     return Q(true);
   },
   

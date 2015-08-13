@@ -2,6 +2,7 @@
 
 var app_config = require('./config/app_config'),
     authentication = require('./security/authentication'),
+    authorization = require('./security/authorization_db'),
     restify = require('restify'),
     databases = require('./models/databases'),
     models = require('./models/models'),
@@ -66,8 +67,40 @@ var authentication_promise = routes_promise.then(
 );
 
 
+// INITIALIZE AUTHORIZATION
+var authorization_promise = authentication_promise.then(
+  function()
+  {
+    return authorization.init(server);
+  }
+);
+
+
 // RUN TESTS
-var auth_test = require('./tests/test_auth').test();
+var test_promise = authorization_promise.then(
+  function()
+  {
+    require('./tests/test_auth').test();
+    
+    var login = 'test1';
+    var result_promise = authorization.has_user_role(login, 'ROLE_AUTH_MENU_MAIN');
+    result_promise.then(
+      function(result)
+      {
+        console.log(result ? 'true' : 'false', login + ' has ROLE_AUTH_MENU_MAIN ?');
+      },
+      function(msg)
+      {
+        console.error(msg, login + ' has ROLE_AUTH_MENU_MAIN ? ERROR MSG');
+      }
+    );
+    
+    return Q(true);
+  }
+);
+
+
+
 // var perf_rest_json = require('./tests/perf_rest_json');
 // perf_rest_json.run_1();
 /*
@@ -102,6 +135,6 @@ models_ready.then(
 
 // EXPORT A PROMISE
 module.exports = {
-  ready_promise: authentication_promise, // Q.all([db_ready_promise, models_ready, routes_promise, authentication_promise]),
+  ready_promise: test_promise, // Q.all([db_ready_promise, models_ready, routes_promise, authentication_promise]),
   server: server
 }

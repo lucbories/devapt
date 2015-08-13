@@ -16,6 +16,7 @@ auth_api.mode = cfg_auth.mode;
 
 auth_api.init = function(arg_server)
   {
+    console.info('init authentication (default)');
     return Q(true);
   };
 

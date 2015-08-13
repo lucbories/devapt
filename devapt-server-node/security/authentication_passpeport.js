@@ -54,6 +54,7 @@ module.exports = {
   
   init: function(arg_app, arg_server)
   {
+    console.info('init authentication (passport)');
     return q.defer().resolve(false);
   },
   /*
