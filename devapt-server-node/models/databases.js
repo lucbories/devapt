@@ -87,6 +87,7 @@ module.exports = {
       // SET DB SETTINGS
       var db_options = {
         dialect:db_dialect,
+        // dialectOptions: { charset:'utf-8'},
         
         host:cx_obj.host,
         port:cx_obj.port,

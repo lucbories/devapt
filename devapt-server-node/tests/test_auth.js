@@ -19,7 +19,7 @@ module.exports = {
     
     var md5 = require('MD5');
     // var received_pwd = 'fe01ce2a7fbac8fafaed7c982a04e229'; // md5('demo')
-    var db_pwd_hash = md5(md5('demo'));
+    var db_pwd_hash = md5('demo');
     // console.log(pwd_hash, 'md5(demo)');
     
     

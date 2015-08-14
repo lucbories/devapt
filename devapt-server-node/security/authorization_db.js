@@ -38,7 +38,15 @@ var auth_model_record = null;
 var API = {};
 
 
-// INIT AUTHORIZATION 
+
+/*
+  ------------------------------------------------------------------------------------------
+  Init authorization feature
+  
+  @param {string}   arg_user_identifier   user identifier (user name or login or email)
+  
+  @return {promise} Returns a promise as resolved(boolean):success, rejected(msg):failure
+*/
 API.init = function(arg_server)
 {
   console.info('init authorization (DB)');
@@ -50,10 +58,19 @@ API.init = function(arg_server)
 };
 
 
-// TEST IF A USER HAS A GIVEN ROLE
-API.has_user_role = function(arg_username, arg_role_name)
+
+/*
+  ------------------------------------------------------------------------------------------
+  @desc             Test if given user has given role
+  
+  @param {string}   arg_user_identifier   user identifier (user name or login or email)
+  @param {string}   arg_role_name         role name
+  
+  @return {promise} Returns a promise as resolved(boolean):success, rejected(msg):failure
+*/
+API.has_user_role = function(arg_user_identifier, arg_role_name)
 {
-  console.info('authorization.has_user_role for user [' + arg_username + '] and role [' + arg_role_name + '] (DB)');
+  console.info('test if given user [' + arg_user_identifier + '] has given role [' + arg_role_name + '] (DB)');
   
   assert.ok(auth_model_record && auth_model_record.model, 'Authorization model resource [' + model_name + ']');
   
@@ -62,8 +79,8 @@ API.has_user_role = function(arg_username, arg_role_name)
     where: {},
     include:{ all:true }
   };
-  query_username.where[model_username] = arg_username;
-  console.log(query_username, 'query_username');
+  query_username.where[model_username] = arg_user_identifier;
+  // console.log(query_username, 'query_username');
   
   // USER PROMISE SUCCESS CALLBACK
   var success_cb = function(arg_user)
@@ -75,7 +92,6 @@ API.has_user_role = function(arg_username, arg_role_name)
     
     var result = user.roles.filter( function(arg_obj) { return arg_obj[model_role] === arg_role_name} );
     // console.log(result, 'result');
-    // console.log(result.length > 0, 'result');
     
     return result.length > 0;
   };
@@ -92,6 +108,8 @@ API.has_user_role = function(arg_username, arg_role_name)
   
   return promise;
 };
+
+
 
 
 // EXPORT AUTHORIZATION MODULE API

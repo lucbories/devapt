@@ -2,7 +2,7 @@
 
 var app_config = require('./config/app_config'),
     authentication = require('./security/authentication'),
-    authorization = require('./security/authorization_db'),
+    authorization = require('./security/authorization'),
     restify = require('restify'),
     databases = require('./models/databases'),
     models = require('./models/models'),
@@ -72,6 +72,27 @@ var authorization_promise = authentication_promise.then(
   function()
   {
     return authorization.init(server);
+  }
+);
+
+
+// RESOURCES ROUTES
+var get_resource = function(arg_name)
+{
+  return { name:arg_name, resource_type:'test' };
+};
+
+authorization_promise.then(
+  function()
+  {
+    server.get('/resources/:name', function (req, res, next)
+      {
+        var resource_name = req.params.name;
+        var resource_json = get_resource(resource_name);
+        res.send(resource_json);
+        return next();
+      }
+    );
   }
 );
 

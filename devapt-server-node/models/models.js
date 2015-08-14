@@ -235,6 +235,7 @@ module.exports = {
         timestamps: false,
         underscored: true,
         freezeTableName: true,
+        // charset:'utf-8',
         tableName: crud_table
       };
       var db = databases.get_database(cx_name);

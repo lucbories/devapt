@@ -52,6 +52,10 @@ API.init = function(arg_server)
 // AUTHENTICATE A USER
 API.authenticate = function(arg_login, arg_password)
 {
+  var self = this;
+  
+  console.info('authenticate a user [' + arg_login + '] with a password (DB)');
+  // console.log(arg_password, 'arg_password');
   assert.ok(auth_model_record && auth_model_record.model, 'Authentication model resource [' + model_name + ']');
   
   var query = {
@@ -63,12 +67,17 @@ API.authenticate = function(arg_login, arg_password)
   
   var success_cb = function(arg_user)
   {
-    // console.log(arg_user, 'authenticate.user');
-    // console.log(arg_password, 'arg_password');
-    if (arg_user.password === arg_password)
+    // console.log(arg_user, 'authenticate.succes_cb');
+    // console.log(arg_user.get('password'), 'arg_user.password');
+    // console.log(self.hash_password(arg_password), 'self.hash_password(arg_password)');
+    
+    if (arg_user.get('password') === self.hash_password(arg_password) )
     {
+      // console.info('passwords match');
       return true;
     }
+    
+    // console.info('passwords are different');
     return false;
   };
   
@@ -77,8 +86,7 @@ API.authenticate = function(arg_login, arg_password)
     return false;
   };
   
-  var promise = auth_model_record.model.findOne(query);
-  promise.then(success_cb, failure_cb);
+  var promise = auth_model_record.model.findOne(query).then(success_cb, failure_cb);
   
   return promise;
 };

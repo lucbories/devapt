@@ -1,7 +1,8 @@
 'use strict';
 
 var Q = require('q'),
-    app_config = require('../config/app_config');
+    app_config = require('../config/app_config'),
+    md5 = require('MD5');
 
 
 // GET APP CONFIG
@@ -9,90 +10,123 @@ var cfg_auth = app_config.application.security.authentication;
 // console.log(cfg_auth, 'cfg_auth');
 
 
+
 // CREATE DEFAULT AUTHENTICATION API
 var auth_api = {}
 auth_api.enabled = cfg_auth.enabled;
 auth_api.mode = cfg_auth.mode;
 
+
 auth_api.init = function(arg_server)
+{
+  console.info('init authentication (default)');
+  return Q(true);
+};
+
+
+auth_api.hash_password = function(arg_password)
+{
+  return md5(arg_password);
+};
+
+
+
+auth_api.get_credentials = function(arg_request)
+{
+  /* AUTHENTICATION FROM HEADER
+    req.username=...
+    req.authorization={
+      scheme: <Basic|Signature|...>,
+      credentials: <Undecoded value of header>,
+      basic: {
+        username: $user
+        password: $password
+      }
+    }
+    */
+  // console.log(arg_request.params, 'request.params');
+  
+  var credentials = { 'user':null, 'password':null };
+  if (!arg_request) return credentials;
+  
+  
+  if (arg_request && arg_request.params && arg_request.params.username && arg_request.params.password)
   {
-    console.info('init authentication (default)');
-    return Q(true);
-  };
+    console.info('authentication with params args');
+    credentials.user = arg_request.params.username;
+    credentials.password = arg_request.params.password;
+    return credentials;
+  }
+  
+  if (arg_request.authorization)
+  {
+    console.info('authentication with basic auth header args');
+    if (!arg_request.authorization.basic) return credentials;
+    credentials.user = arg_request.authorization.basic.username;
+    credentials.password = arg_request.authorization.basic.password;
+    return credentials;
+  }
+  
+  console.error('credentials failure without args');
+  return credentials;
+};
+
+
 
 auth_api.check_request = function(arg_request)
-  {
-    var self = this;
-    
-    /* AUTHENTICATION FROM HEADER
-      req.username=...
-      req.authorization={
-        scheme: <Basic|Signature|...>,
-        credentials: <Undecoded value of header>,
-        basic: {
-          username: $user
-          password: $password
-        }
-      }
-      */
-    // console.log(arg_request.params, 'request.params');
-    
-    if (!arg_request) return false;
-    if (!self.enabled) return true;
-    
-    var username = null;
-    var password = null;
-    
-    if (arg_request && arg_request.params && arg_request.params.username && arg_request.params.password)
-    {
-      console.info('authentication with params args');
-      username = arg_request.params.username;
-      password = arg_request.params.password;
-      return self.authenticate(username, password);
-    }
-    
-    if (arg_request.authorization)
-    {
-      console.info('authentication with basic auth header args');
-      if (!arg_request.authorization.basic) return false;
-      username = arg_request.authorization.basic.username;
-      password = arg_request.authorization.basic.password;
-      return self.authenticate(username, password);
-    }
-    
-    console.error('authentication failure without args');
-    return false;
-  };
+{
+  var self = this;
+  var credentials = self.get_credentials(arg_request);
+  
+  if (!self.enabled) return Q(true);
+  
+  if (!credentials.user || !credentials.password) return Q(false);
+  
+  
+  return self.authenticate(credentials.user, credentials.password);
+};
+
+
   
 auth_api.authenticate = function(arg_login, arg_password)
-  {
-    return Q(true);
-  };
-  
+{
+  console.info('authenticate a user [' + arg_login + '] with a password (default)');
+  return Q(false);
+};
+
+
+
 auth_api.login = function(arg_login, arg_password)
-  {
-    return Q(true);
-  };
-  
+{
+  console.info('login a user [' + arg_login + '] with a password (default)');
+  return Q(false);
+};
+
+
+
 auth_api.logout = function(arg_login)
-  {
-    return Q(true);
-  };
-  
+{
+  console.info('logout a user [' + arg_login + '] (default)');
+  return Q(false);
+};
+
 auth_api.get_token = function(arg_login, arg_password)
-  {
-    return Q(null);
-  };
-  
+{
+  console.info('get token for given user [' + arg_login + '] with a password (default)');
+  return Q(null);
+};
+
 auth_api.renew_token = function(arg_login, arg_token)
-  {
-    return Q(null);
-  };
-  
+{
+  console.info('renew given token for given user [' + arg_login + '] (default)');
+  return Q(null);
+};
+
 auth_api.check_token = function(arg_login, arg_token)
-  {
-    return Q(null);
-  };
+{
+  console.info('check token for given user [' + arg_login + '] with a token (default)');
+  return Q(null);
+};
 
 
 // SET DEFAULT AUTHENTICATION API
