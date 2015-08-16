@@ -36,9 +36,22 @@ server.use(restify.bodyParser());
 server.use(restify.requestLogger());
 
 
+// STATIC FILES ROUTES
+var client_home = /\/.*/;
+var static_cb = restify.serveStatic(
+  {
+    directory: '../devapt-tutorial-1/',
+    default: 'index.html'
+  }
+);
+server.get(client_home, static_cb);
+
+
 // INITIALIZE DATABASES
 var db_ready_promise = databases.init(server);
 
+var test_promise = db_ready_promise;
+/*
 
 // INITIALIZE MODELS
 var models_ready = db_ready_promise.then(
@@ -76,27 +89,6 @@ var authorization_promise = authentication_promise.then(
 );
 
 
-// RESOURCES ROUTES
-var get_resource = function(arg_name)
-{
-  return { name:arg_name, resource_type:'test' };
-};
-
-authorization_promise.then(
-  function()
-  {
-    server.get('/resources/:name', function (req, res, next)
-      {
-        var resource_name = req.params.name;
-        var resource_json = get_resource(resource_name);
-        res.send(resource_json);
-        return next();
-      }
-    );
-  }
-);
-
-
 // RUN TESTS
 var test_promise = authorization_promise.then(
   function()
@@ -119,7 +111,7 @@ var test_promise = authorization_promise.then(
     return Q(true);
   }
 );
-
+*/
 
 
 // var perf_rest_json = require('./tests/perf_rest_json');

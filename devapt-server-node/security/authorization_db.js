@@ -3,7 +3,7 @@
 var Q = require('q'),
     assert = require('assert'),
     models = require('../models/models'),
-    Sequelize = require('Sequelize'),
+    Sequelize = require('sequelize'),
     app_config = require('../config/app_config');
 
 

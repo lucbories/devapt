@@ -25,6 +25,7 @@ module.exports = {
     console.log('init models');
     
     // LOAD MODELS
+    console.log('load models');
     Object.keys(cfg_models).forEach(
       function(arg_value, arg_index, arg_array)
       {
@@ -36,6 +37,7 @@ module.exports = {
     );
     
     // LOAD ASSOCIATIONS
+    console.log('load models associations');
     var association_record = null;
     associations.forEach(
       function(arg_value, arg_index, arg_array)
