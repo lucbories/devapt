@@ -1,0 +1,53 @@
+{
+	"host":"localhost",
+	"port":8080,
+	
+	"apps": {
+		"tutorial-1": {
+			"base":"private/app-tutorial-1/",
+			"config":"app_cfg.ini"
+		}
+	},
+	
+	"modules":[
+		
+	],
+	
+	"security":{
+		"is_readonly":false,
+		
+		"authentication": {
+			"enabled":true,
+			
+			"expiration":60,
+			"secret":"APPPPPPP449++((éç(à",
+			
+			"mode":"database",
+			"model":"MODEL_AUTH_USERS",
+			"username":"login",
+			"password":"password",
+			
+			"alt": {
+			"mode":"jsonfile",
+			"file":"users.json",
+			
+			"login":"demo",
+			"password":"demo"
+			}
+		},
+		
+		"authorization": {
+			"enabled":true,
+			
+			"mode":"database",
+			"model":"MODEL_AUTH_USERS_ROLES",
+			"role":"label",
+			"username":"users_login",
+			
+			"alt": {
+			"mode":"databajsonfilese",
+			"file":"users.json"
+			}
+		}
+	}
+}

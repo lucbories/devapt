@@ -1,0 +1,11 @@
+
+		</article>
+		
+		<footer id="page_footer_id" class="row devapt_display devapt_page_footer">
+			<address>
+				Author: <a href="mailto:contact@libapt.org"><b>Luc BORIES</b></a> <br>
+				Licence: Apache 2
+			</address>
+		</footer>
+	</body>
+</html>
