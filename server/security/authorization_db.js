@@ -2,13 +2,16 @@
 
 var Q = require('q'),
     assert = require('assert'),
-    models = require('../models/models'),
     Sequelize = require('sequelize'),
-    app_config = require('../config/app_config');
+    
+    apps_config = require('../../apps/apps.json'),
+    
+    models = require('../models/models')
+    ;
 
 
 // GET APP CONFIG
-var cfg_auth = app_config.application.security.authorization;
+var cfg_auth = apps_config.security.authorization;
 assert.ok(cfg_auth && cfg_auth.mode, 'bad authorization configuration (need application.security.authorization.mode)');
 assert.ok(cfg_auth && cfg_auth.model, 'bad authorization configuration (need application.security.authorization.model)');
 assert.ok(cfg_auth && cfg_auth.username, 'bad authorization configuration (need application.security.authorization.username)');

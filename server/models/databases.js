@@ -3,27 +3,27 @@
 var Sequelize = require('sequelize'),
     Q = require('q'),
     assert = require('assert'),
-    app_config = require('../config/app_config');
+    apps_config = require('../config/app_config');
 
 
 // INIT DATABASES REPOSITORY
 var databases = {};
 
 
-// GET APP CONFIG
-var cfg_connexions = app_config.application.connexions;
-assert.ok(cfg_connexions, 'cfg_connexions');
-// console.log(cfg_connexions, 'app_config.application.connexions');
 
 
 // EXPORT API
 module.exports = {
-  init: function(arg_server)
+  init: function(arg_server, arg_app_name)
   {
     var self = this;
-    
     console.log('init databases');
     
+    // GET APP CONFIG
+    var cfg_connexions = apps_config.get_connexions();
+    assert.ok(cfg_connexions, 'cfg_connexions');
+
+    // LOOP ON CONNEXIONS CONFIGURATIONS
     var promises = [];
     Object.keys(cfg_connexions).forEach(
       function(arg_value, arg_index, arg_array)
@@ -31,9 +31,8 @@ module.exports = {
         promises.push( self.load_database(arg_value, arg_server) );
       }
     );
-    return Q.all(promises);
     
-    return Q(false);
+    return Q.all(promises);
   },
   
   
@@ -41,6 +40,11 @@ module.exports = {
   {
     console.info('loading database', arg_cx_name);
     
+    // GET APP CONFIG
+    var cfg_connexions = apps_config.get_connexions();
+    assert.ok(cfg_connexions, 'cfg_connexions');
+    
+    // CHECK CONNEXION NAME
     if (arg_cx_name in cfg_connexions)
     {
       var cx_obj = cfg_connexions[arg_cx_name];

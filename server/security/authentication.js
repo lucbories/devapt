@@ -1,12 +1,14 @@
 'use strict';
 
 var Q = require('q'),
-    app_config = require('../config/app_config'),
-    md5 = require('MD5');
+    md5 = require('MD5'),
+    
+    apps_config = require('../../apps/apps.json')
+    ;
 
 
 // GET APP CONFIG
-var cfg_auth = app_config.application.security.authentication;
+var cfg_auth =apps_config.security.authentication;
 // console.log(cfg_auth, 'cfg_auth');
 
 
@@ -77,6 +79,8 @@ auth_api.check_request = function(arg_request)
 {
   var self = this;
   var credentials = self.get_credentials(arg_request);
+  console.log(credentials, 'credentials');
+  console.log(self.enabled, 'enabled');
   
   if (!self.enabled) return Q(true);
   

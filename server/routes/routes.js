@@ -294,11 +294,11 @@ API.init = function(arg_server)
   
   // GET RESOURCES
   console.info('init routes for resources server');
-  var views = app_config.application.views;
-  var models = app_config.application.models;
-  var menubars = app_config.application.menubars;
-  var menus = app_config.application.menus;
-  var connexions = app_config.application.connexions;
+  var views = app_config.get_views();
+  var models = app_config.get_models();
+  var menubars = app_config.get_menubars();
+  var menus = app_config.get_menus();
+  var connexions = app_config.get_connexions();
   
   // ADD RESOURCES SET ROUTES
   load_routes_for_resources_set(arg_server, 'views', views);

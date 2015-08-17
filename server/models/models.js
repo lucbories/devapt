@@ -12,8 +12,6 @@ var models = {};
 var associations = [];
 
 
-// GET MODELS
-var cfg_models = app_config.application.models;
 
 
 // EXPORT API
@@ -21,8 +19,10 @@ module.exports = {
   init: function(arg_server)
   {
     var self = this;
-    
     console.log('init models');
+    
+    // GET MODELS
+    var cfg_models = app_config.get_models();
     
     // LOAD MODELS
     console.log('load models');
@@ -192,8 +192,10 @@ module.exports = {
   load_model: function(arg_model_name, arg_server, arg_load_associations)
   {
     console.info('loading model', arg_model_name);
-    
     var self = this;
+    
+    // GET MODELS
+    var cfg_models = app_config.get_models();
     
     if (arg_model_name in cfg_models)
     {

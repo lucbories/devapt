@@ -2,12 +2,15 @@
 
 var Q = require('q'),
     assert = require('assert'),
-    models = require('../models/models'),
-    app_config = require('../config/app_config');
+    
+    apps_config = require('../../apps/apps.json'),
+    
+    models = require('../models/models')
+    ;
 
 
 // GET APP CONFIG
-var cfg_auth = app_config.application.security.authentication;
+var cfg_auth = apps_config.security.authentication;
 assert.ok(cfg_auth && cfg_auth.mode, 'bad authentication configuration (need application.security.authentication.mode)');
 assert.ok(cfg_auth && cfg_auth.model, 'bad authentication configuration (need application.security.authentication.model)');
 assert.ok(cfg_auth && cfg_auth.username, 'bad authentication configuration (need application.security.authentication.username)');
@@ -63,7 +66,7 @@ API.authenticate = function(arg_login, arg_password)
     attributes: [model_username, model_password]
   };
   query.where[model_username] = arg_login;
-  // console.log(query, 'query');
+  console.log(query, 'query');
   
   var success_cb = function(arg_user)
   {
@@ -81,8 +84,9 @@ API.authenticate = function(arg_login, arg_password)
     return false;
   };
   
-  var failure_cb = function()
+  var failure_cb = function(arg_msg)
   {
+    console.error(arg_msg, 'authenticate.failure_cb');
     return false;
   };
   

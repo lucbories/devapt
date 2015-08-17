@@ -2,10 +2,12 @@
 
 var lowdb = require('lowdb'),
     Q = require('q'),
-    app_config = require('../config/app_config');
+    
+    apps_config = require('../../apps/apps.json')
+    ;
 
 
-var jsonfile = app_config.application.security.authentication.file;
+var jsonfile = apps_config.security.authentication.file;
 var app_base_path = '../';
 var json_full_path = app_base_path + 'devapt-tutorial-1/private/' + jsonfile;
 // console.info(json_full_path, 'jsonfile path');

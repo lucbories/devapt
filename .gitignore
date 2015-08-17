@@ -11,12 +11,8 @@ tmp
 unused
 node_modules
 vendor
-all_zf2
-hello
-devapt-tutorial-2
 extjs-5*
 
-composer.phar
 db_connexions.ini
 unused_*
 todo_*

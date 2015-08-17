@@ -1,11 +1,13 @@
 'use strict';
 
 var Q = require('q'),
-    app_config = require('../config/app_config');
+    
+    apps_config = require('../../apps/apps.json')
+    ;
 
 
 // GET APP CONFIG
-var cfg_auth = app_config.application.security.authorization;
+var cfg_auth = apps_config.security.authorization;
 // console.log(cfg_auth, 'cfg_auth');
 
 
