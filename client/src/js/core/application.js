@@ -13,11 +13,13 @@
 define(
 ['Devapt',
 	'core/traces', 'core/types', 'core/init', 'core/nav-history',
-	'object/classes', 'object/plugin-manager', 'core/security'
+	'object/classes', 'object/plugin-manager', 'core/security',
+	'plugins/plugins'
 ],
 function(Devapt,
 	DevaptTrace, DevaptTypes, DevaptInit, DevaptNavHistory,
-	DevaptClasses, DevaptPluginManager, DevaptSecurity
+	DevaptClasses, DevaptPluginManager, DevaptSecurity,
+	undefined
 )
 {
 	/**
@@ -35,7 +37,7 @@ function(Devapt,
 	 * @static
 	 * @desc		Trace flag
 	 */
-	DevaptApplication.app_trace = false;
+	DevaptApplication.app_trace = true;
 	
 	
 	/**
@@ -128,6 +130,12 @@ function(Devapt,
 			// INIT TRACES
 			DevaptClasses.traces_settings = DevaptApplication.get_value('application.traces.items', []);
 			
+			// CREATE PLUGINS MANAGER
+			Devapt.plugin_manager = DevaptPluginManager.create('plugin_manager');
+			
+			// DO CALLBACK BEFORE PLUGINS INIT
+			DevaptInit.do_before_plugins_init();
+			
 			// LOAD ALL FILES ?
 			var load_all = DevaptApplication.get_value('application.status.load_all_classes', false);
 			if (load_all)
@@ -144,6 +152,9 @@ function(Devapt,
 			{
 				init_plugins_promise = DevaptApplication.init_plugins();
 			}
+			
+			// DO CALLBACK AFTER PLUGINS INIT
+			DevaptInit.do_after_plugins_init();
 		}
 		catch(e)
 		{
@@ -171,7 +182,6 @@ function(Devapt,
 		
 		
 		var promises_array = [];
-		Devapt.plugin_manager = DevaptPluginManager.create('plugin_manager');
 		
 		try
 		{
@@ -253,13 +263,14 @@ function(Devapt,
 		
 		
 		// LAUNCH INIT BACKEND
+		DevaptTrace.trace_step(context, 'LAUNCH INIT BACKEND', DevaptApplication.app_trace);
 		var promise_all = Devapt.promise_all(promises_array);
 		try
 		{
 			promise_all.then(
 				function()
 				{
-					DevaptTrace.trace_step(context, 'ALL PROMISES ARE RESOLVED', DevaptApplication.app_trace);
+					DevaptTrace.trace_step(context, 'LAUNCH INIT BACKEND:ALL PROMISES ARE RESOLVED', DevaptApplication.app_trace);
 					DevaptApplication.init_backend();
 				}
 			);
@@ -299,7 +310,7 @@ function(Devapt,
 			if ( ! DevaptTypes.is_not_empty_str(backend_name) )
 			{
 				DevaptTrace.trace_error(context, 'bad default backend name for configuration value [application.layouts.default.backend.name]', true);
-				return Deavapt.promise_rejected('bad default backend name');
+				return Devapt.promise_rejected('bad default backend name');
 			}
 			
 			// LOAD PLUGIN
@@ -328,7 +339,15 @@ function(Devapt,
 					}
 					
 					// RENDER VIEW
-					return DevaptApplication.render();
+					debugger;
+					DevaptInit.do_before_rendering();
+					
+					return DevaptApplication.render().then(
+						function()
+						{
+							DevaptInit.do_after_rendering();
+						}
+					);
 				}
 			);
 			
@@ -390,7 +409,6 @@ function(Devapt,
 			
 			// INIT DEFAULT VIEW
 			DevaptTrace.trace_step(context, 'OTHERS INIT', DevaptApplication.app_trace);
-			DevaptInit.init();
 			
 			
 			// GET PAGE HASH

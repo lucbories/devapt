@@ -31,7 +31,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptObject)
 	 */
 	var cb_declare_plugin_url = function(arg_name, arg_url)
 	{
-		var self = this;
+		var self = this;self.trace=true;
 		var context = 'declare_plugin_url(name,url)';
 		self.assert_not_empty_string(context, 'plugin name', arg_name);
 		self.assert_not_empty_string(context, 'plugin url', arg_url);
@@ -54,7 +54,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptObject)
 	 */
 	var cb_load_plugin = function(arg_name)
 	{
-		var self = this;
+		var self = this;self.trace=true;
 		var context = 'load_plugin(name)';
 		self.assert_not_empty_string(context, 'plugin name', arg_name);
 		self.enter(context, arg_name);
@@ -68,8 +68,11 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptObject)
 		}
 		
 		// PLUGIN URL IS NOT DECLARED
-		if (! arg_name in self.plugins_urls_map)
+		if (! (arg_name in self.plugins_urls_map) )
 		{
+			self.value(context, 'arg_name', arg_name);
+			self.value(context, 'self.plugins_urls_map', self.plugins_urls_map);
+			
 			self.leave(context, Devapt.msg_failure_promise);
 			return Devapt.promise_rejected();
 		}
@@ -78,6 +81,10 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptObject)
 		var plugin_url = self.plugins_urls_map[arg_name];
 		if ( ! plugin_url )
 		{
+			self.value(context, 'plugin_url', plugin_url);
+			self.value(context, 'arg_name', arg_name);
+			self.value(context, 'self.plugins_urls_map', self.plugins_urls_map);
+			
 			self.leave(context, Devapt.msg_failure_promise);
 			return Devapt.promise_rejected();
 		}

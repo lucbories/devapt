@@ -23,48 +23,57 @@ define( /* [ no depds ], */ function()
 	 * @memberof			DevaptInit
 	 * @public
 	 * @static
-	 * @desc				Array of resources init callbacks
+	 * @desc				Array of callbacks to  be executing before the first content rendering
 	 */
-	DevaptInit.init_resources_by_index	= [];
+	DevaptInit.init_before_rendering	= [];
 
 	/**
 	 * @memberof			DevaptInit
 	 * @public
 	 * @static
-	 * @desc				Associative array of resources init callbacks by name
+	 * @desc				Array of callbacks to  be executing after the first content rendering
 	 */
-	DevaptInit.init_resources_by_name	= {};
+	DevaptInit.init_after_rendering		= [];
+	
+	/**
+	 * @memberof			DevaptInit
+	 * @public
+	 * @static
+	 * @desc				Array of callbacks to  be executing before plugins init
+	 */
+	DevaptInit.init_before_plugins_init	= [];
 
 	/**
 	 * @memberof			DevaptInit
 	 * @public
 	 * @static
-	 * @desc				Array of resources after init callbacks
+	 * @desc				Array of callbacks to  be executing after plugins init
 	 */
-	DevaptInit.init_after_resources		= [];
-
-
+	DevaptInit.init_after_plugins_init		= [];
+	
+	
+	
 	/**
 	 * @memberof			DevaptInit
 	 * @public
 	 * @static
-	 * @method				DevaptInit.init_resource(arg_init_name, arg_init_cb)
-	 * @desc				Register a callback to init some resource at the end of the page loading
+	 * @method				DevaptInit.register_before_rendering(arg_init_name, arg_init_cb)
+	 * @desc				Register a callback to be executing before the first content rendering
 	 * @param {string}		arg_init_name			name of the init operation
 	 * @param {function}	arg_init_cb				resource init callback
 	 * @return {nothing}
 	 */
-	DevaptInit.init_resource = function(arg_init_name, arg_init_cb)
+	DevaptInit.register_before_rendering = function(arg_init_name, arg_init_cb)
 	{
-		console.log('DevaptInit.init_resource [' + arg_init_name + ']');
+		console.info('register DevaptInit.register_before_rendering [%s]', arg_init_name);
 		
-		if ( DevaptInit.init_resources_by_name[arg_init_name] )
+		var do_cb = function()
 		{
-			return;
+			console.info('DevaptInit.register_before_rendering [%s]', arg_init_name);
+			arg_init_cb();
 		}
 		
-		DevaptInit.init_resources_by_name[arg_init_name] = arg_init_cb;
-		DevaptInit.init_resources_by_index.push(arg_init_cb);
+		DevaptInit.init_before_rendering.push(do_cb);
 	}
 
 
@@ -72,17 +81,48 @@ define( /* [ no depds ], */ function()
 	 * @memberof			DevaptInit
 	 * @public
 	 * @static
-	 * @method				DevaptInit.after_resource(arg_init_name, arg_init_cb)
-	 * @desc				Register a callback to execute after the resources init at the end of the page loading
+	 * @method				DevaptInit.register_after_rendering(arg_init_name, arg_init_cb)
+	 * @desc				Register a callback to be executing after the first content rendering
 	 * @param {string}		arg_init_name			name of the init operation
 	 * @param {function}	arg_init_cb				resource init callback
 	 * @return {nothing}
 	 */
-	DevaptInit.after_resource = function(arg_init_name, arg_init_cb)
+	DevaptInit.register_after_rendering = function(arg_init_name, arg_init_cb)
 	{
-		console.log('DevaptInit.after_resource [' + arg_init_name + ']');
+		console.info('register DevaptInit.register_after_rendering [%s]', arg_init_name);
 		
-		DevaptInit.init_after_resources.push(arg_init_cb);
+		var do_cb = function()
+		{
+			console.info('DevaptInit.register_after_rendering [%s]', arg_init_name);
+			arg_init_cb();
+		}
+		
+		DevaptInit.init_after_rendering.push(do_cb);
+	}
+	
+	
+	
+	/**
+	 * @memberof			DevaptInit
+	 * @public
+	 * @static
+	 * @method				DevaptInit.register_before_plugins_init(arg_init_name, arg_init_cb)
+	 * @desc				Register a callback to be executing before plugins init
+	 * @param {string}		arg_init_name			name of the init operation
+	 * @param {function}	arg_init_cb				resource init callback
+	 * @return {nothing}
+	 */
+	DevaptInit.register_before_plugins_init = function(arg_init_name, arg_init_cb)
+	{
+		console.info('register DevaptInit.register_before_plugins_init [%s]', arg_init_name);
+		
+		var do_cb = function()
+		{
+			console.info('DevaptInit.register_before_plugins_init [%s]', arg_init_name);
+			arg_init_cb();
+		}
+		
+		DevaptInit.init_before_plugins_init.push(do_cb);
 	}
 
 
@@ -90,29 +130,111 @@ define( /* [ no depds ], */ function()
 	 * @memberof			DevaptInit
 	 * @public
 	 * @static
-	 * @method				DevaptInit.init()
-	 * @desc				Execute the registered callbacks at the end of the page loading
+	 * @method				DevaptInit.register_after_plugins_init(arg_init_name, arg_init_cb)
+	 * @desc				Register a callback to be executing after plugins init
+	 * @param {string}		arg_init_name			name of the init operation
+	 * @param {function}	arg_init_cb				resource init callback
 	 * @return {nothing}
 	 */
-	DevaptInit.init = function()
+	DevaptInit.register_after_plugins_init = function(arg_init_name, arg_init_cb)
 	{
-		console.info('DevaptInit: init');
+		console.info('register DevaptInit.register_after_plugins_init [%s]', arg_init_name);
 		
-		console.info('DevaptInit: Executing resources init functions');
+		var do_cb = function()
+		{
+			console.info('DevaptInit.register_after_plugins_init [%s]', arg_init_name);
+			arg_init_cb();
+		}
+		
+		DevaptInit.init_after_plugins_init.push(do_cb);
+	}
+	
+
+
+	/**
+	 * @memberof			DevaptInit
+	 * @public
+	 * @static
+	 * @method				DevaptInit.do_before_rendering()
+	 * @desc				Execute the registered callbacks before the content rendering
+	 * @return {nothing}
+	 */
+	DevaptInit.do_before_rendering = function()
+	{
+		console.info('DevaptInit.do_before_rendering');
+		
 		var resource_index = null;
-		for(resource_index in DevaptInit.init_resources_by_index)
+		for(resource_index in DevaptInit.init_before_rendering)
 		{
-			var init_cb = DevaptInit.init_resources_by_index[resource_index];
-			init_cb();
-		}
-		
-		console.info('DevaptInit: Executing last init functions');
-		for(after_index in DevaptInit.init_after_resources)
-		{
-			var init_cb = DevaptInit.init_after_resources[after_index];
+			var init_cb = DevaptInit.init_before_rendering[resource_index];
 			init_cb();
 		}
 	}
 
+
+	/**
+	 * @memberof			DevaptInit
+	 * @public
+	 * @static
+	 * @method				DevaptInit.do_after_rendering()
+	 * @desc				Execute the registered callbacks at the end of the content rendering
+	 * @return {nothing}
+	 */
+	DevaptInit.do_after_rendering = function()
+	{
+		console.info('DevaptInit.do_after_rendering');
+		
+		var resource_index = null;
+		for(resource_index in DevaptInit.init_after_rendering)
+		{
+			var init_cb = DevaptInit.init_after_rendering[resource_index];
+			init_cb();
+		}
+	}
+	
+
+
+	/**
+	 * @memberof			DevaptInit
+	 * @public
+	 * @static
+	 * @method				DevaptInit.do_before_plugins_init()
+	 * @desc				Execute the registered callbacks before plugins init
+	 * @return {nothing}
+	 */
+	DevaptInit.do_before_plugins_init = function()
+	{
+		console.info('DevaptInit.do_before_plugins_init');
+		
+		var resource_index = null;
+		for(resource_index in DevaptInit.init_before_plugins_init)
+		{
+			var init_cb = DevaptInit.init_before_plugins_init[resource_index];
+			init_cb();
+		}
+	}
+
+
+	/**
+	 * @memberof			DevaptInit
+	 * @public
+	 * @static
+	 * @method				DevaptInit.do_after_plugins_init()
+	 * @desc				Execute the registered callbacks at the end plugins init
+	 * @return {nothing}
+	 */
+	DevaptInit.do_after_plugins_init = function()
+	{
+		console.info('DevaptInit.do_after_plugins_init');
+		
+		var resource_index = null;
+		for(resource_index in DevaptInit.init_after_plugins_initg)
+		{
+			var init_cb = DevaptInit.init_after_plugins_init[resource_index];
+			init_cb();
+		}
+	}
+	
+	
 	return DevaptInit;
 } );
