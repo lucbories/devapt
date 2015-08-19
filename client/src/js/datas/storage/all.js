@@ -1,5 +1,5 @@
 /**
- * @file        datas/all.js
+ * @file        datas/storage/all.js
  * @desc        Load all Devapt datas classes
  * @ingroup     DEVAPT_DATAS
  * @date        2015-08-15
@@ -12,11 +12,9 @@
 'use strict';
 define(
 	[
-		'datas/datasource/all',
-		'datas/model/all',
-		'datas/storage/all',
-		'datas/field',
-		'datas/query'
+		'datas/storage/storage',
+		'datas/storage/storage-array',
+		'datas/storage/storage-json'
 	],
 	function()
 	{

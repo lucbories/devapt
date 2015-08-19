@@ -10,13 +10,18 @@
  */
 
 define(
-['Devapt'],
-function(Devapt)
-{
-	var plugin_manager = Devapt.get_plugin_manager();
-	
-	plugin_manager.declare_plugin_url('foundation5', 'plugins/backend-foundation5/plugin');
-	plugin_manager.declare_plugin_url('jquery-ui', 'plugins/backend-jquery-ui/plugin');
-	
-	return ['foundation5', 'jquery-ui'];
-} );
+	['Devapt'],
+	function(Devapt)
+	{
+		var cb = function()
+		{
+			var plugin_manager = Devapt.get_plugin_manager();
+			
+			plugin_manager.declare_plugin_url('foundation5', 'plugins/backend-foundation5/plugin');
+			plugin_manager.declare_plugin_url('jquery-ui', 'plugins/backend-jquery-ui/plugin');
+		};
+		setTimeout(cb, 100);
+		
+		return ['foundation5', 'jquery-ui'];
+	}
+);

@@ -95,6 +95,29 @@ API.load_all_apps = function(arg_server)
 	var app_loader_promise = null;
 	var all_loader_promises = [];
 	
+	
+	// REGISTER JS ASSETS DEV ROUTE
+	app_static_cb = restify.serveStatic(
+		{
+			directory: '../'/*,
+			default: 'index.html'*/
+		}
+	);
+	arg_server.get('/client/.*', app_static_cb);
+	console.info('registering static route for application dev JS [%s] at url [%s]', '../client/', '/client/.*');
+	
+	
+	// REGISTER JS ASSETS PRODUCTION ROUTE
+	app_static_cb = restify.serveStatic(
+		{
+			directory: app_public_dir/*,
+			default: 'index.html'*/
+		}
+	);
+	arg_server.get('/assets/js/.*', app_static_cb);
+	console.info('registering static route for application dev JS [%s] at url [%s]', '../apps/public/', '/assets/js/.*');
+	
+	
 	// LOOP ON REGISTERED APPLICATIONS AND LOAD EACH APPLICATION CONFIGURATION
 	var apps_list = apps_config.apps;
 	Object.keys(apps_list).forEach(
@@ -116,11 +139,10 @@ API.load_all_apps = function(arg_server)
 				{
 					console.info('registering static files for application [%s] at url [%s]', arg_value, arg_loaded_cfg.url.base);
 					
+					// REGISTER STATIC FILES ROUTES FOR APPLICATION
 					app_url_base = arg_loaded_cfg.url.base + '.*';
 					app_url_default = arg_loaded_cfg.url.default;
 					app_url_default = (app_url_default ? app_url_default : 'index.html');
-					
-					// CHECK URL BASE
 					assert.ok( (typeof app_url_base) === 'string' && app_url_base.length > 3);
 					
 					app_static_cb = restify.serveStatic(
@@ -129,10 +151,23 @@ API.load_all_apps = function(arg_server)
 							default: app_url_default
 						}
 					);
-					
 					arg_server.get(app_url_base, app_static_cb);
-					
 					console.info('new static route at [%s] default [%s] in [%s]', app_url_base, app_url_default, app_public_dir);
+					
+					
+					// REGISTER APPLICATION CONFIGURATION ROUTE FOR APPLICATION
+					app_url_base = '/resources/applications/' + arg_value;
+					app_static_cb = function (req, res, next)
+					{
+						// PREPARE AND SEND OUTPUT
+						var safe_config = arg_loaded_cfg;
+						safe_config.connexions = null;
+						var output_json = JSON.stringify(safe_config);
+						res.send(output_json);
+						return next();
+					};
+					arg_server.get(app_url_base, app_static_cb);
+					console.info('new application [%s] configuration route [%s]', arg_value, app_url_base);
 				}
 			);
 		}

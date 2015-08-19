@@ -289,7 +289,7 @@ function load_app_config(arg_file_path_name, arg_base_dir, arg_force_reload)
 	console.info('loading application configuration end');
 	
 	return Q(app_config.application);
-} 
+}
 
 
 // EXPORT CONFIG API

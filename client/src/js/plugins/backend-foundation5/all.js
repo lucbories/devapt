@@ -1,7 +1,7 @@
 /**
- * @file        datas/all.js
- * @desc        Load all Devapt datas classes
- * @ingroup     DEVAPT_DATAS
+ * @file        plugins/backend-foundation5/all.js
+ * @desc        Load all Devapt plugin classes
+ * @ingroup     DEVAPT_FOUNDATION5
  * @date        2015-08-15
  * @version		1.0.x
  * @author      Luc BORIES
@@ -12,11 +12,9 @@
 'use strict';
 define(
 	[
-		'datas/datasource/all',
-		'datas/model/all',
-		'datas/storage/all',
-		'datas/field',
-		'datas/query'
+		'plugins/backend-foundation5/backend',
+		'plugins/backend-foundation5/views/all',
+		'plugins/backend-foundation5/containers/all'
 	],
 	function()
 	{

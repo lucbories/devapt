@@ -1,7 +1,7 @@
 /**
- * @file        datas/all.js
- * @desc        Load all Devapt datas classes
- * @ingroup     DEVAPT_DATAS
+ * @file        plugins/backend-jquery-ui/all.js
+ * @desc        Load all Devapt plugin classes
+ * @ingroup     DEVAPT_JQUERYUI
  * @date        2015-08-15
  * @version		1.0.x
  * @author      Luc BORIES
@@ -11,14 +11,8 @@
 
 'use strict';
 define(
-	[
-		'datas/datasource/all',
-		'datas/model/all',
-		'datas/storage/all',
-		'datas/field',
-		'datas/query'
-	],
-	function()
-	{
-	}
+['plugins/backend-jquery-ui/plugin', 'plugins/backend-jquery-ui/views/window'],
+function()
+{
+}
 );

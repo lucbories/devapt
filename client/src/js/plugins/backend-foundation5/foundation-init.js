@@ -13,22 +13,24 @@
 define(['modernizr', 'Devapt', 'core/application', 'foundation-min'],
 function(m, Devapt, DevaptApplication, undefined)
 {
+	var foundation_version = '5.x.x';
 	console.info('Loading Foundation ' + foundation_version + ' Init');
 	
-	var url_base	= DevaptApplication.get_url_base();
-	Devapt.use_css(url_base + '../../devapt-client/lib/foundation-' + foundation_version + '/css/foundation.css');
-	Devapt.use_css(url_base + '../modules/home/public/css/app.css');
 	
 	function libapt_foundation_init($, window)
 	{
 		console.info('Init Foundation ' + foundation_version + ' features');
 		
+		var url_base	= DevaptApplication.get_url_base();
+		Devapt.use_css(url_base + '../../devapt-client/lib/foundation-' + foundation_version + '/css/foundation.css');
+		Devapt.use_css(url_base + '../modules/home/public/css/app.css');
+		
 		'use strict';
 		
 		var $doc = $(document);
-		Modernizr = window.Modernizr;
+		var Modernizr = window.Modernizr;
 		
-		Foundation.global.namespace = false;
+		$.Foundation.global.namespace = false;
 		$doc.foundation();
 		
 		// Hide address bar on mobile devices
@@ -58,7 +60,12 @@ function(m, Devapt, DevaptApplication, undefined)
 			console.info('Init Foundation ' + foundation_version + ' widgets');
 			
 			var $ = Devapt.jQuery();
-			libapt_foundation_init($, window);
+			
+			var cb = function()
+			{
+				libapt_foundation_init($, window);
+			}
+			setTimeout(cb, 100);
 		}
 	);
 	

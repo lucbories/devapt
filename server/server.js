@@ -22,7 +22,12 @@ var server_port = 8080;
 // CREATE REST SERVER
 console.info('creating server');
 var server = restify.createServer();
+
+// var acceptable = server.acceptable.concat(['application/x-es-module */*', 'application/x-es-module']);
+// console.log(acceptable, 'acceptable');
+// server.use(restify.acceptParser(acceptable));
 server.use(restify.acceptParser(server.acceptable));
+
 server.use(restify.authorizationParser());
 server.use(restify.queryParser());
 server.use(restify.jsonp());

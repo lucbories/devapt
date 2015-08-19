@@ -99,6 +99,7 @@ define( /* [ no depds ], */ function()
 		console.info('DevaptInit: init');
 		
 		console.info('DevaptInit: Executing resources init functions');
+		var resource_index = null;
 		for(resource_index in DevaptInit.init_resources_by_index)
 		{
 			var init_cb = DevaptInit.init_resources_by_index[resource_index];

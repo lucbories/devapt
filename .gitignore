@@ -7,6 +7,7 @@
 .buildpath
 npm-debug.log
 
+dist/*
 tmp
 unused
 node_modules

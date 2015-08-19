@@ -67,8 +67,16 @@
  */
 
 'use strict';
+
 define('Devapt',
-['jquery', 'core/init', 'md5', 'sha1', 'Q', 'factory'],
+	[
+		'jquery',
+		'core/init',
+		'md5',
+		'sha1',
+		'Q',
+		'factory'
+	],
 function($, DevaptInit, CryptoMD5, CryptoSHA1, Q, DevaptFactory)
 {
 	console.info('Loading Devapt bootstrap');

@@ -10,11 +10,25 @@
  */
 
 define(
-['Devapt', 'core/application', 'core/cache', 'core/compatibility',
-	'core/inheritance', 'core/init',
-	'core/nav-history', 'core/resources', 'core/template',
-	'core/traces', 'core/traces-console', 'core/traces-memory',
-	'core/types', 'core/types-is', 'core/types-to', 'core/utils'],
-function()
-{
-} );
+	[
+		'Devapt',
+		'core/application',
+		'core/cache',
+		'core/compatibility',
+		'core/inheritance',
+		'core/init',
+		'core/nav-history',
+		'core/resources',
+		'core/template',
+		'core/traces',
+		'core/traces-console',
+		'core/traces-memory',
+		'core/types',
+		'core/types-is',
+		'core/types-to',
+		'core/utils'
+	],
+	function()
+	{
+	}
+);

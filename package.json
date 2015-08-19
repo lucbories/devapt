@@ -19,6 +19,7 @@
   "license": "Apache 2",
   "dependencies": {
     "MD5": "^1.3.0",
+    "babel-core": "^5.8.22",
     "epilogue": "^0.5.1",
     "ini": "^1.3.4",
     "lowdb": "^0.10.2",
@@ -29,6 +30,19 @@
     "passport-restify": "^1.0.0",
     "q": "^1.4.1",
     "restify": "^3.0.3",
-    "sequelize": "^3.5.1"
+    "sequelize": "^3.5.1",
+    "systemjs": "^0.18.10",
+    "systemjs-builder": "^0.13.1"
+  },
+  "devDependencies": {
+    "broccoli": "^0.16.7",
+    "broccoli-babel-transpiler": "^5.4.2",
+    "broccoli-cli": "^1.0.0",
+    "broccoli-concat": "0.0.13",
+    "broccoli-merge-trees": "^0.2.3",
+    "broccoli-requirejs": "^1.1.0",
+    "broccoli-uglify-js": "^0.1.3",
+    "jspm": "^0.15.7",
+    "requirejs": "^2.1.20"
   }
 }
