@@ -339,7 +339,6 @@ function(Devapt,
 					}
 					
 					// RENDER VIEW
-					debugger;
 					DevaptInit.do_before_rendering();
 					
 					return DevaptApplication.render().then(
@@ -931,14 +930,14 @@ function(Devapt,
 		{
 			// GET LOGGED USER RECORD
 			var record = DevaptApplication.get_logged_user();
-			if ( ! record || ! record.token )
+			if ( ! record /*|| ! record.token*/ )
 			{
 				DevaptTrace.trace_leave(context, Devapt.msg_failure, DevaptApplication.app_trace);
 				return false;
 			}
 			
 			// CHECK RECORD IS OK AND HAS TOKEN
-			value = record.status === 'ok' && DevaptTypes.is_not_empty_str(record.token);
+			value = record.status === 'ok' /*&& DevaptTypes.is_not_empty_str(record.token)*/;
 			DevaptTrace.trace_var(context, 'check authentication status and token', value, DevaptApplication.app_trace);
 			
 			// CHECK EXPIRATION

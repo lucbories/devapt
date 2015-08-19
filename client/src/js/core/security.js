@@ -78,14 +78,14 @@ function(Devapt, DevaptTrace, DevaptTypes, DevaptNavHistory, DevaptCache)
 	    var hashed_password = Devapt.hash('MD5', arg_password);
 		DevaptTrace.trace_value(context, 'hashed_password', hashed_password, DevaptSecurity.security_trace);
 		
-		var url_base = Devapt.app.get_url_base(); 
-		var url = url_base + 'security/authentication/login';
+		// var url_base = Devapt.app.get_url_base(); 
+		var url = '/security/authenticate';
 		
 		var datas = {
-			login:arg_login,
+			username:arg_login,
 			password:hashed_password
 		};
-		var json_datas = JSON.stringify(datas);
+		// var json_datas = JSON.stringify(datas);
 		
 		var ajax_settings = {
 			contentType	: 'application/x-www-form-urlencoded; charset=utf-8',
@@ -97,7 +97,7 @@ function(Devapt, DevaptTrace, DevaptTypes, DevaptNavHistory, DevaptCache)
 		
 		DevaptSecurity.delete_logged_user();
 		
-		var ajax_promise = Devapt.ajax_post(url, json_datas, ajax_settings, null);
+		var ajax_promise = Devapt.ajax_get(url, datas, ajax_settings, null);
 		
 		// ON SUCCESS
 		ajax_promise.then(
@@ -108,11 +108,11 @@ function(Devapt, DevaptTrace, DevaptTypes, DevaptNavHistory, DevaptCache)
 				
 				var record =
 				{
-					status: result.status,
-					login: result.login,
+					status: 'ok',
+					login: arg_login,
 					password: hashed_password,
-					expire: result.expire,
-					token: result.token
+					expire: Date.now() + 3600 * 1000, // TODO 3600 sec = 1 hour
+					token: null
 				};
 				DevaptSecurity.set_logged_user(record);
 				

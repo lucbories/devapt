@@ -162,8 +162,9 @@ API.load_all_apps = function(arg_server)
 						// PREPARE AND SEND OUTPUT
 						var safe_config = arg_loaded_cfg;
 						safe_config.connexions = null;
-						var output_json = JSON.stringify(safe_config);
-						res.send(output_json);
+						// var output_json = JSON.stringify(safe_config);
+						res.contentType = 'json';
+						res.send(safe_config);
 						return next();
 					};
 					arg_server.get(app_url_base, app_static_cb);

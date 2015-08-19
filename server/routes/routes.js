@@ -231,15 +231,16 @@ function load_routes_for_resources_set(arg_server, arg_set_name, arg_set_obj)
       var resources_list = Object.keys(arg_set_obj);
       
       // PREPARE AND SEND OUTPUT
-      var output_json = JSON.stringify(resources_list);
-      res.send(output_json);
+      // var output_json = JSON.stringify(resources_list);
+      res.contentType = 'json';
+      res.send({ resources: resources_list });
       return next();
     }
   );
   
   // ADD RESOURCES GET ROUTES
   arg_server.get('/resources/' + arg_set_name + '/:name',
-    security_restify_cb(null, 'ROLE_AUTH_USER_READ', 'list'),
+    security_restify_cb(null, 'ROLE_AUTH_USER_READ', 'list'), // TODO ROLE FOR ACCESS
     function (req, res, next) 
     {
       var resource_name = req.params.name;
@@ -265,9 +266,55 @@ function load_routes_for_resources_set(arg_server, arg_set_name, arg_set_obj)
       }
       
       // PREPARE AND SEND OUTPUT
-      var output_json = JSON.stringify(resource_def);
-      res.send(output_json);
+      // var output_json = JSON.stringify(resource_def);
+      res.contentType = 'json';
+      res.send(resource_def);
       return next();
+    }
+  );
+  
+  // ADD RESOURCES GET ROUTES
+  arg_server.get('/resources/:name',
+    security_restify_cb(null, 'ROLE_AUTH_USER_READ', 'list'), // TODO ROLE FOR ACCESS
+    function (req, res, next) 
+    {
+      var resource_name = req.params.name;
+      
+      var resources_sets = ['views', 'models', 'menubars', 'menus', 'connexions'];
+      var set_name = null;
+      var set_index = null;
+      for(set_index in resources_sets)
+      {
+        set_name = resources_sets[set_index];
+        var resource_def = app_config.get_resource(set_name, resource_name);
+        
+        // NOT FOUND IN CURRENT SET
+        if (! resource_def)
+        {
+          continue;
+        }
+        
+        // RESOURCE DEFINITION FOUND IN CURRENT SET
+        if (set_name === 'connexions')
+        {
+          resource_def.host = 'host';
+          resource_def.port = 'port';
+          resource_def.user_name = 'user';
+          resource_def.user_pwd = '******';
+        }
+        
+        // PREPARE AND SEND OUTPUT
+        // var output_json = JSON.stringify(resource_def);
+        res.contentType = 'json';
+        res.send(resource_def);
+        return next();
+      }
+      
+      // NOT FOUND IN ALL SETS
+      var error_msg = 'resource not found [%s] in all resources sets';
+      console.error(error_msg, resource_name);
+      var error = new NotFoundError(error_msg, resource_name);
+      return next(error);
     }
   );
 }
@@ -278,6 +325,46 @@ API.init = function(arg_server)
 {
   console.info('init routes');
   var models_module = models = require('../models/models');
+  
+  
+  // REGISTER SECURITY ROUTES FOR ALL APPLICATIONS
+  var route_url = '/security/authenticate';
+  var route_cb = function (arg_req, arg_res, arg_next)
+  {
+    var failure_cb = function(arg_msg)
+    {
+      var failure_msg = 'Authentication failure';
+      // var error = new ForbiddenError(failure_msg + ":[" + arg_msg + ']');
+      // return arg_next(error);
+      console.error(failure_msg);
+      arg_res.status(401);
+      arg_res.send(failure_msg);
+      return arg_next();
+    };
+    
+    var success_cb = function(arg_authenticated)
+    {
+      var authentication_ok_msg = 'Authentication is accepted';
+      var authentication_ko_msg = 'Authentication is rejected';
+      if (! arg_authenticated)
+      {
+        console.error(authentication_ko_msg);
+        arg_res.status(401);
+        arg_res.send(authentication_ko_msg);
+        return arg_next();
+      }
+      arg_res.status(200);
+      arg_res.send(authentication_ok_msg);
+      return arg_next();
+    }
+    
+    // PREPARE AND SEND OUTPUT
+    authentication.check_request(arg_req).then(success_cb, failure_cb);
+  };
+  
+  arg_server.get(route_url, route_cb);
+  console.info('new security route [%s] configuration route [%s]', 'authenticate', route_url);
+  
   
   // ADD MODELS REST ROUTES
   console.info('init routes for REST server');

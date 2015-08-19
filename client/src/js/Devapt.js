@@ -215,7 +215,7 @@ function($, DevaptInit, CryptoMD5, CryptoSHA1, Q, DevaptFactory)
 	Devapt.ajax = function(arg_method, arg_url, arg_datas, arg_options, arg_token)
 	{
 		// CHECK AJAX METHOD
-		if (arg_method !== 'GET' & arg_method !== 'PUT' && arg_method !== 'POST' && arg_method !== 'DELETE')
+		if (arg_method !== 'GET' && arg_method !== 'PUT' && arg_method !== 'POST' && arg_method !== 'DELETE')
 		{
 			console.error(arg_method, 'Devapt.ajax failure: bad method');
 			return Devapt.promise_rejected();
@@ -225,6 +225,17 @@ function($, DevaptInit, CryptoMD5, CryptoSHA1, Q, DevaptFactory)
 		if (arg_token)
 		{
 			arg_url = Devapt.url(arg_url, arg_token);
+		}
+		else
+		{
+			if (Devapt.app)
+			{
+				var credentials = Devapt.app.get_logged_user();
+				arg_token = 'username=' + credentials.login + '&password=' + credentials.password;
+				var link = ( arg_url.indexOf('?') > 0 ) ? '&' : '?';
+				
+				arg_url = arg_url + link + arg_token;
+			}
 		}
 		
 		// DEFAULT AJAX OPTIONS
