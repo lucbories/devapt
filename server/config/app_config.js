@@ -95,6 +95,7 @@ function load_app_config(arg_file_path_name, arg_base_dir, arg_force_reload)
 					function(arg_res_name, arg_res_index, arg_res_array)
 					{
 						app_config.application[res_type][arg_res_name] = res_config[arg_res_name];
+						app_config.application[res_type][arg_res_name].name = arg_res_name;
 						loaded_configs[res_type][arg_res_name] = res_config[arg_res_name];
 					}
 				);
@@ -160,6 +161,7 @@ function load_app_config(arg_file_path_name, arg_base_dir, arg_force_reload)
 								{
 									res_cfg = res_config.application[res_type][arg_res_name];
 									app_config.application[res_type][arg_res_name] = parser.split_all_keys(res_cfg);
+									app_config.application[res_type][arg_res_name].name = arg_res_name;
 									loaded_configs[res_type][arg_res_name] = app_config.application[res_type][arg_res_name];
 								}
 							);
@@ -195,7 +197,7 @@ function load_app_config(arg_file_path_name, arg_base_dir, arg_force_reload)
 								{
 									res_cfg = res_config.application[res_type][arg_res_name];
 									app_config.application[res_type][arg_res_name] = parser.split_all_keys(res_cfg);
-									// app_config.application[res_type][arg_res_name] = res_config.application[res_type][arg_res_name];
+									app_config.application[res_type][arg_res_name].name = arg_res_name;
 									loaded_configs[res_type][arg_res_name] = app_config.application[res_type][arg_res_name];
 								}
 							);
@@ -231,7 +233,7 @@ function load_app_config(arg_file_path_name, arg_base_dir, arg_force_reload)
 								{
 									res_cfg = res_config.application[res_type][arg_res_name];
 									app_config.application[res_type][arg_res_name] = parser.split_all_keys(res_cfg);
-									// app_config.application[res_type][arg_res_name] = res_config.application[res_type][arg_res_name];
+									app_config.application[res_type][arg_res_name].name = arg_res_name;
 									loaded_configs[res_type][arg_res_name] = app_config.application[res_type][arg_res_name];
 								}
 							);
@@ -267,7 +269,7 @@ function load_app_config(arg_file_path_name, arg_base_dir, arg_force_reload)
 								{
 									res_cfg = res_config.application[res_type][arg_res_name];
 									app_config.application[res_type][arg_res_name] = parser.split_all_keys(res_cfg);
-									// app_config.application[res_type][arg_res_name] = res_config.application[res_type][arg_res_name];
+									app_config.application[res_type][arg_res_name].name = arg_res_name;
 									loaded_configs[res_type][arg_res_name] = app_config.application[res_type][arg_res_name];
 								}
 							);

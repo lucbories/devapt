@@ -306,11 +306,11 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptClasses, DevaptCache)
 			{
 				// BUILD RESOURCE INSTANCE FROM RESOURCE DECLARATION
 				DevaptTraces.trace_step(context, 'promise is resolved: resource declaration is found', DevaptResources.resources_trace);
-				console.log(arg_declaration, 'resource declaration');
+				// console.log(arg_declaration, 'resource declaration');
+				
 				var class_id = arg_declaration.class_name ? arg_declaration.class_name : arg_declaration.class_type;
-				console.log(arg_declaration.class_name, 'resource arg_declaration.class_name');
-				console.log(typeof (arg_declaration), 'resource typeof arg_declaration');
-				console.log(class_id, 'resource class_id');
+				// console.log(class_id, 'resource class_id');
+				
 				return Devapt.create(class_id, arg_declaration);
 			}
 		);

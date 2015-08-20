@@ -57,15 +57,15 @@
 				function($, DevaptApplication)
 				{
 					$.get('/resources/applications/tutorial-1').then(
-						function(json_app_text)
+						function(json_app_cfg)
 						{
-							var json_app_cfg = JSON.parse(json_app_text);
+							// var json_app_cfg = JSON.parse(json_app_text);
 							var result = DevaptApplication.set_config(json_app_cfg);
 							// console.log(result, 'app_config result');
 							// console.log(DevaptApplication.app_config, 'app_config');
 							if (!result)
 							{
-								console.error(json_app_text, 'json_app_text');
+								// console.error(json_app_text, 'json_app_text');
 								console.error(json_app_cfg, 'json_app_cfg');
 								return;
 							}
