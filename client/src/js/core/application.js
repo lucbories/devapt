@@ -37,7 +37,7 @@ function(Devapt,
 	 * @static
 	 * @desc		Trace flag
 	 */
-	DevaptApplication.app_trace = true;
+	DevaptApplication.app_trace = false;
 	
 	
 	/**

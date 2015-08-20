@@ -177,7 +177,7 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptClasses, DevaptCache)
 		
 		
 		// CLONE THE ARRAY
-		var providers = DevaptResources.resources_providers.slice();
+		var providers = DevaptResources.resources_providers.slice(); // COPY THE ARRAY
 		
 		
 		// LOOK UP CALLBACK
@@ -186,6 +186,7 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptClasses, DevaptCache)
 			{
 				var cb_context = context + '.invoke provider cb';
 				DevaptTraces.trace_enter(cb_context, '', DevaptResources.resources_trace);
+				console.log('lookup for resource declaration for [%s]', arg_resource_name);
 				
 				// FOUND CALLBACK: RESOLVE GIVEN DEFERRED
 				var promise_success_cb =
@@ -353,54 +354,111 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptClasses, DevaptCache)
 		require(['core/application'], function(DevaptApplication)
 			{
 				// GET APP BASE URL
-				var url_base = Devapt.app.get_url_base();
+				// var url_base = Devapt.app.get_url_base();
 				
 				// SET CACHE PROVIDER
 				var cache_provider = function(arg_resource_name)
+				{
+					var context = 'DevaptResources.cache_provider(' + arg_resource_name + ')';
+					DevaptTraces.trace_enter(context + '.cache provider', '', DevaptResources.resources_trace);
+					
+					
+					// GET RESOURCE DECLARATION FROM CACHE
+					var resource_declaration = DevaptResources.get_cached_declaration(arg_resource_name);
+					if (resource_declaration)
 					{
-						var context = 'DevaptResources.cache_provider(' + arg_resource_name + ')';
-						DevaptTraces.trace_enter(context + '.cache provider', '', DevaptResources.resources_trace);
-						
-						
-						// GET RESOURCE DECLARATION FROM CACHE
-						var resource_declaration = DevaptResources.get_cached_declaration(arg_resource_name);
-						if (resource_declaration)
+						DevaptTraces.trace_leave(context + '.cache provider', 'resource declaration found from cache', DevaptResources.resources_trace);
+						return Devapt.promise_resolved(resource_declaration);
+					}
+					
+					DevaptTraces.trace_leave(context + '.cache provider', 'resource declaration not found from cache', DevaptResources.resources_trace);
+					return Devapt.promise_rejected();
+				};
+				
+				
+				// SET APP CONFIG PROVIDER
+				var app_cfg_provider = function(arg_resource_name)
+				{
+					// DevaptResources.resources_trace = true;
+					var context = 'DevaptResources.app_cfg_provider(' + arg_resource_name + ')';
+					DevaptTraces.trace_enter(context + '.app_cfg_provider', '', DevaptResources.resources_trace);
+					
+					
+					// GET RESOURCE DECLARATION FROM APPLICATION CONFIGURATION
+					var resource_declaration = null;
+					var resource_set = null;
+					
+					var app_config = DevaptApplication.get_config();
+					// console.log(app_config, 'app_config');
+					
+					var app_config_sets = ['views', 'models', 'menubars', 'menus', 'connexions'];
+					app_config_sets.every(
+						function(arg_set_name, arg_set_index, arg_set_array)
 						{
-							DevaptTraces.trace_leave(context + '.cache provider', 'resource declaration found from cache', DevaptResources.resources_trace);
-							return Devapt.promise_resolved(resource_declaration);
+							DevaptTraces.trace_value(context + '.app_cfg_provider', 'lookup for set', arg_set_name, DevaptResources.resources_trace);
+							// console.info('resource set [%s]', arg_set_name);
+							
+							if (! (arg_set_name in app_config) )
+							{
+								console.error('set [%s] not found in app configuration for context [%s]', arg_set_name, context);
+								return true;
+							}
+							
+							if (arg_resource_name in app_config[arg_set_name])
+							{
+								// console.info('resource [%s] found in set [%s] from app configuration for context [%s]', arg_resource_name, arg_set_name, context);
+								resource_declaration = app_config[arg_set_name][arg_resource_name];
+								resource_set = arg_set_name;
+								return false;
+							}
+							
+							return true;
 						}
-						
-						DevaptTraces.trace_leave(context + '.cache provider', 'resource declaration not found from cache', DevaptResources.resources_trace);
-						return Devapt.promise_rejected();
-					};
+					);
+					
+					// FOUND
+					if (resource_declaration)
+					{
+						DevaptTraces.trace_leave(context + '.app_cfg_provider', 'resource declaration found from app config.[' + resource_set + ']', DevaptResources.resources_trace);
+						// DevaptResources.resources_trace = false;
+						return Devapt.promise_resolved(resource_declaration);
+					}
+					
+					// NOT FOUND
+					DevaptTraces.trace_leave(context + '.app_cfg_provider', 'resource declaration not found from app config', DevaptResources.resources_trace);
+					DevaptResources.resources_trace = false;
+					return Devapt.promise_rejected();
+				};
+				
 				
 				// SET JSON PROVIDERS
 				var json_provider = function(arg_resource_name)
+				{
+					var context = 'DevaptResources.json_provider(' + arg_resource_name + ')';
+					DevaptTraces.trace_enter(context + '.json provider', '', DevaptResources.resources_trace);
+					
+					
+					// INIT REQUEST ARGS
+					// var url = url_base + 'resources/' + arg_resource_name;
+					
+					var url = '/' + 'resources/' + arg_resource_name; // TODO CONFIGURE BASE REST URL
+					var options =
 					{
-						var context = 'DevaptResources.json_provider(' + arg_resource_name + ')';
-						DevaptTraces.trace_enter(context + '.json provider', '', DevaptResources.resources_trace);
-						
-						
-						// INIT REQUEST ARGS
-						// var url = url_base + 'resources/' + arg_resource_name;
-						
-						var url = '/' + 'resources/' + arg_resource_name;
-						var options =
-						{
-							dataType	: 'json',
-							timeout		: DevaptResources.resources_ajax_timeout
-						};
-						
-						// SEND REQUEST
-						var ajax_promise = Devapt.ajax_get(url, null, options, Devapt.app.get_security_token());
-						
-						
-						DevaptTraces.trace_leave(context + '.json provider', 'async request', DevaptResources.resources_trace);
-						return ajax_promise;
+						dataType	: 'json',
+						timeout		: DevaptResources.resources_ajax_timeout
 					};
+					
+					// SEND REQUEST
+					var ajax_promise = Devapt.ajax_get(url, null, options, Devapt.app.get_security_token());
+					
+					
+					DevaptTraces.trace_leave(context + '.json provider', 'async request', DevaptResources.resources_trace);
+					return ajax_promise;
+				};
 				
 				
 				// REGISTER JSON PROVIDERS
+				DevaptResources.resources_providers.push(app_cfg_provider);
 				DevaptResources.resources_providers.push(cache_provider);
 				DevaptResources.resources_providers.push(json_provider);
 			}

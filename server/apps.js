@@ -115,7 +115,29 @@ API.load_all_apps = function(arg_server)
 		}
 	);
 	arg_server.get('/assets/js/.*', app_static_cb);
-	console.info('registering static route for application dev JS [%s] at url [%s]', '../apps/public/', '/assets/js/.*');
+	console.info('registering static route for application production JS [%s] at url [%s]', '../apps/public/', '/assets/js/.*');
+	
+	
+	// REGISTER CSS ASSETS PRODUCTION ROUTE
+	app_static_cb = restify.serveStatic(
+		{
+			directory: app_public_dir/*,
+			default: 'index.html'*/
+		}
+	);
+	arg_server.get('/assets/css/.*', app_static_cb);
+	console.info('registering static route for application production CSS [%s] at url [%s]', '../apps/public/', '/assets/css/.*');
+	
+	
+	// REGISTER CSS ASSETS PRODUCTION ROUTE
+	app_static_cb = restify.serveStatic(
+		{
+			directory: app_public_dir/*,
+			default: 'index.html'*/
+		}
+	);
+	arg_server.get('/assets/img/.*', app_static_cb);
+	console.info('registering static route for application production IMG [%s] at url [%s]', '../apps/public/', '/assets/img/.*');
 	
 	
 	// LOOP ON REGISTERED APPLICATIONS AND LOAD EACH APPLICATION CONFIGURATION

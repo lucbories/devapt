@@ -260,29 +260,47 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptClasses, DevaptResources, Devap
 		// self.value(context, 'menu_names', menu_names);
 		self.assert_true(context, 'menu_names is array', DevaptTypes.is_array(menu_names) );
 		
-		self.step(context, 'get menus resources');
-		var menu_resources = self.menubar_declaration['items_resources'];
+		self.step(context, 'get menus resources');;
+		// var menu_resources = self.menubar_declaration['items_resources'];
 		// self.value(context, 'menu_resources', menu_resources);
-		self.assert_true(context, 'menu_resources is array', DevaptTypes.is_object(menu_resources) );
+		// self.assert_true(context, 'menu_resources is array', DevaptTypes.is_object(menu_resources) );
 		
 		self.step(context, 'loop on menu names');
-		for(var menu_name_index in menu_names)
-		{
-			var menu_name = menu_names[menu_name_index];
-			self.value(context, 'loop.menu_name', menu_name);
-			
-			var menu_declaration = menu_resources[menu_name];
-			// self.value(context, 'menu_declaration', menu_declaration);
-			self.assert_true(context, 'menu_declaration is object', DevaptTypes.is_object(menu_declaration) );
-			
-			menu_declaration['menu_name'] = menu_name;
-			
-			var position	= DevaptTypes.to_list_item(menu_declaration['position'], ['left', 'right'], 'left');
-			var parent_jqo	= (position === 'left') ? left_jqo : right_jqo;
-			var menu_render_result = self.render_top_menubar_menu(menu_declaration, parent_jqo);
-			// console.log(menu_render_result, 'menu_render_result');
-			self.assert_true(context, 'render menu', menu_render_result);
-		}
+		// var menu_name_index = 0;
+		// for(menu_name_index in menu_names)
+		console.log('lookup for menus [%o] in [%s]', menu_names, self.name);
+		var next_promise = Devapt.promise_resolved();
+		menu_names.forEach(
+			function(arg_menu_name, arg_menu_index, arg_menu_array)
+			{
+				console.log('lookup for menu [%s]', arg_menu_name);
+				// var menu_name = menu_names[menu_name_index];
+				self.value(context, 'loop.menu_name', arg_menu_name);
+				
+				// var menu_declaration = menu_resources[menu_name];
+				/*var menu_promise = */
+				next_promise = next_promise.then(
+					function()
+					{
+						return DevaptResources.get_resource_declaration(arg_menu_name).then(
+							function(menu_declaration)
+							{
+								// self.value(context, 'menu_declaration', menu_declaration);
+								self.assert_true(context, 'menu_declaration is object', DevaptTypes.is_object(menu_declaration) );
+								
+								menu_declaration['menu_name'] = arg_menu_name;
+								
+								var position	= DevaptTypes.to_list_item(menu_declaration['position'], ['left', 'right'], 'left');
+								var parent_jqo	= (position === 'left') ? left_jqo : right_jqo;
+								var menu_render_result = self.render_top_menubar_menu(menu_declaration, parent_jqo);
+								// console.log(menu_render_result, 'menu_render_result');
+								self.assert_true(context, 'render menu', menu_render_result);
+							}
+						);
+					}
+				);
+			}
+		);
 		
 		
 		self.leave(context, 'success');
@@ -557,7 +575,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptClasses, DevaptResources, Devap
 		// GET MENU ATTRIBUTES
 		self.step(context, 'get menu attributes');
 		// var position	= DevaptTypes.to_list_item(arg_menu_declaration['position'], ['left', 'right'], 'left');
-		var menu_name	= DevaptTypes.to_string(arg_menu_declaration['menu_name'], '');
+		var menu_name	= DevaptTypes.to_string(arg_menu_declaration['name'], '');
 		// var index		= DevaptTypes.to_integer(arg_menu_declaration['index'], -1);
 		var label		= DevaptTypes.to_string(arg_menu_declaration['label'], '');
 		var tooltip		= DevaptTypes.to_string(arg_menu_declaration['tooltip'], '');
@@ -771,6 +789,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptClasses, DevaptResources, Devap
 		}
 		
 		// self.value(context, 'items', items);
+		console.log('menu [%s] items [%o]', menu_name, items);
 		if (items)
 		{
 			// CREATE DROPDOWN
@@ -778,20 +797,29 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptClasses, DevaptResources, Devap
 			var ul_jqo = $('<ul class="dropdown">');
 			menu_jqo.append(ul_jqo);
 			
-			var menus_resources = self.menubar_declaration['items_resources'];
-			
+			// var menus_resources = self.menubar_declaration['items_resources'];
+			var next_promise = Devapt.promise_resolved();
 			for(var item_key in items)
 			{
 				var item_name = items[item_key];
 				self.value(context, 'item menu at [' + item_key + ']', item_name);
 				
-				var item_json = menus_resources[item_name];
-				if ( DevaptTypes.is_object(item_json) )
-				{
-					self.assert(context, 'render menu item', self.render_top_menubar_menu(item_json, ul_jqo) );
-					continue;
-				}
-				self.error(context, 'bad item menu json declaration');
+				next_promise = next_promise.then(
+					function()
+					{
+						return DevaptResources.get_resource_declaration(item_name).then(
+							function(item_json)
+							{
+								if ( DevaptTypes.is_object(item_json) )
+								{
+									self.assert(context, 'render menu item', self.render_top_menubar_menu(item_json, ul_jqo) );
+									return;
+								}
+								self.error(context, 'bad item menu json declaration');
+							}
+						);
+					}
+				);
 			}
 		}
 		
@@ -896,8 +924,8 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptClasses, DevaptResources, Devap
 	DevaptMenubarClass.add_public_bool_property('float',			'',	false, false, false, []);
 	DevaptMenubarClass.add_public_bool_property('clickable',		'',	false, false, false, []);
 	
-	DevaptMenubarClass.add_public_obj_property('items',				'',	null, false, false, []);
-	DevaptMenubarClass.add_public_obj_property('items_resources',	'',	null, false, false, []);
+	DevaptMenubarClass.add_public_array_property('items',				'',	null, false, false, []);
+	DevaptMenubarClass.add_public_array_property('items_resources',	'',	null, false, false, []);
 	
 	// MIXINS
 	

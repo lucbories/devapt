@@ -22,8 +22,8 @@ function(m, Devapt, DevaptInit, DevaptApplication, undefined)
 		console.info('Init Foundation ' + foundation_version + ' features');
 		
 		var url_base	= DevaptApplication.get_url_base();
-		Devapt.use_css(url_base + '../../client/lib/foundation-' + foundation_version + '/css/foundation.css');
-		// Devapt.use_css(url_base + '../modules/home/public/css/app.css');
+		Devapt.use_css(url_base + '../assets/css/foundation.css');
+		Devapt.use_css(url_base + 'css/app.css');
 		
 		'use strict';
 		

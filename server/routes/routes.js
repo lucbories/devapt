@@ -276,9 +276,9 @@ function load_routes_for_resources_set(arg_server, arg_set_name, arg_set_obj)
   // ADD RESOURCES GET ROUTES
   arg_server.get('/resources/:name',
     security_restify_cb(null, 'ROLE_AUTH_USER_READ', 'list'), // TODO ROLE FOR ACCESS
-    function (req, res, next) 
+    function (arg_req, arg_res, arg_next) 
     {
-      var resource_name = req.params.name;
+      var resource_name = arg_req.params.name;
       
       var resources_sets = ['views', 'models', 'menubars', 'menus', 'connexions'];
       var set_name = null;
@@ -305,16 +305,17 @@ function load_routes_for_resources_set(arg_server, arg_set_name, arg_set_obj)
         
         // PREPARE AND SEND OUTPUT
         // var output_json = JSON.stringify(resource_def);
-        res.contentType = 'json';
-        res.send(resource_def);
-        return next();
+        arg_res.contentType = 'json';
+        arg_res.send(resource_def);
+        return arg_next();
       }
       
       // NOT FOUND IN ALL SETS
       var error_msg = 'resource not found [%s] in all resources sets';
       console.error(error_msg, resource_name);
-      var error = new NotFoundError(error_msg, resource_name);
-      return next(error);
+      arg_res.status(404);
+      arg_res.send(error_msg);
+      return arg_next();
     }
   );
 }

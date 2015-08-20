@@ -3,7 +3,19 @@
 var parser = require('./ini_parser'),
 	Q = require('q'),
 	path = require('path'),
-	assert = require('assert');
+	assert = require('assert'),
+	module_config = require('./module_config');
+
+
+/*
+	application....
+		modules.AAA.
+			views[]: file path name
+			models[]: file path name
+			menubars[]: file path name
+			menus[]: file path name
+			connexions[]: file path name
+*/
 
 
 // GLOBAL CONFIG REPOSITORY
@@ -36,6 +48,7 @@ function load_app_config(arg_file_path_name, arg_base_dir, arg_force_reload)
 	
 	// LOAD APPLICATION INI CONFIGURATION
 	var app_config = parser.read(app_config_path, 'utf-8');
+	console.info('loading application configuration: file [%s]', app_config_path);
 	if ( ! ('application' in app_config) )
 	{
 		throw Error('No application root key in configuration');
@@ -54,6 +67,7 @@ function load_app_config(arg_file_path_name, arg_base_dir, arg_force_reload)
 	// INIT TMP VARS
 	var module_type = null;
 	var msg = null;
+	var loading_base_dir = path.join(arg_base_dir, '..');
 	
 	
 	// LOAD CONNEXIONS application.resources.connexions.*
@@ -89,7 +103,7 @@ function load_app_config(arg_file_path_name, arg_base_dir, arg_force_reload)
 			{
 				res_filename = path.join(arg_base_dir, connexions[arg_value]);
 				res_config = parser.read(res_filename, 'utf-8');
-				// console.log(res_config, res_filename);
+				console.info('loading application configuration of [%s] resources: file [%s]', res_type, res_filename);
 				
 				Object.keys(res_config).forEach(
 					function(arg_res_name, arg_res_index, arg_res_array)
@@ -114,168 +128,37 @@ function load_app_config(arg_file_path_name, arg_base_dir, arg_force_reload)
 			msg = 'Bad type for application.modules [' + module_type + ']';
 			throw Error(msg);
 		}
+		
+		// LOOP ON MODULES NAMES
 		Object.keys(modules).forEach(
-			function(arg_value, arg_index, arg_array)
+			function(arg_module_name/*, arg_index, arg_array*/)
 			{
-				var module_obj = modules[arg_value];
-				var has_views = ('views' in module_obj);
-				var has_models = ('models' in module_obj);
-				var has_menubars = ('menubars' in module_obj);
-				var has_menus = ('menus' in module_obj);
-				if (! (has_views || has_models || has_menubars || has_menus) )
-				{
-					throw Error('Bad format for application.modules.[' + arg_value + ']');
-				}
+				var module_obj = modules[arg_module_name];
 				
-				// LOAD RESOURCES
-				var res_type = null;
-				var res_typeof = null;
-				var res_obj = null;
-				var res_config = null
-				var res_filename = null;
+				// LOAD MODULE CONFIGURATION
+				var out_cfg = module_config.load_module(arg_module_name, module_obj, loading_base_dir);
+				// console.log(out_cfg, 'out_cfg');
+				// console.log(typeof out_cfg, 'out_cfg');
 				
-				// LOAD VIEWS RESOURCES
-				if (has_views)
-				{
-					res_type = 'views';
-					res_obj = module_obj[res_type];
-					if ((typeof res_obj) !== 'object')
+				// LOOP ON RESOURCES TYPES
+				Object.keys(out_cfg).forEach(
+					function(arg_res_type/*, arg_index, arg_array*/)
 					{
-						throw Error('Bad format for application.modules.[' + res_type + ']');
-					}
-					Object.keys(res_obj).forEach(
-						function(arg_module_file_key, arg_module_file_index, arg_module_file_array)
-						{
-							res_filename = path.join(app_config['basedir'], 'modules', res_obj[arg_module_file_key]);
-							res_config = parser.read(res_filename, 'utf-8');
-							// console.log(res_config, res_filename);
-							
-							if ((typeof res_config.application[res_type]) !== 'object')
+						var resources_obj = out_cfg[arg_res_type];
+						
+						// LOOP ON RESOURCES NAMES
+						Object.keys(resources_obj).forEach(
+							function(arg_res_name/*, arg_index, arg_array*/)
 							{
-								throw Error('Bad format for application.[' + res_type + '] for file [' + res_filename + '] for key [' + arg_module_file_key + ']');
+								var res_obj = resources_obj[arg_res_name];
+								
+								// REGISTER MODULE RESOURCE
+								app_config.application[arg_res_type][arg_res_name] = res_obj;
+								loaded_configs[arg_res_type][arg_res_name] = res_obj;
 							}
-							
-							var res_cfg = null;
-							Object.keys(res_config.application[res_type]).forEach(
-								function(arg_res_name, arg_res_index, arg_res_array)
-								{
-									res_cfg = res_config.application[res_type][arg_res_name];
-									app_config.application[res_type][arg_res_name] = parser.split_all_keys(res_cfg);
-									app_config.application[res_type][arg_res_name].name = arg_res_name;
-									loaded_configs[res_type][arg_res_name] = app_config.application[res_type][arg_res_name];
-								}
-							);
-						}
-					);
-				}
-				
-				// LOAD MODELS RESOURCES
-				if (has_models)
-				{
-					res_type = 'models';
-					res_obj = module_obj[res_type];
-					res_typeof = typeof res_obj;
-					if (res_typeof !== 'object')
-					{
-						throw Error('Bad format for application.modules.[' + res_type + ']');
+						);
 					}
-					Object.keys(res_obj).forEach(
-						function(arg_module_file_key, arg_module_file_index, arg_module_file_array)
-						{
-							res_filename = path.join(app_config['basedir'], 'modules', res_obj[arg_module_file_key]);
-							res_config = parser.read(res_filename, 'utf-8');
-							// console.log(res_config, res_filename);
-							
-							if ((typeof res_config.application[res_type]) !== 'object')
-							{
-								throw Error('Bad format for application.[' + res_type + '] for file [' + res_filename + '] for key [' + arg_module_file_key + ']');
-							}
-							
-							var res_cfg = null;
-							Object.keys(res_config.application[res_type]).forEach(
-								function(arg_res_name, arg_res_index, arg_res_array)
-								{
-									res_cfg = res_config.application[res_type][arg_res_name];
-									app_config.application[res_type][arg_res_name] = parser.split_all_keys(res_cfg);
-									app_config.application[res_type][arg_res_name].name = arg_res_name;
-									loaded_configs[res_type][arg_res_name] = app_config.application[res_type][arg_res_name];
-								}
-							);
-						}
-					);
-				}
-				
-				// LOAD MENUBARS RESOURCES
-				if (has_menubars)
-				{
-					res_type = 'menubars';
-					res_obj = module_obj[res_type];
-					res_typeof = typeof res_obj;
-					if (res_typeof !== 'object')
-					{
-						throw Error('Bad format for application.modules.[' + res_type + ']');
-					}
-					Object.keys(res_obj).forEach(
-						function(arg_module_file_key, arg_module_file_index, arg_module_file_array)
-						{
-							res_filename = path.join(app_config['basedir'], 'modules', res_obj[arg_module_file_key]);
-							res_config = parser.read(res_filename, 'utf-8');
-							// console.log(res_config, res_filename);
-							
-							if ((typeof res_config.application[res_type]) !== 'object')
-							{
-								throw Error('Bad format for application.[' + res_type + '] for file [' + res_filename + '] for key [' + arg_module_file_key + ']');
-							}
-							
-							var res_cfg = null;
-							Object.keys(res_config.application[res_type]).forEach(
-								function(arg_res_name, arg_res_index, arg_res_array)
-								{
-									res_cfg = res_config.application[res_type][arg_res_name];
-									app_config.application[res_type][arg_res_name] = parser.split_all_keys(res_cfg);
-									app_config.application[res_type][arg_res_name].name = arg_res_name;
-									loaded_configs[res_type][arg_res_name] = app_config.application[res_type][arg_res_name];
-								}
-							);
-						}
-					);
-				}
-				
-				// LOAD MENUS RESOURCES
-				if (has_menus)
-				{
-					res_type = 'menus';
-					res_obj = module_obj[res_type];
-					res_typeof = typeof res_obj;
-					if (res_typeof !== 'object')
-					{
-						throw Error('Bad format for application.modules.[' + res_type + ']');
-					}
-					Object.keys(res_obj).forEach(
-						function(arg_module_file_key, arg_module_file_index, arg_module_file_array)
-						{
-							res_filename = path.join(app_config['basedir'], 'modules', res_obj[arg_module_file_key]);
-							res_config = parser.read(res_filename, 'utf-8');
-							// console.log(res_config, res_filename);
-							
-							if ((typeof res_config.application[res_type]) !== 'object')
-							{
-								throw Error('Bad format for application.[' + res_type + '] for file [' + res_filename + '] for key [' + arg_module_file_key + ']');
-							}
-							
-							var res_cfg = null;
-							Object.keys(res_config.application[res_type]).forEach(
-								function(arg_res_name, arg_res_index, arg_res_array)
-								{
-									res_cfg = res_config.application[res_type][arg_res_name];
-									app_config.application[res_type][arg_res_name] = parser.split_all_keys(res_cfg);
-									app_config.application[res_type][arg_res_name].name = arg_res_name;
-									loaded_configs[res_type][arg_res_name] = app_config.application[res_type][arg_res_name];
-								}
-							);
-						}
-					);
-				}
+				);
 			}
 		);
 	}
