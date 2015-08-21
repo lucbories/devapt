@@ -477,12 +477,12 @@ function(
 						
 						// DEBUG
 //						self.value(context, 'selected item', arg_selected_item);
-//						console.debug(arg_selected_item, context + ':selected item');
+						console.debug(arg_selected_item, context + ':selected item');
 						
 						var result_promise = null;
 						
 						// GET SELECTED ITEM
-						var item_record = arg_selected_item.record;
+						var item_record = arg_selected_item.content;
 //						self.value(context, 'item record', item_record);
 						self.assert_object(context, 'item_record', item_record);
 						

@@ -424,8 +424,8 @@ function(
 			items.forEach(
 				function(arg_menu_name, arg_menu_index, arg_menu_array)
 				{
-					console.log('lookup for menu item [%s]', arg_menu_name);
-					// var menu_name = menu_names[menu_name_index];
+					// console.log('lookup for menu item [%s]', arg_menu_name);
+					
 					self.value(context, 'loop.menu_name', arg_menu_name);
 					
 					var menu_settings = {
@@ -440,7 +440,7 @@ function(
 					
 					if (menu_object)
 					{
-						console.log('menu item instance is found for [%s]', arg_menu_name);
+						// console.log('menu item instance is found for [%s]', arg_menu_name);
 						self.menus.push(menu_object);
 					}
 					else
@@ -449,7 +449,7 @@ function(
 						menu_promise = menu_promise.then(
 							function(arg_menu)
 							{
-								console.log('menu item created [%s]', arg_menu_name);
+								// console.log('menu item created [%s]', arg_menu_name);
 								self.menus.push(arg_menu);
 								
 								return arg_menu.render();

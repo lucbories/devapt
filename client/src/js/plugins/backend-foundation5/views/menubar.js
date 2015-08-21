@@ -274,15 +274,13 @@ function(
 		// self.assert_true(context, 'menu_resources is array', DevaptTypes.is_object(menu_resources) );
 		
 		self.step(context, 'loop on menu names');
-		// var menu_name_index = 0;
-		// for(menu_name_index in menu_names)
-		console.log('lookup for menus [%o] in [%s]', menu_names, self.name);
-		// var next_promise = Devapt.promise_resolved();
+		// console.log('lookup for menus [%o] in [%s]', menu_names, self.name);
+		
 		menu_names.forEach(
 			function(arg_menu_name, arg_menu_index, arg_menu_array)
 			{
-				console.log('lookup for menu [%s]', arg_menu_name);
-				// var menu_name = menu_names[menu_name_index];
+				// console.log('lookup for menu [%s]', arg_menu_name);
+				
 				self.value(context, 'loop.menu_name', arg_menu_name);
 				
 				var menu_settings = {
@@ -306,13 +304,14 @@ function(
 				// 	return result;
 				// }
 				
-				var menu_object = DevaptClasses.get_instance(arg_menu_name);
 				
-				// var menu_promise = menu_object ? Devapt.promise_resolved(menu_object) : Devapt.create('DevaptMenu', menu_settings);
+				
+				
+				var menu_object = DevaptClasses.get_instance(arg_menu_name);
 				
 				if (menu_object)
 				{
-					console.log('menu instance is found for [%s]', arg_menu_name);
+					// console.log('menu instance is found for [%s]', arg_menu_name);
 					self.menus.push(menu_object);
 				}
 				else
@@ -321,7 +320,7 @@ function(
 					menu_promise = menu_promise.then(
 						function(arg_menu)
 						{
-							console.log('menu instance is created for [%s]', arg_menu_name);
+							// console.log('menu instance is created for [%s]', arg_menu_name);
 							
 							self.menus.push(arg_menu);
 							
