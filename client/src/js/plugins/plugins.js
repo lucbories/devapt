@@ -16,8 +16,9 @@ define(
 		var cb = function()
 		{
 			console.info('update plugin manager with plugins names/urls');
+			
 			var plugin_manager = Devapt.get_plugin_manager();
-			console.log(plugin_manager, 'plugin_manager');
+			// console.log(plugin_manager, 'plugin_manager');
 			
 			plugin_manager.declare_plugin_url('foundation5', 'plugins/backend-foundation5/plugin');
 			plugin_manager.declare_plugin_url('jquery-ui', 'plugins/backend-jquery-ui/plugin');

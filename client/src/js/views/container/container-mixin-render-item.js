@@ -34,7 +34,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptTemplate,
 		render_item_node: function(arg_item_index)
 		{
 			var self = this;
-			var context = 'render_item_node(index)';
+			var context = 'render_item_node(' + arg_item_index + ')';
 			self.enter(context, '');
 			
 			// NOT IMPLEMENTED HERE
@@ -147,7 +147,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptTemplate,
 			self.assert_true(context, 'item index >= 0', arg_container_item.index >= 0);
 			
 			
-			arg_container_item.is_selected = self.has_item_node_css_class(arg_container_item.node_jqo, 'selected');
+			arg_container_item.is_selected = self.has_item_node_css_class(arg_container_item.node, 'selected');
 			
 			
 			self.leave(context, Devapt.msg_success);

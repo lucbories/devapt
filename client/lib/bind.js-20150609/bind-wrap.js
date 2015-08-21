@@ -1,4 +1,4 @@
-define(['/devapt-client/lib/bind.js-20150609/bind.js'],
+define(['/client/lib/bind.js-20150609/bind.js'],
 function()
 {
 	console.log(Bind, 'Bind');

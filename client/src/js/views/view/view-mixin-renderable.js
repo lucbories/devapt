@@ -81,6 +81,9 @@ function(Devapt, DevaptTypes, DevaptClass)
 		 */
 		mixin_renderable_init: function(self)
 		{
+			// DEBUG
+			// self.trace=true;
+			
 			var context = 'mixin_renderable_init()';
 			self.enter(context, '');
 			
@@ -398,6 +401,7 @@ function(Devapt, DevaptTypes, DevaptClass)
 			var promise_content = promise_before.then(
 				function()
 				{
+					console.log('render after before');
 					return self.render_content();
 				}
 			);

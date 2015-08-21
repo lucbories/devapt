@@ -17,6 +17,7 @@ define(
 		'plugins/backend-foundation5/views/button-group',
 		'plugins/backend-foundation5/views/image',
 		'plugins/backend-foundation5/views/label',
+		'plugins/backend-foundation5/views/menu',
 		'plugins/backend-foundation5/views/menubar',
 		'plugins/backend-foundation5/views/pagination',
 		'plugins/backend-foundation5/views/panel'

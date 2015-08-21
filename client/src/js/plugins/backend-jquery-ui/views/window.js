@@ -39,7 +39,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptView, undefined)
 		// CHECK DEFEREED
 		self.assert_not_null(context, 'arg_deferred', arg_deferred);
 		
-		var style_jqo = $('<link rel="stylesheet" href="/devapt-tutorial-1/public/../../devapt-client/lib/jquery-ui-1.11.4/jquery-ui.min.css">');
+		var style_jqo = $('<link rel="stylesheet" href="/client/lib/jquery-ui-1.11.4/jquery-ui.min.css">');
 		$('head').append(style_jqo);
 		
 		// GET NODES

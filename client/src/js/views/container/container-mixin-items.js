@@ -296,7 +296,7 @@ function(Devapt, DevaptTypes, DevaptClass)
 			
 			
 			// CHECK ARGS
-			// console.debug(arg_container_item, context + '.arg_container_item');
+			console.debug(arg_container_item, context + '.arg_container_item');
 			// console.debug(arg_container_item.index, context + '.arg_container_item.index');
 			self.assert_object(context, 'item', arg_container_item);
 			self.assert_true(context, 'item.is_container_item', arg_container_item.is_container_item);
@@ -357,6 +357,7 @@ function(Devapt, DevaptTypes, DevaptClass)
 				}
 				case 'record':
 				case 'object':
+				case 'plain_object':
 				{
 					self.assert_function(context, 'self.render_item_object', self.render_item_object);
 					arg_item_content.container_item_index = arg_container_item.index;

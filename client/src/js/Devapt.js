@@ -786,9 +786,10 @@ function($, DevaptInit, CryptoMD5, CryptoSHA1, Q, DevaptFactory)
 	 */
 	Devapt.promise_resolved = function(arg_resolved_value)
 	{
-		var defer = Q.defer();
-		defer.resolve(arg_resolved_value);
-		return defer.promise;
+		// var defer = Q.defer();
+		// defer.resolve(arg_resolved_value);
+		// return defer.promise;
+		return Q(arg_resolved_value);
 	};
 	
 	/**
@@ -802,9 +803,10 @@ function($, DevaptInit, CryptoMD5, CryptoSHA1, Q, DevaptFactory)
 	 */
 	Devapt.promise_rejected = function(arg_reject_reason)
 	{
-		var defer = Q.defer();
-		defer.reject(arg_reject_reason);
-		return defer.promise;
+		// var defer = Q.defer();
+		// defer.reject(arg_reject_reason);
+		// return defer.promise;
+		return Q.reject(arg_reject_reason);
 	};
 	
 	/**
@@ -955,7 +957,7 @@ function($, DevaptInit, CryptoMD5, CryptoSHA1, Q, DevaptFactory)
 		// console.log('Devapt.create get class depds');
 		var depds_promise = Devapt.get_requires(arg_class_name);
 		
-		var create_promise = depds_promise.then(
+		var promise = depds_promise.then(
 			function(dependancies)
 			{
 				// console.log('Devapt.create depds found', dependancies);
@@ -995,7 +997,7 @@ function($, DevaptInit, CryptoMD5, CryptoSHA1, Q, DevaptFactory)
 		);
 		
 		
-		return create_promise;
+		return promise;
 	};
 	
 	

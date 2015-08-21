@@ -33,6 +33,9 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptContainer, undefined)
 	 */
 	var cb_constructor = function(self)
 	{
+		// DEBUG
+		self.trace = true;
+		
 		// CONSTRUCTOR BEGIN
 		var context = 'DevaptTable.constructor(' + self.name + ')';
 		self.enter(context, '');

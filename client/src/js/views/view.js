@@ -119,7 +119,7 @@ function(
 		// self.trace=true;
 		
 		var context = self.class_name + '(' + self.name + ')';
-		self.enter(context, 'constructor');
+		self.enter(context, 'View constructor');
 		
 		
 		// SET OBJECT TYPE
