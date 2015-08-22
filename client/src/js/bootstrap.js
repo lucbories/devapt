@@ -26,7 +26,7 @@ require.config(
 			
 			'Q':			'../../lib/q-20150130/q',
 		/*	'jStorage':		'../../lib/jstorage-0.4.12/jstorage-wrap', */
-			'jStorage':		'../../lib/simplestorage-0.1.3/simplestorage',
+			'jStorage':		'../../lib/simplestorage-0.1.3/simpleStorage',
 			'mustache':		'../../lib/mustache/mustache-wrap',
 			'md5':			'../../lib/cryptojs-3.1.2/rollups/md5',
 			'sha1':			'../../lib/cryptojs-3.1.2/rollups/sha1',

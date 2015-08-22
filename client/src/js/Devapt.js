@@ -231,10 +231,12 @@ function($, DevaptInit, CryptoMD5, CryptoSHA1, Q, DevaptFactory)
 			if (Devapt.app)
 			{
 				var credentials = Devapt.app.get_logged_user();
-				arg_token = 'username=' + credentials.login + '&password=' + credentials.password;
-				var link = ( arg_url.indexOf('?') > 0 ) ? '&' : '?';
-				
-				arg_url = arg_url + link + arg_token;
+				if (credentials && credentials.login && credentials.password)
+				{
+					arg_token = 'username=' + credentials.login + '&password=' + credentials.password;
+					var link = ( arg_url.indexOf('?') > 0 ) ? '&' : '?';
+					arg_url = arg_url + link + arg_token;
+				}
 			}
 		}
 		

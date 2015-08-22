@@ -11,7 +11,6 @@ dist/*
 tmp
 unused
 node_modules
-vendor
 extjs-5*
 
 db_connexions.ini

@@ -22,18 +22,24 @@ function(m, Devapt, DevaptInit, DevaptApplication, undefined)
 		console.info('Init Foundation ' + foundation_version + ' features');
 		
 		var url_base	= DevaptApplication.get_url_base();
-		Devapt.use_css(url_base + '../assets/css/foundation.css');
-		Devapt.use_css(url_base + 'css/app.css');
+		Devapt.use_css(url_base + '../assets/css/normalize.css'); // TODO url base ?
+		Devapt.use_css(url_base + '../assets/css/foundation.css'); // TODO url base ?
+		Devapt.use_css(url_base + 'css/app.css'); // TODO url base ?
 		
-		'use strict';
 		
-		var $doc = $(document);
-		var Modernizr = window.Modernizr;
+		setTimeout(
+			function ()
+			{
+				window.Foundation.global.namespace = false;
+				var $doc = $(document);
+				$doc.foundation();
+			},
+			50
+		);
 		
-		window.Foundation.global.namespace = false;
-		$doc.foundation();
 		
 		// Hide address bar on mobile devices
+		var Modernizr = window.Modernizr;
 		if (Modernizr.touch)
 		{
 			$(window).load(
