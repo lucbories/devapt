@@ -616,7 +616,7 @@ function(DevaptTraces, DevaptTypes, DevaptClass, DevaptClasses)
 						class_name:this.class_name,
 						object_name:this.name,
 						method_name:arg_context,
-						context:null,
+						context:'',
 						text:arg_name + '=' + DevaptTypes.get_value_str(arg_value)
 					}
 				);

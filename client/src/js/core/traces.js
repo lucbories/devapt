@@ -39,8 +39,9 @@
  */
 
 'use strict';
-define(['core/types', 'object/class', 'core/traces-console', 'core/traces-memory'],
-function(DevaptTypes, DevaptClass, DevaptTracesConsoleClass, DevaptTracesMemoryClass)
+define(
+	['core/types', 'core/traces-console', 'core/traces-memory', 'object/class'],
+function(DevaptTypes, DevaptTracesConsoleClass, DevaptTracesMemoryClass, DevaptClass)
 {
 	/**
 	 * @memberof			DevaptTraces
@@ -618,7 +619,7 @@ function(DevaptTypes, DevaptClass, DevaptTracesConsoleClass, DevaptTracesMemoryC
 		if (arg_trace_enabled)
 		{
 			// console.log('DevaptTraces.trace_var:'+arg_trace_enabled);
-			DevaptTraces.debug( { level:'DEBUG', step:null, context:arg_context, text:arg_label + '=[' + DevaptTypes.get_value_str(arg_value) + ']' } );
+			DevaptTraces.debug( { level:'DEBUG', step:'VALUE', context:arg_context, text:arg_label + '=[' + DevaptTypes.get_value_str(arg_value) + ']' } );
 		}
 	}
 
@@ -640,7 +641,7 @@ function(DevaptTypes, DevaptClass, DevaptTracesConsoleClass, DevaptTracesMemoryC
 		if (arg_trace_enabled)
 		{
 			// console.log('DevaptTraces.trace_value:'+arg_trace_enabled);
-			DevaptTraces.debug( { level:'DEBUG', step:null, context:arg_context, text:arg_label + '=[' + DevaptTypes.get_value_str(arg_value) + ']' } );
+			DevaptTraces.debug( { level:'DEBUG', step:'VALUE', context:arg_context, text:arg_label + '=[' + DevaptTypes.get_value_str(arg_value) + ']' } );
 		}
 	}
 	

@@ -22,19 +22,23 @@ function(m, Devapt, DevaptInit, DevaptApplication, undefined)
 		console.info('Init Foundation ' + foundation_version + ' features');
 		
 		var url_base	= DevaptApplication.get_url_base();
-		Devapt.use_css(url_base + '../assets/css/normalize.css'); // TODO url base ?
-		Devapt.use_css(url_base + '../assets/css/foundation.css'); // TODO url base ?
-		Devapt.use_css(url_base + 'css/app.css'); // TODO url base ?
+		// Devapt.use_css(url_base + '../assets/css/normalize.css'); // TODO url base ?
+		// Devapt.use_css(url_base + '../assets/css/foundation.css'); // TODO url base ?
+		// Devapt.use_css(url_base + 'css/app.css'); // TODO url base ?
+		
+		var css_urls = [url_base + '../assets/css/normalize.css', url_base + '../assets/css/foundation.css', url_base + 'css/app.css'];
+		Devapt.use_css(css_urls); // TODO url base ?
 		
 		
 		setTimeout(
 			function ()
 			{
+				console.info('Init Foundation ' + foundation_version + ' plugins');
 				window.Foundation.global.namespace = false;
 				var $doc = $(document);
 				$doc.foundation();
 			},
-			50
+			100
 		);
 		
 		

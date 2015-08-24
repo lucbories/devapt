@@ -50,7 +50,7 @@ function(
 	var cb_constructor = function(self)
 	{
 		// DEBUG
-		// self.trace = true;
+		self.trace = true;
 		
 		var context = self.class_name + '(' + self.name + ')';
 		self.enter(context, 'Menu constructor');
@@ -334,6 +334,8 @@ function(
 		// var option_button_onclick = null;
 		
 		var menu_a_jqo = $('<a>');
+		
+		// SET MENU ACTION
 		if ( DevaptTypes.is_not_empty_str(display_url) )
 		{
 			self.step(context, 'menu has url');
@@ -347,23 +349,32 @@ function(
 			var view_jqo = $('#' + display_cont);
 			if (view_jqo)
 			{
-				var update_view_cb = (
-					function(view_name, content_label, content_id)
-					{
-						return function()
+				self.step(context, 'menu has container');
+				
+				var update_view_cb = 
+					// function(view_name, content_label, content_id)
+					// function(display_view, label, display_cont)
+					// {
+						// return 
+						function(event)
 						{
-							var url_base		= Devapt.app.get_url_base(); 
-							var page_title		= content_label;
+							self.step(context, 'menu callback for view');
+							console.log(context, 'menu callback for view');
+							alert('hello');
+							// return 1;
+					/*		var url_base		= Devapt.app.get_url_base(); 
+							var page_title		= label;
 							// var page_location	= url_base + 'views/' + view_name + '/html_page' + '?security_token=' + Devapt.app.get_security_token();
-							var page_location	= url_base + 'views/' + view_name + '/html_page';
+							var page_location	= url_base + 'views/' + display_view + '/html_page';
 							var force_render	= false;
 							var menubar_name	= self.name;
+							
 							// DevaptNavHistory.set_page_view_content(content_label, content_id, view_name, page_title, page_location, force_render, menubar_name);
-							DevaptNavHistory.set_view_content(content_label, content_id, view_name, page_title, page_location, force_render, menubar_name);
-						};
-					}
-				)(display_view, label, display_cont);
-				menu_a_jqo.click(update_view_cb);
+							DevaptNavHistory.set_view_content(label, display_cont, display_view, page_title, page_location, force_render, menubar_name);
+						*/};
+					// }
+				// )(display_view, label, display_cont);
+				menu_a_jqo.on('click', update_view_cb);
 			}
 		}
 		else if ( DevaptTypes.is_not_empty_str(display_page) )
@@ -379,16 +390,21 @@ function(
 			menu_a_jqo.attr('href', '#');
 		}
 		
+		// SET MENU JS
 		if ( DevaptTypes.is_not_empty_str(display_js) )
 		{
 			self.step(context, 'menu has js');
 			menu_a_jqo.attr('onclick', display_js);
 		}
+		
+		// SET MENU TOOLTIP
 		if ( DevaptTypes.is_not_empty_str(tooltip) )
 		{
 			self.step(context, 'menu has tooltip');
-			menu_a_jqo.attr('title', tooltip);
+			menu_jqo.attr('title', tooltip);
 		}
+		
+		// SET MENU LABEL AND ATTACH IT TO ITS MENU ITEM
 		menu_a_jqo.text(label);
 		menu_jqo.append(menu_a_jqo);
 		

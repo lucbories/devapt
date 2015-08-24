@@ -1,6 +1,21 @@
 /**
  * @file        core/nav-history.js
  * @desc        Devapt static navigation history features
+ * 
+ * 		internal API:
+ * 				state =
+ * 					{
+ * 						content_label:	string,
+ * 						content_id:		string,
+ * 						content_url:	null or string,
+ * 						content_cb:		null or function,
+ * 						content_html:	null or string,
+ * 						content_view:	null or string,
+ * 						page_title:		string,
+ * 						page_location:	string,
+ * 						menubar_name:	string
+ * 					};
+ * 	 
  * @ingroup     DEVAPT_CORE
  * @date        2014-06-16
  * @version		1.0.x
@@ -29,7 +44,7 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptClasses, DevaptMixinAssertion,
 	 * @static
 	 * @desc		Trace flag
 	 */
-	DevaptNavHistory.history_trace = false;
+	DevaptNavHistory.history_trace = true;
 	
 	
 	/**
