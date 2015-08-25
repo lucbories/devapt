@@ -26,9 +26,13 @@
 
 'use strict';
 define(
-['Devapt', 'core/traces', 'core/types', 'core/resources', 'factory', 'core/nav-history',
+['Devapt', 'factory',
+	'core/traces', 'core/types', 'core/resources',
+	// 'core/nav-history',
 	'plugins/backend-foundation5/foundation-init'],
-function(Devapt, DevaptTraces, DevaptTypes, DevaptResources, DevaptFactory, DevaptNavHistory,
+function(Devapt, DevaptFactory,
+	DevaptTraces, DevaptTypes, DevaptResources,
+	// DevaptNavHistory,
 	undefined)
 {
 	/**
@@ -46,7 +50,7 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptResources, DevaptFactory, Deva
 	 * @static
 	 * @desc		Trace flag
 	 */
-	DevaptFoundation5Backend.backend_trace = false;
+	DevaptFoundation5Backend.backend_trace = true;
 	
 	
 	/**
@@ -429,14 +433,18 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptResources, DevaptFactory, Deva
 		DevaptTraces.trace_enter(context, '', DevaptFoundation5Backend.backend_trace);
 		
 		
-		if (DevaptNavHistory.history_breadcrumbs_object)
-		{
-			DevaptNavHistory.history_breadcrumbs_object.hide();
-		}
-		if (DevaptNavHistory.current_topbar_object)
-		{
-			DevaptNavHistory.current_topbar_object.hide();
-		}
+		// TODO Hide breadcrumbs
+		// if (DevaptNavHistory.history_breadcrumbs_object)
+		// {
+		// 	DevaptNavHistory.history_breadcrumbs_object.hide();
+		// }
+		
+		// TODO Hide topbar
+		// if (DevaptNavHistory.current_topbar_object)
+		// {
+		// 	DevaptNavHistory.current_topbar_object.hide();
+		// }
+		
 		var logout_promise = DevaptFoundation5Backend.render_login();
 		
 		

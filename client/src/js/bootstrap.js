@@ -33,6 +33,10 @@ require.config(
 			// 'base64':		'../../lib/cryptojs-3.1.2/components/enc-base64',
 			'bind':			'../../lib/bind.js-20150609/bind-wrap',
 			
+			'signals':		'../../lib/crossroads-0.12.2/signals',
+			'hasher':		'../../lib/crossroads-0.12.2/hasher',
+			'crossroads':	'../../lib/crossroads-0.12.2/crossroads',
+			
 			'foundation-min':			'../../lib/foundation-' + foundation_version + '/js/foundation.min',
 			'foundation':				'../../lib/foundation-' + foundation_version + '/js/foundation/foundation',
 			'foundation.abide':			'../../lib/foundation-' + foundation_version + '/js/foundation/foundation.abide',

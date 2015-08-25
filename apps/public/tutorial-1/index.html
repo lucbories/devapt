@@ -56,6 +56,14 @@
 		
 		<!-- Launcher -->
 		<script type="text/javascript">
+			
+			require(['Devapt'],
+				function(Devapt)
+				{
+					Devapt.start('tutorial-1');
+				}
+			);
+			/*
 			require(['jquery', 'core/application'],
 				function($, DevaptApplication)
 				{
@@ -77,7 +85,7 @@
 						}
 					)
 				}
-			);
+			);*/
 		</script>
 	</body>
 </html>

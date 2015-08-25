@@ -27,13 +27,17 @@
 'use strict';
 define(
 	[
-		'Devapt', 'core/types', 'core/resources', 'core/nav-history',
+		'Devapt', 'core/types', 'core/resources',
+		// 'core/nav-history',
+		'core/navigation',
 		'object/class', 'object/classes',
 		'views/view',
 		'plugins/backend-foundation5/views/menu', 'plugins/backend-foundation5/foundation-init'
 	],
 function(
-	Devapt, DevaptTypes, DevaptResources, DevaptNavHistory,
+	Devapt, DevaptTypes, DevaptResources,
+	// DevaptNavHistory,
+	DevaptNavigation,
 	DevaptClass, DevaptClasses,
 	DevaptView,
 	DevaptMenu, undefined)
@@ -431,7 +435,9 @@ function(
 		// SHOW TARGET MENUBAR
 		self.step(context, 'show target menubar');
 		arg_menubar_object.content_jqo.show();
-		DevaptNavHistory.current_topbar_name = arg_menubar_object.name;
+		
+		// TODO: update current topbar
+		// DevaptNavHistory.current_topbar_name = arg_menubar_object.name;
 		
 		
 		// RENDER DEFAULT VIEW
@@ -455,7 +461,9 @@ function(
 			var force_render	= false;
 			var menubar_name	= arg_menubar_object.name;
 			
-			DevaptNavHistory.set_view_content(content_label, content_id, view_name, page_title, page_location, force_render, menubar_name);
+			// DevaptNavHistory.set_view_content(content_label, content_id, view_name, page_title, page_location, force_render, menubar_name);
+			
+			DevaptNavigation.display_view(view_name);
 		}
 		
 		

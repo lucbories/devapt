@@ -5,6 +5,9 @@
  * 					Devapt.trace:(boolean)
  * 					Devapt.jQuery:(object)
  * 					
+ * 					START
+ * 						Devapt.start(arg_app_name): (promise)
+ * 					
  * 					AJAX
  * 						Devapt.url(url,token): (string)
  * 						Devapt.ajaxt(method,url,datas,options): (promise)
@@ -125,6 +128,56 @@ function($, DevaptInit, CryptoMD5, CryptoSHA1, Q, DevaptFactory)
 	 * @desc				Application static class
 	 */
 	Devapt.app = null;
+	
+	
+	/**
+	 * @memberof			Devapt
+	 * @public
+	 * @static
+	 * @desc				Application ready promise
+	 */
+	Devapt.app_ready_promise = null;
+	
+	
+	/**
+	 * @memberof  			Devapt
+	 * @public
+	 * @static
+	 * @method				Devapt.start(arg_app_name)
+	 * @desc				Init framework and start application
+	 * @param {string}		arg_app_name	application resource name
+	 * @return {object}		A promise
+	 */
+	Devapt.start = function(arg_app_name)
+	{
+		Devapt.app_ready_promise = Devapt.require(['core/application']).then(
+			function(requires_array)
+			{
+				var DevaptApplication = requires_array[0];
+				var ajax_promise = $.get('/resources/applications/' + arg_app_name).then(
+					function(json_app_cfg)
+					{
+						// var json_app_cfg = JSON.parse(json_app_text);
+						var result = DevaptApplication.set_config(json_app_cfg);
+						// console.log(result, 'app_config result');
+						// console.log(DevaptApplication.app_config, 'app_config');
+						if (!result)
+						{
+							// console.error(json_app_text, 'json_app_text');
+							console.error(json_app_cfg, 'json_app_cfg');
+							return;
+						}
+						
+						return DevaptApplication.run();
+					}
+				);
+				
+				return Devapt.promise(ajax_promise);
+			}
+		);
+		
+		return Devapt.app_ready_promise;
+	}
 	
 	
 	

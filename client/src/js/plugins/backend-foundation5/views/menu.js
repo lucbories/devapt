@@ -22,13 +22,17 @@
 'use strict';
 define(
 	[
-		'Devapt', 'core/types', 'core/resources', 'core/nav-history',
+		'Devapt', 'core/types', 'core/resources',
+		// 'core/nav-history',
+		'core/navigation',
 		'object/class', 'object/classes',
 		'views/view',
 		'plugins/backend-foundation5/foundation-init'
 	],
 function(
-	Devapt, DevaptTypes, DevaptResources, DevaptNavHistory,
+	Devapt, DevaptTypes, DevaptResources,
+	// DevaptNavHistory,
+	DevaptNavigation,
 	DevaptClass, DevaptClasses,
 	DevaptView,
 	undefined)
@@ -359,8 +363,10 @@ function(
 						function(event)
 						{
 							self.step(context, 'menu callback for view');
-							console.log(context, 'menu callback for view');
-							alert('hello');
+							console.log(context, 'menu callback for view [%s]', display_view);
+							// alert('hello');
+							DevaptNavigation.display_view(display_view);
+							
 							// return 1;
 					/*		var url_base		= Devapt.app.get_url_base(); 
 							var page_title		= label;
@@ -370,7 +376,6 @@ function(
 							var menubar_name	= self.name;
 							
 							// DevaptNavHistory.set_page_view_content(content_label, content_id, view_name, page_title, page_location, force_render, menubar_name);
-							DevaptNavHistory.set_view_content(label, display_cont, display_view, page_title, page_location, force_render, menubar_name);
 						*/};
 					// }
 				// )(display_view, label, display_cont);

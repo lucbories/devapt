@@ -11,8 +11,17 @@
 
 'use strict';
 define(
-['Devapt', 'core/types', 'object/class', 'views/view', 'core/nav-history', 'plugins/backend-foundation5/foundation-init'],
-function(Devapt, DevaptTypes, DevaptClass, DevaptView, DevaptNavHistory, undefined)
+	['Devapt', 'core/types', 'object/class',
+		// 'core/nav-history',
+		'core/navigation',
+		'views/view',
+		'plugins/backend-foundation5/foundation-init'
+	],
+function(Devapt, DevaptTypes, DevaptClass,
+	// DevaptNavHistory,
+	DevaptNavigation,
+	DevaptView,
+	undefined)
 {
 	/**
 	 * @public
@@ -48,7 +57,8 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptView, DevaptNavHistory, undefin
 		
 		
 		// LOOP ON NAV HISTORY
-		var nav_stack = DevaptNavHistory.history_stack;
+		// var nav_stack = DevaptNavHistory.history_stack;
+		var nav_stack = DevaptNavigation.get_history_stack();
 		self.value(context, 'breadcrumbs html content', nav_stack);
 		for(var content_key in nav_stack)
 		{
@@ -112,7 +122,8 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptView, DevaptNavHistory, undefin
 					return function()
 					{
 						// console.log(state, context + '.onclick');
-						DevaptNavHistory.set_content(state, true);
+						// DevaptNavHistory.set_content(state, true);
+						DevaptNavigation.display_view(state);
 					}
 				}
 			)(arg_state)

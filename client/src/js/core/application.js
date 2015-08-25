@@ -1,6 +1,18 @@
 /**
  * @file        core/application.js
  * @desc        Devapt static application features
+ * 		
+ * 		PUBLIC API
+ * 				DevaptApplication.get_config(): (plain object)
+ * 				DevaptApplication.set_config(plain object): (boolean)
+ * 				DevaptApplication.run(): (promise)
+ * 				DevaptApplication.check_authentication(): (boolean)
+ * 				DevaptApplication.get_security_token(): (string)
+ * 				DevaptApplication.get_logged_user(): (plain object)
+ * 		PRIVATE API
+ * 				
+ * 				
+ * 				
  * @ingroup     DEVAPT_CORE
  * @date        2013-08-15
  * @version		1.0.x
@@ -12,12 +24,16 @@
 'use strict';
 define(
 ['Devapt',
-	'core/traces', 'core/types', 'core/init', 'core/nav-history',
+	'core/traces', 'core/types', 'core/init',
+	// 'core/nav-history',
+	'core/navigation',
 	'object/classes', 'object/plugin-manager', 'core/security',
 	'plugins/plugins'
 ],
 function(Devapt,
-	DevaptTrace, DevaptTypes, DevaptInit, DevaptNavHistory,
+	DevaptTrace, DevaptTypes, DevaptInit,
+	// DevaptNavHistory,
+	DevaptNavigation,
 	DevaptClasses, DevaptPluginManager, DevaptSecurity,
 	undefined
 )
@@ -37,7 +53,7 @@ function(Devapt,
 	 * @static
 	 * @desc		Trace flag
 	 */
-	DevaptApplication.app_trace = false;
+	DevaptApplication.app_trace = true;
 	
 	
 	/**
@@ -125,7 +141,7 @@ function(Devapt,
 		try
 		{
 			// INIT NAVIGATION HISTORY
-			DevaptNavHistory.init();
+			DevaptNavigation.init();
 			
 			// INIT TRACES
 			DevaptClasses.traces_settings = DevaptApplication.get_value('application.traces.items', []);
@@ -163,7 +179,8 @@ function(Devapt,
 		
 		
 		DevaptTrace.trace_leave(context, '', DevaptApplication.app_trace);
-		return init_plugins_promise;
+		// return init_plugins_promise;
+		return Devapt.promise_resolved();
 	}
 	
 	
@@ -398,12 +415,12 @@ function(Devapt,
 			DevaptTrace.trace_step(context, 'INIT TOP MENUBAR', DevaptApplication.app_trace);
 			var topmenubar_promise = null;
 			
-			var default_topbar_name = DevaptApplication.get_topbar_name();
-			if ( ! DevaptTypes.is_not_empty_str(DevaptNavHistory.current_topbar_name))
-			{
-				DevaptTrace.trace_step(context, 'SET DEFAULT TOP MENUBAR', DevaptApplication.app_trace);
-				DevaptNavHistory.current_topbar_name = default_topbar_name;
-			}
+			// var default_topbar_name = DevaptApplication.get_topbar_name();
+			// if ( ! DevaptTypes.is_not_empty_str(DevaptNavHistory.current_topbar_name))
+			// {
+			// 	DevaptTrace.trace_step(context, 'SET DEFAULT TOP MENUBAR', DevaptApplication.app_trace);
+			// 	DevaptNavHistory.current_topbar_name = default_topbar_name;
+			// }
 			
 			
 			// INIT DEFAULT VIEW
@@ -411,24 +428,24 @@ function(Devapt,
 			
 			
 			// GET PAGE HASH
-			DevaptTrace.trace_step(context, 'GET PAGE HASH', DevaptApplication.app_trace);
-			var hash = DevaptNavHistory.get_location_hash();
-			if ( ! DevaptTypes.is_not_empty_str(hash) )
-			{
-				DevaptTrace.trace_step(context, 'SET DEFAULT HOME HASH', DevaptApplication.app_trace);
+			// DevaptTrace.trace_step(context, 'GET PAGE HASH', DevaptApplication.app_trace);
+			// var hash = DevaptNavHistory.get_location_hash();
+			// if ( ! DevaptTypes.is_not_empty_str(hash) )
+			// {
+			// 	DevaptTrace.trace_step(context, 'SET DEFAULT HOME HASH', DevaptApplication.app_trace);
 				
-				var hash = DevaptApplication.get_home_view_hash();
-			}
-			DevaptTrace.trace_value(context, 'hash', hash, DevaptApplication.app_trace);
+			// 	var hash = DevaptApplication.get_home_view_hash();
+			// }
+			// DevaptTrace.trace_value(context, 'hash', hash, DevaptApplication.app_trace);
 			
 			// RENDER PAGE
 			DevaptTrace.trace_step(context, 'RENDER PAGE', DevaptApplication.app_trace);
-			var cb_async_render = function()
-			{
-				DevaptTrace.trace_step(context, 'RENDER PAGE callback', DevaptApplication.app_trace);
-				DevaptNavHistory.set_location_hash(hash);
-			};
-			setTimeout(cb_async_render, 10);
+			// var cb_async_render = function()
+			// {
+			// 	DevaptTrace.trace_step(context, 'RENDER PAGE callback', DevaptApplication.app_trace);
+			// 	DevaptNavHistory.set_location_hash(hash);
+			// };
+			// setTimeout(cb_async_render, 10);
 			
 			
 			// INIT BREADCRUMBS
@@ -444,7 +461,7 @@ function(Devapt,
 					var container_jqo = $('#' + container_id);
 					if (container_jqo)
 					{
-						DevaptNavHistory.history_breadcrumbs_name = breadcrumbs;
+						// DevaptNavHistory.history_breadcrumbs_name = breadcrumbs;
 						
 						// console.log(container_jqo, 'breadcrumbs container_jqo');
 						
@@ -459,7 +476,7 @@ function(Devapt,
 									return;
 								}
 								
-								DevaptNavHistory.history_breadcrumbs_object = view;
+								// DevaptNavHistory.history_breadcrumbs_object = view;
 								view.add_event_callback('nav-history.add',
 									[view, view.on_nav_history_add],
 									false

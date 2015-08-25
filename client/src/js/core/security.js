@@ -10,8 +10,8 @@
  */
 
 define(
-['Devapt', 'core/traces', 'core/types', 'core/nav-history', 'jStorage'],
-function(Devapt, DevaptTrace, DevaptTypes, DevaptNavHistory, DevaptCache)
+['Devapt', 'core/traces', 'core/types', 'jStorage'],
+function(Devapt, DevaptTrace, DevaptTypes, DevaptCache)
 {
 	console.info(DevaptCache, 'DevaptCache');
 	
