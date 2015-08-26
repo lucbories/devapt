@@ -69,21 +69,21 @@ function(Devapt, Hasher, Crossroads, DevaptTrace, DevaptTypes)
 			function()
 			{
 				console.log('Crossroads route cb for [%s]', 'home');
-				return DevaptNavigation.display_view('HOME');
+				return DevaptNavigation.display_view('VIEW_HOME');
 			}
 		);
 		
-		view_name = 'views/{view}';
+		view_name = /^[.*]\#view=([_\-0-9a-zA-Z]+),menubar=([_\-0-9a-zA-Z]+)?$/;
 		DevaptNavigation.navigation_router.addRoute(view_name,
-			function(view)
+			function(view, menubar)
 			{
-				console.log('Crossroads route cb for [%s]', view);
-				return DevaptNavigation.display_view(view);
+				console.log('Crossroads route cb for view [%s] and menubar [%s]', view, menubar);
+				return DevaptNavigation.display_view(view, menubar);
 			}
 		);
 		
-		view_name = 'VIEW_HOME';
-		DevaptNavigation.add_route_for_view(view_name);
+		// view_name = 'VIEW_HOME';
+		// DevaptNavigation.add_route_for_view(view_name);
 		// Crossroads.addRoute(view_name,
 		// 	function()
 		// 	{
@@ -92,8 +92,8 @@ function(Devapt, Hasher, Crossroads, DevaptTrace, DevaptTypes)
 		// 	}
 		// );
 		
-		view_name = 'VIEW_CONTENT_1';
-		DevaptNavigation.add_route_for_view(view_name);
+		// view_name = 'VIEW_CONTENT_1';
+		// DevaptNavigation.add_route_for_view(view_name);
 		// Crossroads.addRoute(view_name,
 		// 	function()
 		// 	{
@@ -102,8 +102,8 @@ function(Devapt, Hasher, Crossroads, DevaptTrace, DevaptTypes)
 		// 	}
 		// );
 		
-		view_name = 'VIEW_CONTENT_2';
-		DevaptNavigation.add_route_for_view(view_name);
+		// view_name = 'VIEW_CONTENT_2';
+		// DevaptNavigation.add_route_for_view(view_name);
 		// Crossroads.addRoute(view_name,
 		// 	function()
 		// 	{
@@ -123,7 +123,7 @@ function(Devapt, Hasher, Crossroads, DevaptTrace, DevaptTypes)
 		Hasher.changed.add(parseHash); //parse hash changes
 		Hasher.init(); //start listening for history change
 		
-		Hasher.setHash('VIEW_HOME');
+		// Hasher.setHash('VIEW_HOME');
 		
 		// var promise = Devapt.promise_all(all_promises).then( function() { return true; } );
 		var promise = Devapt.promise_resolved(true);
@@ -149,6 +149,7 @@ function(Devapt, Hasher, Crossroads, DevaptTrace, DevaptTypes)
 		
 		try
 		{
+			// DevaptNavigation.navigation_router.addRoute('#' + arg_view_name,
 			DevaptNavigation.navigation_router.addRoute(arg_view_name,
 				function()
 				{
@@ -225,11 +226,12 @@ function(Devapt, Hasher, Crossroads, DevaptTrace, DevaptTypes)
 	 * @method					DevaptNavigation.display_view(arg_view_name)
 	 * @desc					Display the page content with given view
 	 * @param {string}			arg_view_name		view name
+	 * @param {string}			arg_menubar_name	menubar name
 	 * @return {object}			Promise of boolean result : success or failure
 	 */
-	DevaptNavigation.display_view = function(arg_view_name)
+	DevaptNavigation.display_view = function(arg_view_name, arg_menubar_name)
 	{
-		var context = 'DevaptNavigation.display_view(arg_view_name)';
+		var context = 'DevaptNavigation.display_view(arg_view_name, arg_menubar_name)';
 		DevaptTrace.trace_enter(context, arg_view_name, DevaptNavigation.navigation_trace);
 		
 		var promise = null;
@@ -242,6 +244,7 @@ function(Devapt, Hasher, Crossroads, DevaptTrace, DevaptTypes)
 					var content_id = Devapt.app.get_content_id();
 					var jqo = $('#' + content_id);
 					console.log(jqo, 'jqo for view', arg_view_name);
+					
 					return Devapt.get_current_backend().render_view(jqo, arg_view_name).then( function() { return true; } );
 				}
 			);

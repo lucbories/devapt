@@ -25,8 +25,8 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptObject)
 	 * @public
 	 * @memberof			DevaptPluginManager
 	 * @desc				Get plugin classes factory
-	 * @param(string)		arg_name		plugin name
-	 * @param(string)		arg_url			plugin url
+	 * @param {string}		arg_name		plugin name
+	 * @param {string}		arg_url			plugin url
 	 * @return {object}		A factory object
 	 */
 	var cb_declare_plugin_url = function(arg_name, arg_url)
@@ -50,7 +50,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptObject)
 	 * @public
 	 * @memberof			DevaptPluginManager
 	 * @desc				Load a plugin or return an already loaded plugin
-	 * @param(string)		arg_name		plugin name
+	 * @param {string}		arg_name		plugin name
 	 * @return {object}		A promise of a Plugin instance
 	 */
 	var cb_load_plugin = function(arg_name)
@@ -121,7 +121,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptObject)
 	 * @public
 	 * @memberof			DevaptPluginManager
 	 * @desc				Get an already loaded plugin
-	 * @param(string)		arg_name		plugin name
+	 * @param {string}		arg_name		plugin name
 	 * @return {object}		A promise of a Plugin instance
 	 */
 	var cb_get_plugin = function(arg_name)
@@ -149,7 +149,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptObject)
 	 * @public
 	 * @memberof			DevaptPluginManager
 	 * @desc				Register a plugin object
-	 * @param(object)		arg_plugin		plugin instance
+	 * @param {object}		arg_plugin		plugin instance
 	 * @return {nothing}
 	 */
 	var cb_set_plugin = function(arg_plugin)
@@ -172,7 +172,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptObject)
 	 * @public
 	 * @memberof			DevaptPluginManager
 	 * @desc				Get a class required url
-	 * @param(string)		arg_class_name		class name
+	 * @param {string}		arg_class_name		class name
 	 * @return {object}		A promise of a class required urls
 	 */
 	var cb_get_class_requires = function(arg_class_name)

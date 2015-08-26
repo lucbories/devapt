@@ -49,25 +49,9 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptClasses, DevaptCache, DevaptRe
 	 * @memberof	DevaptResources
 	 * @public
 	 * @static
-	 * @desc		Ajax timeout
-	 */
-	// DevaptResources.resources_ajax_timeout = 5000;
-	
-	/**
-	 * @memberof	DevaptResources
-	 * @public
-	 * @static
 	 * @desc		Resources promises repository (access by name)
 	 */
 	DevaptResources.resources_promises_by_name = {};
-	
-	/**
-	 * @memberof	DevaptResources
-	 * @public
-	 * @static
-	 * @desc		Storage engines for resources providers: callbacks as "call(resource name, ok_cb, ko_cb) -> boolean"
-	 */
-	// DevaptResources.resources_providers = [];
 	
 	
 	
@@ -183,80 +167,6 @@ function(Devapt, DevaptTraces, DevaptTypes, DevaptClasses, DevaptCache, DevaptRe
 		
 		DevaptTraces.trace_leave(context, 'resource promise', DevaptResources.resources_trace);
 		return promise;
-		
-		/*
-		// CHECK PROVIDERS
-		if ( ! DevaptTypes.is_not_empty_array(DevaptResources.resources_providers) )
-		{
-			DevaptTraces.trace_leave(context, 'no resources provider', DevaptResources.resources_trace);
-			return Devapt.promise_rejected('no resources provider');
-		}
-		
-		
-		// CLONE THE ARRAY
-		var providers = DevaptResources.resources_providers.slice(); // COPY THE ARRAY
-		
-		
-		// LOOK UP CALLBACK
-		var invoke_cb =
-			function(arg_deferred, arg_resource_name, arg_providers)
-			{
-				var cb_context = context + '.invoke provider cb';
-				DevaptTraces.trace_enter(cb_context, '', DevaptResources.resources_trace);
-				console.log('lookup for resource declaration for [%s]', arg_resource_name);
-				
-				// FOUND CALLBACK: RESOLVE GIVEN DEFERRED
-				var promise_success_cb =
-					function(arg_promise_result)
-					{
-						DevaptTraces.trace_leave(cb_context, 'promise success', DevaptResources.resources_trace);
-						
-						DevaptTraces.trace_info(cb_context, 'resource found for [' + arg_resource_name + ']', true);
-						arg_deferred.resolve(arg_promise_result);
-						
-						DevaptTraces.trace_var(cb_context, 'promise success: arg_promise_result', arg_promise_result, DevaptResources.resources_trace);
-					};
-				
-				// NOT FOUND CALLBACK: CALL NEXT SEARCH CALLBACK
-				var promise_failure_cb =
-					function(arg_promise_result)
-					{
-						DevaptTraces.trace_step(cb_context, 'promise failure: call next provider', DevaptResources.resources_trace);
-						
-						invoke_cb(arg_deferred, arg_resource_name, arg_providers);
-						
-						DevaptTraces.trace_leave(cb_context, 'promise failure: no more provider', DevaptResources.resources_trace);
-					};
-				
-				// PROGRESS CALLBACK; UNUSED
-				var promise_progress_cb = null;
-				
-				// GET NEXT SEARCH CALLBACK
-				var next_provider_cb = arg_providers.shift();
-				if (next_provider_cb)
-				{
-					// CALL NEXT SEARCH CALLBACK
-					var promise = next_provider_cb(arg_resource_name, arg_deferred);
-					promise.then(promise_success_cb, promise_failure_cb, promise_progress_cb);
-					
-					DevaptTraces.trace_leave(cb_context, 'call next provider: async request', DevaptResources.resources_trace);
-					return;
-				}
-				
-				// NOT FOUND AND NO MORE CALLBACK
-				DevaptTraces.trace_warn(cb_context, 'resource not found for [' + arg_resource_name + ']', true);
-				DevaptTraces.trace_leave(cb_context, 'not found: no more provider', DevaptResources.resources_trace);
-			};
-		
-		
-		// FIRST SEARCH CALL
-		var master_deferred = Devapt.is_defer(arg_deferred) ? arg_deferred : Devapt.defer();
-		invoke_cb(master_deferred, arg_resource_name, providers);
-		
-		
-		DevaptTraces.trace_leave(context, 'resource promise', DevaptResources.resources_trace);
-		return Devapt.promise(master_deferred);
-		*/
 	}
 	
 	
