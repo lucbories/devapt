@@ -1,6 +1,8 @@
 'use strict';
 
 var Q = require('q'),
+    fs = require('fs'),
+    path = require('path'),
     app_config = require('../config/app_config'),
     databases = require('../models/databases'),
     models = require('../models/models'),
@@ -257,6 +259,8 @@ function load_routes_for_resources_set(arg_server, arg_set_name, arg_set_obj)
       
       // GET RESOURCE DEFINITION
       var resource_def = arg_set_obj[resource_name];
+      
+      // WRAP CONNEXIONS ATTRIBUTES
       if (arg_set_name === 'connexions')
       {
         resource_def.host = 'host';
@@ -265,8 +269,37 @@ function load_routes_for_resources_set(arg_server, arg_set_name, arg_set_obj)
         resource_def.user_pwd = '******';
       }
       
+      // WRAP INCLUDED FILE
+      if ( (typeof resource_def.include_file_path_name) === 'string' )
+      {
+        console.log('resource_def.include_file_path_name', resource_def.include_file_path_name);
+        
+        var file_path = path.join(__dirname, '../../apps/private/', resource_def.include_file_path_name);
+        console.log('file_path', file_path);
+        
+        fs.readFile(file_path, {encoding: 'utf-8'},
+          function(err, data)
+          {
+            if (err)
+            {
+              var error_msg = 'resource include file not found [%s] for resource [%s]';
+              console.error(error_msg, resource_name, file_path);
+              var error = new NotFoundError(error_msg, resource_name, file_path);
+              return next(error);
+            }
+            
+            console.log('file is read');
+            resource_def.include_file_content = data;
+            
+            res.contentType = 'json';
+            res.send(resource_def);
+          }
+        );
+        
+        return next();
+      }
+      
       // PREPARE AND SEND OUTPUT
-      // var output_json = JSON.stringify(resource_def);
       res.contentType = 'json';
       res.send(resource_def);
       return next();

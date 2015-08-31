@@ -395,13 +395,14 @@ function(Devapt, DevaptTypes, DevaptClass)
 			++self.mixin_renderable_count;
 			
 			// BEFORE RENDER
+			// console.log('render before');
 			var promise_before = self.render_before();
 			
 			// RENDER CONTENT
 			var promise_content = promise_before.then(
 				function()
 				{
-					console.log('render after before');
+					// console.log('render content');
 					return self.render_content();
 				}
 			);
@@ -410,6 +411,7 @@ function(Devapt, DevaptTypes, DevaptClass)
 			var promise_after = promise_content.then(
 				function()
 				{
+					// console.log('render after');
 					return self.render_after();
 				}
 			);

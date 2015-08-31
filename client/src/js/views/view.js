@@ -622,14 +622,14 @@ function(
 			
 			 action_view: {
 				 method:'GET',
-				 url:url_base + 'views/' + self.name + '/html_view',
+				 url:url_base + 'resources/views/' + self.name,
 				 format:'devapt_view_api_2'
 			 },
-			action_page: {
-				method:'GET',
-				url:url_base + 'views/' + self.name + '/html_page',
-				format:'devapt_view_api_2'
-			}
+			// action_page: {
+			// 	method:'GET',
+			// 	url:url_base + 'resources/views/' + self.name,
+			// 	format:'devapt_view_api_2'
+			// }
 		};
 		
 		
