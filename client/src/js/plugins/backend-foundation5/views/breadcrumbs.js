@@ -123,16 +123,7 @@ function(Devapt, DevaptTypes, DevaptClass,
 					return function()
 					{
 						// console.log(state, context + '.onclick');
-						// DevaptNavHistory.set_content(state, true);
-<<<<<<< HEAD
-<<<<<<< HEAD
 						DevaptNavigation.display_view(arg_state.view_name, arg_state.menubar_name);
-=======
-						DevaptNavigation.display_view(state.content_view);
->>>>>>> 5e15719254858308d2685830471be2dc8f9841b7
-=======
-						DevaptNavigation.display_view(state.content_view);
->>>>>>> 5e15719254858308d2685830471be2dc8f9841b7
 					}
 				}
 			)(arg_state)
