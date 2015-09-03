@@ -237,17 +237,57 @@ function(Devapt, Hasher, Crossroads, DevaptTrace, DevaptTypes)
 		var promise = null;
 		try
 		{
-			promise = Devapt.app_ready_promise.then(
-				function()
-				{
-					var $ = Devapt.jQuery();
-					var content_id = Devapt.app.get_content_id();
-					var jqo = $('#' + content_id);
-					console.log(jqo, 'jqo for view', arg_view_name);
-					
-					return Devapt.get_current_backend().render_view(jqo, arg_view_name).then( function() { return true; } );
-				}
-			);
+			// UPDATE MENUBAR VIEW
+			arg_menubar_name = arg_menubar_name ? arg_menubar_name : Devapt.app.get_menubar_name();
+			if (! Devapt.app.main_menubar || (Devapt.app.main_menubar && Devapt.app.main_menubar.name !== arg_menubar_name) )
+			{
+				DevaptTrace.trace_step(context, 'UPDATE MENUBAR VIEW', DevaptNavigation.navigation_trace);
+				
+				var menubar_container_id = Devapt.app.get_menubar_container_id();
+				DevaptNavigation.render_view(arg_menubar_name, menubar_container_id)
+				.then(
+					function(view)
+					{
+						DevaptTrace.trace_step(context, 'MENUBAR VIEW IS RENDERED', DevaptNavigation.navigation_trace);
+						Devapt.app.main_menubar = view;
+					}
+				);
+			}
+			
+			// UDPATE CONTENT VIEW
+			if (! Devapt.app.main_content || (Devapt.app.main_content && Devapt.app.main_content.name !== arg_view_name) )
+			{
+				DevaptTrace.trace_step(context, 'UPDATE CONTENT VIEW', DevaptNavigation.navigation_trace);
+				
+				var content_container_id = Devapt.app.get_content_id();
+				promise = DevaptNavigation.render_view(arg_view_name, content_container_id)
+				.then(
+					function(view)
+					{
+						DevaptTrace.trace_step(context, 'CONTENT VIEW IS RENDERED', DevaptNavigation.navigation_trace);
+						Devapt.app.main_content = view;
+						return view;
+					}
+				);
+			}
+			
+			// UPDATE BREADCRUMBS
+			DevaptTrace.trace_step(context, 'UPDATE BREADCRUMBS VIEW', DevaptNavigation.navigation_trace);
+			if (Devapt.app.main_breadcrumbs)
+			{
+				promise.done(
+					function(view)
+					{
+						DevaptTrace.trace_step(context, 'BREADCRUMBS VIEW IS UPDATING', DevaptNavigation.navigation_trace);
+						var state = {
+							content_label: view.label ? view.label : 'empty',
+							menubar_name: arg_menubar_name,
+							view_name: arg_view_name
+						};
+						Devapt.app.main_breadcrumbs.add_history_item(state);
+					}
+				);
+			}
 		}
 		catch(e)
 		{
@@ -257,6 +297,60 @@ function(Devapt, Hasher, Crossroads, DevaptTrace, DevaptTypes)
 		
 		DevaptTrace.trace_leave(context, Devapt.msg_success, DevaptNavigation.navigation_trace);
 		return promise;
+	}
+	
+	
+	
+	/**
+	 * @memberof				DevaptNavigation
+	 * @public
+	 * @method					DevaptNavigation.display_view(arg_view_name)
+	 * @desc					Display the page content with given view
+	 * @param {string}			arg_view_name		view name
+	 * @param {string}			arg_menubar_name	menubar name
+	 * @return {object}			Promise of boolean result : success or failure
+	 */
+	DevaptNavigation.render_view = function(arg_view_name, arg_container_id)
+	{
+		var context = 'DevaptNavigation.render_view(arg_view_name, arg_container_id)';
+		DevaptTrace.trace_enter(context, arg_view_name, DevaptNavigation.navigation_trace);
+		
+		
+		// CHECK ARGS
+		Devapt.assert(context, 'view name', DevaptTypes.is_not_empty_string(arg_view_name) );
+		Devapt.assert(context, 'container id', DevaptTypes.is_not_empty_string(arg_container_id) );
+		
+		var view_promise = null;
+		var backend = Devapt.get_current_backend();
+		Devapt.assert(context, 'backend', DevaptTypes.is_function(backend) );
+		try
+		{
+			DevaptTrace.trace_step(context, 'VIEW NAME AND CONTAINER ID ARE VALID', DevaptNavigation.navigation_trace);
+			
+			var $ = Devapt.jQuery();
+			var container_jqo = $('#' + arg_container_id);
+			Devapt.assert(context, 'view container jqo', DevaptTypes.is_object(container_jqo) );
+			
+			DevaptTrace.trace_step(context, 'VIEW CONTAINER IS VALID', DevaptNavigation.navigation_trace);
+			view_promise = backend.render_view(container_jqo, arg_view_name)
+			.then(
+				function(view)
+				{
+					DevaptTrace.trace_step(context, 'VIEW [' + arg_view_name + '] IS CREATED', DevaptNavigation.navigation_trace);
+					
+					Devapt.assert(context, 'view', DevaptTypes.is_object(view) );
+					Devapt.assert(context, 'view.is_view', DevaptTypes.is_true(view.is_view) );
+				}
+			);
+		}
+		catch(e)
+		{
+			console.error(e, context)
+		}
+		
+		
+		DevaptTrace.trace_leave(context, Devapt.msg_success, DevaptNavigation.navigation_trace);
+		return view_promise;
 	}
 	
 	

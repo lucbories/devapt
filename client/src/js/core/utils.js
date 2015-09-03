@@ -28,10 +28,10 @@ define(['Devapt'], function(Devapt)
 	 * @param {string}		arg_icon_relative_path_name		relative path name of the icon
 	 * @return {string}		icon url
 	 */
-	DevaptUtils.get_main_icon_url = function(arg_icon_relative_path_name)
-	{
-		return APT_IMAGES_URL + arg_icon_relative_path_name;
-	}
+	// DevaptUtils.get_main_icon_url = function(arg_icon_relative_path_name)
+	// {
+	// 	return APT_IMAGES_URL + arg_icon_relative_path_name;
+	// }
 
 
 	/**
@@ -44,7 +44,7 @@ define(['Devapt'], function(Devapt)
 	 * @param {object}		arg_options			view options
 	 * @return {nothing}
 	 */
-	DevaptUtils.go_to_view = function(arg_view, arg_options)
+	/*DevaptUtils.go_to_view = function(arg_view, arg_options)
 	{
 		// GET VIEW OBJECT
 		var view_obj = arg_view;
@@ -77,7 +77,7 @@ define(['Devapt'], function(Devapt)
 		
 		// GOTO URL
 		window.location.assign(url);
-	}
+	}*/
 
 
 	/**
@@ -87,7 +87,7 @@ define(['Devapt'], function(Devapt)
 	 * @desc				Register the json serialization of jQuery if needed
 	 * @return {string}		a json string
 	 */
-	if (typeof $.fn.serializeJSON == 'undefined')
+	/*if (typeof $.fn.serializeJSON == 'undefined')
 	{
 		$.fn.serializeJSON=function()
 		{
@@ -101,7 +101,7 @@ define(['Devapt'], function(Devapt)
 			);
 			return json;
 		};
-	}
+	}*/
 	
 	return DevaptUtils;
 } );

@@ -1,17 +1,19 @@
 /**
  * @file        core/application.js
  * @desc        Devapt static application features
+ * 		INHERITS FROM DevaptAppConfig (core/app_config)
  * 		
  * 		PUBLIC API
- * 				DevaptApplication.get_config(): (plain object)
- * 				DevaptApplication.set_config(plain object): (boolean)
  * 				DevaptApplication.run(): (promise)
- * 				DevaptApplication.check_authentication(): (boolean)
- * 				DevaptApplication.get_security_token(): (string)
+ * 				
  * 				DevaptApplication.get_logged_user(): (plain object)
+ * 				DevaptApplication.get_security_token(): (string)
+ * 				DevaptApplication.check_authentication(): (boolean)
+ * 				
  * 		PRIVATE API
- * 				
- * 				
+ * 				DevaptApplication.init_plugins(): (promise)
+ * 				DevaptApplication.init_backend(): (promise)
+ * 				DevaptApplication.render(): (promise)
  * 				
  * @ingroup     DEVAPT_CORE
  * @date        2013-08-15
@@ -23,20 +25,21 @@
 
 'use strict';
 define(
-['Devapt',
-	'core/traces', 'core/types', 'core/init',
-	// 'core/nav-history',
-	'core/navigation',
-	'object/classes', 'object/plugin-manager', 'core/security',
-	'plugins/plugins'
-],
-function(Devapt,
-	DevaptTrace, DevaptTypes, DevaptInit,
-	// DevaptNavHistory,
-	DevaptNavigation,
-	DevaptClasses, DevaptPluginManager, DevaptSecurity,
-	undefined
-)
+	[	'Devapt',
+		'core/traces', 'core/types', 'core/init',
+		'core/app_config',
+		'core/navigation',
+		'object/classes', 'object/plugin-manager', 'core/security',
+		'plugins/plugins'
+	],
+	function(
+		Devapt,
+		DevaptTrace, DevaptTypes, DevaptInit,
+		DevaptAppCfg,
+		DevaptNavigation,
+		DevaptClasses, DevaptPluginManager, DevaptSecurity,
+		undefined
+	)
 {
 	/**
 	 * @memberof	DevaptApplication
@@ -44,7 +47,7 @@ function(Devapt,
 	 * @class
 	 * @desc		Devapt application features container
 	 */
-	var DevaptApplication = function() {};
+	var DevaptApplication = DevaptAppCfg;
 	
 	
 	/**
@@ -53,73 +56,7 @@ function(Devapt,
 	 * @static
 	 * @desc		Trace flag
 	 */
-	DevaptApplication.app_trace = true;
-	
-	
-	/**
-	 * @memberof	DevaptApplication
-	 * @public
-	 * @static
-	 * @desc		Application configuration
-	 */
-	DevaptApplication.app_config = null;
-	
-	
-	
-	/**
-	 * @memberof			DevaptApplication
-	 * @public
-	 * @static
-	 * @method				DevaptApplication.get_config()
-	 * @desc				Get application configuration associative array
-	 * @return {object}		Application configuration
-	 */
-	DevaptApplication.get_config = function()
-	{
-		var context = 'DevaptApplication.get_config()';
-		DevaptTrace.trace_enter(context, '', DevaptApplication.app_trace);
-		
-		
-		if ( ! DevaptTypes.is_object(DevaptApplication.app_config) )
-		{
-			DevaptTrace.trace_leave(context, 'failure', DevaptApplication.app_trace);
-			return null;
-		}
-		
-		
-		DevaptTrace.trace_leave(context, 'found', DevaptApplication.app_trace);
-		return DevaptApplication.app_config;
-	}
-	
-	/**
-	 * @memberof			DevaptApplication
-	 * @public
-	 * @static
-	 * @method				DevaptApplication.gset_config(arg_config)
-	 * @desc				Get application configuration associative array
-	 * @param {object}		Application configuration
-	 * @return {boolean}	failure or success
-	 */
-	DevaptApplication.set_config = function(arg_config)
-	{
-		var context = 'DevaptApplication.set_config(arg_config)';
-		DevaptTrace.trace_enter(context, '', DevaptApplication.app_trace);
-		
-		
-		// CHECK CONFIGURATION
-		if ( ! DevaptTypes.is_object(arg_config) )
-		{
-			DevaptTrace.trace_leave(context, 'failure', DevaptApplication.app_trace);
-			return false;
-		}
-		
-		// SET CONFIGURATION
-		DevaptApplication.app_config = arg_config;
-		
-		
-		DevaptTrace.trace_leave(context, 'success', DevaptApplication.app_trace);
-		return true;
-	}
+	DevaptApplication.app_trace = false;
 	
 	
 	/**
@@ -136,41 +73,81 @@ function(Devapt,
 		DevaptTrace.trace_enter(context, '', DevaptApplication.app_trace);
 		
 		
-		var init_plugins_promise = null;
+		var ready_promise = null;
 		
 		try
 		{
-			// INIT NAVIGATION HISTORY
-			DevaptNavigation.init();
-			
 			// INIT TRACES
 			DevaptClasses.traces_settings = DevaptApplication.get_value('application.traces.items', []);
 			
-			// CREATE PLUGINS MANAGER
-			Devapt.plugin_manager = DevaptPluginManager.create('plugin_manager');
-			
-			// DO CALLBACK BEFORE PLUGINS INIT
-			DevaptInit.do_before_plugins_init();
 			
 			// LOAD ALL FILES ?
 			var load_all = DevaptApplication.get_value('application.status.load_all_classes', false);
 			if (load_all)
 			{
-				var requires_promise = Devapt.require(['core/all', 'datas/all', 'views/all'])
-				init_plugins_promise = requires_promise.then(
-					function()
-					{
-						return DevaptApplication.init_plugins();
-					}
-				);
-			}
-			else
-			{
-				init_plugins_promise = DevaptApplication.init_plugins();
+				ready_promise = Devapt.require(['core/all', 'datas/all', 'views/all']);
 			}
 			
-			// DO CALLBACK AFTER PLUGINS INIT
-			DevaptInit.do_after_plugins_init();
+			
+			// INIT PLUGINS
+			DevaptTrace.trace_step(context, 'INIT PLUGINS', DevaptApplication.app_trace);
+			Devapt.plugin_manager = DevaptPluginManager.create('plugin_manager');
+			ready_promise = ready_promise.then(
+				function()
+				{
+					try
+					{
+						DevaptTrace.trace_step(context + '.init plugins', 'READY PROMISE IS RESOLVED', DevaptApplication.app_trace);
+						DevaptInit.do_before_plugins_init();
+						return DevaptApplication.init_plugins().then(DevaptInit.do_after_plugins_init);
+					}
+					catch(e)
+					{
+						console.error(e, context + '.init plugins');
+					}
+				}
+			);
+			
+			
+			// INIT BACKEND
+			DevaptTrace.trace_step(context, 'INIT BACKEND', DevaptApplication.app_trace);
+			ready_promise = ready_promise.then(
+				function()
+				{
+					try
+					{
+						DevaptTrace.trace_step(context + '.init backend', 'READY PROMISE IS RESOLVED', DevaptApplication.app_trace);
+						return DevaptApplication.init_backend();
+					}
+					catch(e)
+					{
+						console.error(e, context + '.init backend');
+					}
+				}
+			);
+			
+			
+			// INIT RENDER
+			DevaptTrace.trace_step(context, 'INIT RENDER', DevaptApplication.app_trace);
+			ready_promise = ready_promise.then(
+				function()
+				{
+					try
+					{
+						DevaptTrace.trace_step(context + '.init render', 'READY PROMISE IS RESOLVED', DevaptApplication.app_trace);
+						DevaptInit.do_before_rendering();
+						return DevaptApplication.render()
+						.then(DevaptInit.do_after_rendering)
+						
+						// INIT NAVIGATION HISTORY
+						.then(DevaptNavigation.init);
+					}
+					catch(e)
+					{
+						console.error(e, context + '.init render');
+					}
+				}
+			);
 		}
 		catch(e)
 		{
@@ -178,10 +155,11 @@ function(Devapt,
 		}
 		
 		
+		
 		DevaptTrace.trace_leave(context, '', DevaptApplication.app_trace);
-		// return init_plugins_promise;
-		return Devapt.promise_resolved();
+		return ready_promise;
 	}
+	
 	
 	
 	/**
@@ -209,9 +187,6 @@ function(Devapt,
 			{
 				DevaptTrace.trace_step(context, 'loop on [' + plugin_declaration_key + ']', DevaptApplication.app_trace);
 				
-				var defer = Devapt.defer();
-				promises_array.push( Devapt.promise(defer) );
-				
 				var plugin_declaration = plugins_declarations[plugin_declaration_key];
 				var plugin_declaration_name = ('name' in plugin_declaration) ? plugin_declaration['name'] : null;
 				var plugin_declaration_url = ('url' in plugin_declaration) ? plugin_declaration['url'] : null;
@@ -226,8 +201,6 @@ function(Devapt,
 						{
 							DevaptTrace.trace_step(context, 'PLUGIN DECLARATION URL IS LOADING', DevaptApplication.app_trace);
 							
-							var plugins_promises_array = [];
-							
 							if (plugin_declaration_autoload)
 							{
 								DevaptTrace.trace_step(context, 'PLUGIN DECLARATION WITH AUTOLOAD', DevaptApplication.app_trace);
@@ -238,29 +211,14 @@ function(Devapt,
 									DevaptTrace.trace_step(context, 'loop on plugin name [' + plugin_name + ']', DevaptApplication.app_trace);
 									
 									var load_plugin_promise = Devapt.plugin_manager.load_plugin(plugin_name);
-									// console.log(load_plugin_promise, 'load_plugin_promise');
-									plugins_promises_array.push(load_plugin_promise);
+									promises_array.push(load_plugin_promise);
 								}
 							}
-							
-							// console.log(plugins_promises_array, 'plugins_promises_array');
-							var promise_all_plugins = Devapt.promise_all(plugins_promises_array);
-							promise_all_plugins.then(
-								function()
-								{
-									defer.resolve();
-								}
-							);
-							// return promise_all_plugins;
 						}
 					);
 					
 					DevaptTrace.trace_step(context, 'PLUGIN DECLARATION WITH URL: push promises', DevaptApplication.app_trace);
-					// promises_array.push(load_url_promise);
-				}
-				else
-				{
-					defer.resolve();
+					promises_array.push(load_url_promise);
 				}
 				
 				
@@ -279,28 +237,10 @@ function(Devapt,
 		}
 		
 		
-		// LAUNCH INIT BACKEND
-		DevaptTrace.trace_step(context, 'LAUNCH INIT BACKEND', DevaptApplication.app_trace);
-		var promise_all = Devapt.promise_all(promises_array);
-		try
-		{
-			promise_all.then(
-				function()
-				{
-					DevaptTrace.trace_step(context, 'LAUNCH INIT BACKEND:ALL PROMISES ARE RESOLVED', DevaptApplication.app_trace);
-					DevaptApplication.init_backend();
-				}
-			);
-		}
-		catch(e)
-		{
-			console.error(e, context);
-		}
-		
-		
 		DevaptTrace.trace_leave(context, Devapt.msg_success_promise, DevaptApplication.app_trace);
-		return promise_all;
+		return Devapt.promise_all(promises_array);
 	}
+	
 	
 	
 	/**
@@ -354,16 +294,6 @@ function(Devapt,
 						DevaptTrace.trace_error(context, 'init backend failed', true);
 						return Devapt.promise_rejected('init backend failed');
 					}
-					
-					// RENDER VIEW
-					DevaptInit.do_before_rendering();
-					
-					return DevaptApplication.render().then(
-						function()
-						{
-							DevaptInit.do_after_rendering();
-						}
-					);
 				}
 			);
 			
@@ -374,8 +304,9 @@ function(Devapt,
 		
 		// RENDER VIEW WITH AN EXISTING CURRENT BACKEND
 		DevaptTrace.trace_leave(context, Devapt.msg_success_promise, DevaptApplication.app_trace);
-		return DevaptApplication.render();
+		return set_backend_promise;
 	}
+	
 	
 	
 	/**
@@ -411,92 +342,63 @@ function(Devapt,
 			}
 			
 			
-			// INIT DEAULT TOP MENUBAR
-			DevaptTrace.trace_step(context, 'INIT TOP MENUBAR', DevaptApplication.app_trace);
-			var topmenubar_promise = null;
+			// INIT DEAULTS
+			DevaptTrace.trace_step(context, 'INIT DEFAULTS', DevaptApplication.app_trace);
+			var $ = Devapt.jQuery();
+			var breadcrumbs_name = DevaptApplication.get_breadcrumbs_name();
 			
-			// var default_topbar_name = DevaptApplication.get_topbar_name();
-			// if ( ! DevaptTypes.is_not_empty_str(DevaptNavHistory.current_topbar_name))
-			// {
-			// 	DevaptTrace.trace_step(context, 'SET DEFAULT TOP MENUBAR', DevaptApplication.app_trace);
-			// 	DevaptNavHistory.current_topbar_name = default_topbar_name;
-			// }
+			var menubar_promise = null;
+			var breadcrumbs_promise = null;
 			
-			
-			// INIT DEFAULT VIEW
-			DevaptTrace.trace_step(context, 'OTHERS INIT', DevaptApplication.app_trace);
-			
-			
-			// GET PAGE HASH
-			// DevaptTrace.trace_step(context, 'GET PAGE HASH', DevaptApplication.app_trace);
-			// var hash = DevaptNavHistory.get_location_hash();
-			// if ( ! DevaptTypes.is_not_empty_str(hash) )
-			// {
-			// 	DevaptTrace.trace_step(context, 'SET DEFAULT HOME HASH', DevaptApplication.app_trace);
-				
-			// 	var hash = DevaptApplication.get_home_view_hash();
-			// }
-			// DevaptTrace.trace_value(context, 'hash', hash, DevaptApplication.app_trace);
-			
-			// RENDER PAGE
-			DevaptTrace.trace_step(context, 'RENDER PAGE', DevaptApplication.app_trace);
-			// var cb_async_render = function()
-			// {
-			// 	DevaptTrace.trace_step(context, 'RENDER PAGE callback', DevaptApplication.app_trace);
-			// 	DevaptNavHistory.set_location_hash(hash);
-			// };
-			// setTimeout(cb_async_render, 10);
+			Devapt.app.main_breacrumbs = null;
+			Devapt.app.main_menubar = null;
+			Devapt.app.main_content = null;
 			
 			
 			// INIT BREADCRUMBS
 			DevaptTrace.trace_step(context, 'INIT BREADCRUMBS', DevaptApplication.app_trace);
-			var breadcrumbs_promise = null;
-			
-			var breadcrumbs = DevaptApplication.get_breadcrumbs_name();
-			if ( DevaptTypes.is_not_empty_str(breadcrumbs) )
+			if ( DevaptTypes.is_not_empty_str(breadcrumbs_name) )
 			{
-				var container_id = DevaptApplication.get_breadcrumbs_container_id();
-				if ( DevaptTypes.is_not_empty_str(container_id) )
+				DevaptTrace.trace_step(context, 'INIT BREADCRUMBS NAME IS VALID', DevaptApplication.app_trace);
+				
+				var breadcrumbs_container_id = DevaptApplication.get_breadcrumbs_container_id();
+				if ( DevaptTypes.is_not_empty_str(breadcrumbs_container_id) )
 				{
-					var container_jqo = $('#' + container_id);
-					if (container_jqo)
+					DevaptTrace.trace_step(context, 'INIT BREADCRUMBS CONTAINER ID IS VALID', DevaptApplication.app_trace);
+					
+					var breadcrumbs_container_jqo = $('#' + breadcrumbs_container_id);
+					if (breadcrumbs_container_jqo)
 					{
-						// DevaptNavHistory.history_breadcrumbs_name = breadcrumbs;
+						DevaptTrace.trace_step(context, 'INIT BREADCRUMBS CONTAINER IS VALID', DevaptApplication.app_trace);
 						
-						// console.log(container_jqo, 'breadcrumbs container_jqo');
-						
-						var render_promise = backend.render_view(container_jqo, breadcrumbs);
-						
-						breadcrumbs_promise = render_promise.then(
+						breadcrumbs_promise = backend.render_view(breadcrumbs_container_jqo, breadcrumbs_name).then(
 							function(view)
 							{
+								DevaptTrace.trace_step(context, 'INIT BREADCRUMBS VIEW IS CREATED', DevaptApplication.app_trace);
+								
 								if ( ! DevaptTypes.is_object(view) || ! view.is_view )
 								{
 									DevaptTrace.trace_step(context, 'ERROR: resource view is not a valid object', DevaptApplication.app_trace);
 									return;
 								}
 								
-								// DevaptNavHistory.history_breadcrumbs_object = view;
-								view.add_event_callback('nav-history.add',
-									[view, view.on_nav_history_add],
-									false
-								);
+								Devapt.app.main_breacrumbs = view;
 							}
 						);
 					}
 				}
 			}
 			
-			
 			var all_promise = [];
-			if (topmenubar_promise)
+			if (menubar_promise)
 			{
-				all_promise.push(topmenubar_promise);
+				all_promise.push(menubar_promise);
 			}
 			if (breadcrumbs_promise)
 			{
 				all_promise.push(breadcrumbs_promise);
 			}
+			
 			
 			DevaptTrace.trace_leave(context, Devapt.msg_success_promise, DevaptApplication.app_trace);
 			return Devapt.promise_all(all_promise);
@@ -511,369 +413,6 @@ function(Devapt,
 		return Devapt.promise_rejected();
 	}
 	
-	
-	/**
-	 * @memberof				DevaptApplication
-	 * @public
-	 * @static
-	 * @method					DevaptApplication.get_value(arg_path)
-	 * @desc					Get application configuration value
-	 * @param {string}			arg_value_path	Value path (aaa.bb.ccc.dd)
-	 * @param {anything}		arg_default_value	Default value
-	 * @return {anything}		Configuration value or null if not found
-	 */
-	DevaptApplication.get_value = function(arg_value_path, arg_default_value)
-	{
-		var context = 'DevaptApplication.get_value(value path, default value)';
-		DevaptTrace.trace_enter(context, '', DevaptApplication.app_trace);
-		
-		
-		var path_array = arg_value_path.split('.');
-		var path_node = DevaptApplication.app_config;
-		for(var path_node_index in path_array)
-		{
-			var path_node_value = path_array[path_node_index];
-			if ( path_node_index == 0 && path_node_value === 'application' )
-			{
-				continue;
-			}
-			
-			if ( path_node[path_node_value] )
-			{
-				path_node = path_node[path_node_value];
-				continue;
-			}
-			
-			DevaptTrace.trace_leave(context, 'not found, returns default value', DevaptApplication.app_trace);
-			return arg_default_value;
-		}
-		
-		if ( path_node === DevaptApplication.app_config )
-		{
-			DevaptTrace.trace_leave(context, 'not found, returns default value', DevaptApplication.app_trace);
-			return arg_default_value;
-		}
-		
-		
-		DevaptTrace.trace_leave(context, 'found', DevaptApplication.app_trace);
-		return path_node;
-	}
-	
-	
-	/**
-	 * @memberof			DevaptApplication
-	 * @public
-	 * @static
-	 * @method				DevaptApplication.get_url_base()
-	 * @desc				Get application configuration base url "application.url.base"
-	 * @return {string}		Application base url
-	 */
-	DevaptApplication.get_url_base = function()
-	{
-		var context = 'DevaptApplication.get_url_base()';
-		DevaptTrace.trace_enter(context, '', DevaptApplication.app_trace);
-		
-		var value = DevaptApplication.get_value('url.base', null);
-		
-		DevaptTrace.trace_leave(context, '', DevaptApplication.app_trace);
-		return value;
-	}
-	
-	
-	/**
-	 * @memberof			DevaptApplication
-	 * @public
-	 * @static
-	 * @method				DevaptApplication.get_title()
-	 * @desc				Get application configuration "application.title"
-	 * @return {string}		Application topbar name
-	 */
-	DevaptApplication.get_title = function()
-	{
-		var context = 'DevaptApplication.get_title()';
-		DevaptTrace.trace_enter(context, '', DevaptApplication.app_trace);
-		
-		var value = DevaptApplication.get_value('title', null);
-		DevaptTrace.trace_var(context, 'title', value, DevaptApplication.app_trace);
-		
-		DevaptTrace.trace_leave(context, '', DevaptApplication.app_trace);
-		return value;
-	}
-	
-	
-	/**
-	 * @memberof			DevaptApplication
-	 * @public
-	 * @static
-	 * @method				DevaptApplication.get_name()
-	 * @desc				Get application configuration "application.name"
-	 * @return {string}		Application topbar name
-	 */
-	DevaptApplication.get_name = function()
-	{
-		var context = 'DevaptApplication.get_name()';
-		DevaptTrace.trace_enter(context, '', DevaptApplication.app_trace);
-		
-		var value = DevaptApplication.get_value('name', null);
-		DevaptTrace.trace_var(context, 'name', value, DevaptApplication.app_trace);
-		
-		DevaptTrace.trace_leave(context, '', DevaptApplication.app_trace);
-		return value;
-	}
-	
-	
-	/**
-	 * @memberof			DevaptApplication
-	 * @public
-	 * @static
-	 * @method				DevaptApplication.get_short_label()
-	 * @desc				Get application configuration "application.short_label"
-	 * @return {string}		Application topbar name
-	 */
-	DevaptApplication.get_short_label = function()
-	{
-		var context = 'DevaptApplication.get_short_label()';
-		DevaptTrace.trace_enter(context, '', DevaptApplication.app_trace);
-		
-		var value = DevaptApplication.get_value('short_label', null);
-		DevaptTrace.trace_var(context, 'short_label', value, DevaptApplication.app_trace);
-		
-		DevaptTrace.trace_leave(context, '', DevaptApplication.app_trace);
-		return value;
-	}
-	
-	
-	/**
-	 * @memberof			DevaptApplication
-	 * @public
-	 * @static
-	 * @method				DevaptApplication.get_long_label()
-	 * @desc				Get application configuration "application.long_label"
-	 * @return {string}		Application topbar name
-	 */
-	DevaptApplication.get_long_label = function()
-	{
-		var context = 'DevaptApplication.get_long_label()';
-		DevaptTrace.trace_enter(context, '', DevaptApplication.app_trace);
-		
-		var value = DevaptApplication.get_value('long_label', null);
-		DevaptTrace.trace_var(context, 'long_label', value, DevaptApplication.app_trace);
-		
-		DevaptTrace.trace_leave(context, '', DevaptApplication.app_trace);
-		return value;
-	}
-	
-	
-	/**
-	 * @memberof			DevaptApplication
-	 * @public
-	 * @static
-	 * @method				DevaptApplication.get_version()
-	 * @desc				Get application configuration "application.version"
-	 * @return {string}		Application topbar name
-	 */
-	DevaptApplication.get_version = function()
-	{
-		var context = 'DevaptApplication.get_version()';
-		DevaptTrace.trace_enter(context, '', DevaptApplication.app_trace);
-		
-		var value = DevaptApplication.get_value('version', null);
-		DevaptTrace.trace_var(context, 'version', value, DevaptApplication.app_trace);
-		
-		DevaptTrace.trace_leave(context, '', DevaptApplication.app_trace);
-		return value;
-	}
-	
-	
-	/**
-	 * @memberof			DevaptApplication
-	 * @public
-	 * @static
-	 * @method				DevaptApplication.get_home_view_hash()
-	 * @desc				Get application home locatio  hash
-	 * @return {string}		Application location hash
-	 */
-	DevaptApplication.get_home_view_hash = function()
-	{
-		var context = 'DevaptApplication.get_home_view_hash()';
-		DevaptTrace.trace_enter(context, '', DevaptApplication.app_trace);
-		
-		var home_view = DevaptApplication.get_value('layouts.default.content.name', null);
-		var menubar_view = DevaptApplication.get_value('layouts.default.topbar.name', null);
-		var page_title = 'HOME';
-		var content_label = 'HOME';
-		var hash = 'view:' + home_view + ':' + page_title + ':' + content_label + ':' + menubar_view;
-		
-		DevaptTrace.trace_leave(context, '', DevaptApplication.app_trace);
-		return hash;
-	}
-	
-	
-	/**
-	 * @memberof			DevaptApplication
-	 * @public
-	 * @static
-	 * @method				DevaptApplication.get_home_view_url()
-	 * @desc				Get application configuration home url "application.url.home"
-	 * @return {string}		Application base url
-	 */
-	DevaptApplication.get_home_view_url = function()
-	{
-		var context = 'DevaptApplication.get_home_view_url()';
-		DevaptTrace.trace_enter(context, '', DevaptApplication.app_trace);
-		
-		var url_base = DevaptApplication.get_value('url.base', null);
-		var value = url_base + DevaptApplication.get_value('url.home', null);
-		value = value.replace('//', '/');
-		
-		DevaptTrace.trace_leave(context, '', DevaptApplication.app_trace);
-		return value;
-	}
-	
-	
-	/**
-	 * @memberof			DevaptApplication
-	 * @public
-	 * @static
-	 * @method				DevaptApplication.get_login_view_url()
-	 * @desc				Get application configuration login url "application.url.login"
-	 * @return {string}		Application base url
-	 */
-	DevaptApplication.get_login_view_url = function()
-	{
-		var context = 'DevaptApplication.get_login_view_url()';
-		DevaptTrace.trace_enter(context, '', DevaptApplication.app_trace);
-		
-		var value = DevaptApplication.get_value('url.login', null);
-		
-		DevaptTrace.trace_leave(context, '', DevaptApplication.app_trace);
-		return value;
-	}
-	
-	
-	/**
-	 * @memberof			DevaptApplication
-	 * @public
-	 * @static
-	 * @method				DevaptApplication.get_home_view_url()
-	 * @desc				Get application configuration home url "application.url.home"
-	 * @return {string}		Application base url
-	 */
-	DevaptApplication.get_content_id = function()
-	{
-		var context = 'DevaptApplication.get_content_id()';
-		DevaptTrace.trace_enter(context, '', DevaptApplication.app_trace);
-		
-		var value = DevaptApplication.get_value('layouts.default.content.id', null);
-		
-		DevaptTrace.trace_leave(context, '', DevaptApplication.app_trace);
-		return value;
-	}
-	
-	
-	/**
-	 * @memberof			DevaptApplication
-	 * @public
-	 * @static
-	 * @method				DevaptApplication.get_topbar_name()
-	 * @desc				Get application configuration "application.layouts.default.topbar.name"
-	 * @return {string}		Application topbar name
-	 */
-	DevaptApplication.get_topbar_name = function()
-	{
-		var context = 'DevaptApplication.get_topbar_name()';
-		DevaptTrace.trace_enter(context, '', DevaptApplication.app_trace);
-		
-		var value = DevaptApplication.get_value('layouts.default.topbar.name', null);
-		DevaptTrace.trace_var(context, 'topbar.name', value, DevaptApplication.app_trace);
-		
-		DevaptTrace.trace_leave(context, '', DevaptApplication.app_trace);
-		return value;
-	}
-	
-	
-	/**
-	 * @memberof			DevaptApplication
-	 * @public
-	 * @static
-	 * @method				DevaptApplication.get_topbar_container_id()
-	 * @desc				Get application configuration "application.layouts.default.topbar.container_id"
-	 * @return {string}		Application topbar name
-	 */
-	DevaptApplication.get_topbar_container_id = function()
-	{
-		var context = 'DevaptApplication.get_topbar_container_id()';
-		DevaptTrace.trace_enter(context, '', DevaptApplication.app_trace);
-		
-		var value = DevaptApplication.get_value('layouts.default.topbar.container_id', null);
-		DevaptTrace.trace_var(context, 'topbar.container_id', value, DevaptApplication.app_trace);
-		
-		DevaptTrace.trace_leave(context, '', DevaptApplication.app_trace);
-		return value;
-	}
-	
-	
-	/**
-	 * @memberof			DevaptApplication
-	 * @public
-	 * @static
-	 * @method				DevaptApplication.get_breadcrumbs_name()
-	 * @desc				Get application configuration "application.layouts.default.breadcrumbs.name"
-	 * @return {string}		Application breadcrumbs name
-	 */
-	DevaptApplication.get_breadcrumbs_name = function()
-	{
-		var context = 'DevaptApplication.get_breadcrumbs_name()';
-		DevaptTrace.trace_enter(context, '', DevaptApplication.app_trace);
-		
-		var value = DevaptApplication.get_value('layouts.default.breadcrumbs.name', null);
-		DevaptTrace.trace_var(context, 'breadcrumbs.container_id', value, DevaptApplication.app_trace);
-		
-		DevaptTrace.trace_leave(context, '', DevaptApplication.app_trace);
-		return value;
-	}
-	
-	
-	/**
-	 * @memberof			DevaptApplication
-	 * @public
-	 * @static
-	 * @method				DevaptApplication.get_breadcrumbs_container_id()
-	 * @desc				Get application configuration "application.layouts.default.breadcrumbs.container_id"
-	 * @return {string}		Application breadcrumbs container html id
-	 */
-	DevaptApplication.get_breadcrumbs_container_id = function()
-	{
-		var context = 'DevaptApplication.get_breadcrumbs_container_id()';
-		DevaptTrace.trace_enter(context, '', DevaptApplication.app_trace);
-		
-		var value = DevaptApplication.get_value('layouts.default.breadcrumbs.container_id', null);
-		DevaptTrace.trace_var(context, 'breadcrumbs.container_id', value, DevaptApplication.app_trace);
-		
-		DevaptTrace.trace_leave(context, '', DevaptApplication.app_trace);
-		return value;
-	}
-	
-	
-	/**
-	 * @memberof			DevaptApplication
-	 * @public
-	 * @static
-	 * @method				DevaptApplication.get_client_plugins()
-	 * @desc				Get application configuration "application.plugins.client"
-	 * @return {array}		Application client plugins
-	 */
-	DevaptApplication.get_client_plugins = function()
-	{
-		var context = 'DevaptApplication.get_client_plugins()';
-		DevaptTrace.trace_enter(context, '', DevaptApplication.app_trace);
-		
-		var value = DevaptApplication.get_value('plugins.client', {});
-		DevaptTrace.trace_var(context, 'client plugins', value, DevaptApplication.app_trace);
-		
-		DevaptTrace.trace_leave(context, '', DevaptApplication.app_trace);
-		return value;
-	}
 	
 	
 	/**

@@ -54,7 +54,7 @@ function(
 	var cb_constructor = function(self)
 	{
 		// DEBUG
-		self.trace = true;
+		// self.trace = true;
 		
 		var context = self.class_name + '(' + self.name + ')';
 		self.enter(context, 'Menu constructor');

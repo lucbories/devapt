@@ -123,7 +123,7 @@ function(Devapt, DevaptTypes, DevaptClass,
 					{
 						// console.log(state, context + '.onclick');
 						// DevaptNavHistory.set_content(state, true);
-						DevaptNavigation.display_view(state);
+						DevaptNavigation.display_view(arg_state.view_name, arg_state.menubar_name);
 					}
 				}
 			)(arg_state)

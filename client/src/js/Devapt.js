@@ -60,6 +60,8 @@
  * 					GARBAGE COLLECTOR
  * 						Devapt.gc_use(arg_using_object, arg_used_object)
  * 						
+ * 					ASSERTION
+ * 						Devapt.assert(arg_context, arg_label, arg_boolean)
  * 						
  * @ingroup     DEVAPT_CORE
  * @date        2013-05-16
@@ -729,6 +731,29 @@ function($, DevaptInit, CryptoMD5, CryptoSHA1, Q, DevaptFactory)
 		arg_using_object.gc_use(arg_used_object);
 		
 		return null;
+	};
+	
+	
+	
+	// -------------------------------------------------- GARBAGE COLLECTOR ---------------------------------------------------------
+	
+	/**
+	 * @memberof			Devapt
+	 * @public
+	 * @static
+	 * @method				Devapt.assert(arg_context, arg_label, arg_boolean)
+	 * @desc				Assert a boolean value and throw an error if not true
+	 * @param {string}		arg_context			assertion context
+	 * @param {string}		arg_label			assertion label
+	 * @param {boolean}		arg_boolean			boolean value
+	 * @return {nothing}
+	 */
+	Devapt.assert = function(arg_context, arg_label, arg_boolean)
+	{
+		if (! arg_boolean)
+		{
+			throw new Error(arg_context + ':' + arg_label + '->assertion failed')
+		}
 	};
 	
 	
