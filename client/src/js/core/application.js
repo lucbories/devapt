@@ -65,7 +65,11 @@ function(Devapt,
 	 * @desc		Devapt application features container
 	 */
 <<<<<<< HEAD
+<<<<<<< HEAD
 	var DevaptApplication = DevaptAppCfg;
+=======
+	var DevaptApplication = DevaptAppConfig;
+>>>>>>> 5e15719254858308d2685830471be2dc8f9841b7
 =======
 	var DevaptApplication = DevaptAppConfig;
 >>>>>>> 5e15719254858308d2685830471be2dc8f9841b7
@@ -90,6 +94,9 @@ function(Devapt,
 	 * @desc		Application configuration
 	 */
 	// DevaptApplication.app_config = null;
+<<<<<<< HEAD
+>>>>>>> 5e15719254858308d2685830471be2dc8f9841b7
+=======
 >>>>>>> 5e15719254858308d2685830471be2dc8f9841b7
 	
 	
@@ -144,6 +151,7 @@ function(Devapt,
 			
 			
 <<<<<<< HEAD
+<<<<<<< HEAD
 			// INIT BACKEND
 			DevaptTrace.trace_step(context, 'INIT BACKEND', DevaptApplication.app_trace);
 			ready_promise = ready_promise.then(
@@ -184,6 +192,8 @@ function(Devapt,
 				}
 			);
 =======
+=======
+>>>>>>> 5e15719254858308d2685830471be2dc8f9841b7
 			// AFTER PLUGINS INIT
 			init_plugins_promise.then(
 				function()
@@ -196,6 +206,9 @@ function(Devapt,
 				}
 			);
 			
+<<<<<<< HEAD
+>>>>>>> 5e15719254858308d2685830471be2dc8f9841b7
+=======
 >>>>>>> 5e15719254858308d2685830471be2dc8f9841b7
 		}
 		catch(e)
@@ -207,7 +220,12 @@ function(Devapt,
 		
 		DevaptTrace.trace_leave(context, '', DevaptApplication.app_trace);
 <<<<<<< HEAD
+<<<<<<< HEAD
 		return ready_promise;
+=======
+		return init_plugins_promise;
+		// return Devapt.promise_resolved();
+>>>>>>> 5e15719254858308d2685830471be2dc8f9841b7
 =======
 		return init_plugins_promise;
 		// return Devapt.promise_resolved();
@@ -484,15 +502,21 @@ function(Devapt,
 			
 			var all_promise = [];
 <<<<<<< HEAD
+<<<<<<< HEAD
 			if (menubar_promise)
 			{
 				all_promise.push(menubar_promise);
 			}
 =======
+=======
+>>>>>>> 5e15719254858308d2685830471be2dc8f9841b7
 			// if (topmenubar_promise)
 			// {
 			// 	all_promise.push(topmenubar_promise);
 			// }
+<<<<<<< HEAD
+>>>>>>> 5e15719254858308d2685830471be2dc8f9841b7
+=======
 >>>>>>> 5e15719254858308d2685830471be2dc8f9841b7
 			if (breadcrumbs_promise)
 			{
@@ -515,7 +539,10 @@ function(Devapt,
 	
 	
 <<<<<<< HEAD
+<<<<<<< HEAD
 	
+=======
+>>>>>>> 5e15719254858308d2685830471be2dc8f9841b7
 =======
 >>>>>>> 5e15719254858308d2685830471be2dc8f9841b7
 	/**
