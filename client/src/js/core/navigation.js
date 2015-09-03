@@ -68,19 +68,45 @@ function(Devapt, Hasher, Crossroads, DevaptTrace, DevaptTypes)
 		DevaptNavigation.navigation_router.addRoute('',
 			function()
 			{
-				console.log('Crossroads route cb for [%s]', 'home');
-				return DevaptNavigation.display_view('VIEW_HOME');
+				// Devapt.app_ready_promise.done(
+				// 	function()
+				// 	{
+						console.log('Crossroads route cb for [%s]', 'home');
+						return DevaptNavigation.display_view('VIEW_HOME');
+					// }
+				// );
 			}
 		);
 		
-		view_name = /^[.*]\#view=([_\-0-9a-zA-Z]+),menubar=([_\-0-9a-zA-Z]+)?$/;
+		// view_name = /^[.*]\#view=([_\-0-9a-zA-Z]+),menubar=([_\-0-9a-zA-Z]+)?$/;
+		view_name = '#view=VIEW_CONTENT_1,menubar=';
 		DevaptNavigation.navigation_router.addRoute(view_name,
-			function(view, menubar)
+			function()
 			{
-				console.log('Crossroads route cb for view [%s] and menubar [%s]', view, menubar);
-				return DevaptNavigation.display_view(view, menubar);
+				var view = 'VIEW_CONTENT_1', menubar ='';
+				// Devapt.app_ready_promise.done(
+				// 	function()
+				// 	{
+						console.log('Crossroads route cb for view [%s] and menubar [%s]', view, menubar);
+						return DevaptNavigation.display_view(view, menubar);
+				// 	}
+				// );
 			}
 		);
+		
+		// view_name = '#view=VIEW_CONTENT_1,menubar=';
+		// DevaptNavigation.navigation_router.addRoute(view_name,
+		// 	function(view, menubar)
+		// 	{
+		// 		Devapt.app_ready_promise.done(
+		// 			function()
+		// 			{
+		// 				console.log('Crossroads route cb for view [%s] and menubar [%s]', view, menubar);
+		// 				return DevaptNavigation.display_view(view, menubar);
+		// 			}
+		// 		);
+		// 	}
+		// );
 		
 		// view_name = 'VIEW_HOME';
 		// DevaptNavigation.add_route_for_view(view_name);
@@ -233,6 +259,7 @@ function(Devapt, Hasher, Crossroads, DevaptTrace, DevaptTypes)
 	{
 		var context = 'DevaptNavigation.display_view(arg_view_name, arg_menubar_name)';
 		DevaptTrace.trace_enter(context, arg_view_name, DevaptNavigation.navigation_trace);
+		DevaptTrace.trace_value(context, 'arg_menubar_name', arg_menubar_name, DevaptNavigation.navigation_trace);
 		
 		var promise = null;
 		try

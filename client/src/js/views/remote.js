@@ -40,19 +40,22 @@ function(Devapt, DevaptClass, DevaptView, DevaptApplication)
 		self.assert_not_null(context, 'parent_jqo', self.parent_jqo);
 		
 		// GET APP BASE URL
-		var url_base = DevaptApplication.get_url_base();
+		// var url_base = DevaptApplication.get_url_base();
 		
 		// GET VIEW CONTENT URL
-		var view_content_url = url_base + 'views/' + self.name + '/html_view' + '?security_token=' + DevaptApplication.get_security_token();
+		var view_content_url = '/resources/views/' + self.name;
 		
 		
 		// GET AND RENDER VIEW CONTENT
-		var jq_promise = $.get(view_content_url);
-		var promise = Devapt.defer(jq_promise);
+		// var jq_promise = $.get(view_content_url);
+		var promise = Devapt.ajax_get(view_content_url);
 		promise.then(
-			function(arg_html)
+			function(arg_resource_def)
 			{
-				self.content_jqo.html(arg_html);
+				if (arg_resource_def.include_file_content)
+				{
+					self.content_jqo.html(arg_resource_def.include_file_content);
+				}
 			}
 		);
 		

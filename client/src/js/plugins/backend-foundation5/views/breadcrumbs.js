@@ -58,7 +58,8 @@ function(Devapt, DevaptTypes, DevaptClass,
 		
 		// LOOP ON NAV HISTORY
 		// var nav_stack = DevaptNavHistory.history_stack;
-		var nav_stack = DevaptNavigation.get_history_stack();
+		// var nav_stack = DevaptNavigation.get_history_stack();
+		var nav_stack = [ { content_label:'HOME', content_view:'VIEW_HOME' } ];
 		self.value(context, 'breadcrumbs html content', nav_stack);
 		for(var content_key in nav_stack)
 		{
@@ -123,7 +124,11 @@ function(Devapt, DevaptTypes, DevaptClass,
 					{
 						// console.log(state, context + '.onclick');
 						// DevaptNavHistory.set_content(state, true);
+<<<<<<< HEAD
 						DevaptNavigation.display_view(arg_state.view_name, arg_state.menubar_name);
+=======
+						DevaptNavigation.display_view(state.content_view);
+>>>>>>> 5e15719254858308d2685830471be2dc8f9841b7
 					}
 				}
 			)(arg_state)
