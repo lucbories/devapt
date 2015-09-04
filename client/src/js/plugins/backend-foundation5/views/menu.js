@@ -23,7 +23,6 @@
 define(
 	[
 		'Devapt', 'core/types', 'core/resources',
-		// 'core/nav-history',
 		'core/navigation',
 		'object/class', 'object/classes',
 		'views/view',
@@ -31,7 +30,6 @@ define(
 	],
 function(
 	Devapt, DevaptTypes, DevaptResources,
-	// DevaptNavHistory,
 	DevaptNavigation,
 	DevaptClass, DevaptClasses,
 	DevaptView,
@@ -92,7 +90,6 @@ function(
 	var cb_render_content_self = function()
 	{
 		var self = this;
-		// self.trace=true;
 		var context = 'render_content_self()';
 		self.enter(context, '');
 		
@@ -140,7 +137,6 @@ function(
 						self.step(context, 'type is separator');
 						menu_jqo.addClass('divider');
 						
-						self.leave(context, 'success: separator');
 						return Devapt.promise_resolved(true);
 					}
 					
@@ -152,7 +148,6 @@ function(
 						
 						render_promise = self.render_menu_button(menu_jqo, arg_menu_declaration);
 						
-						self.leave(context, 'success: button');
 						return render_promise;
 					}
 					
@@ -164,7 +159,6 @@ function(
 						
 						render_promise = self.render_menu_button(menu_jqo, arg_menu_declaration);
 						
-						self.leave(context, 'success: button');
 						return render_promise;
 					}
 					
@@ -183,7 +177,8 @@ function(
 			}
 		);
 		
-		self.leave(context, 'success: button');
+		
+		self.leave(context, Devapt.msg_success_promise);
 		return promise;
 	}
 	
@@ -331,11 +326,8 @@ function(
 		var display_view= DevaptTypes.to_string(display['view'], null);
 		var display_cont= DevaptTypes.to_string(display['container'], display_view);
 		var display_js	= DevaptTypes.to_string(display['js'], null);
+		var display_menubar	= DevaptTypes.to_string(display['menubar'], null);
 		
-		
-		// var div_button_jqo = null;
-		// var option_button_url = null;
-		// var option_button_onclick = null;
 		
 		var menu_a_jqo = $('<a>');
 		
@@ -355,31 +347,20 @@ function(
 			{
 				self.step(context, 'menu has container');
 				
-				var update_view_cb = 
-					// function(view_name, content_label, content_id)
-					// function(display_view, label, display_cont)
-					// {
-						// return 
-						function(event)
+				var update_view_cb = (
+					function(arg_view_name, arg_menubar_name)
+					{
+						return function(event)
 						{
-							self.step(context, 'menu callback for view');
-							console.log(context, 'menu callback for view [%s]', display_view);
-							// alert('hello');
-							DevaptNavigation.display_view(display_view);
+							self.step(context, 'menu callback for view [' + arg_view_name + ']');
+							// console.log(context, 'menu callback for view [%s]', arg_view_name);
 							
-							// return 1;
-					/*		var url_base		= Devapt.app.get_url_base(); 
-							var page_title		= label;
-							// var page_location	= url_base + 'views/' + view_name + '/html_page' + '?security_token=' + Devapt.app.get_security_token();
-							var page_location	= url_base + 'views/' + display_view + '/html_page';
-							var force_render	= false;
-							var menubar_name	= self.name;
-							
-							// DevaptNavHistory.set_page_view_content(content_label, content_id, view_name, page_title, page_location, force_render, menubar_name);
-						*/};
-					// }
-				// )(display_view, label, display_cont);
-				menu_a_jqo.on('click', update_view_cb);
+							DevaptNavigation.display_view(arg_view_name, arg_menubar_name);
+						};
+					}
+				)(display_view, display_menubar);
+				
+				menu_a_jqo.click(update_view_cb);
 			}
 		}
 		else if ( DevaptTypes.is_not_empty_str(display_page) )
@@ -415,7 +396,7 @@ function(
 		
 		
 		// RENDER MENU ITEMS
-		self.step(context, 'render menu items');
+		self.step(context, 'render menu items ?');
 		var items = null;
 		if ( DevaptTypes.is_array(arg_menu_declaration['items']) )
 		{
@@ -434,7 +415,7 @@ function(
 		
 		
 		// self.value(context, 'items', items);
-		console.log('menu [%s] items [%o]', self.name, items);
+		// console.log('menu [%s] items [%o]', self.name, items);
 		if (items)
 		{
 			// CREATE DROPDOWN
@@ -496,7 +477,7 @@ function(
 		infos:{
 			author:'Luc BORIES',
 			created:'2015-08-15',
-			updated:'2015-08-15',
+			updated:'2015-09-03',
 			description:'Menu View class.'
 		},
 		properties:{

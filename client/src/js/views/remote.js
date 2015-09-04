@@ -90,6 +90,7 @@ function(Devapt, DevaptClass, DevaptView, DevaptApplication)
 	
 	// PROPERTIES
 	DevaptRemoteClass.add_public_str_property('include_file_path_name',	'',		null, false, false, []);
+	DevaptRemoteClass.add_public_str_property('include_file_content',	'',		null, false, false, []);
 	
 	
 	return DevaptRemoteClass;

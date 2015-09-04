@@ -65,7 +65,7 @@ API.load_resources = function(arg_resource_key, arg_resource_obj, arg_base_dir)
 	// LOAD FILE
 	var res_filename = path.join(arg_base_dir, arg_resource_obj);
 	arg_resource_obj = parser.read(res_filename, 'utf-8');
-	
+	// console.log(arg_resource_obj, 'arg_resource_obj');
 	
 	// LOOP ON MODULE RESOURCES
 	// CASE: arg_resource_obj = application.views/models/menubars/menus...
@@ -103,6 +103,8 @@ API.load_resources = function(arg_resource_key, arg_resource_obj, arg_base_dir)
 
 API.load_module = function(arg_module_name, arg_module_obj, arg_base_dir)
 {
+	console.info('loading module [%s] configuration from [%s]', arg_module_name, arg_base_dir);
+	
 	var out_cfg = {};
 	
 	

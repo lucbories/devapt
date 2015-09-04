@@ -38,7 +38,7 @@ function(m, Devapt, DevaptInit, DevaptApplication, undefined)
 				var $doc = $(document);
 				$doc.foundation();
 			},
-			100
+			1000 // TODO: REMOVE TIMEOUT IF POSSIBLE
 		);
 		
 		

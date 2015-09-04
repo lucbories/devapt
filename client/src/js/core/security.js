@@ -120,7 +120,8 @@ function(Devapt, DevaptTrace, DevaptTypes, DevaptCache)
 				
 				try
 				{
-					Devapt.app.render();
+					// Devapt.app.render();
+					Devapt.app.render_last();
 				}
 				catch(e)
 				{
@@ -163,7 +164,7 @@ function(Devapt, DevaptTrace, DevaptTypes, DevaptCache)
 			var backend = Devapt.get_current_backend();
 			
 			// CHECK AUTHENTICATION
-			logout_promise = backend.render_logout();
+			/*var logout_promise = */backend.render_logout();
 		}
 		catch(e)
 		{
@@ -190,7 +191,7 @@ function(Devapt, DevaptTrace, DevaptTypes, DevaptCache)
 		
 		try
 		{
-			var record = jQuery.extend(DevaptSecurity.default_logged_user, arg_user_record);
+			var record = window.$.extend(DevaptSecurity.default_logged_user, arg_user_record);
 			// console.log(record, 'DevaptSecurity.set_logged_user: record');
 			
 			DevaptCache.set(DevaptSecurity.logged_user_key, record);

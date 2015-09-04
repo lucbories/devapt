@@ -28,7 +28,6 @@
 define(
 	[
 		'Devapt', 'core/types', 'core/resources',
-		// 'core/nav-history',
 		'core/navigation',
 		'object/class', 'object/classes',
 		'views/view',
@@ -36,7 +35,6 @@ define(
 	],
 function(
 	Devapt, DevaptTypes, DevaptResources,
-	// DevaptNavHistory,
 	DevaptNavigation,
 	DevaptClass, DevaptClasses,
 	DevaptView,
@@ -148,9 +146,6 @@ function(
 						return Devapt.promise_rejected('render top menubar failure');
 					}
 					
-					// self.is_rendered = true;
-					// console.info('menubar rendered', self.name);
-					
 					$(document).foundation('topbar');
 				}
 				catch(e)
@@ -219,8 +214,8 @@ function(
 		// console.log(self, 'self');
 		// console.log(self.menubar_declaration, 'menubar_declaration');
 		
+		
 		// CREATE NAV TAG
-		// self.content_jqo.attr('id', self.name + '_id');
 		self.nav_jqo.addClass('top-bar');
 		self.nav_jqo.attr('data-topbar', '');
 		self.nav_jqo.attr('role', 'navigation');
@@ -442,8 +437,8 @@ function(
 		
 		// RENDER DEFAULT VIEW
 		var view_name = arg_menubar_object['default_view'];
-		var content_id = arg_menubar_object['default_container'];
-		var content_label = arg_menubar_object['default_label'];
+		// var content_id = arg_menubar_object['default_container'];
+		// var content_label = arg_menubar_object['default_label'];
 		self.value(context, 'view_name', view_name);
 		if ( arg_render_view && DevaptTypes.is_not_empty_str(view_name) )
 		{
@@ -455,15 +450,20 @@ function(
 			
 			// var promise = DevaptNavHistory.set_page_view_content(content_label, content_id, view_name, content_label, display_url, force_render, arg_menubar_object.name);
 		
-			var url_base		= Devapt.app.get_url_base(); 
-			var page_title		= content_label;
-			var page_location	= url_base + 'views/' + view_name + '/html_page';
-			var force_render	= false;
+			// var url_base		= Devapt.app.get_url_base(); 
+			// var page_title		= content_label;
+			// var page_location	= url_base + 'views/' + view_name + '/html_page';
+			// var force_render	= false;
 			var menubar_name	= arg_menubar_object.name;
 			
 			// DevaptNavHistory.set_view_content(content_label, content_id, view_name, page_title, page_location, force_render, menubar_name);
 			
-			DevaptNavigation.display_view(view_name);
+			console.log(context, 'menubar for view [%s]', view_name);
+			
+			// MAIN CONTENT VIEW
+			DevaptNavigation.display_view(view_name, menubar_name);
+			
+			// TODO : PARTIAL CONTENT VIEW
 		}
 		
 		
@@ -538,7 +538,7 @@ function(
 					var container_jqo = $('#' + container_id);
 					var topmenubar_promise = backend.render_view(container_jqo, arg_menubar_name);
 					topmenubar_promise.then(
-						function()
+						function(view)
 						{
 							self.step(context, 'menubar created and rendered');
 							
@@ -548,6 +548,8 @@ function(
 							
 							self.switch_top_menubar(menubar_object, true);
 							// self.trace=false;
+							
+							Devapt.app.main_menubar = view;
 						}
 					);
 				};

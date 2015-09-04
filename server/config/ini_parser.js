@@ -18,11 +18,15 @@ module.exports = {
 				// if (cfg_index > 10) return;
 				key = cfg_items[cfg_index];
 				value = arg_cfg[key];
+				
 				// console.log('-----------------------------------------');
 				// console.log(value, key);
+				
 				self.split_key(key, value, out_config);
 			}
 		);
+		
+		// console.log('out_config',out_config);
 		
 		return out_config;
 	},
@@ -37,25 +41,26 @@ module.exports = {
 		}
 		
 		var part_obj = arg_cfg;
+		// console.log(parts, 'parts');
 		parts.forEach(
 			function(part_key, part_index, part_items)
 			{
 				// console.log(part_key, 'part_key');
 				
-				
 				if (part_key in part_obj)
 				{
 					part_obj = part_obj[part_key];
+					// console.log('get existing value', part_key);
 				} else {
 					
 					if (part_index === parts.length - 1)
 					{
 						part_obj[part_key] = arg_value;
-						// console.log('set value', 'part_key');
+						// console.log('set new value', part_key);
 						return;
 					} else {
 						part_obj = part_obj[part_key] = {};
-						// console.log('set {}', 'part_key');
+						// console.log('set {}', part_key);
 					}
 				}
 				
@@ -69,6 +74,7 @@ module.exports = {
 		var self = this;
 		var config_file = fs.readFileSync(arg_file_path_name, arg_charset ? arg_charset : 'utf-8');
 		var config_content = parser.parse(config_file);
+		// console.log(config_content, 'config_content');
 		
 		/*var out_config = {};
 		var value = null;

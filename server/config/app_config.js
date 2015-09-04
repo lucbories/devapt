@@ -164,7 +164,7 @@ function load_app_config(arg_file_path_name, arg_base_dir, arg_force_reload)
 	}
 	
 	// SAVE APP CONFIG
-	// parser.write('./tmp/' + app_config_filename + '.out.ini', app_config);
+	parser.write('./tmp/' + arg_file_path_name + '.out.ini', app_config);
 
 	loaded_configs.files[app_config_path] = app_config;
 	loaded_configs.apps[app_config.application.name] = app_config;

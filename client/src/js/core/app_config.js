@@ -8,6 +8,31 @@
  * 				
  * 				DevaptAppConfig.get_value(arg_value_path, arg_default_value): (null or anything)
  * 				
+ * 				DevaptAppConfig.get_url_base(): (string)
+ * 				DevaptAppConfig.get_title(): (string)
+ * 				DevaptAppConfig.get_name(): (string)
+ * 
+ * 				DevaptAppConfig.get_short_label(): (string)
+ * 				DevaptAppConfig.get_long_label(): (string)
+ * 
+ * 				DevaptAppConfig.get_version(): (string)
+ * 
+ * 				DevaptAppConfig.get_home_view_name(): (string)
+ * 				DevaptAppConfig.get_home_view_hash(): (string)
+ * 				DevaptAppConfig.get_home_view_url(): (string)
+ * 
+ * 				DevaptAppConfig.get_login_view_url(): (string)
+ * 
+ * 				DevaptAppConfig.get_content_id(): (string)
+ * 
+ * 				DevaptAppConfig.get_menubar_name(): (string)
+ * 				DevaptAppConfig.get_menubar_container_id(): (string)
+ * 
+ * 				DevaptAppConfig.get_breadcrumbs_name(): (string)
+ * 				DevaptAppConfig.get_breadcrumbs_container_id(): (string)
+ * 
+ * 				DevaptAppConfig.get_client_plugins(): (string)
+ * 				
  * 		PRIVATE API
  * 				
  * 				
@@ -284,6 +309,27 @@ define(
 		
 		var value = DevaptAppConfig.get_value('version', null);
 		DevaptTrace.trace_var(context, 'version', value, DevaptAppConfig.app_cfg_trace);
+		
+		DevaptTrace.trace_leave(context, '', DevaptAppConfig.app_cfg_trace);
+		return value;
+	}
+	
+	
+	/**
+	 * @memberof			DevaptAppConfig
+	 * @public
+	 * @static
+	 * @method				DevaptAppConfig.get_home_view_name()
+	 * @desc				Get application configuration "application.layouts.default.home.name"
+	 * @return {string}		Application topbar name
+	 */
+	DevaptAppConfig.get_home_view_name = function()
+	{
+		var context = 'DevaptAppConfig.get_home_view_name()';
+		DevaptTrace.trace_enter(context, '', DevaptAppConfig.app_cfg_trace);
+		
+		var value = DevaptAppConfig.get_value('layouts.default.home.name', null);
+		DevaptTrace.trace_var(context, 'home.name', value, DevaptAppConfig.app_cfg_trace);
 		
 		DevaptTrace.trace_leave(context, '', DevaptAppConfig.app_cfg_trace);
 		return value;

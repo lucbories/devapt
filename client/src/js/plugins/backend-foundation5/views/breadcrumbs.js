@@ -29,6 +29,8 @@ function(Devapt, DevaptTypes, DevaptClass,
 	 * @desc				Breadcrumbs view class
 	 */
 	
+	var $ = window.$;
+	
 	
 	/**
 	 * @public
@@ -59,14 +61,14 @@ function(Devapt, DevaptTypes, DevaptClass,
 		// LOOP ON NAV HISTORY
 		// var nav_stack = DevaptNavHistory.history_stack;
 		// var nav_stack = DevaptNavigation.get_history_stack();
-		var nav_stack = [ { content_label:'HOME', content_view:'VIEW_HOME' } ];
-		self.value(context, 'breadcrumbs html content', nav_stack);
-		for(var content_key in nav_stack)
-		{
-			var state = nav_stack[content_key];
-			self.assert_not_null(context, 'nav content at [' + content_key + ']', state);
-			self.add_history_item(state);
-		}
+		// var nav_stack = [ { content_label:'HOME', view_name:'VIEW_HOME', menubar_name:'' } ];
+		// self.value(context, 'breadcrumbs html content', nav_stack);
+		// for(var content_key in nav_stack)
+		// {
+		// 	var state = nav_stack[content_key];
+		// 	self.assert_not_null(context, 'nav content at [' + content_key + ']', state);
+		// 	self.add_history_item(state);
+		// }
 		
 		
 		// RESOVE RENDER
@@ -122,8 +124,8 @@ function(Devapt, DevaptTypes, DevaptClass,
 				{
 					return function()
 					{
-						// console.log(state, context + '.onclick');
-						DevaptNavigation.display_view(arg_state.view_name, arg_state.menubar_name);
+						console.log(state, context + '.onclick');
+						DevaptNavigation.display_view(state.view_name, state.menubar_name);
 					}
 				}
 			)(arg_state)

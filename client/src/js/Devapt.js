@@ -1080,6 +1080,8 @@ function($, DevaptInit, CryptoMD5, CryptoSHA1, Q, DevaptFactory)
 		return promise;
 	};
 	
+	window.Devapt = Devapt;
+	
 	
 	return Devapt;
 } );

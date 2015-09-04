@@ -56,7 +56,7 @@ define(
 	 * @static
 	 * @desc		Trace flag
 	 */
-	DevaptApplication.app_trace = false;
+	DevaptApplication.app_trace = true;
 	
 	
 	
@@ -350,7 +350,7 @@ define(
 			var breadcrumbs_name = DevaptApplication.get_breadcrumbs_name();
 			var breadcrumbs_promise = null;
 			
-			Devapt.app.main_breacrumbs = null;
+			Devapt.app.main_breadcrumbs = null;
 			Devapt.app.main_menubar = null;
 			Devapt.app.main_content = null;
 			
@@ -371,7 +371,8 @@ define(
 					{
 						DevaptTrace.trace_step(context, 'INIT BREADCRUMBS CONTAINER IS VALID', DevaptApplication.app_trace);
 						
-						breadcrumbs_promise = backend.render_view(breadcrumbs_container_jqo, breadcrumbs_name).then(
+						breadcrumbs_promise = backend.render_view(breadcrumbs_container_jqo, breadcrumbs_name)
+						.then(
 							function(view)
 							{
 								DevaptTrace.trace_step(context, 'INIT BREADCRUMBS VIEW IS CREATED', DevaptApplication.app_trace);
@@ -382,7 +383,8 @@ define(
 									return;
 								}
 								
-								Devapt.app.main_breacrumbs = view;
+								Devapt.app.main_breadcrumbs = view;
+								// console.log('Devapt.app.main_breadcrumbs', Devapt.app.main_breadcrumbs);
 							}
 						);
 					}
@@ -399,6 +401,43 @@ define(
 			
 			DevaptTrace.trace_leave(context, Devapt.msg_success_promise, DevaptApplication.app_trace);
 			return Devapt.promise_all(all_promise);
+		}
+		catch(e)
+		{
+			console.error(e, context);
+		}
+		
+		
+		DevaptTrace.trace_leave(context, Devapt.msg_failure_promise, DevaptApplication.app_trace);
+		return Devapt.promise_rejected();
+	}
+	
+	
+	
+	/**
+	 * @memberof			DevaptApplication
+	 * @public
+	 * @static
+	 * @method				DevaptApplication.render_last()
+	 * @desc				Render last displayed view
+	 * @return {object}		A promise
+	 */
+	DevaptApplication.render_last = function()
+	{
+		var context = 'DevaptApplication.render_last()';
+		DevaptTrace.trace_enter(context, '', DevaptApplication.app_trace);
+		
+		
+		try
+		{
+			console.log(Devapt.app.main_content, 'Devapt.app.main_content');
+			console.log(Devapt.app.main_menubar, 'Devapt.app.main_menubar');
+			var view_name = Devapt.app.main_content ? Devapt.app.main_content.name : Devapt.app.get_home_view_name();
+			var menubar_name = Devapt.app.main_menubar ? Devapt.app.main_menubar.name : Devapt.app.get_menubar_name();
+			var display_promise = DevaptNavigation.display_view(view_name, menubar_name);
+			
+			DevaptTrace.trace_leave(context, Devapt.msg_success_promise, DevaptApplication.app_trace);
+			return display_promise;
 		}
 		catch(e)
 		{

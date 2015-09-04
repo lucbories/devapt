@@ -72,7 +72,7 @@ function(Devapt, Hasher, Crossroads, DevaptTrace, DevaptTypes)
 				// 	function()
 				// 	{
 						console.log('Crossroads route cb for [%s]', 'home');
-						return DevaptNavigation.display_view('VIEW_HOME');
+						return DevaptNavigation.display_view('VIEW_HOME', '');
 					// }
 				// );
 			}
@@ -266,25 +266,68 @@ function(Devapt, Hasher, Crossroads, DevaptTrace, DevaptTypes)
 		{
 			// UPDATE MENUBAR VIEW
 			arg_menubar_name = arg_menubar_name ? arg_menubar_name : Devapt.app.get_menubar_name();
-			if (! Devapt.app.main_menubar || (Devapt.app.main_menubar && Devapt.app.main_menubar.name !== arg_menubar_name) )
+			if (Devapt.app.main_menubar && Devapt.app.main_menubar.name === arg_menubar_name)
+			{
+				// SHOW HIDDEN MENUBAR
+				Devapt.app.main_menubar.show();
+			}
+			else
 			{
 				DevaptTrace.trace_step(context, 'UPDATE MENUBAR VIEW', DevaptNavigation.navigation_trace);
 				
+				// HIDE CURRENT MENUBAR
+				if (Devapt.app.main_menubar)
+				{
+					Devapt.app.main_menubar.hide();
+				}
+				
+				// DISPLAY NEW MENUBAR
 				var menubar_container_id = Devapt.app.get_menubar_container_id();
 				DevaptNavigation.render_view(arg_menubar_name, menubar_container_id)
 				.then(
 					function(view)
 					{
 						DevaptTrace.trace_step(context, 'MENUBAR VIEW IS RENDERED', DevaptNavigation.navigation_trace);
+						// console.log(view, context + '.menubar.view');
+						
 						Devapt.app.main_menubar = view;
+						return view;
 					}
 				);
 			}
 			
+			
 			// UDPATE CONTENT VIEW
-			if (! Devapt.app.main_content || (Devapt.app.main_content && Devapt.app.main_content.name !== arg_view_name) )
+			if (Devapt.app.main_content && Devapt.app.main_content.name === arg_view_name)
+			{
+				DevaptTrace.trace_step(context, 'SHOW EXISTING CONTENT VIEW', DevaptNavigation.navigation_trace);
+				
+				// SHOW HIDDEN MENUBAR
+				Devapt.app.main_content.show();
+				
+				if (Devapt.app.main_breadcrumbs)
+				{
+					DevaptTrace.trace_step(context, 'BREADCRUMBS VIEW IS UPDATING', DevaptNavigation.navigation_trace);
+					
+					var state = {
+						content_label: Devapt.app.main_content.label ? Devapt.app.main_content.label : Devapt.app.main_breadcrumbs.name,
+						menubar_name: arg_menubar_name,
+						view_name: arg_view_name
+					};
+					
+					Devapt.app.main_breadcrumbs.add_history_item(state);
+				}
+			}
+			else
 			{
 				DevaptTrace.trace_step(context, 'UPDATE CONTENT VIEW', DevaptNavigation.navigation_trace);
+				
+				// HIDE CURRENT MENUBAR
+				if (Devapt.app.main_content)
+				{
+					DevaptTrace.trace_step(context, 'HIDE EXISTING CONTENT VIEW', DevaptNavigation.navigation_trace);
+					Devapt.app.main_content.hide();
+				}
 				
 				var content_container_id = Devapt.app.get_content_id();
 				promise = DevaptNavigation.render_view(arg_view_name, content_container_id)
@@ -292,29 +335,35 @@ function(Devapt, Hasher, Crossroads, DevaptTrace, DevaptTypes)
 					function(view)
 					{
 						DevaptTrace.trace_step(context, 'CONTENT VIEW IS RENDERED', DevaptNavigation.navigation_trace);
+						// console.log(view, context + '.content.view');
+						
 						Devapt.app.main_content = view;
+						
+						if (Devapt.app.main_breadcrumbs)
+						{
+							DevaptTrace.trace_step(context, 'BREADCRUMBS VIEW IS UPDATING', DevaptNavigation.navigation_trace);
+							
+							var state = {
+								content_label: view.label ? view.label : view.name,
+								menubar_name: arg_menubar_name,
+								view_name: arg_view_name
+							};
+							
+							Devapt.app.main_breadcrumbs.add_history_item(state);
+						}
+						
 						return view;
 					}
 				);
 			}
 			
+			
 			// UPDATE BREADCRUMBS
 			DevaptTrace.trace_step(context, 'UPDATE BREADCRUMBS VIEW', DevaptNavigation.navigation_trace);
 			if (Devapt.app.main_breadcrumbs)
 			{
-				promise.done(
-					function(view)
-					{
-						DevaptTrace.trace_step(context, 'BREADCRUMBS VIEW IS UPDATING', DevaptNavigation.navigation_trace);
-						var state = {
-							content_label: view.label ? view.label : 'empty',
-							menubar_name: arg_menubar_name,
-							view_name: arg_view_name
-						};
-						Devapt.app.main_breadcrumbs.add_history_item(state);
-					}
-				);
-			}
+				Devapt.app.main_breadcrumbs.show();
+			};
 		}
 		catch(e)
 		{
@@ -359,6 +408,8 @@ function(Devapt, Hasher, Crossroads, DevaptTrace, DevaptTypes)
 			Devapt.assert(context, 'view container jqo', DevaptTypes.is_object(container_jqo) );
 			
 			DevaptTrace.trace_step(context, 'VIEW CONTAINER IS VALID', DevaptNavigation.navigation_trace);
+			container_jqo.children().hide();
+			
 			view_promise = backend.render_view(container_jqo, arg_view_name)
 			.then(
 				function(view)
@@ -366,7 +417,10 @@ function(Devapt, Hasher, Crossroads, DevaptTrace, DevaptTypes)
 					DevaptTrace.trace_step(context, 'VIEW [' + arg_view_name + '] IS CREATED', DevaptNavigation.navigation_trace);
 					
 					Devapt.assert(context, 'view', DevaptTypes.is_object(view) );
-					Devapt.assert(context, 'view.is_view', DevaptTypes.is_true(view.is_view) );
+					Devapt.assert(context, 'view.is_view', !!view.is_view );
+					// console.log(view, context + '.view');
+					
+					return view;
 				}
 			);
 		}

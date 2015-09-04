@@ -50,7 +50,7 @@ function(Devapt, DevaptFactory,
 	 * @static
 	 * @desc		Trace flag
 	 */
-	DevaptFoundation5Backend.backend_trace = true;
+	DevaptFoundation5Backend.backend_trace = false;
 	
 	
 	/**
@@ -309,7 +309,7 @@ function(Devapt, DevaptFactory,
 							// console.info(view_jqo, 'backend.render_view:view_jqo[' + view.name + ']');
 							
 							// SHOW EXISTING VIEW
-							view_jqo.show();;
+							view_jqo.show();
 							
 							DevaptTraces.trace_leave(context, 'success: promise is resolved: view is already created, only "show" [' + view.name + ']', DevaptFoundation5Backend.backend_trace);
 							return Devapt.promise_resolved(view);
@@ -319,7 +319,12 @@ function(Devapt, DevaptFactory,
 						// RENDER THE VIEW
 						// console.info(view, 'backend.render_view: view is not rendered[' + view.name + ']');
 						DevaptTraces.trace_step(context, 'render view', DevaptFoundation5Backend.backend_trace);
-						var render_promise = view.render();
+						var render_promise = view.render().then(
+							function()
+							{
+								return view;
+							}
+						);
 						
 						DevaptTraces.trace_leave(context, 'success: promise is resolved: then callback: async render promise [' + view.name + ']', DevaptFoundation5Backend.backend_trace);
 						return render_promise;

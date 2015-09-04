@@ -6,7 +6,7 @@ define(
 	function(Devapt, DevaptTraces, DevaptTypes, DevaptClasses)
 	{
 		var providers = [];
-		var lookup_trace = true;
+		var lookup_trace = false;
 		var ajax_timeout = 5000;
 		
 		
