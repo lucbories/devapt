@@ -316,7 +316,7 @@ function(Devapt, DevaptTypes, DevaptClass)
 					if ( ! self.has_divider )
 					{
 						self.leave(context, 'bad divider item');
-						return false;
+						return Devapt.promise_resolved(false);
 					}
 					self.assert_function(context, 'self.render_item_divider', self.render_item_divider);
 					node_jqo = self.render_item_divider(arg_deferred, node_jqo, arg_item_content);

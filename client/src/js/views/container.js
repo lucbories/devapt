@@ -578,7 +578,7 @@ function(
 				try
 				{
 					// INIT ITEMS
-					var items_count = arg_items.length;
+					var items_count = arg_items.length; // TODO ADD A WATCHDOG WITH A MAX LIMIT 
 					var index_start = 0;
 					
 					// INIT TYPES
@@ -601,7 +601,7 @@ function(
 						return function()
 						{
 							// SEND EVENT
-							arg_self.step(context, 'fire event: devapt.container.render.item');
+							arg_self.step(arg_context, 'fire event: devapt.container.render.item');
 							arg_self.fire_event('devapt.container.render.item', [arg_index]);
 						};
 					};
@@ -609,7 +609,7 @@ function(
 					{
 						return function()
 						{
-							arg_self.error(arg_context, 'item render failure');
+							arg_self.error(arg_context, 'item render failure at [' + arg_index + ']');
 						};
 					};
 					
@@ -643,7 +643,8 @@ function(
 						
 						// RENDER CURRENT ITEM
 						loop_item_render_promise = self.render_item(loop_container_item);
-						console.debug(loop_item_render_promise, 'loop_item_render_promise');
+						// console.debug(loop_item_render_promise, 'loop_item_render_promise');
+						
 						loop_item_render_promise.then(
 							loop_item_render_success_cb(self, context, loop_item_index),
 							loop_item_render_failure_cb(self, context, loop_item_index)

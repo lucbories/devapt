@@ -706,7 +706,8 @@ function(
 	DevaptViewClass.add_public_str_property('parent_html_id',	'content jQuery parent ndoe id (html attribute) ', null, false, false, ['view_parent_html_id']);
 	DevaptViewClass.add_public_str_property('html_id',			'content jQuery node id (html attribute)', null, false, false, ['view_html_id']);
 	DevaptViewClass.add_public_str_property('label',			'view label for window title or menu', null, false, false, ['view_label']);
-	DevaptViewClass.add_public_str_property('tooltip',			'view tooltip for menu item', null, false, false, ['view_tooltip']);
+	DevaptViewClass.add_public_str_property('tooltip',			'view tooltip', null, false, false, ['view_tooltip']);
+	DevaptViewClass.add_public_str_property('menubar',			'menubar name to switch when view is the main content', null, false, false, []);
 	
 	DevaptViewClass.add_public_bool_property('prepend_content',	'should prepend content jqo on the parent jqo?', false, false, false, []);
 	DevaptViewClass.add_public_object_property('parent_jqo',	'content parent jQuery node',		null, false, false, []);

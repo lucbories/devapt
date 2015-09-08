@@ -311,6 +311,7 @@ function(
 		self.enter(context, '');
 		
 		
+		// GET MENU ATTRIBUTES
 		// var position	= DevaptTypes.to_list_item(arg_menu_declaration['position'], ['left', 'right'], 'left');
 		// var index		= DevaptTypes.to_integer(arg_menu_declaration['index'], -1);
 		var label		= DevaptTypes.to_string(arg_menu_declaration['label'], '');
@@ -329,7 +330,29 @@ function(
 		var display_menubar	= DevaptTypes.to_string(display['menubar'], null);
 		
 		
+		// MENUBAR CASE
+		var is_menubar = ('class_name' in arg_menu_declaration) && arg_menu_declaration['class_name'].toLocaleLowerCase() === 'menubar';
+		if (is_menubar)
+		{
+			console.log(arg_menu_declaration, "menubar declaration");
+			if ('default_view' in arg_menu_declaration)
+			{
+				display_view = arg_menu_declaration['default_view'];
+			}
+			if ('default_container' in arg_menu_declaration)
+			{
+				display_cont = arg_menu_declaration['default_container'];
+			}
+			if ('default_label' in arg_menu_declaration)
+			{
+				label = arg_menu_declaration['default_label'];
+			}
+		}
+		
+		
+		// CREATE MENU NODE
 		var menu_a_jqo = $('<a>');
+		
 		
 		// SET MENU ACTION
 		if ( DevaptTypes.is_not_empty_str(display_url) )
@@ -416,7 +439,7 @@ function(
 		
 		// self.value(context, 'items', items);
 		// console.log('menu [%s] items [%o]', self.name, items);
-		if (items)
+		if (! is_menubar && items)
 		{
 			// CREATE DROPDOWN
 			menu_jqo.addClass('has-dropdown');
