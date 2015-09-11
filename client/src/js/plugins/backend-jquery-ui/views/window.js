@@ -45,10 +45,10 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptView, undefined)
 		
 		// GET NODES
 		// self.assert_not_null(context, 'parent_jqo', self.parent_jqo);
-		self.content_jqo = $('<div>');
+		// self.content_jqo = $('<div>');
 		// self.parent_jqo.append(self.content_jqo);
-		self.content_jqo.attr('id', self.get_view_id());
-		self.set_parent(self.content_jqo);
+		// self.content_jqo.attr('id', self.get_view_id());
+		// self.set_parent(self.content_jqo);
 		
 		
 		// GET CURRENT BACKEND
@@ -57,8 +57,9 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptView, undefined)
 		
 		// GET WINDOW VIEW CONTENT
 		self.assert_not_empty_value(context, 'self.content', self.content);
-		self.window_body_jqo = $('<div>');
-		self.content_jqo.append(self.window_body_jqo);
+		// self.window_body_jqo = $('<div>');
+		// self.content_jqo.append(self.window_body_jqo);
+		self.window_body_jqo = self.content_jqo;
 		
 		// RENDER CONTENT VIEW
 		var content_promise = backend.render_view(self.window_body_jqo, self.content);
@@ -135,6 +136,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptView, undefined)
 		}
 		self.is_docked = true;
 		self.has_dialog = false;
+		self.show();
 		
 		
 		self.leave(context, Devapt.msg_success);

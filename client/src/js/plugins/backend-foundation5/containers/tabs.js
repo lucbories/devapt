@@ -14,6 +14,8 @@ define(
 ['Devapt', 'core/types', 'object/class', 'views/container', 'plugins/backend-foundation5/foundation-init'],
 function(Devapt, DevaptTypes, DevaptClass, DevaptContainer, undefined)
 {
+	var $ = window.$;
+	
 	/**
 	 * @public
 	 * @class				DevaptTabs
@@ -102,7 +104,8 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptContainer, undefined)
 		
 		
 		// INIT FOUNDATION
-		self.content_jqo.foundation();
+		// self.content_jqo.foundation();
+		self.tabs_jqo.tabs( {active:1});
 		
 		// HANDLE EVENT
 		self.tabs_jqo.on('toggled', 
@@ -114,10 +117,12 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptContainer, undefined)
 		);
 		
 		// ENABLE ACTIVE TAB
-		if ( ! $('.content.active', self.content_jqo) )
-		{
-			$('.content', self.content_jqo)[0].addClass('active');
-		}
+		// console.log( $('.content.active', self.content_jqo), 'tabs active panel' );
+		// if ( $('.content.active', self.content_jqo).length === 0 )
+		// {
+		// 	console.log( $('.content', self.content_jqo)[0], 'tabs set active panel' );
+		// 	$('.content', self.content_jqo)[0].addClass('active');
+		// }
 		
 		
 		self.leave(context, Devapt.msg_success);

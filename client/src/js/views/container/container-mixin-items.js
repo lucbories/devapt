@@ -296,7 +296,7 @@ function(Devapt, DevaptTypes, DevaptClass)
 			
 			
 			// CHECK ARGS
-			console.debug(arg_container_item, context + '.arg_container_item');
+			// console.debug(arg_container_item, context + '.arg_container_item');
 			// console.debug(arg_container_item.index, context + '.arg_container_item.index');
 			self.assert_object(context, 'item', arg_container_item);
 			self.assert_true(context, 'item.is_container_item', arg_container_item.is_container_item);
