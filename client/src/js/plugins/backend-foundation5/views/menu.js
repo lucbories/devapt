@@ -335,6 +335,10 @@ function(
 		if (is_menubar)
 		{
 			console.log(arg_menu_declaration, "menubar declaration");
+			
+			// var id = menu_jqo.attr('id') + '_alias';
+			// menu_jqo.attr('id', id);
+			
 			if ('default_view' in arg_menu_declaration)
 			{
 				display_view = arg_menu_declaration['default_view'];

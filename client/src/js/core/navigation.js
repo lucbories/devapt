@@ -265,7 +265,7 @@ function(Devapt, Hasher, Crossroads, DevaptTrace, DevaptTypes)
 		try
 		{
 			// UPDATE MENUBAR VIEW
-			arg_menubar_name = arg_menubar_name ? arg_menubar_name : Devapt.app.get_menubar_name();
+			/*arg_menubar_name = arg_menubar_name ? arg_menubar_name : Devapt.app.get_menubar_name();
 			if (Devapt.app.main_menubar && Devapt.app.main_menubar.name === arg_menubar_name)
 			{
 				// SHOW HIDDEN MENUBAR
@@ -294,7 +294,7 @@ function(Devapt, Hasher, Crossroads, DevaptTrace, DevaptTypes)
 						return view;
 					}
 				);
-			}
+			}*/
 			
 			
 			// UDPATE CONTENT VIEW
@@ -305,6 +305,12 @@ function(Devapt, Hasher, Crossroads, DevaptTrace, DevaptTypes)
 				// SHOW HIDDEN MENUBAR
 				Devapt.app.main_content.show();
 				
+				// DISPLAY MENUBAR
+				var menubar_name = DevaptTypes.is_not_empty_string(Devapt.app.main_content.menubar) ? Devapt.app.main_content.menubar : arg_menubar_name;
+				DevaptNavigation.display_menubar(menubar_name, null);
+				Hasher.setHash('view=' + arg_view_name + ',menubar=' + menubar_name);
+				
+				// DISPLAY BREADCRUMBS
 				if (Devapt.app.main_breadcrumbs)
 				{
 					DevaptTrace.trace_step(context, 'BREADCRUMBS VIEW IS UPDATING', DevaptNavigation.navigation_trace);
@@ -339,6 +345,12 @@ function(Devapt, Hasher, Crossroads, DevaptTrace, DevaptTypes)
 						
 						Devapt.app.main_content = view;
 						
+						// DISPLAY MENUBAR
+						var menubar_name = DevaptTypes.is_not_empty_string(Devapt.app.main_content.menubar) ? Devapt.app.main_content.menubar : arg_menubar_name;
+						DevaptNavigation.display_menubar(menubar_name, null);
+						Hasher.setHash('view=' + arg_view_name + ',menubar=' + menubar_name);
+						
+						// DISPLAY BREADCRUMBS
 						if (Devapt.app.main_breadcrumbs)
 						{
 							DevaptTrace.trace_step(context, 'BREADCRUMBS VIEW IS UPDATING', DevaptNavigation.navigation_trace);
@@ -380,10 +392,76 @@ function(Devapt, Hasher, Crossroads, DevaptTrace, DevaptTypes)
 	/**
 	 * @memberof				DevaptNavigation
 	 * @public
-	 * @method					DevaptNavigation.display_view(arg_view_name)
-	 * @desc					Display the page content with given view
-	 * @param {string}			arg_view_name		view name
+	 * @method					DevaptNavigation.display_menubar(arg_view_name)
+	 * @desc					Display the menubar
 	 * @param {string}			arg_menubar_name	menubar name
+	 * @param {string}			arg_container_id	view container id
+	 * @return {object}			Promise of boolean result : success or failure
+	 */
+	DevaptNavigation.display_menubar = function(arg_menubar_name, arg_container_id)
+	{
+		var context = 'DevaptNavigation.display_menubar(arg_menubar_name, arg_container_id)';
+		DevaptTrace.trace_enter(context, arg_menubar_name, DevaptNavigation.navigation_trace);
+		
+		
+		// CHECK ARGS
+		// Devapt.assert(context, 'menubar name', DevaptTypes.is_not_empty_string(arg_menubar_name) );
+		// Devapt.assert(context, 'container id', DevaptTypes.is_not_empty_string(arg_container_id) );
+		
+		var promise = null;
+		try
+		{
+			// UPDATE MENUBAR VIEW
+			arg_menubar_name = arg_menubar_name ? arg_menubar_name : Devapt.app.get_menubar_name();
+			if (Devapt.app.main_menubar && Devapt.app.main_menubar.name === arg_menubar_name)
+			{
+				// SHOW HIDDEN MENUBAR
+				Devapt.app.main_menubar.show();
+			}
+			else
+			{
+				DevaptTrace.trace_step(context, 'UPDATE MENUBAR VIEW', DevaptNavigation.navigation_trace);
+				
+				// HIDE CURRENT MENUBAR
+				if (Devapt.app.main_menubar)
+				{
+					Devapt.app.main_menubar.hide();
+				}
+				
+				// DISPLAY NEW MENUBAR
+				var menubar_container_id = arg_container_id ? arg_container_id : Devapt.app.get_menubar_container_id();
+				promise = DevaptNavigation.render_view(arg_menubar_name, menubar_container_id)
+				.then(
+					function(view)
+					{
+						DevaptTrace.trace_step(context, 'MENUBAR VIEW IS RENDERED', DevaptNavigation.navigation_trace);
+						// console.log(view, context + '.menubar.view');
+						
+						Devapt.app.main_menubar = view;
+						return view;
+					}
+				);
+			}
+		}
+		catch(e)
+		{
+			console.error(e, context);
+			promise = Devapt.promise_resolved(false);
+		}
+		
+		DevaptTrace.trace_leave(context, Devapt.msg_success, DevaptNavigation.navigation_trace);
+		return promise;
+	}
+	
+	
+	
+	/**
+	 * @memberof				DevaptNavigation
+	 * @public
+	 * @method					DevaptNavigation.render_view(arg_view_name,arg_container_id)
+	 * @desc					Render the view
+	 * @param {string}			arg_view_name		view name
+	 * @param {string}			arg_container_id	view container id
 	 * @return {object}			Promise of boolean result : success or failure
 	 */
 	DevaptNavigation.render_view = function(arg_view_name, arg_container_id)

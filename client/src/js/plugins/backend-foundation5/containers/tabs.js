@@ -68,7 +68,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptContainer, undefined)
 		// CHECK CONTENT NODE
 		self.assert_not_null(context, 'content_jqo', self.content_jqo);
 		
-		self.tabs_jqo = $('<dl>');
+		self.tabs_jqo = $('<ul>');
 		self.tabs_jqo.addClass('tabs');
 		self.tabs_jqo.attr('data-tab', '');
 		
@@ -105,7 +105,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptContainer, undefined)
 		
 		// INIT FOUNDATION
 		// self.content_jqo.foundation();
-		self.tabs_jqo.tabs( {active:1});
+		// self.tabs_jqo.tabs( {active:1});
 		
 		// HANDLE EVENT
 		self.tabs_jqo.on('toggled', 
@@ -117,6 +117,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptContainer, undefined)
 		);
 		
 		// ENABLE ACTIVE TAB
+		$('li.tab-title:eq(0)>a', self.content_jqo).click()
 		// console.log( $('.content.active', self.content_jqo), 'tabs active panel' );
 		// if ( $('.content.active', self.content_jqo).length === 0 )
 		// {
@@ -198,12 +199,12 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptContainer, undefined)
 		
 		
 		// TABS MENU
-		var li_jqo = $('<dd>');
+		var li_jqo = $('<li>');
 		li_jqo.addClass('tab-title');
 		self.tabs_jqo.append(li_jqo);
 		
-		var a_jqo = $('<a href="#">');
-		var item_content_id = '#' + self.name + '_content_' + arg_item_record.index + '_id';
+		var a_jqo = $('<a>');
+		// var item_content_id = '#' + self.name + '_content_' + arg_item_record.index + '_id';
 		var item_label = item_options.label;
 		if (item_options.active)
 		{
@@ -212,8 +213,22 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptContainer, undefined)
 		}
 		
 		a_jqo.html(item_label);
-		a_jqo.attr('href', item_content_id);
+		// a_jqo.attr('href', item_content_id);
 		li_jqo.append(a_jqo);
+		
+		a_jqo.click(
+			function()
+			{
+				$('li.active', self.content_jqo).removeClass('active');
+				li_jqo.addClass('active');
+				
+				$('.content.active', self.content_jqo).hide();
+				$('.content.active', self.content_jqo).removeClass('active');
+				// console.log($('.content.active', self.tabs_jqo));
+				arg_item_record.node.show();
+				arg_item_record.node.addClass('active');
+			}
+		);
 		
 		
 		self.leave(context, 'success');
