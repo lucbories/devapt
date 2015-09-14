@@ -3,7 +3,8 @@
 var parser = require('./ini_parser'),
 	Q = require('q'),
 	path = require('path'),
-	assert = require('assert');
+	assert = require('assert'),
+	resource_config = require('./resource_config');
 
 
 /*
@@ -25,6 +26,35 @@ var parser = require('./ini_parser'),
 
 var API = {};
 
+/*
+var resources_to_clone = [];
+
+
+API.clone_resource = function(arg_resource_obj, arg_app_cfg)
+{
+	console.info('cloning resource [%s] of type [%s]', arg_resource_obj.name, arg_resource_obj.resources_set);
+	
+	
+}
+	
+
+API.update_cloned_resources = function(arg_app_cfg)
+{
+	console.info('update cloned resources');
+	
+	// UPDATE CLONED RESOURCES
+	if(resources_to_clone.length > 0)
+	{
+		resources_to_clone.forEach(
+			function(arg_res_value, arg_res_index, arg_res_array)
+			{
+				API.clone_resource(arg_res_value, arg_app_cfg);
+			}
+		);
+		
+		// resources_to_clone = [];
+	}
+}
 
 
 API.load_resources = function(arg_resource_key, arg_resource_obj, arg_base_dir)
@@ -45,8 +75,15 @@ API.load_resources = function(arg_resource_key, arg_resource_obj, arg_base_dir)
 		
 		out_cfg[set_name][arg_resource_key] = parser.split_all_keys(arg_resource_obj);
 		out_cfg[set_name][arg_resource_key].name = arg_resource_key;
+		out_cfg[set_name][arg_resource_key].resources_set = set_name;
 		
 		// console.log(out_cfg, 'API.load_resources out_cfg');
+		
+		// CLONE AN EXISTING RESOURCE
+		if ( arg_resource_obj.clone && (typeof arg_resource_obj.clone) === 'string')
+		{
+			resources_to_clone.push( out_cfg[set_name][arg_resource_key] );
+		}
 		
 		return out_cfg;
 	}
@@ -71,13 +108,13 @@ API.load_resources = function(arg_resource_key, arg_resource_obj, arg_base_dir)
 	// CASE: arg_resource_obj = application.views/models/menubars/menus...
 	assert.ok( (typeof arg_resource_obj.application) === 'object', 'loaded resources should begin with application.SSS.RRR');
 	Object.keys(arg_resource_obj.application).forEach(
-		function(arg_set_name/*, arg_set_index, arg_set_array*/)
+		function(arg_set_name)
 		{
 			console.info('loading resource configuration for set [%s]', arg_set_name);
 			var set_resources = arg_resource_obj.application[arg_set_name];
 			
 			Object.keys(set_resources).forEach(
-				function(arg_res_name/*, arg_res_index, arg_res_array*/)
+				function(arg_res_name)
 				{
 					console.info('loading resource configuration for resource [%s]', arg_res_name);
 					
@@ -90,6 +127,13 @@ API.load_resources = function(arg_resource_key, arg_resource_obj, arg_base_dir)
 					
 					out_cfg[arg_set_name][arg_res_name] = parser.split_all_keys(res_cfg);
 					out_cfg[arg_set_name][arg_res_name].name = arg_res_name;
+					out_cfg[arg_set_name][arg_res_name].resources_set = arg_set_name;
+					
+					// CLONE AN EXISTING RESOURCE
+					if ( res_cfg.clone && (typeof res_cfg.clone) === 'string')
+					{
+						resources_to_clone.push( out_cfg[arg_set_name][arg_res_name] );
+					}
 				}
 			);
 		}
@@ -99,7 +143,7 @@ API.load_resources = function(arg_resource_key, arg_resource_obj, arg_base_dir)
 	
 	return out_cfg;
 }
-
+*/
 
 API.load_module = function(arg_module_name, arg_module_obj, arg_base_dir)
 {
@@ -148,7 +192,7 @@ API.load_module = function(arg_module_name, arg_module_obj, arg_base_dir)
 				
 				res_obj = resources_obj[arg_resource_key];
 				
-				loaded_resources.push( API.load_resources(arg_resource_key, res_obj, arg_base_dir) );
+				loaded_resources.push( resource_config.load_resources(arg_resource_key, res_obj, arg_base_dir) );
 			}
 		);
 	}
@@ -175,7 +219,7 @@ API.load_module = function(arg_module_name, arg_module_obj, arg_base_dir)
 				
 				res_obj = resources_obj[arg_resource_key];
 				
-				loaded_resources.push( API.load_resources(arg_resource_key, res_obj, arg_base_dir) );
+				loaded_resources.push( resource_config.load_resources(arg_resource_key, res_obj, arg_base_dir) );
 			}
 		);
 	}
@@ -202,7 +246,7 @@ API.load_module = function(arg_module_name, arg_module_obj, arg_base_dir)
 				
 				res_obj = resources_obj[arg_resource_key];
 				
-				loaded_resources.push( API.load_resources(arg_resource_key, res_obj, arg_base_dir) );
+				loaded_resources.push( resource_config.load_resources(arg_resource_key, res_obj, arg_base_dir) );
 			}
 		);
 	}
@@ -229,7 +273,7 @@ API.load_module = function(arg_module_name, arg_module_obj, arg_base_dir)
 				
 				res_obj = resources_obj[arg_resource_key];
 				
-				loaded_resources.push( API.load_resources(arg_resource_key, res_obj, arg_base_dir) );
+				loaded_resources.push( resource_config.load_resources(arg_resource_key, res_obj, arg_base_dir) );
 			}
 		);
 	}
@@ -267,131 +311,6 @@ API.load_module = function(arg_module_name, arg_module_obj, arg_base_dir)
 	
 	
 	return out_cfg;
-	/*
-	// LOAD MODELS RESOURCES
-	if (has_models)
-	{
-		res_type = 'models';
-		res_obj = arg_module_obj[res_type];
-		res_typeof = typeof res_obj;
-		if (res_typeof !== 'object')
-		{
-			throw Error('Bad format for application.modules.[' + res_type + ']');
-		}
-		Object.keys(res_obj).forEach(
-			function(arg_module_file_key, arg_module_file_index, arg_module_file_array)
-			{
-				res_filename = path.join(arg_base_dir, res_obj[arg_module_file_key]);
-				res_config = parser.read(res_filename, 'utf-8');
-				console.info('loading module [%s] configuration of [%s] resources: file [%s]', arg_module_file_key, res_type, res_filename);
-				
-				if ((typeof res_config.application[res_type]) !== 'object')
-				{
-					throw Error('Bad format for application.[' + res_type + '] for file [' + res_filename + '] for key [' + arg_module_file_key + ']');
-				}
-				
-				var res_cfg = null;
-				Object.keys(res_config.application[res_type]).forEach(
-					function(arg_res_name, arg_res_index, arg_res_array)
-					{
-						res_cfg = res_config.application[res_type][arg_res_name];
-						
-						if (! out_cfg[res_type] )
-						{
-							out_cfg[res_type] = {};
-						}
-						
-						out_cfg[res_type][arg_res_name] = parser.split_all_keys(res_cfg);
-						out_cfg[res_type][arg_res_name].name = arg_res_name;
-					}
-				);
-			}
-		);
-	}
-	
-	// LOAD MENUBARS RESOURCES
-	if (has_menubars)
-	{
-		res_type = 'menubars';
-		res_obj = arg_module_obj[res_type];
-		res_typeof = typeof res_obj;
-		if (res_typeof !== 'object')
-		{
-			throw Error('Bad format for application.modules.[' + res_type + ']');
-		}
-		Object.keys(res_obj).forEach(
-			function(arg_module_file_key, arg_module_file_index, arg_module_file_array)
-			{
-				res_filename = path.join(arg_base_dir, res_obj[arg_module_file_key]);
-				res_config = parser.read(res_filename, 'utf-8');
-				console.info('loading module [%s] configuration of [%s] resources: file [%s]', arg_module_file_key, res_type, res_filename);
-				
-				if ((typeof res_config.application[res_type]) !== 'object')
-				{
-					throw Error('Bad format for application.[' + res_type + '] for file [' + res_filename + '] for key [' + arg_module_file_key + ']');
-				}
-				
-				var res_cfg = null;
-				Object.keys(res_config.application[res_type]).forEach(
-					function(arg_res_name, arg_res_index, arg_res_array)
-					{
-						res_cfg = res_config.application[res_type][arg_res_name];
-						
-						if (! out_cfg[res_type] )
-						{
-							out_cfg[res_type] = {};
-						}
-						
-						out_cfg[res_type][arg_res_name] = parser.split_all_keys(res_cfg);
-						out_cfg[res_type][arg_res_name].name = arg_res_name;
-					}
-				);
-			}
-		);
-	}
-	
-	// LOAD MENUS RESOURCES
-	if (has_menus)
-	{
-		res_type = 'menus';
-		res_obj = arg_module_obj[res_type];
-		res_typeof = typeof res_obj;
-		if (res_typeof !== 'object')
-		{
-			throw Error('Bad format for application.modules.[' + res_type + ']');
-		}
-		Object.keys(res_obj).forEach(
-			function(arg_module_file_key, arg_module_file_index, arg_module_file_array)
-			{
-				res_filename = path.join(arg_base_dir, res_obj[arg_module_file_key]);
-				res_config = parser.read(res_filename, 'utf-8');
-				console.info('loading module [%s] configuration of [%s] resources: file [%s]', arg_module_file_key, res_type, res_filename);
-				
-				if ((typeof res_config.application[res_type]) !== 'object')
-				{
-					throw Error('Bad format for application.[' + res_type + '] for file [' + res_filename + '] for key [' + arg_module_file_key + ']');
-				}
-				
-				var res_cfg = null;
-				Object.keys(res_config.application[res_type]).forEach(
-					function(arg_res_name, arg_res_index, arg_res_array)
-					{
-						res_cfg = res_config.application[res_type][arg_res_name];
-						
-						if (! out_cfg[res_type] )
-						{
-							out_cfg[res_type] = {};
-						}
-						
-						out_cfg[res_type][arg_res_name] = parser.split_all_keys(res_cfg);
-						out_cfg[res_type][arg_res_name].name = arg_res_name;
-					}
-				);
-			}
-		);
-	}
-	
-	return out_cfg;*/
 }
 
 

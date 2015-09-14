@@ -289,7 +289,7 @@ function(
 					parent_right_jqo: right_jqo
 				};
 				
-				var is_menubar = ('class_name' in arg_menu_declaration) && arg_menu_declaration['class_name'].toLocaleLowerCase() === 'menubar';
+				// var is_menubar = ('class_name' in arg_menu_declaration) && arg_menu_declaration['class_name'].toLocaleLowerCase() === 'menubar';
 				
 				
 				

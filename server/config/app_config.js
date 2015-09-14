@@ -4,7 +4,8 @@ var parser = require('./ini_parser'),
 	Q = require('q'),
 	path = require('path'),
 	assert = require('assert'),
-	module_config = require('./module_config');
+	module_config = require('./module_config'),
+	resource_config = require('./resource_config');
 
 
 /*
@@ -162,6 +163,11 @@ function load_app_config(arg_file_path_name, arg_base_dir, arg_force_reload)
 			}
 		);
 	}
+	
+	
+	// UPDATE CLONED RESOURCES
+	resource_config.update_cloned_resources(app_config);
+	
 	
 	// SAVE APP CONFIG
 	parser.write('./tmp/' + arg_file_path_name + '.out.ini', app_config);
