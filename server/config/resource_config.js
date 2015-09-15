@@ -1,9 +1,27 @@
 'use strict';
 
-var parser = require('./ini_parser'),
+/*
+	API
+		API.clone_resource(arg_resource_obj, arg_app_cfg): nothing
+		
+		
+		API.update_cloned_resources(arg_app_cfg): nothing
+		
+		
+		API.reload_resource(arg_resource_before_obj, arg_resource_after_obj): nothing
+			load again an existing resource and update it
+		
+		API.load_resource = function(arg_resource_obj): nothing
+			load or reload (call API.reload_resource) a resource
+		
+		API.load_resources(arg_resource_key, arg_resource_obj, arg_base_dir): nothing
+*/
+
+var parser = require('./config_parser'),
 	// Q = require('q'),
 	path = require('path'),
-	assert = require('assert');
+	assert = require('assert'),
+	logs = require('../utils/logs');
 
 
 /*
@@ -28,23 +46,15 @@ var API = {};
 var resources_to_clone = [];
 
 
-API.update_resource = function(arg_resource_before_obj, arg_resource_after_obj)
-{
-	console.info('update resource [%s] of type [%s]', arg_resource_before_obj.name, arg_resource_before_obj.resources_set);
-	
-	
-}
-
-
 API.clone_resource = function(arg_resource_obj, arg_app_cfg)
 {
-	console.info('cloning resource [%s] of type [%s]', arg_resource_obj.name, arg_resource_obj.resources_set);
+	logs.info('resource_config', 'cloning resource [%s] of type [%s]', arg_resource_obj.name, arg_resource_obj.class_type);
 	
-	var target_obj = arg_app_cfg.application[arg_resource_obj.resources_set][arg_resource_obj.name]; // TODO CHECK EXISTS ?
+	var target_obj = arg_app_cfg.application[arg_resource_obj.class_type][arg_resource_obj.name]; // TODO CHECK EXISTS ?
 	console.log(target_obj, 'target_obj');
 	
 	var src_name = target_obj.clone;
-	var src_obj = arg_app_cfg.application[arg_resource_obj.resources_set][src_name]; // TODO CHECK EXISTS ?
+	var src_obj = arg_app_cfg.application[arg_resource_obj.class_type][src_name]; // TODO CHECK EXISTS ?
 	console.log(src_obj, 'src_obj');
 	
 	// COPY ATTRIBUTES
@@ -67,7 +77,7 @@ API.clone_resource = function(arg_resource_obj, arg_app_cfg)
 
 API.update_cloned_resources = function(arg_app_cfg)
 {
-	console.info('update cloned resources');
+	logs.info('resource_config', 'update cloned resources');
 	
 	// UPDATE CLONED RESOURCES
 	if(resources_to_clone.length > 0)
@@ -84,35 +94,57 @@ API.update_cloned_resources = function(arg_app_cfg)
 }
 
 
+API.reload_resource = function(arg_resource_before_obj, arg_resource_after_obj, arg_set_name, arg_res_name)
+{
+	logs.info('resource_config', 'reload resource [%s] of type [%s]', arg_res_name, arg_set_name);
+	
+	
+}
+
+
+API.load_resource = function(arg_resource_obj, arg_set_name, arg_res_name)
+{
+	logs.info('resource_config', 'load resource [%s] of type [%s]', arg_res_name, arg_set_name);
+	
+	var out_cfg = parser.split_all_keys(arg_resource_obj);
+	out_cfg.name = arg_res_name;
+	out_cfg.class_type = arg_set_name;
+	
+	// CLONE AN EXISTING RESOURCE
+	if ( arg_resource_obj.clone && (typeof arg_resource_obj.clone) === 'string')
+	{
+		resources_to_clone.push(out_cfg);
+	}
+	
+	return out_cfg;
+}
+
+
+
+/**
+ * @public
+ * @memberof				Server.resource_config.API
+ * @desc					Load a resource configuration object directly or with a resources file and returns a resource plain object
+ * @param {string}			arg_resource_key	Resource key (resource name or file key)
+ * @param {object|string}	arg_resource_obj	Resource plain object of file name
+ * @param {string}			arg_base_dir		Configuration files base directory
+ * @return {object}			A plain object of a configuration tree
+ */
 API.load_resources = function(arg_resource_key, arg_resource_obj, arg_base_dir)
 {
-	console.info('loading resource configuration at [%s]', arg_resource_key);
+	logs.info('resource_config', 'loading resource configuration at [%s]', arg_resource_key);
 	
-	
-	var out_cfg = {};
 	
 	// CASE: application.modules.AAA.models.BBB.class_name=...
 	// with arg_resource_obj = {class_name=...}
 	//      arg_resource_key = BBB
 	if ((typeof arg_resource_obj) === 'object')
 	{
-		console.info('loading resource configuration object at [%s]', arg_resource_key);
+		logs.info('resource_config', 'loading resource configuration object at [%s]', arg_resource_key);
 		
 		var set_name = arg_resource_obj.class_type ? arg_resource_obj.class_type : 'unknow resources set';
 		
-		out_cfg[set_name][arg_resource_key] = parser.split_all_keys(arg_resource_obj);
-		out_cfg[set_name][arg_resource_key].name = arg_resource_key;
-		out_cfg[set_name][arg_resource_key].resources_set = set_name;
-		
-		// console.log(out_cfg, 'API.load_resources out_cfg');
-		
-		// CLONE AN EXISTING RESOURCE
-		if ( arg_resource_obj.clone && (typeof arg_resource_obj.clone) === 'string')
-		{
-			resources_to_clone.push( out_cfg[set_name][arg_resource_key] );
-		}
-		
-		return out_cfg;
+		return API.load_resource(arg_resource_obj, set_name, arg_resource_key);
 	}
 	
 	
@@ -123,43 +155,46 @@ API.load_resources = function(arg_resource_key, arg_resource_obj, arg_base_dir)
 		throw Error('Bad format for resource object at [' + arg_resource_key + ']');
 	}
 	
-	console.info('loading resource configuration file [%s]', arg_resource_obj);
-	
 	
 	// LOAD FILE
+	logs.info('resource_config', 'loading resource configuration file [%s]', arg_resource_obj);
 	var res_filename = path.join(arg_base_dir, arg_resource_obj);
 	arg_resource_obj = parser.read(res_filename, 'utf-8');
 	// console.log(arg_resource_obj, 'arg_resource_obj');
 	
+	
 	// LOOP ON MODULE RESOURCES
 	// CASE: arg_resource_obj = application.views/models/menubars/menus...
 	assert.ok( (typeof arg_resource_obj.application) === 'object', 'loaded resources should begin with application.SSS.RRR');
+	
+	var out_cfg = {};
+	
 	Object.keys(arg_resource_obj.application).forEach(
 		function(arg_set_name/*, arg_set_index, arg_set_array*/)
 		{
-			console.info('loading resource configuration for set [%s]', arg_set_name);
+			logs.info('resource_config', 'loading resource configuration for set [%s]', arg_set_name);
+			
 			var set_resources = arg_resource_obj.application[arg_set_name];
 			
 			Object.keys(set_resources).forEach(
 				function(arg_res_name/*, arg_res_index, arg_res_array*/)
 				{
-					console.info('loading resource configuration for resource [%s]', arg_res_name);
+					// logs.info('resource_config', 'loading resource configuration for resource [%s]', arg_res_name);
 					
 					var res_cfg = set_resources[arg_res_name];
 					
-					if (! out_cfg[arg_set_name] )
+					if ( ! out_cfg[arg_set_name] )
 					{
 						out_cfg[arg_set_name] = {};
 					}
 					
-					out_cfg[arg_set_name][arg_res_name] = parser.split_all_keys(res_cfg);
-					out_cfg[arg_set_name][arg_res_name].name = arg_res_name;
-					out_cfg[arg_set_name][arg_res_name].resources_set = arg_set_name;
-					
-					// CLONE AN EXISTING RESOURCE
-					if ( res_cfg.clone && (typeof res_cfg.clone) === 'string')
+					if ( out_cfg[arg_set_name][arg_res_name] )
 					{
-						resources_to_clone.push( out_cfg[arg_set_name][arg_res_name] );
+						out_cfg[arg_set_name][arg_res_name] = API.reload_resource(out_cfg[arg_set_name][arg_res_name], res_cfg, arg_set_name, arg_res_name);
+					}
+					else
+					{
+						out_cfg[arg_set_name][arg_res_name] = API.load_resource(res_cfg, arg_set_name, arg_res_name);
 					}
 				}
 			);

@@ -1,6 +1,6 @@
 'use strict';
 
-var parser = require('./ini_parser'),
+var parser = require('./config_parser'),
 	Q = require('q'),
 	path = require('path'),
 	assert = require('assert'),
@@ -149,8 +149,6 @@ API.load_module = function(arg_module_name, arg_module_obj, arg_base_dir)
 {
 	console.info('loading module [%s] configuration from [%s]', arg_module_name, arg_base_dir);
 	
-	var out_cfg = {};
-	
 	
 	var has_views = ('views' in arg_module_obj);
 	var has_models = ('models' in arg_module_obj);
@@ -280,6 +278,7 @@ API.load_module = function(arg_module_name, arg_module_obj, arg_base_dir)
 	
 	
 	// UPDATE OUTPUT
+	var out_cfg = {};
 	loaded_resources.forEach(
 		function(arg_load_value, arg_load_index, arg_load_array)
 		{

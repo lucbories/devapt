@@ -1,9 +1,10 @@
 'use strict';
 
-var parser = require('./ini_parser'),
+var parser = require('./config_parser'),
 	Q = require('q'),
 	path = require('path'),
 	assert = require('assert'),
+	logs = require('../utils/logs'),
 	module_config = require('./module_config'),
 	resource_config = require('./resource_config');
 
@@ -36,7 +37,7 @@ loaded_configs.connexions = {};
 // LOAD AN APPLICATION CONFIGURATION
 function load_app_config(arg_file_path_name, arg_base_dir, arg_force_reload)
 {
-	console.info('loading application configuration from file [%s] of private dir [%s]', arg_file_path_name, arg_base_dir);
+	logs.info('app_config', 'loading application configuration from file [%s] of private dir [%s]', arg_file_path_name, arg_base_dir);
 	
 	var app_config_path = path.join(arg_base_dir, arg_file_path_name);
 	
@@ -49,7 +50,7 @@ function load_app_config(arg_file_path_name, arg_base_dir, arg_force_reload)
 	
 	// LOAD APPLICATION INI CONFIGURATION
 	var app_config = parser.read(app_config_path, 'utf-8');
-	console.info('loading application configuration: file [%s]', app_config_path);
+	logs.info('app_config', 'loading application configuration: file [%s]', app_config_path);
 	if ( ! ('application' in app_config) )
 	{
 		throw Error('No application root key in configuration');
@@ -104,7 +105,7 @@ function load_app_config(arg_file_path_name, arg_base_dir, arg_force_reload)
 			{
 				res_filename = path.join(arg_base_dir, connexions[arg_value]);
 				res_config = parser.read(res_filename, 'utf-8');
-				console.info('loading application configuration of [%s] resources: file [%s]', res_type, res_filename);
+				logs.info('app_config', 'loading application configuration of [%s] resources: file [%s]', res_type, res_filename);
 				
 				Object.keys(res_config).forEach(
 					function(arg_res_name, arg_res_index, arg_res_array)
@@ -170,14 +171,16 @@ function load_app_config(arg_file_path_name, arg_base_dir, arg_force_reload)
 	
 	
 	// SAVE APP CONFIG
-	parser.write('./tmp/' + arg_file_path_name + '.out.ini', app_config);
+	parser.write_ini('./tmp/' + arg_file_path_name + '.out.ini', app_config);
+	parser.write_json('./tmp/' + arg_file_path_name + '.out.json', app_config);
 
 	loaded_configs.files[app_config_path] = app_config;
 	loaded_configs.apps[app_config.application.name] = app_config;
 	
 	// console.log(loaded_configs, 'loaded_configs');
 	
-	console.info('loading application configuration end');
+	logs.info('app_config', 'loading application configuration end');
+	
 	
 	return Q(app_config.application);
 }

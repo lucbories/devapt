@@ -60,11 +60,7 @@ function(Devapt, Hasher, Crossroads, DevaptTrace, DevaptTypes)
 		DevaptTrace.trace_enter(context, '', DevaptNavigation.navigation_trace);
 		
 		
-		// var all_promises = [];
-		// var route_promise = null;
-		var view_name = null;
-		
-		// REGISTER ROUTES
+		// REGISTER ROUTE FOR HOME
 		DevaptNavigation.navigation_router.addRoute('',
 			function()
 			{
@@ -78,65 +74,15 @@ function(Devapt, Hasher, Crossroads, DevaptTrace, DevaptTypes)
 			}
 		);
 		
-		// view_name = /^[.*]\#view=([_\-0-9a-zA-Z]+),menubar=([_\-0-9a-zA-Z]+)?$/;
-		view_name = '#view=VIEW_CONTENT_1,menubar=';
-		DevaptNavigation.navigation_router.addRoute(view_name,
-			function()
+		// REGISTER ROUTE A PAGE (view, menubar)
+		var route = /^.*\/#view=([_\-0-9a-zA-Z]+),menubar=([_\-0-9a-zA-Z]+)?$/;
+		DevaptNavigation.navigation_router.addRoute(route,
+			function(view, menubar)
 			{
-				var view = 'VIEW_CONTENT_1', menubar ='';
-				// Devapt.app_ready_promise.done(
-				// 	function()
-				// 	{
-						console.log('Crossroads route cb for view [%s] and menubar [%s]', view, menubar);
-						return DevaptNavigation.display_view(view, menubar);
-				// 	}
-				// );
+				console.log('Crossroads route cb for view [%s] and menubar [%s]', view, menubar);
+				return DevaptNavigation.display_view(view, menubar);
 			}
 		);
-		
-		// view_name = '#view=VIEW_CONTENT_1,menubar=';
-		// DevaptNavigation.navigation_router.addRoute(view_name,
-		// 	function(view, menubar)
-		// 	{
-		// 		Devapt.app_ready_promise.done(
-		// 			function()
-		// 			{
-		// 				console.log('Crossroads route cb for view [%s] and menubar [%s]', view, menubar);
-		// 				return DevaptNavigation.display_view(view, menubar);
-		// 			}
-		// 		);
-		// 	}
-		// );
-		
-		// view_name = 'VIEW_HOME';
-		// DevaptNavigation.add_route_for_view(view_name);
-		// Crossroads.addRoute(view_name,
-		// 	function()
-		// 	{
-		// 		console.log('Crossroads route cb for [%s]', view_name);
-		// 		return DevaptNavigation.display_view(view_name);
-		// 	}
-		// );
-		
-		// view_name = 'VIEW_CONTENT_1';
-		// DevaptNavigation.add_route_for_view(view_name);
-		// Crossroads.addRoute(view_name,
-		// 	function()
-		// 	{
-		// 		console.log('Crossroads route cb for [%s]', view_name);
-		// 		return DevaptNavigation.display_view(view_name);
-		// 	}
-		// );
-		
-		// view_name = 'VIEW_CONTENT_2';
-		// DevaptNavigation.add_route_for_view(view_name);
-		// Crossroads.addRoute(view_name,
-		// 	function()
-		// 	{
-		// 		console.log('Crossroads route cb for [%s]', view_name);
-		// 		return DevaptNavigation.display_view(view_name);
-		// 	}
-		// );
 		
 		
 		// SETUP HASHER
@@ -145,13 +91,12 @@ function(Devapt, Hasher, Crossroads, DevaptTrace, DevaptTypes)
 			console.log('Hasher parse cb for [%s] [%s]', newHash, oldHash);
 			DevaptNavigation.navigation_router.parse(newHash);
 		}
+		Hasher.prependHash = '';
 		Hasher.initialized.add(parseHash); //parse initial hash
 		Hasher.changed.add(parseHash); //parse hash changes
 		Hasher.init(); //start listening for history change
 		
-		// Hasher.setHash('VIEW_HOME');
 		
-		// var promise = Devapt.promise_all(all_promises).then( function() { return true; } );
 		var promise = Devapt.promise_resolved(true);
 		
 		
