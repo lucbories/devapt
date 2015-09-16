@@ -327,7 +327,8 @@ function(
 		var display_view= DevaptTypes.to_string(display['view'], null);
 		var display_cont= DevaptTypes.to_string(display['container'], display_view);
 		var display_js	= DevaptTypes.to_string(display['js'], null);
-		var display_menubar	= DevaptTypes.to_string(display['menubar'], null);
+		var default_menubar_name = Devapt.app.main_menubar ? Devapt.app.main_menubar.name : Devapt.app.get_menubar_name()
+		var display_menubar	= DevaptTypes.to_string(display['menubar'], default_menubar_name);
 		
 		
 		// MENUBAR CASE
@@ -382,7 +383,7 @@ function(
 							self.step(context, 'menu callback for view [' + arg_view_name + ']');
 							// console.log(context, 'menu callback for view [%s]', arg_view_name);
 							
-							DevaptNavigation.display_view(arg_view_name, arg_menubar_name);
+							DevaptNavigation.goto_view(arg_view_name, arg_menubar_name);
 						};
 					}
 				)(display_view, display_menubar);

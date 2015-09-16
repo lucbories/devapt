@@ -64,22 +64,29 @@ function(Devapt, Hasher, Crossroads, DevaptTrace, DevaptTypes)
 		DevaptNavigation.navigation_router.addRoute('',
 			function()
 			{
-				// Devapt.app_ready_promise.done(
-				// 	function()
-				// 	{
-						console.log('Crossroads route cb for [%s]', 'home');
-						return DevaptNavigation.display_view('VIEW_HOME', '');
-					// }
-				// );
+				var home_view_name = Devapt.app.get_home_view_name();
+				var home_bar_name = Devapt.app.get_menubar_name();
+				var hash = Hasher.getHash();
+				
+				console.log('Crossroads route cb for home view [%s] and menubar [%s] with hash [%s]', home_view_name, home_bar_name, hash);
+				
+				return DevaptNavigation.display_view(home_view_name, home_bar_name);
 			}
 		);
 		
 		// REGISTER ROUTE A PAGE (view, menubar)
-		var route = /^.*\/#view=([_\-0-9a-zA-Z]+),menubar=([_\-0-9a-zA-Z]+)?$/;
+		var route = 'view\={view}\,menubar\={menubar}';
 		DevaptNavigation.navigation_router.addRoute(route,
+			// function(arg_url)
 			function(view, menubar)
 			{
-				console.log('Crossroads route cb for view [%s] and menubar [%s]', view, menubar);
+				// var pattern = /^view=([_\-0-9a-zA-Z]+),menubar=([_\-0-9a-zA-Z]+)$/;
+				// var parts = pattern.exec(arg_url);
+				// var view = parts.length > 0 ? parts[0] : null;
+				// var menubar = parts.length > 1 ? parts[1] : null;
+				var arg_url = '';
+				console.log('Crossroads route cb for url [%s] with view [%s] and menubar [%s]', arg_url, view, menubar);
+				
 				return DevaptNavigation.display_view(view, menubar);
 			}
 		);
@@ -105,6 +112,7 @@ function(Devapt, Hasher, Crossroads, DevaptTrace, DevaptTypes)
 	}
 	
 	
+	// UNUSED
 	/**
 	 * @memberof				DevaptNavigation
 	 * @public
@@ -194,7 +202,54 @@ function(Devapt, Hasher, Crossroads, DevaptTrace, DevaptTypes)
 	/**
 	 * @memberof				DevaptNavigation
 	 * @public
-	 * @method					DevaptNavigation.display_view(arg_view_name)
+	 * @method					DevaptNavigation.goto_view(arg_view_name,arg_menubar_name)
+	 * @desc					Goto the page content with given view (update only the hash)
+	 * @param {string}			arg_view_name		view name
+	 * @param {string}			arg_menubar_name	menubar name
+	 * @return {nothing}
+	 */
+	DevaptNavigation.goto_view = function(arg_view_name, arg_menubar_name)
+	{
+		var context = 'DevaptNavigation.goto_view(arg_view_name, arg_menubar_name)';
+		DevaptTrace.trace_enter(context, arg_view_name, DevaptNavigation.navigation_trace);
+		
+		DevaptTrace.trace_value(context, 'arg_menubar_name', arg_menubar_name, DevaptNavigation.navigation_trace);
+		
+		Hasher.setHash('view=' + arg_view_name + ',menubar=' + arg_menubar_name);
+		
+		DevaptTrace.trace_leave(context, Devapt.msg_success, DevaptNavigation.navigation_trace);
+	}
+	
+	
+	/**
+	 * @memberof				DevaptNavigation
+	 * @public
+	 * @method					DevaptNavigation.update_hash(arg_view_name,arg_menubar_name)
+	 * @desc					Goto the page content with given view (update only the hash)
+	 * @param {string}			arg_view_name		view name
+	 * @param {string}			arg_menubar_name	menubar name
+	 * @return {nothing}
+	 */
+	DevaptNavigation.update_hash = function(arg_view_name, arg_menubar_name)
+	{
+		var context = 'DevaptNavigation.update_hash(arg_view_name, arg_menubar_name)';
+		DevaptTrace.trace_enter(context, arg_view_name, DevaptNavigation.navigation_trace);
+		
+		DevaptTrace.trace_value(context, 'arg_menubar_name', arg_menubar_name, DevaptNavigation.navigation_trace);
+		
+		Hasher.changed.active = false;
+		Hasher.setHash('view=' + arg_view_name + ',menubar=' + arg_menubar_name);
+		Hasher.changed.active = true;
+		
+		DevaptTrace.trace_leave(context, Devapt.msg_success, DevaptNavigation.navigation_trace);
+	}
+	
+	
+	
+	/**
+	 * @memberof				DevaptNavigation
+	 * @public
+	 * @method					DevaptNavigation.display_view(arg_view_name,arg_menubar_name)
 	 * @desc					Display the page content with given view
 	 * @param {string}			arg_view_name		view name
 	 * @param {string}			arg_menubar_name	menubar name
@@ -209,39 +264,6 @@ function(Devapt, Hasher, Crossroads, DevaptTrace, DevaptTypes)
 		var promise = null;
 		try
 		{
-			// UPDATE MENUBAR VIEW
-			/*arg_menubar_name = arg_menubar_name ? arg_menubar_name : Devapt.app.get_menubar_name();
-			if (Devapt.app.main_menubar && Devapt.app.main_menubar.name === arg_menubar_name)
-			{
-				// SHOW HIDDEN MENUBAR
-				Devapt.app.main_menubar.show();
-			}
-			else
-			{
-				DevaptTrace.trace_step(context, 'UPDATE MENUBAR VIEW', DevaptNavigation.navigation_trace);
-				
-				// HIDE CURRENT MENUBAR
-				if (Devapt.app.main_menubar)
-				{
-					Devapt.app.main_menubar.hide();
-				}
-				
-				// DISPLAY NEW MENUBAR
-				var menubar_container_id = Devapt.app.get_menubar_container_id();
-				DevaptNavigation.render_view(arg_menubar_name, menubar_container_id)
-				.then(
-					function(view)
-					{
-						DevaptTrace.trace_step(context, 'MENUBAR VIEW IS RENDERED', DevaptNavigation.navigation_trace);
-						// console.log(view, context + '.menubar.view');
-						
-						Devapt.app.main_menubar = view;
-						return view;
-					}
-				);
-			}*/
-			
-			
 			// UDPATE CONTENT VIEW
 			if (Devapt.app.main_content && Devapt.app.main_content.name === arg_view_name)
 			{
@@ -253,7 +275,7 @@ function(Devapt, Hasher, Crossroads, DevaptTrace, DevaptTypes)
 				// DISPLAY MENUBAR
 				var menubar_name = DevaptTypes.is_not_empty_string(Devapt.app.main_content.menubar) ? Devapt.app.main_content.menubar : arg_menubar_name;
 				DevaptNavigation.display_menubar(menubar_name, null);
-				Hasher.setHash('view=' + arg_view_name + ',menubar=' + menubar_name);
+				self.DevaptNavigation.update_hash(arg_view_name, menubar_name);
 				
 				// DISPLAY BREADCRUMBS
 				if (Devapt.app.main_breadcrumbs)
@@ -293,7 +315,7 @@ function(Devapt, Hasher, Crossroads, DevaptTrace, DevaptTypes)
 						// DISPLAY MENUBAR
 						var menubar_name = DevaptTypes.is_not_empty_string(Devapt.app.main_content.menubar) ? Devapt.app.main_content.menubar : arg_menubar_name;
 						DevaptNavigation.display_menubar(menubar_name, null);
-						Hasher.setHash('view=' + arg_view_name + ',menubar=' + menubar_name);
+						self.DevaptNavigation.update_hash(arg_view_name, menubar_name);
 						
 						// DISPLAY BREADCRUMBS
 						if (Devapt.app.main_breadcrumbs)
@@ -453,7 +475,7 @@ function(Devapt, Hasher, Crossroads, DevaptTrace, DevaptTypes)
 		}
 		
 		
-		DevaptTrace.trace_leave(context, Devapt.msg_success, DevaptNavigation.navigation_trace);
+		DevaptTrace.trace_leave(context, Devapt.msg_success_promise, DevaptNavigation.navigation_trace);
 		return view_promise;
 	}
 	

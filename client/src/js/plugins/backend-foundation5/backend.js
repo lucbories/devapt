@@ -50,7 +50,7 @@ function(Devapt, DevaptFactory,
 	 * @static
 	 * @desc		Trace flag
 	 */
-	DevaptFoundation5Backend.backend_trace = false;
+	DevaptFoundation5Backend.backend_trace = true;
 	
 	
 	/**

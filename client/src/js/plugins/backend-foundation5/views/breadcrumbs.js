@@ -125,7 +125,7 @@ function(Devapt, DevaptTypes, DevaptClass,
 					return function()
 					{
 						console.log(state, context + '.onclick');
-						DevaptNavigation.display_view(state.view_name, state.menubar_name);
+						DevaptNavigation.goto_view(state.view_name, state.menubar_name);
 					}
 				}
 			)(arg_state)

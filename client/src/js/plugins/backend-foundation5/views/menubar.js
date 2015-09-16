@@ -463,7 +463,7 @@ function(
 			console.log(context, 'menubar for view [%s]', view_name);
 			
 			// MAIN CONTENT VIEW
-			DevaptNavigation.display_view(view_name, menubar_name);
+			DevaptNavigation.goto_view(view_name, menubar_name);
 			
 			// TODO : PARTIAL CONTENT VIEW
 		}
