@@ -275,7 +275,7 @@ function(Devapt, Hasher, Crossroads, DevaptTrace, DevaptTypes)
 				// DISPLAY MENUBAR
 				var menubar_name = DevaptTypes.is_not_empty_string(Devapt.app.main_content.menubar) ? Devapt.app.main_content.menubar : arg_menubar_name;
 				DevaptNavigation.display_menubar(menubar_name, null);
-				self.DevaptNavigation.update_hash(arg_view_name, menubar_name);
+				DevaptNavigation.update_hash(arg_view_name, menubar_name);
 				
 				// DISPLAY BREADCRUMBS
 				if (Devapt.app.main_breadcrumbs)
@@ -315,7 +315,7 @@ function(Devapt, Hasher, Crossroads, DevaptTrace, DevaptTypes)
 						// DISPLAY MENUBAR
 						var menubar_name = DevaptTypes.is_not_empty_string(Devapt.app.main_content.menubar) ? Devapt.app.main_content.menubar : arg_menubar_name;
 						DevaptNavigation.display_menubar(menubar_name, null);
-						self.DevaptNavigation.update_hash(arg_view_name, menubar_name);
+						DevaptNavigation.update_hash(arg_view_name, menubar_name);
 						
 						// DISPLAY BREADCRUMBS
 						if (Devapt.app.main_breadcrumbs)
@@ -332,8 +332,14 @@ function(Devapt, Hasher, Crossroads, DevaptTrace, DevaptTypes)
 						}
 						
 						return view;
+					},
+					function(err)
+					{
+						console.error(arg_view_name, context + '.DevaptNavigation.render_view(arg_view_name, content_container_id) failure');
+						throw err;
 					}
 				);
+				console.log(promise, context + '.promise');
 			}
 			
 			
@@ -406,6 +412,10 @@ function(Devapt, Hasher, Crossroads, DevaptTrace, DevaptTypes)
 						
 						Devapt.app.main_menubar = view;
 						return view;
+					},
+					function(err)
+					{
+						throw err;
 					}
 				);
 			}
@@ -466,6 +476,10 @@ function(Devapt, Hasher, Crossroads, DevaptTrace, DevaptTypes)
 					// console.log(view, context + '.view');
 					
 					return view;
+				},
+				function(err)
+				{
+					throw err;
 				}
 			);
 		}

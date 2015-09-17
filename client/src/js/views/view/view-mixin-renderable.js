@@ -486,7 +486,7 @@ function(Devapt, DevaptTypes, DevaptClass)
 					
 					self.step(context, 'render template');
 					// TODO CHANGE METHOD API
-					var promise = self.render_template( Devapt.defer() );
+					var promise = self.render_template();
 					
 					
 					self.leave(context, Devapt.msg_success_promise);

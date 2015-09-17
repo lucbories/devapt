@@ -55,14 +55,13 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptResources, DevaptTemplate)
 		 * @public
 		 * @memberof			DevaptMixinTemplate
 		 * @desc				Render template
-		 * @param {object}		arg_deferred	deferred object
 		 * @return {object}		deferred promise object
 		 */
-		render_template: function(arg_deferred)
+		render_template: function()
 		{
 			var self = this;
 			self.push_trace(self.trace, DevaptMixinTemplate.mixin_template_trace);
-			var context = 'render_template(deferred)';
+			var context = 'render_template()';
 			self.enter(context, '');
 			
 			
@@ -77,8 +76,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptResources, DevaptTemplate)
 				self.step(context, 'deferred.resolve(): template is disabled');
 				self.leave(context, 'template isn\'t enabled: render is resoved');
 				self.pop_trace();
-				arg_deferred.resolve();
-				return Devapt.promise(arg_deferred);
+				return Devapt.promise_resolved();
 			}
 			
 			
@@ -88,8 +86,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptResources, DevaptTemplate)
 				self.step(context, 'deferred.resolve(null)');
 				self.leave(context, 'template string is empty: render is resoved');
 				self.pop_trace();
-				arg_deferred.resolve();
-				return Devapt.promise(arg_deferred);
+				return Devapt.promise_resolved();
 			}
 			// console.log(self.template_string);
 			// console.log(self.template_bindings);
@@ -115,12 +112,12 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptResources, DevaptTemplate)
 			
 			// GET VIEW BINDINGS
 			self.step(context, 'get view bindings');
-			var view_bindings_object = self.get_view_bindings(arg_deferred);
+			var view_bindings_object = self.get_view_bindings();
 			
 			
 			// THIS TAG
 			self.step(context, 'get this tag');
-			var this_tag = self.get_this_tag(arg_deferred);
+			var this_tag = self.get_this_tag();
 			
 			
 			// MERGE TAGS
@@ -146,7 +143,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptResources, DevaptTemplate)
 				
 				var this_id = self.get_view_id();
 				var this_tag_id = 'this_' + this_id;
-				var this_tag_jqo = $('#' + this_tag_id);
+				// var this_tag_jqo = $('#' + this_tag_id);
 				
 				self.content_jqo.append(self.template_jqo);
 				
@@ -159,14 +156,10 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptResources, DevaptTemplate)
 				self.step(context, '{this} found in template');
 			}
 			
-			// RESOVE RENDER
-			self.step(context, 'deferred.resolve()');
-			arg_deferred.resolve();
-			
 			
 			self.leave(context, 'success: render is resolved');
 			self.pop_trace();
-			return Devapt.promise(arg_deferred);
+			return Devapt.promise_resolved();
 		},
 		
 		
@@ -268,7 +261,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptResources, DevaptTemplate)
 		 * @desc				Get view bindings
 		 * @return {object}		bindings map
 		 */
-		get_view_bindings: function(arg_deferred)
+		get_view_bindings: function()
 		{
 			var self = this;
 			self.push_trace(self.trace, DevaptMixinTemplate.mixin_template_trace);
@@ -297,7 +290,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptResources, DevaptTemplate)
 				{
 					self.step(context, 'view_bindings split is array');
 					
-					var view_bindings_object = {};
+					// var view_bindings_object = {};
 					for(var view_binding_index in view_bindings)
 					{
 						self.step(context, 'view_binding at index [' + view_binding_index + ']');
@@ -335,7 +328,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptResources, DevaptTemplate)
 											) (view_tag_id,view_name,backend_object);
 										
 										// REGISTER RENDER CALLBACK
-										Devapt.promise(arg_deferred).then( function() { self.do_callback(closure_cb); } );
+										self.do_callback(closure_cb);
 										
 										// CREATE VIEW CONTENT TAG
 										return '<div id="' + view_tag_id + '" devapt-type="container"></div>';
@@ -365,7 +358,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptResources, DevaptTemplate)
 		 * @desc				Get 'this' tag
 		 * @return {object}		'this' tag
 		 */
-		get_this_tag: function(arg_deferred)
+		get_this_tag: function()
 		{
 			var self = this;
 			self.push_trace(self.trace, DevaptMixinTemplate.mixin_template_trace);
@@ -415,7 +408,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptResources, DevaptTemplate)
 							) (self,this_tag_id);
 						
 						// REGISTER RENDER CALLBACK
-						Devapt.promise(arg_deferred).then( function() { self.do_callback(closure_cb); } );
+						self.do_callback(closure_cb);
 						
 						// CREATE VIEW CONTENT TAG
 						// console.log('returns this tag');

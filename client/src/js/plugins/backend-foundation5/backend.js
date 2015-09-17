@@ -50,7 +50,7 @@ function(Devapt, DevaptFactory,
 	 * @static
 	 * @desc		Trace flag
 	 */
-	DevaptFoundation5Backend.backend_trace = true;
+	DevaptFoundation5Backend.backend_trace = false;
 	
 	
 	/**
@@ -167,6 +167,10 @@ function(Devapt, DevaptFactory,
 			{
 				DevaptTraces.trace_step(context, 'promise "then" is running', DevaptFoundation5Backend.backend_trace);
 				return DevaptFoundation5Backend.render_view(container_jqo, arg_view_name_or_object);
+			},
+			function(err)
+			{
+				throw err;
 			}
 		);
 		
@@ -323,6 +327,10 @@ function(Devapt, DevaptFactory,
 							function()
 							{
 								return view;
+							},
+							function(err)
+							{
+								throw err;
 							}
 						);
 						
@@ -336,6 +344,10 @@ function(Devapt, DevaptFactory,
 					
 					DevaptTraces.trace_leave(context, 'failure: for view [' + view.name + ']', DevaptFoundation5Backend.backend_trace);
 					return Devapt.promise_rejected();
+				},
+				function(err)
+				{
+					throw err;
 				}
 			);
 		}
