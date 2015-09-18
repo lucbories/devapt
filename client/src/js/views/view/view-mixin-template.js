@@ -36,11 +36,10 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptResources, DevaptTemplate)
 		 * @desc				Init mixin
 		 * @return {nothing}
 		 */
-		mixin_init: function()
+		mixin_template_init: function(self)
 		{
-			var self = this;
 			self.push_trace(self.trace, DevaptMixinTemplate.mixin_template_trace);
-			var context = 'mixin_init()';
+			var context = 'mixin_template_init()';
 			self.enter(context, '');
 			
 			
@@ -141,8 +140,8 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptResources, DevaptTemplate)
 			{
 				self.step(context, 'no {this} in template');
 				
-				var this_id = self.get_view_id();
-				var this_tag_id = 'this_' + this_id;
+				// var this_id = self.get_view_id();
+				// var this_tag_id = 'this_' + this_id;
 				// var this_tag_jqo = $('#' + this_tag_id);
 				
 				self.content_jqo.append(self.template_jqo);
@@ -383,11 +382,14 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptResources, DevaptTemplate)
 									return function()
 									{
 										// console.log(context + ':this_tag:closure_cb');
-										
-										view.render_self( Devapt.defer() ).then(
+										var promise = Devapt.promise_resolved();
+										if (view.get_render_state() === Devapt.STATE_NOT_RENDERED)
+										{
+											promise = view.render_content_self();
+										}
+										promise.then(
 											function()
 											{
-												
 												var content_children = view.content_jqo.children();
 												content_children.detach();
 												
@@ -432,7 +434,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptResources, DevaptTemplate)
 		'infos':{
 			'author':'Luc BORIES',
 			'created':'2014-07-14',
-			'updated':'2014-12-06',
+			'updated':'2015-09-19',
 			'description':'Mixin methods for template rendering.'
 		}
 	};
@@ -444,8 +446,9 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptResources, DevaptTemplate)
 	 * @desc				Mixin of methods for template rendering
 	 */
 	var DevaptMixinTemplateClass = new DevaptClass('DevaptMixinTemplate', null, class_settings);
+	DevaptMixinTemplateClass.infos.ctor = DevaptMixinTemplateClass.mixin_template_init;
 	
-	DevaptMixinTemplateClass.add_public_method('mixin_template_init', {}, DevaptMixinTemplate.mixin_init);
+	DevaptMixinTemplateClass.add_public_method('mixin_template_init', {}, DevaptMixinTemplate.mixin_template_init);
 	DevaptMixinTemplateClass.add_public_method('render_template', {}, DevaptMixinTemplate.render_template);
 	DevaptMixinTemplateClass.add_public_method('get_view_tags', {}, DevaptMixinTemplate.get_view_tags);
 	DevaptMixinTemplateClass.add_public_method('get_view_tags_arrays', {}, DevaptMixinTemplate.get_view_tags_arrays);

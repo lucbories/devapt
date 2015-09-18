@@ -1037,6 +1037,7 @@ function(DevaptTypes, DevaptClasses)
 				// NOT FOUND
 				if ( ! DevaptTypes.is_object(property_record) )
 				{
+					console.log(arg_instance_settings, 'arg_instance_settings');
 					console.log(arg_class.properties.all_map, 'arg_class.properties.all_map');
 					console.log(arg_class.properties.all_alias_map, 'arg_class.properties.all_alias_map');
 					DevaptTraces.trace_error(context, 'bad property record [' + setting_name + '] for object [' + arg_instance_settings.name + '] of class [' + arg_class.infos.class_name + ']', arg_class.trace);

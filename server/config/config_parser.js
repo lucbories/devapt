@@ -20,12 +20,15 @@ module.exports = {
 			{
 				// if (cfg_index > 10) return;
 				key = cfg_items[cfg_index];
-				value = arg_cfg[key];
-				
-				// console.log('-----------------------------------------');
-				// console.log(value, key);
-				
-				self.split_key(key, value, out_config);
+				if ((typeof key) === 'string' && key.length > 0)
+				{
+					value = arg_cfg[key];
+					
+					// console.log('-----------------------------------------');
+					// console.log(value, key);
+					
+					self.split_key(key, value, out_config);
+				}
 			}
 		);
 		
@@ -36,6 +39,11 @@ module.exports = {
 	
 	split_key: function(arg_key, arg_value, arg_cfg)
 	{
+		if ((typeof arg_key) !== 'string' || arg_key.length === 0)
+		{
+			return;
+		}
+		
 		var parts = arg_key.split('.');
 		if (parts.length === 1)
 		{
