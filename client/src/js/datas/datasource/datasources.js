@@ -36,7 +36,7 @@ function(Devapt,
 		 * @public
 		 * @desc				Enable/disable trace for static class operations
 		 */
-		trace_datasources: true,
+		trace_datasources: false,
 		
 		/**
 		 * @memberof			DevaptDatasources

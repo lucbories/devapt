@@ -242,10 +242,12 @@ function(
 	var cb_new_selected_record = function (arg_record)
 	{
 		var self = this;
-//		self.trace=true;
+		var saved_trace=self.trace;
+		self.trace=true;
 		var context = 'new_selected_record(record)';
 		self.enter(context, '');
 		self.assert_object(context, 'arg_record', arg_record);
+		console.log(arg_record, context + ':arg_record');
 		
 		
 		// GIVEN RECORD IS A VALID RECORD
@@ -254,6 +256,7 @@ function(
 			if ( self.get_recordset().has_record(arg_record) )
 			{
 				self.leave(context, Devapt.msg_success_promise);
+				self.trace=saved_trace;
 				return Devapt.promise_resolved(arg_record);
 			}
 			
@@ -262,7 +265,6 @@ function(
 		
 		// DEBUG
 //		console.log(self.linked_record, context + ':self.linked_record');
-//		console.log(arg_record, context + ':arg_record');
 		
 		// INIT
 		// var record = null;
@@ -279,9 +281,8 @@ function(
 			record_promise = values_promise.then(
 				function(values)
 				{
-	//				self.trace=true;
 					self.step(context, 'values are found');
-					console.log(values, context + ':values');
+					// console.log(values, context + ':values');
 					self.value(context, 'values', values);
 					
 					for(var index=0 ; index < values.length ; ++index)
@@ -298,6 +299,7 @@ function(
 							if ( loop_record.get_id() == arg_record[id_field_name])
 							{
 								self.step(context, Devapt.msg_found);
+								self.trace=saved_trace;
 								return Devapt.promise_resolved(loop_record);
 							}
 							
@@ -311,6 +313,7 @@ function(
 								if (found)
 								{
 									self.step(context, Devapt.msg_found);
+									self.trace=saved_trace;
 									return Devapt.promise_resolved(loop_record);
 								}
 							}
@@ -334,10 +337,12 @@ function(
 								if (record)
 								{
 									self.step(context, 'Record found');
+									self.trace=saved_trace;
 									return Devapt.promise_resolved(record);
 								}
 								
 								self.step(context, 'Record not found');
+								self.trace=saved_trace;
 								console.error(loop_record, self.name + '.' + context + ':not found');
 								console.log(self.recordset, self.name + '.' + context + ':recordset');
 								return Devapt.promise_rejected(record);
@@ -346,6 +351,7 @@ function(
 					}
 					
 					self.step(context, Devapt.msg_not_found);
+					self.trace=saved_trace;
 					return Devapt.promise_rejected(arg_record);
 				}
 			);
@@ -451,18 +457,20 @@ function(
 	 * @public
 	 * @method					self.on_container_select(items, is unselect)
 	 * @desc					React on a container selection change
-	 * @param {array}			arg_selected_items		array of selected items attributes
+	 * @param {array}			arg_selected_items_promises		array of selected items attributes promises
 	 * @return {nothing}
 	 */
-	var cb_on_container_select = function (arg_selected_items, arg_unselect)
+	var cb_on_container_select = function (arg_selected_items_promises, arg_unselect)
 	{
 		var self = this;
-//		self.trace=true;
+		// self.trace=true;
 		arg_unselect = !! arg_unselect;
 		var context = arg_unselect ? 'on_container_unselect(items)' : 'on_container_select(items)';
 		self.enter(context, '');
-		self.assert_array(context, 'arg_selected_items', arg_selected_items);
+		self.assert_array(context, 'arg_selected_items_promises', arg_selected_items_promises);
+		self.value(context, 'arg_selected_items_promises', arg_selected_items_promises);
 		self.value(context, 'arg_unselect', arg_unselect);
+		console.log(arg_selected_items_promises, 'arg_selected_items_promises');
 		
 		
 		try
@@ -632,7 +640,7 @@ function(
 			self.batch_promise = self.batch_promise.then(
 				function()
 				{
-					arg_selected_items.forEach(process_selected_item_cb);
+					arg_selected_items_promises.forEach(process_selected_item_cb);
 					return Devapt.promise_all(process_selected_items_results);
 				}
 			);

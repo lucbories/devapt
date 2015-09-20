@@ -31,13 +31,13 @@ function(Devapt, DevaptTypes,
 	 */
 	var cb_constructor = function(self)
 	{
+		// self.trace=true;
+		
 		// CONSTRUCTOR BEGIN
 		var context = self.class_name + '(' + self.name + ')';
 		self.enter(context, 'constructor');
 		
-		
-		// self.trace=true;
-		
+		// console.log(DevaptEvents.get_events_array(), 'events');
 		
 		// CONSTRUCTOR END
 		self.leave(context, 'success');
@@ -56,6 +56,7 @@ function(Devapt, DevaptTypes,
 	 */
 	var get_self_records_cb = function(self)
 	{
+		// console.log(DevaptEvents.get_events_array(), 'events');
 		return DevaptEvents.get_events_array();
 	}
 	

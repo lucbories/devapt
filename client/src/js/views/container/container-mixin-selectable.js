@@ -13,7 +13,7 @@
  * 					
  *              API:
  *  				Selected item object:
- *  					{ index:..., node_jqo:..., record:..., label:..., already_selected:... }
+ *  					{ index:..., node:..., record:..., label:..., already_selected:... }
  *  				
  *                  ->constructor(object)     : nothing
  *  
@@ -211,6 +211,8 @@ function(
 		
 		
 //		console.log(self, context + ':' + self.name + '[' + self.selection_enabled + ']');
+		console.log(arg_selection, context + ':.arg_selection');
+		
 		if (! self.selection_enabled)
 		{
 			self.leave(context, 'SELECTION IS DISABLED');
@@ -226,8 +228,8 @@ function(
 			arg_selection = [arg_selection];
 		}
 		
-		// GET SELECTION ITEMS
-		var selected_items = self.get_selected_items(arg_selection);
+		// GET SELECTION ITEMS PROMISES
+		var selected_items_promises = self.get_selected_items(arg_selection);
 		
 		// PROCESS VIEW MODEL OPERATIONS
 		promise = self.view_model_promise.then(
@@ -236,7 +238,7 @@ function(
 				self.step(context, 'view_model is ready');
 				try
 				{
-					arg_view_model.on_container_select(selected_items);
+					arg_view_model.on_container_select(selected_items_promises);
 				}
 				catch(e)
 				{
@@ -405,7 +407,7 @@ function(
 	 * @private
 	 * @method					self.on_view_model_select(item)
 	 * @desc					On ViewModel selection change
-	 * @param {object}			arg_selected_item	Selected item object { index:..., node_jqo:..., record:..., label:..., already_selected:... }
+	 * @param {object}			arg_selected_item	Selected item object { index:..., node:..., record:..., label:..., already_selected:... }
 	 * @return {object}			Promise of the operation
 	 */
 	var cb_on_view_model_select = function (arg_selected_item)
@@ -418,7 +420,7 @@ function(
 		
 		// DEBUG
 //		console.log(arg_selected_item, 'arg_selected_item');
-//		console.log(arg_selected_item.node_jqo, 'arg_selected_item.node_jqo');
+//		console.log(arg_selected_item.node, 'arg_selected_item.node');
 		
 		// REMOVE PREVIOUS SELECTED ITEM
 		if (! self.has_multiple_selection)
@@ -428,7 +430,7 @@ function(
 		}
 		
 		self.step(context, 'add css class "selected"');
-		self.add_item_node_css_class(arg_selected_item.node_jqo, 'selected');
+		self.add_item_node_css_class(arg_selected_item.node, 'selected');
 		
 		self.step(context, 'fire event "...selected"');
 		self.fire_event('devapt.events.container.selected', [arg_selected_item]);
@@ -446,7 +448,7 @@ function(
 	 * @private
 	 * @method					self.on_view_model_unselect(item)
 	 * @desc					On ViewModel selection change
-	 * @param {object}			arg_selected_item	Selected item object { index:..., node_jqo:..., record:..., label:..., already_selected:... }
+	 * @param {object}			arg_selected_item	Selected item object { index:..., node:..., record:..., label:..., already_selected:... }
 	 * @return {object}			Promise of the operation			
 	 */
 	var cb_on_view_model_unselect = function (arg_selected_item)
@@ -459,10 +461,10 @@ function(
 		
 		// DEBUG
 //		console.log(arg_selected_item, 'arg_selected_item');
-//		console.log(arg_selected_item.node_jqo, 'arg_selected_item.node_jqo');
+//		console.log(arg_selected_item.node, 'arg_selected_item.node');
 		
 		self.step(context, 'remove css class "selected"');
-		self.remove_item_node_css_class(arg_selected_item.node_jqo, 'selected');
+		self.remove_item_node_css_class(arg_selected_item.node, 'selected');
 		
 		self.step(context, 'fire event "unselected"');
 		self.fire_event('devapt.events.container.unselected', [arg_selected_item]);

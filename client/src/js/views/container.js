@@ -212,7 +212,7 @@ function(
 						function()
 						{
 							view_model.recordset.query.slice = {};
-							view_model.recordset.query.slice.offset = items_count_before + 1;
+							view_model.recordset.query.slice.offset = items_count_before;
 							view_model.recordset.query.slice.length = 999999999;
 							
 //							console.log(view_model.recordset.query, self.name + '.' + context + '.view_model update slice');
@@ -504,7 +504,7 @@ function(
 			function(view_model)
 			{
 				self.step(context, 'view_model get items');
-//				console.log(view_model, self.name + '.' + context + '.view_model');
+				// console.log(view_model, self.name + '.' + context + '.view_model');
 				
 				return view_model.ready_promise.then(
 					function()
@@ -575,6 +575,8 @@ function(
 				// console.log(arg_items, self.name + '.' + context + '.items');
 				// console.log(arg_types, self.name + '.' + context + '.types');
 				
+				arg_items = arg_items ? arg_items : [];
+				
 				try
 				{
 					// INIT ITEMS
@@ -585,6 +587,8 @@ function(
 					var types_count = arg_types.length;
 					var default_type = null;
 					self.value(context, 'types', arg_types);
+					self.value(context, 'items_count', items_count);
+					self.value(context, 'index_start', index_start);
 					
 					
 					// LOOP ON ITEMS

@@ -98,7 +98,8 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptObject)
 	var cb_get_records = function(arg_offset, arg_length)
 	{
 		var self = this;
-//			 console.log(datas, 'datas');
+		// console.log(arg_offset, 'datasources.get_records.arg_offset');
+		// console.log(arg_length, 'datasources.get_records.arg_length');
 		
 		// CHECK IF PROVIDER IS VALID
 		if ( ! self.is_valid() )
@@ -107,28 +108,32 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptObject)
 		}
 		
 		var datas = self.get_self_records();
+		// console.log(datas, 'datas');
 		
 		var full_index = 0;
 		var full_count = datas.length;
-//			console.log(full_count, 'datasources.get_records.full_count');
+		// console.log(full_count, 'datasources.get_records.full_count');
 		
 		arg_offset = (arg_offset === undefined) ? 0 : (arg_offset < full_count ? arg_offset : full_count - 1);
 		arg_length = (arg_length === undefined) ? (datas.length - arg_offset) : arg_length;
-//			console.log(arg_offset, 'datasources.get_records.arg_offset');
-//			console.log(arg_length, 'datasources.get_records.arg_length');
+		// console.log(arg_offset, 'datasources.get_records.arg_offset');
+		// console.log(arg_length, 'datasources.get_records.arg_length');
 		
 		var filtered_index = 0;
 		var filtered_offset= (arg_offset > 0 && arg_offset < full_count) ? arg_offset : 0;
 		var filtered_count = (arg_length > 0 && (filtered_offset + arg_length) < full_count) ? arg_length : ( (full_count - 1) - filtered_offset);
-//			console.log(filtered_offset, 'datasources.get_records.filtered_offset');
-//			console.log(filtered_count, 'datasources.get_records.filtered_count');
+		// console.log(filtered_offset, 'datasources.get_records.filtered_offset');
+		// console.log(filtered_count, 'datasources.get_records.filtered_count');
+		
+		var item = null;
+		var record = null;
 		
 		// SKIP 'OFFSET' FILTERED ITEMS
 		while( full_index < full_count && filtered_index < (filtered_offset + 1) )
 		{
-			var item = datas[full_index];
-			var record = self.decode(item);
-//				console.log(record, 'datasources.get_records.record');
+			item = datas[full_index];
+			record = self.decode(item);
+			// console.log(record, 'datasources.get_records.record');
 			
 			if ( item && self.filter_record(record) )
 			{
@@ -137,16 +142,16 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptObject)
 			}
 			++full_index;
 		}
-//			console.log(filtered_index, 'datasources.get_records.filtered_index');
-//			console.log(full_index, 'datasources.get_records.full_index');
+		// console.log(filtered_index, 'datasources.get_records.filtered_index');
+		// console.log(full_index, 'datasources.get_records.full_index');
 		
 		// GET 'LENGTH' ITEMS FROM 'OFFSET'
 		var records = [];
 		while(full_index < full_count && records.length < filtered_count)
 		{
-			var item = datas[full_index];
-			var record = self.decode(item);
-//				console.log(record, 'datasources.get_records.new record');
+			item = datas[full_index];
+			record = self.decode(item);
+			// console.log(record, 'datasources.get_records.new record');
 			
 			if ( item && self.filter_record(record) )
 			{
@@ -159,6 +164,7 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptObject)
 //			console.log(filtered_index, 'datasources.get_records.filtered_index');
 //			console.log(full_index, 'datasources.get_records.full_index');
 		
+		// console.log(records, 'datasources.get_records.records');
 		return records;
 	};
 	

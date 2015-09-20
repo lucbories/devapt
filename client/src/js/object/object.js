@@ -310,6 +310,8 @@ function(
 	// PROPERTIES
 	DevaptObjectClass.add_public_str_property('class_type', 'class type:view or model or ...', null, false, true);
 	DevaptObjectClass.add_public_int_property('gc_uses_counter', 'garbage collector uses counter', 0, false, true);
+	DevaptObjectClass.add_public_str_property('res_clone_of', 'resource name of the source of this clone or null if not cloed', null, false, true);
+	DevaptObjectClass.add_public_array_property('res_clones', 'resources names of this resource clones or []', [], false, true);
 	
 	
 	

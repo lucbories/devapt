@@ -60,6 +60,7 @@ function(
 		
 		// INIT ATTRIBUTES
 		self.nav_jqo = null;
+		self.class_type = 'menus';
 		
 		
 		self.leave(context, 'success');

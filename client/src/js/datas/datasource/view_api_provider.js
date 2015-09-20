@@ -70,24 +70,25 @@ function(Devapt, DevaptTypes,
 			// console.log(server_api);
 			
 			var record_view = {
+				id:Devapt.uid(),
 				resource_name:server_api.view_name,
-				controller:'views',
-				action:'display_view',
+				controller:'/resources/' + view.class_type,
+				// action:'display_view',
 				method:server_api.action_view.method,
 				format:server_api.action_view.format,
 				url:server_api.action_view.url
 			};
-			var record_page = {
-				resource_name:server_api.view_name,
-				controller:'views',
-				action:'display_page',
-				method:server_api.action_page.method,
-				format:server_api.action_page.format,
-				url:server_api.action_page.url
-			};
+			// var record_page = {
+			// 	resource_name:server_api.view_name,
+			// 	controller:'views',
+			// 	action:'display_page',
+			// 	method:server_api.action_page.method,
+			// 	format:server_api.action_page.format,
+			// 	url:server_api.action_page.url
+			// };
 			
 			datas.push(record_view);
-			datas.push(record_page);
+			// datas.push(record_page);
 		}
 		
 		return datas;

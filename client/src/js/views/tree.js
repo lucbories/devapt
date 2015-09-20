@@ -50,9 +50,9 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptView, undefined)
 	var begin_node = function(self, name, id)
 	{
 		return '<div id="' + id + '">' +
-					'<div class="tree-obj-caption">' + 
-						'<span class="tree-closed"> <span class="tree-bullet"> <span>\u25B9</span> </span>' + name + '</span>' +
-						'<span class="tree-opened"> <span class="tree-bullet"> <span>\u25BF</span> </span>' + name + '</span>' +
+					'<div id="' + id + '_caption" class="tree-obj-caption">' + 
+						'<span id="' + id + '_caption_closed" class="tree-closed"> <span class="tree-bullet"> <span>\u25B9</span> </span>' + name + '</span>' +
+						'<span id="' + id + '_caption_opened" class="tree-opened"> <span class="tree-bullet"> <span>\u25BF</span> </span>' + name + '</span>' +
 					'</div>' +
 					'<div class="tree-children tree-opened">';
 		/*return '<div id="' + id + '">' +
@@ -502,6 +502,9 @@ function(Devapt, DevaptTypes, DevaptClass, DevaptView, undefined)
 		$el.on('click', '.tree-obj-caption',
 			function(e)
 			{
+				var id = $(e.currentTarget).attr('id');
+				$('#' + id + '_closed').toggle();
+				$('#' + id + '_opened').toggle();
 				$(e.currentTarget).parent().toggleClass('tree-expand');
 			}
 		);

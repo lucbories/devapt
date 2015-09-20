@@ -34,7 +34,7 @@ function(Devapt, Hasher, Crossroads, DevaptTrace, DevaptTypes)
 	 * @static
 	 * @desc		Trace flag
 	 */
-	DevaptNavigation.navigation_trace = true;
+	DevaptNavigation.navigation_trace = false;
 	
 	
 	/**

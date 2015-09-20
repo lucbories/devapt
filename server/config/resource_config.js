@@ -57,6 +57,13 @@ API.clone_resource = function(arg_resource_obj, arg_app_cfg)
 	var src_obj = arg_app_cfg.application[arg_resource_obj.class_type][src_name]; // TODO CHECK EXISTS ?
 	console.log(src_obj, 'src_obj');
 	
+	target_obj.res_clone_of = src_obj.name;
+	if (! src_obj.res_clones)
+	{
+		src_obj.res_clones = [];
+	}
+	src_obj.res_clones.push(target_obj.name);
+	
 	// COPY ATTRIBUTES
 	Object.keys(src_obj).forEach(
 		function(arg_value, arg_index, arg_array)

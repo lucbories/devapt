@@ -341,7 +341,7 @@ function(Devapt, DevaptTypes,
 		var self = this;
 		var context = 'get_record_by_id(value)';
 		self.enter(context, '');
-		self.assert_not_empty_string(context, 'arg_field_value', arg_field_value);
+		self.assert_not_empty_string(context, 'arg_field_value', '' + arg_field_value);
 		self.assert_object(context, 'model', self.model);
 		self.assert_object(context, 'records_map', self.records_map);
 		
@@ -514,7 +514,7 @@ function(Devapt, DevaptTypes,
 		}
 		catch(e)
 		{
-			self.error_msg(context, e);
+			self.error(context, e);
 		}
 		
 		
@@ -615,6 +615,33 @@ function(Devapt, DevaptTypes,
 				if ( self.model.has_field(field_name) )
 				{
 					self.step(context, 'model has field');
+					
+					self.value(context, 'field_name', field_name);
+					self.value(context, 'value', value);
+					
+					var field_type = self.model.get_fields_types([field_name]);
+					field_type = field_type ? field_type[0].toLocaleLowerCase() : 'string';
+					switch(field_type)
+					{
+						case 'integer':
+						{
+							if (! DevaptTypes.is_integer(value))
+							{
+								throw new Error('bad field name value for integer field:[' + field_name + ']');
+							}
+							break;
+						}
+							
+						case 'string':
+						default:
+						{
+							if (! DevaptTypes.is_not_empty_str(value))
+							{
+								throw new Error('bad field name value for string field:[' + field_name + ']');
+							}
+							break;
+						}
+					}
 					
 					found_records = self.get_all_records_by_field(field_name, value, found_records);
 					if (found_records && found_records.length < 1)

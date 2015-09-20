@@ -81,13 +81,12 @@ function(Devapt, Bind, DevaptTypes, DevaptClass, DevaptView, DevaptTree)
 		// BINDING
 		var update_full_url = function()
 		{
-			var url_base = self.url_base_jqo.val();
 			var url_controller = self.url_controller_jqo.val();
 			var url_resource = self.url_target_jqo.val();
 			var url_action = self.url_action_jqo.val();
 			var url_args = self.request_args_jqo.val();
 			
-			var full_url = url_base + url_controller + '/' + url_resource + '/' + (url_action.length > 0 ? url_action + '/' : '') + url_args;
+			var full_url = url_controller + '/' + url_resource + (url_action.length > 0 ? '/' + url_action + '/' : '') + url_args;
 			
 			self.url_full_jqo.val(full_url);
 		};

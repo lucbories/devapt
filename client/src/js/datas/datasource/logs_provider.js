@@ -31,12 +31,13 @@ function(Devapt, DevaptTypes, DevaptTracesMemory,
 	 */
 	var cb_constructor = function(self)
 	{
+		self.trace=true;
+		
 		// CONSTRUCTOR BEGIN
 		var context = self.class_name + '(' + self.name + ')';
 		self.enter(context, 'constructor');
 		
 		
-		// self.trace=true;
 		
 		
 		// CONSTRUCTOR END
