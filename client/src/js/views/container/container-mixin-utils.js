@@ -439,7 +439,7 @@ function(Devapt, DevaptTypes, DevaptClass)
 		},
 		
 		
-		
+		// TODO remove method remove_items()
 		/**
 		 * @public
 		 * @memberof			DevaptMixinContainerUtils

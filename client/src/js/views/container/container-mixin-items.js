@@ -412,12 +412,87 @@ function(Devapt, DevaptTypes, DevaptClass)
 		 * @param {object}		arg_container_item		A plain object of a container item
 		 * @return {boolean}
 		 */
-		remove_item: function(arg_container_item)
+		remove_item: function(arg_container_item, arg_remove_all)
 		{
 			var self = this;
 			var context = 'remove_item(item)';
 			self.enter(context, '');
-			// TODO
+			
+			
+			// CHECK ARGS
+			self.assert_object(context, 'item', arg_container_item);
+			self.assert_true(context, 'item.is_container_item', arg_container_item.is_container_item);
+			self.assert_true(context, 'item.id', arg_container_item.id);
+			
+			// CHECK ID
+			if (! (arg_container_item.id in self.mixin_items_collection_by_id) )
+			{
+				self.leave(context, Devapt.msg_failure);
+				return false;
+			}
+			
+			// CHECK INDEX
+			if (arg_container_item.index < self.mixin_items_collection_by_index.length)
+			{
+				self.leave(context, Devapt.msg_failure);
+				return false;
+			}
+			
+			// DETACH NODE
+			if (arg_container_item.node)
+			{
+				arg_container_item.node.detach();
+			}
+			
+			// REMOVE ITEM IN ITEMS COLLECTION
+			var index = arg_container_item.index;
+			self.mixin_items_collection_by_index.splice(arg_container_item.index, 1);
+			delete self.mixin_items_collection_by_id[arg_container_item.id];
+			// arg_container_item.index = null;
+			// delete arg_container_item;
+			
+			// UPDATE ITEM INDEX
+			if (! arg_remove_all)
+			{
+				var loop_index = index;
+				while(loop_index < self.mixin_items_collection_by_index.length)
+				{
+					self.mixin_items_collection_by_index[loop_index].index = loop_index;
+					++loop_index;
+				}
+			}
+			
+			
+			self.leave(context, Devapt.msg_success);
+			return true;
+		},
+		
+		
+		
+		/**
+		 * @public
+		 * @memberof			DevaptMixinItems
+		 * @desc				Remove all container items of the container collection
+		 * @return {boolean}
+		 */
+		remove_all_items: function()
+		{
+			var self = this;
+			var context = 'remove_all_items()';
+			self.enter(context, '');
+			
+			
+			// REMOVE ALL ITEMS
+			self.mixin_items_collection_by_index.forEach(
+				function(arg_value, arg_index, arg_array)
+				{
+					self.remove_item(arg_value, true);
+				}
+			);
+			self.mixin_items_collection_by_index = [];
+			self.mixin_items_collection_by_id = {};
+			
+			
 			self.leave(context, Devapt.msg_success);
 			return true;
 		},
@@ -542,6 +617,7 @@ function(Devapt, DevaptTypes, DevaptClass)
 	DevaptMixinItemsClass.add_public_method('insert_item', {}, DevaptMixinItems.insert_item);
 	DevaptMixinItemsClass.add_public_method('render_item', {}, DevaptMixinItems.render_item);
 	DevaptMixinItemsClass.add_public_method('remove_item', {}, DevaptMixinItems.remove_item);
+	DevaptMixinItemsClass.add_public_method('remove_all_items', {}, DevaptMixinItems.remove_all_items);
 	
 	DevaptMixinItemsClass.add_public_method('get_item_by_index', {}, DevaptMixinItems.get_item_by_index);
 	DevaptMixinItemsClass.add_public_method('get_item_by_id', {}, DevaptMixinItems.get_item_by_id);

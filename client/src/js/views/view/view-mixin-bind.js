@@ -44,7 +44,7 @@ function(Devapt, DevaptTypes, DevaptTraces, DevaptClass, DevaptResources)
 		 * @public
 		 * @desc				Enable/disable trace for mixin operations
 		 */
-		mixin_bind_trace: false,
+		mixin_bind_trace: true,
 		
 		
 		/**
@@ -501,6 +501,7 @@ function(Devapt, DevaptTypes, DevaptTraces, DevaptClass, DevaptResources)
 							// CHECK METHOD
 							var set_value_cb = 'set_value' in arg_resource_obj ? arg_resource_obj['set_value'] : null;
 							self.assert_function(context, 'set_value', set_value_cb);
+							console.log(arg_resource_obj, context + ':ON ACTION CALLBACK:arg_resource_obj');
 							
 							// GET SOURCE OBJECT
 							// var source_object = arg_event_operands[0];
@@ -509,11 +510,14 @@ function(Devapt, DevaptTypes, DevaptTraces, DevaptClass, DevaptResources)
 							// GET EVENT OPERANDS MAP
 							var event_opds_map = arg_event_operands[1];
 							console.log(event_opds_map, context + ':ON ACTION CALLBACK:event_opds_map');
-							
+							debugger;
 							// GET RECORD
 							// TODO CONFIGURE THE OPERAND NAME TO GET FROM THE MAP
-							var item_record = 'record' in event_opds_map ? event_opds_map.record : ( 'value' in event_opds_map ? event_opds_map.Value : null);
-							// console.log(item_record, context + 'ON ACTION CALLBACK:record');
+							var item_record = null;
+							item_record = item_record || ('record' in event_opds_map) ? event_opds_map.record : null;
+							item_record = item_record || ('content' in event_opds_map) ? event_opds_map.content : null;
+							item_record = item_record || ('value' in event_opds_map) ? event_opds_map.value : null;
+							console.log(item_record, context + 'ON ACTION CALLBACK:record');
 							
 							// CALL METHOD
 							if (item_record)

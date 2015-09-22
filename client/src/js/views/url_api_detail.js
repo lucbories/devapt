@@ -495,7 +495,7 @@ function(Devapt, Bind, DevaptTypes, DevaptClass, DevaptView, DevaptTree)
 		
 		
 		// DEBUG
-		// console.log(arg_value, context + ':arg_value');
+		console.log(arg_value, context + ':arg_value');
 		
 		// CHECK ARGS
 		self.assert_object(context, 'arg_value', arg_value);

@@ -152,6 +152,14 @@ function(
 		self.enter(context, '');
 		
 		
+		// CONTAINER HAS NO ITEMS
+		if (self.mixin_items_collection_by_index.length === 0)
+		{
+			self.leave(context, Devapt.msg_success_promise);
+			return [];
+		}
+		
+		
 		var selected_items_promises = [];
 		
 		try
@@ -186,7 +194,7 @@ function(
 		{
 			console.error(e, context);
 			self.leave(context, Devapt.msg_failure_promise);
-			return Devapt.promise_rejected(e);
+			return [Devapt.promise_rejected(e)];
 		}
 		
 		
@@ -230,6 +238,16 @@ function(
 		
 		// GET SELECTION ITEMS PROMISES
 		var selected_items_promises = self.get_selected_items(arg_selection);
+		if (! selected_items_promises)
+		{
+			self.leave(context, Devapt.msg_failure_promise);
+			return Devapt.promise_rejected();
+		}
+		if (selected_items_promises.length === 0)
+		{
+			self.leave(context, Devapt.msg_success_promise);
+			return Devapt.promise_resolved();
+		}
 		
 		// PROCESS VIEW MODEL OPERATIONS
 		promise = self.view_model_promise.then(
@@ -413,7 +431,7 @@ function(
 	var cb_on_view_model_select = function (arg_selected_item)
 	{
 		var self = this;
-//		self.trace=true;
+		// self.trace=true;
 		var context = 'on_view_model_select(item)';
 		self.enter(context, '');
 		
@@ -437,7 +455,7 @@ function(
 		
 		
 		self.leave(context, Devapt.msg_success_promise);
-//		self.trace=false;
+		// self.trace=false;
 		return Devapt.promise_resolved(arg_selected_item);
 	};
 	

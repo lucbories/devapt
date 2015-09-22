@@ -190,7 +190,7 @@ function(
 		// TEST IF WE NEED TO REMOVE EXISTING ITEMS
 		if (self.items_refresh.mode !== 'append')
 		{
-			self.remove_items();
+			self.remove_all_items();
 			self.fire_event('devapt.container.refresh.items_removed');
 		}
 		
