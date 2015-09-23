@@ -499,7 +499,7 @@ function(Devapt, Bind, DevaptTypes, DevaptClass, DevaptView, DevaptTree)
 		
 		// CHECK ARGS
 		self.assert_object(context, 'arg_value', arg_value);
-		arg_value = arg_value.datas;
+		arg_value = (arg_value.is_record) ? arg_value.datas : arg_value;
 		
 		
 		// GET URL PARTS

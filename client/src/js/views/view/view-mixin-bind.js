@@ -510,13 +510,13 @@ function(Devapt, DevaptTypes, DevaptTraces, DevaptClass, DevaptResources)
 							// GET EVENT OPERANDS MAP
 							var event_opds_map = arg_event_operands[1];
 							console.log(event_opds_map, context + ':ON ACTION CALLBACK:event_opds_map');
-							debugger;
+							// debugger;
 							// GET RECORD
 							// TODO CONFIGURE THE OPERAND NAME TO GET FROM THE MAP
 							var item_record = null;
-							item_record = item_record || ('record' in event_opds_map) ? event_opds_map.record : null;
-							item_record = item_record || ('content' in event_opds_map) ? event_opds_map.content : null;
-							item_record = item_record || ('value' in event_opds_map) ? event_opds_map.value : null;
+							item_record = item_record || ( ('record' in event_opds_map) ? event_opds_map.record : null );
+							item_record = item_record || ( ('content' in event_opds_map) ? event_opds_map.content : null );
+							item_record = item_record || ( ('value' in event_opds_map) ? event_opds_map.value : null );
 							console.log(item_record, context + 'ON ACTION CALLBACK:record');
 							
 							// CALL METHOD

@@ -359,6 +359,7 @@ function(
 				self.step(context, 'view_model is ready');
 				try
 				{
+					arg_view_model.unselect_all_records();
 					arg_view_model.on_container_select_all();
 				}
 				catch(e)

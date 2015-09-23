@@ -18,7 +18,7 @@
  *                  ->set_selected_records(records)  : Set current selected records (call select_record on all records) (nothing)
  *                  
  * 					->select_record(record)          : Select a record into the ViewModel object (nothing)
- *                  ->unselect_record(record)        : Unselect a recorsinto the ViewModel object (nothing)
+ *                  ->unselect_record(record)        : Unselect a record into the ViewModel object (nothing)
  * 					
  * 					->new_selected_record(record)    : Return the given Record or create a Record object with a given plain object (Record object)
  * 					
@@ -198,8 +198,8 @@ function(
 	/**
 	 * @memberof				DevaptViewModel
 	 * @public
-	 * @method					self.selected_record(record)
-	 * @desc					Select a record
+	 * @method					self.unselected_record(record)
+	 * @desc					Unselect a record
 	 * @param {object}			arg_record		a Record object
 	 * @return {nothing}
 	 */
@@ -230,6 +230,34 @@ function(
 		
 		self.leave(context, '');
 	};
+	
+	
+	/**
+	 * @memberof				DevaptViewModel
+	 * @public
+	 * @method					self.selected_record()
+	 * @desc					Unselect all previously selected records
+	 * @return {nothing}
+	 */
+	var cb_unselect_all_records = function()
+	{
+		var self = this;
+		var context = 'unselect_all_records()';
+		self.enter(context, '');
+		self.assert_array(context, 'self.selection is an array', self.selection);
+		
+		
+		for(var index in self.selection)
+		{
+			var loop_record = self.selection[index];
+			loop_record.unselect();
+		}
+		self.selection = [];
+		
+		
+		self.leave(context, '');
+	};
+	
 	
 	/**
 	 * @memberof				DevaptViewModel
@@ -470,7 +498,7 @@ function(
 		self.assert_array(context, 'arg_selected_items_promises', arg_selected_items_promises);
 		self.value(context, 'arg_selected_items_promises', arg_selected_items_promises);
 		self.value(context, 'arg_unselect', arg_unselect);
-		console.log(arg_selected_items_promises, 'arg_selected_items_promises');
+		// console.log(arg_selected_items_promises, 'arg_selected_items_promises');
 		
 		
 		try
@@ -478,6 +506,8 @@ function(
 			var process_selected_items_results = [];
 			var process_selected_item_cb = function(arg_selected_item_promise)
 			{
+				console.debug(context + ':process_selected_item_cb');
+				
 				arg_selected_item_promise.then(
 					function(arg_selected_item)
 					{
@@ -505,7 +535,7 @@ function(
 						}
 						
 						var saved_trace = self.trace;
-//						self.trace=true;
+						self.trace=true;
 						
 						// DO RECORD SELECT OPERATION
 						if (arg_selected_item.already_selected)
@@ -592,6 +622,7 @@ function(
 						}
 						
 						// DO VIEW SELECT OPERATION
+						console.debug(context + ':process_selected_item_cb before DO VIEW SELECT OPERATION');
 						result_promise = self.view_promise.then(
 							function(view)
 							{
@@ -640,8 +671,15 @@ function(
 			self.batch_promise = self.batch_promise.then(
 				function()
 				{
+					self.step(context, 'loop iteration');
 					arg_selected_items_promises.forEach(process_selected_item_cb);
 					return Devapt.promise_all(process_selected_items_results);
+				}
+			);
+			self.batch_promise.done(
+				function()
+				{
+					console.debug(context + '.batch_promise.done');
 				}
 			);
 		}
@@ -835,6 +873,7 @@ function(
 	
 	DevaptViewModelMixinSelectableClass.add_public_method('select_record', {}, cb_select_record);
 	DevaptViewModelMixinSelectableClass.add_public_method('unselect_record', {}, cb_unselect_record);
+	DevaptViewModelMixinSelectableClass.add_public_method('unselect_all_records', {}, cb_unselect_all_records);
 	
 	DevaptViewModelMixinSelectableClass.add_public_method('new_selected_record', {}, cb_new_selected_record);
 	
