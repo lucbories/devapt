@@ -6,7 +6,9 @@ var parser = require('./config_parser'),
 	assert = require('assert'),
 	logs = require('../utils/logs'),
 	module_config = require('./module_config'),
-	resource_config = require('./resource_config');
+	resource_config = require('./resource_config'),
+	replace = require('./replace')
+	;
 
 
 /*
@@ -226,5 +228,8 @@ module.exports =
 	"get_models":     function() { return loaded_configs.models; },
 	"get_menubars":   function() { return loaded_configs.menubars; },
 	"get_menus":      function() { return loaded_configs.menus; },
-	"get_connexions": function() { return loaded_configs.connexions; }
+	"get_connexions": function() { return loaded_configs.connexions; },
+	
+	"replace":        function(arg_res_type, arg_res_name, arg_old_value, arg_new_value) { return replace(loaded_configs, arg_res_type, arg_res_name, arg_old_value, arg_new_value); },
+	"remove":        function() { return null; },
 }
