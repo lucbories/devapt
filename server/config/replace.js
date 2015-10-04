@@ -20,7 +20,7 @@ function replace(arg_app_resources, arg_res_type, arg_res_name, arg_old_value, a
 	assert.ok(arg_new_value !== null, 'arg_new_value should not be null');
 	
 	// GET RESOURCE CONTAINERS
-	let resource_containers = [];
+	var resource_containers = [];
 	if ( (typeof arg_res_type) === 'string' )
 	{
 		switch(arg_res_type)
@@ -48,7 +48,7 @@ function replace(arg_app_resources, arg_res_type, arg_res_name, arg_old_value, a
 	assert.ok(resource_containers.length > 0, 'resource containers is not empty');
 	
 	// GET AND CHECK RESOURCE CONTAINER
-	let container_obj = null;
+	var container_obj = null;
 	resource_containers.some(
 		function(arg_container_obj, arg_index, arg_array)
 		{
@@ -61,11 +61,19 @@ function replace(arg_app_resources, arg_res_type, arg_res_name, arg_old_value, a
 	);
 	assert.ok( (typeof container_obj) === 'object', 'resource container is not an object');
 	
-	// GET AND CHECK RESOURCE OBJECT
-	let resource_obj = container_obj[arg_res_name];
-	assert.ok( (typeof resource_obj) === 'object', 'resource object is not an object');
+	// GET AND CHECK RESOURCE VALUE
+	var resource_value = container_obj[arg_res_name];
+	assert.ok( (typeof resource_value) !== 'undefined', 'resource object is not an object');
+	if ( (typeof resource_value) !== (typeof arg_old_value) )
+	{
+		logs.error('config/replace', 'resource bad old value type [' + (typeof resource_value) + '] given [' + (typeof arg_old_value) + ']');
+		return false;
+	}
 	
+	// REPLACE VALUE
+	container_obj[arg_res_name] = arg_new_value;
 	
+	return true;
 }
 
 

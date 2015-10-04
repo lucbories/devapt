@@ -7,6 +7,7 @@ var parser = require('./config_parser'),
 	logs = require('../utils/logs'),
 	module_config = require('./module_config'),
 	resource_config = require('./resource_config'),
+	lookup = require('./lookup'),
 	replace = require('./replace')
 	;
 
@@ -197,22 +198,12 @@ module.exports =
 	
 	"get_resource": function(arg_res_type, arg_res_name)
 	{
-		switch(arg_res_type)
+		try
 		{
-			case 'views':
-			case 'view': return (arg_res_name in loaded_configs.views) ? loaded_configs.views[arg_res_name] : null;
-			
-			case 'models':
-			case 'model': return (arg_res_name in loaded_configs.models) ? loaded_configs.models[arg_res_name] : null;
-			
-			case 'menubars':
-			case 'menubar': return (arg_res_name in loaded_configs.menubars) ? loaded_configs.menubars[arg_res_name] : null;
-			
-			case 'menus':
-			case 'menu': return (arg_res_name in loaded_configs.menus) ? loaded_configs.menus[arg_res_name] : null;
-			
-			case 'connexions':
-			case 'connexion': return (arg_res_name in loaded_configs.connexions) ? loaded_configs.connexions[arg_res_name] : null;
+			return lookup(loaded_configs, arg_res_type, arg_res_name);
+		}
+		catch(e)
+		{
 		}
 		
 		return null;
@@ -231,5 +222,5 @@ module.exports =
 	"get_connexions": function() { return loaded_configs.connexions; },
 	
 	"replace":        function(arg_res_type, arg_res_name, arg_old_value, arg_new_value) { return replace(loaded_configs, arg_res_type, arg_res_name, arg_old_value, arg_new_value); },
-	"remove":        function() { return null; },
+	"remove":         function() { return null; },
 }

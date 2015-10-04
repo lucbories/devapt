@@ -119,15 +119,16 @@ module.exports = {
 		var config_file = fs.readFileSync(arg_file_path_name, arg_charset ? arg_charset : 'utf-8');
 		var config_content = ini_parser.parse(config_file);
 		// console.log(config_content, 'config_content');
+		var out_cfg = self.split_all_keys(config_content);
 		
 		
 		var watch_listener = function(arg_prev_stats, arg_cur_stats)
 		{
 			logs.info('parser', 'read_ini fs.watchFile: config file on [%s] with mtime [%s] -> [%s]', arg_file_path_name, arg_prev_stats.mtime.getTime(), arg_cur_stats.mtime.getTime());
 			
-			// var config_file = fs.readFileSync(arg_file_path_name, arg_charset ? arg_charset : 'utf-8');
-			// var config_content = ini_parser.parse(config_file);
-			// var out_cfg = self.split_all_keys(config_content);
+			var watch_config_file = fs.readFileSync(arg_file_path_name, arg_charset ? arg_charset : 'utf-8');
+			var watch_config_content = ini_parser.parse(watch_config_file);
+			var watch_out_cfg = self.split_all_keys(watch_config_content);
 			
 			// console.info('config file has changed [%s]', arg_file_path_name);
 			
@@ -138,8 +139,6 @@ module.exports = {
 		
 		fs.watchFile(arg_file_path_name, { persistent: true, recursive: false }, watch_listener);
 		
-		
-		var out_cfg = self.split_all_keys(config_content);
 		
 		return out_cfg;
 	},
