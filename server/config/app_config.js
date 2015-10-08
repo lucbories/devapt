@@ -7,6 +7,7 @@ var parser = require('./config_parser'),
 	logs = require('../utils/logs'),
 	module_config = require('./module_config'),
 	resource_config = require('./resource_config'),
+	connexion = require('./connexion'),
 	lookup = require('./lookup'),
 	replace = require('./replace')
 	;
