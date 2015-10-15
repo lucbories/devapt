@@ -1,0 +1,93 @@
+Devapt
+======
+
+
+STATUS:
+------------------
+The Config module is responsible to manage applications and resources configurations.
+The first release deal with readonly resources configurations.
+Only Get and List routes are available.
+
+
+PRINCIPLE
+------------------
+Devapt is a flexible framework which acts as a dynamic runtime for one or more configured applications.
+* Each application uses one ore more configuration sources: INI file, JSON file, JSON object, SQL database (later), NoSQL database (later).
+* Each configuration source provides resources declarations: datasources, datas models, UI views, UI menubars and menus.
+* Each resource configuration could evolve to dynamically update application features and UI.
+* A resource is dynamically created or updated with configuration items, for example: name, type, label, model datasource, model fields, events handles, link with an other view...
+
+
+ARCHITECTURE
+------------------
+A configuration set or settings is a javascript plain object. It is stored at a unique point and it is available through the corresponding resource name.
+Resources settings are managed from a repository an the server side.
+Browser client ask for a configuration of a named resource before to instanciate the resource and before to display or query this resource instance.
+
+
+REST API
+------------------
+List all resources of a given type (DONE):
+GET with url: /resources/{resources type name}
+
+Get a resource configuration (DONE):
+GET with url: /resources/{resources type name}/{resources name}
+
+Update a resource configuration (TODO):
+PUT with url: /resources/{resources type name}/{resources name} and a plain object payload as { setting_name: setting value }
+
+Create a full resource configuration (TODO):
+POST with url: /resources/{resources type name}/{resources name} and a plain object payload as { full plain object }
+
+Delete a full resource configuration (TODO):
+DELETE with url: /resources/{resources type name}/{resources name} and no payload
+
+
+
+TODO:
+------------------
+Redesign the server/config/ files with an OO approach:
+
+Resources definition:
+* cfg_resource.js: define a standard base resource
+* cfg_model.js: define a model resource
+* cfg_view.js: define a view resource
+* cfg_connexion.js: define a connexion resource
+* cfg_menubar.js: define a menubar resource
+* cfg_menu.js: define a menu resource
+
+
+Repository definition:
+* cfg_repository.js: define the unique storage for all resources settings
+* cfg_application.js: define an application repository with sources and resources
+
+Class|Methods|Result|Description
+-----------|---------------------|------------------|----------------------------------------
+Repository |init()               |Promise(boolean)  |Init all datasources
+Repository |load()               |Promise(settings) |First load of datasources
+Repository |applications()       |Map               |Get a map of all applications repositories
+Repository |sources()            |Map               |Get a map of all datasources
+Repository |dispatch(action)     |Promise(Result)   |Request an action execution
+Repository |subscribe(listeners) |boolean           |Request an action execution
+
+
+Sources definition:
+* cfg_source.js: define a configurations base source
+* cfg_source_file.js: define a configurations file (INI, CSV, JSON...) source
+* cfg_source_sql.js: define a configurations SQL source
+* cfg_source_nosql.js: define a configurations NOSQL source
+
+A Source object will have this methods:
+* init():Promise(boolean)
+* load():Promise(settings)
+* reload():Promise(settings)
+* create(resource name, setting name, setting value):Promise(boolean)
+* update(resource name, setting name, setting value):Promise(boolean)
+* remove(resource name, setting name):Promise(boolean)
+* fill(resource settings plain object):Promise(boolean)4
+* flush():Promise(boolean)
+
+Class|Methods|Result|Description
+-----------|----------|------------------|----------------------------------------
+Source     |init()    |Promise(boolean)  |Init datasource (open file, connect...)
+Source     |load()    |Promise(settings) |First load of datas

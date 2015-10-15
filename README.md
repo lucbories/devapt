@@ -15,6 +15,23 @@ The framework will automatically generates the RESTfull server.
 Simply launch index.html and your application is up a rich user interface and many features.
 
 
+# USAGE
+
+SERVER
+```javascript
+...
+```
+
+
+## CLIENT
+
+# INSTALL
+
+## LICENCE
+
+## BUGS
+
+
 Features summary
 ----------------
 
