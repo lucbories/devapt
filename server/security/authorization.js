@@ -2,6 +2,7 @@
 
 var Q = require('q'),
     
+    authentication = require('./authentication'),
     apps_config = require('../../apps/apps.json')
     ;
 
@@ -351,6 +352,16 @@ if (backend)
     }
   );
 }
+
+
+// CHECK REQUEST
+API.check_authorization = function(arg_request, arg_role)
+{
+  var credentials = authentication.get_credentials(arg_request);
+  if (!credentials.user) return false;
+  
+  return API.has_user_role(credentials.user, arg_role);
+};
 
 
 // EXPORT AUTHORIZATION OBJECT
