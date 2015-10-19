@@ -4,8 +4,9 @@
   "description": "Devapt REST API server",
   "main": "server.js",
   "scripts": {
-    "test": "server.test.js",
-    "start": "node server.js"
+    "start": "node server.js",
+    "test": "mocha --compilers js:babel/register --require ./test/test_helper.js --recursive",
+    "test:watch": "npm run test -- --watch"
   },
   "keywords": [
     "server",
@@ -22,6 +23,7 @@
     "babel-core": "^5.8.22",
     "epilogue": "^0.5.1",
     "fbemitter": "~2.0.0",
+    "immutable": "^3.7.5",
     "immutable-js": "~0.3.1-6",
     "ini": "^1.3.4",
     "lowdb": "^0.10.2",
@@ -38,6 +40,7 @@
     "winston": "^1.0.1"
   },
   "devDependencies": {
+    "babel": "^5.8.23",
     "broccoli": "^0.16.7",
     "broccoli-babel-transpiler": "^5.4.2",
     "broccoli-cli": "^1.0.0",
@@ -45,8 +48,11 @@
     "broccoli-merge-trees": "^0.2.3",
     "broccoli-requirejs": "^1.1.0",
     "broccoli-uglify-js": "^0.1.3",
+    "chai": "^3.3.0",
+    "chai-immutable": "^1.3.0",
     "fs.extra": "^1.3.2",
     "jspm": "^0.15.7",
+    "mocha": "^2.3.3",
     "requirejs": "^2.1.20"
   }
 }

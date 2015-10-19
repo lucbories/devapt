@@ -28,11 +28,11 @@
 			"password":"password",
 			
 			"alt": {
-			"mode":"jsonfile",
-			"file":"users.json",
-			
-			"login":"demo",
-			"password":"demo"
+				"mode":"jsonfile",
+				"file":"users.json",
+				
+				"login":"demo",
+				"password":"demo"
 			}
 		},
 		
