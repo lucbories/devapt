@@ -8,7 +8,7 @@ var fs = require('fs'),
 
 
 
-module.exports = {
+exports = module.exports = {
 	split_all_keys: function(arg_cfg)
 	{
 		var self = this;

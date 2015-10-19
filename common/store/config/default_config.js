@@ -43,6 +43,8 @@ export const default_config = {
 			},
 		},
 		
+		files: [],
+		
 		modules: [],
 		
 		apps: {}

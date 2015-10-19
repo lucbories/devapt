@@ -4,3 +4,4 @@ var API = require('./logs_winston');
 
 
 module.exports = API;
+export default API;
