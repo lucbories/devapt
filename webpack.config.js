@@ -8,11 +8,17 @@ module.exports = {
   ],
   
   module: {
-    loaders: [{
-      test: /\.jsx?$/,
-      exclude: /node_modules/,
-      loaders: ['babel']
-    }],
+    loaders: [
+      {
+        test: /\.jsx?$/,
+        exclude: /node_modules/,
+        loaders: ['babel']
+      },
+      {
+        test: /\.css$/,
+        loader: "style!css"
+      }
+    ],
   },
   
   resolve: {

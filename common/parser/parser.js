@@ -122,22 +122,22 @@ exports = module.exports = {
 		var out_cfg = self.split_all_keys(config_content);
 		
 		
-		var watch_listener = function(arg_prev_stats, arg_cur_stats)
-		{
-			logs.info('parser', 'read_ini fs.watchFile: config file on [%s] with mtime [%s] -> [%s]', arg_file_path_name, arg_prev_stats.mtime.getTime(), arg_cur_stats.mtime.getTime());
+		// var watch_listener = function(arg_prev_stats, arg_cur_stats)
+		// {
+		// 	logs.info('parser', 'read_ini fs.watchFile: config file on [%s] with mtime [%s] -> [%s]', arg_file_path_name, arg_prev_stats.mtime.getTime(), arg_cur_stats.mtime.getTime());
 			
-			var watch_config_file = fs.readFileSync(arg_file_path_name, arg_charset ? arg_charset : 'utf-8');
-			var watch_config_content = ini_parser.parse(watch_config_file);
-			var watch_out_cfg = self.split_all_keys(watch_config_content);
+		// 	var watch_config_file = fs.readFileSync(arg_file_path_name, arg_charset ? arg_charset : 'utf-8');
+		// 	var watch_config_content = ini_parser.parse(watch_config_file);
+		// 	var watch_out_cfg = self.split_all_keys(watch_config_content);
 			
-			// console.info('config file has changed [%s]', arg_file_path_name);
+		// 	// console.info('config file has changed [%s]', arg_file_path_name);
 			
-			// LOOP ON APP OR RESOURCES CHANGES AND UPDATE RUNTIME
-			// ...
-			return;
-		}
+		// 	// LOOP ON APP OR RESOURCES CHANGES AND UPDATE RUNTIME
+		// 	// ...
+		// 	return;
+		// }
 		
-		fs.watchFile(arg_file_path_name, { persistent: true, recursive: false }, watch_listener);
+		// fs.watchFile(arg_file_path_name, { persistent: true, recursive: false }, watch_listener);
 		
 		
 		return out_cfg;

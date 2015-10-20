@@ -4,8 +4,10 @@
 	
 	"apps": {
 		"tutorial-1": {
-			"base":"private/app-tutorial-1/",
-			"config":"app_cfg.ini"
+			"load_file": {
+				"path":"private/app-tutorial-1/",
+				"file":"app_cfg.ini"
+			}
 		}
 	},
 	

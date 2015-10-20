@@ -1,10 +1,12 @@
 'use strict';
 
-var parser = require('./config_parser'),
-	Q = require('q'),
+var Q = require('q'),
 	path = require('path'),
 	assert = require('assert'),
-	logs = require('../utils/logs'),
+	
+	parser = require('../../common/parser/parser'),
+	logs = require('../../common/utils/logs'),
+	
 	module_config = require('./module_config'),
 	resource_config = require('./resource_config'),
 	connexion = require('./connexion'),
