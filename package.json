@@ -40,6 +40,7 @@
     "sequelize": "^3.5.1",
     "systemjs": "^0.18.10",
     "systemjs-builder": "^0.13.1",
+    "typr": "^0.2.1",
     "winston": "^1.0.1"
   },
   "devDependencies": {

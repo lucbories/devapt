@@ -2,6 +2,7 @@
 import path from 'path'
 import fs from 'fs'
 import assert from 'assert'
+import T from 'typr'
 
 import logs from '../../server/utils/logs'
 
@@ -42,3 +43,44 @@ function load_app_config(arg_file_path_name, arg_base_dir, arg_force_reload)
 	app_config['basedir'] = arg_base_dir;
 	
 }
+
+
+
+// LOAD APPS.JSON
+let apps_config = require('../../apps/apps.json')
+
+// CHECK APPS CONFIG
+assert(T.isObject(apps_config), 'apps.json should be a plain object')
+assert(T.isString(apps_config.host), 'apps.json:host should be a string')
+assert(T.isString(apps_config.port), 'apps.json:port should be a string')
+assert(T.isObject(apps_config.apps), 'apps.json:apps should be a plain object')
+assert(T.isObject(apps_config.modules), 'apps.json:modules should be a plain object')
+assert(T.isObject(apps_config.plugins), 'apps.json:plugins should be a plain object')
+assert(T.isObject(apps_config.security), 'apps.json:security should be a plain object')
+
+// LOAD APPLICATIONS
+let applications = apps_config.apps
+let modules = {};
+applications.forEach(
+	function(app)
+	{
+		// CHECK APPLICATION
+		assert(T.isObject(app), 'apps.json:apps.app should be a plain object')
+		assert(T.isString(app.from_file), 'apps.json:apps.app.from_file should be a string')
+		assert(T.isArray(app.modules), 'apps.json:apps.app.modules should be an array')
+		assert(T.isArray(app.plugins), 'apps.json:apps.app.plugins should be an array')
+		
+		// LOOP ON MODULES
+		let modules = app.modules
+		modules.forEach(
+			function(module_name)
+			{
+				
+			}
+		)
+	}
+)
+
+ forEach(function(element) {
+	
+}, this);

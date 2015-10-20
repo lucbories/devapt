@@ -1,7 +1,9 @@
 'use strict';
 
 var assert = require('assert'),
-	logs = require('../utils/logs');
+	
+	logs = require('../utils/logs')
+	;
 
 
 var API = {};

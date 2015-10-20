@@ -2,21 +2,113 @@
 	"host":"localhost",
 	"port":8080,
 	
+	
 	"apps": {
 		"tutorial-1": {
-			"load_file": {
-				"path":"private/app-tutorial-1/",
-				"file":"app_cfg.ini"
-			}
+			"from_file": "private/app-tutorial-1/app_cfg.ini",
+			"modules": ["home", "security", "appbuilder", "demo_views", "backend_security"],
+			"plugins":["backend-foundation5"],
+			"assets":{
+				"css":["assets/css/app.css"],
+				"js":[],
+				"img":[],
+				"index":"index.html"
+			},
+			"license":"APACHE-LICENSE-2.0"
 		}
 	},
 	
-	"modules":[
+	
+	"modules":{
+		"home":{
+			"base_dir":"modules/home",
+			"resources":[
+				"home_views.ini",
+				"home_menubars.ini"
+			],
+			"templates":["template/layouts.default.footer.html.template", "template/layouts.default.header.html.template"],
+			"html":["VIEW_CONTENT_1.html.include", "VIEW_CONTENT_2.html.include", "VIEW_HOME.html.include"]
+		},
 		
-	],
+		"security":{
+			"base_dir":"modules/security",
+			"resources":[
+				"security_views.ini",
+				"users/auth_models_many_users_groups.ini",
+				"users/auth_models_many_users_profiles.ini",
+				"users/auth_models_many_users_roles.ini",
+				"users/auth_models_users.ini",
+				"users/auth_models_users_groups.ini",
+				"users/auth_models_users_roles.ini",
+				"users/auth_models_users_profiles.ini",
+				
+				"groups/auth_models_groups.ini",
+				"groups/auth_models_groups_users.ini",
+				
+				"profiles/auth_models_profiles.ini",
+				"profiles/auth_models_profiles_users.ini",
+				
+				"roles/auth_models_roles.ini",
+				"roles/auth_models_roles_users.ini"
+			],
+			"templates":[],
+			"html":[]
+		},
+		
+		"appbuilder":{
+			"base_dir":"modules/appbuilder",
+			"resources":[
+				"appbuilder_views.ini",
+				"appbuilder_menubars.ini"
+			],
+			"templates":[],
+			"html":["app_builder_welcome.html.include"]
+		},
+		
+		"demo_views":{
+			"base_dir":"modules/demo_views",
+			"resources":[
+				"demo_views.ini",
+				"demo_containers.ini",
+				"demo_menus.ini",
+				"demo_menubars.ini"
+			],
+			"templates":["view_demo_simple.html.template"],
+			"html":["VIEW_TU_MODELS.html.include"]
+		},
+		
+		"backend_security":{
+			"base_dir":"modules/backend_security",
+			"resources":[
+				"demo_access_views_users.ini",
+				"demo_access_views_user_inspector.ini",
+				"demo_access_views_groups.ini",
+				"demo_access_views.ini",
+				"demo_access_menus.ini"
+			],
+			"templates":[],
+			"html":[]
+		}
+	},
+	
+	
+	"plugins":{
+		"backend-foundation5":{
+			"js":"plugins/backend-foundation5/plugin",
+			"css":["/assets/css/normalize.css", "/assets/css/foundation.css"],
+			"autoload":true
+		},
+		"backend-jquery-ui":{
+			"js":"plugins/backend-jquery-ui/plugin",
+			"css":[],
+			"autoload":true
+		},
+	
 	
 	"security":{
 		"is_readonly":false,
+		
+		"connexions":["db_connexions.ini"],
 		
 		"authentication": {
 			"enabled":true,
@@ -47,8 +139,8 @@
 			"username":"users_login",
 			
 			"alt": {
-			"mode":"databajsonfilese",
-			"file":"users.json"
+				"mode":"jsonfile",
+				"file":"users.json"
 			}
 		}
 	}
