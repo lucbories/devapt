@@ -1,5 +1,9 @@
 export const default_runtime = {
 	runtime: {
+		cache: {
+			jsonGraph:{}
+		},
+		
 		authentication: {},
 		
 		authorization: {},
