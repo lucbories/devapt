@@ -27,7 +27,7 @@
 				"home_menubars.ini"
 			],
 			"templates":["template/layouts.default.footer.html.template", "template/layouts.default.header.html.template"],
-			"html":["VIEW_CONTENT_1.html.include", "VIEW_CONTENT_2.html.include", "VIEW_HOME.html.include"]
+			"includes":["VIEW_CONTENT_1.html.include", "VIEW_CONTENT_2.html.include", "VIEW_HOME.html.include"]
 		},
 		
 		"security":{
@@ -52,7 +52,7 @@
 				"roles/auth_models_roles_users.ini"
 			],
 			"templates":[],
-			"html":[]
+			"includes":[]
 		},
 		
 		"appbuilder":{
@@ -62,7 +62,7 @@
 				"appbuilder_menubars.ini"
 			],
 			"templates":[],
-			"html":["app_builder_welcome.html.include"]
+			"includes":["app_builder_welcome.html.include"]
 		},
 		
 		"demo_views":{
@@ -74,7 +74,7 @@
 				"demo_menubars.ini"
 			],
 			"templates":["view_demo_simple.html.template"],
-			"html":["VIEW_TU_MODELS.html.include"]
+			"includes":["VIEW_TU_MODELS.html.include"]
 		},
 		
 		"backend_security":{
@@ -87,7 +87,7 @@
 				"demo_access_menus.ini"
 			],
 			"templates":[],
-			"html":[]
+			"includes":[]
 		}
 	},
 	
@@ -102,8 +102,8 @@
 			"js":"plugins/backend-jquery-ui/plugin",
 			"css":[],
 			"autoload":true
-		},
-	
+		}
+	},
 	
 	"security":{
 		"is_readonly":false,
@@ -132,8 +132,8 @@
 		
 		"authorization": {
 			"enabled":true,
-			
 			"mode":"database",
+			
 			"model":"MODEL_AUTH_USERS_ROLES",
 			"role":"label",
 			"username":"users_login",

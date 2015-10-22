@@ -2,7 +2,7 @@
 import assert from 'assert'
 import T from 'typr'
 
-import logs from '../../server/utils/logs'
+import logs from '../utils/logs'
 import load_config_apps_app from './load_config_apps_app'
 
 

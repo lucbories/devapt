@@ -1,7 +1,8 @@
 import {List, Map, fromJS} from 'immutable'
-import { default_config } from './default_config'
+import load_config from '../../loaders/load_config'
 
 
+let default_config = load_config({})
 export const INITIAL_STATE = fromJS(default_config);
 
 

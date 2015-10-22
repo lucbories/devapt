@@ -2,7 +2,7 @@
 import assert from 'assert'
 import T from 'typr'
 
-import logs from '../../server/utils/logs'
+import logs from '../utils/logs'
 
 
 let context = 'common/loaders/load_config_apps_app'

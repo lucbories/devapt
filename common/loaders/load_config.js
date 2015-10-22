@@ -2,7 +2,7 @@
 import assert from 'assert'
 import T from 'typr'
 
-import logs from '../../server/utils/logs'
+import logs from '../utils/logs'
 import load_config_apps from './load_config_apps'
 import load_config_modules from './load_config_modules'
 import load_config_plugins from './load_config_plugins'
@@ -31,7 +31,7 @@ function load_config(arg_state, arg_initial_config)
 		// CHECK CONFIG PARTS
 		assert(T.isObject(config), 'apps.json should be a plain object')
 		assert(T.isString(config.host), 'apps.json:host should be a string')
-		assert(T.isString(config.port), 'apps.json:port should be a string')
+		assert(T.isNumber(config.port), 'apps.json:port should be a string')
 		assert(T.isObject(config.apps), 'apps.json:apps should be a plain object')
 		assert(T.isObject(config.modules), 'apps.json:modules should be a plain object')
 		assert(T.isObject(config.plugins), 'apps.json:plugins should be a plain object')
