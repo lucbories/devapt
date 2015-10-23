@@ -1,7 +1,8 @@
-export const default_runtime = {
+const default_runtime = {
 	runtime:{
 		application:{
 			// mutable runtime values (copy of initial config)
+			// resources: available resources names list
 		},
 		
 		records:{
@@ -53,3 +54,5 @@ export const default_runtime = {
 		}
 	}
 */
+
+export default default_runtime

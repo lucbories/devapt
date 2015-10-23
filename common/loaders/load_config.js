@@ -31,7 +31,7 @@ function load_config(arg_state, arg_initial_config)
 		// CHECK CONFIG PARTS
 		assert(T.isObject(config), 'apps.json should be a plain object')
 		assert(T.isString(config.host), 'apps.json:host should be a string')
-		assert(T.isNumber(config.port), 'apps.json:port should be a string')
+		assert(T.isNumber(config.port), 'apps.json:port should be a number')
 		assert(T.isObject(config.apps), 'apps.json:apps should be a plain object')
 		assert(T.isObject(config.modules), 'apps.json:modules should be a plain object')
 		assert(T.isObject(config.plugins), 'apps.json:plugins should be a plain object')
@@ -41,9 +41,9 @@ function load_config(arg_state, arg_initial_config)
 		arg_state.config = {}
 		arg_state.config.host = config.host
 		arg_state.config.port = config.port
-		arg_state.config.apps = load_config_apps(config.apps)
 		arg_state.config.modules = load_config_modules(config.modules)
 		arg_state.config.plugins = load_config_plugins(config.plugins)
+		arg_state.config.apps = load_config_apps(config.apps, arg_state.config.modules, arg_state.config.plugins)
 		arg_state.config.security = load_config_security(config.security)
 	}
 	catch(e)

@@ -15,7 +15,7 @@ let error_msg_bad_config = context + ':bad config'
  * Load the 'config.apps' key of the final state
  * Pure function: (Plain Object) => (mutated Plain Object)
  */
-function load_config_apps(arg_config)
+function load_config_apps(arg_config, arg_config_modules, arg_config_plugins)
 {
 	logs.info(context, 'loading config.apps')
 	
@@ -25,7 +25,7 @@ function load_config_apps(arg_config)
 			function(app_name)
 			{
 				let app = arg_config[app_name]
-				arg_config[app_name] = load_config_apps_app(app)
+				arg_config[app_name] = load_config_apps_app(app, arg_config_modules, arg_config_plugins)
 			}
 		)
 	}

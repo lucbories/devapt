@@ -19,6 +19,8 @@ let error_msg_bad_assets_js = context + ':bad config - config.apps.*.assets.js s
 let error_msg_bad_assets_img = context + ':bad config - config.apps.*.assets.img should be an array'
 let error_msg_bad_assets_index = context + ':bad config - config.apps.*.assets.index should be a string'
 let error_msg_bad_asset = context + ':bad config - config.apps.*.assets.[css,js,imd].* should be a string'
+let error_msg_plugin_not_found = context + ':bad config - config.apps.*.plugins.* not found in config.plugins'
+let error_msg_module_not_found = context + ':bad config - config.apps.*.modules.* not found in config.modules'
 
 
 
@@ -26,7 +28,7 @@ let error_msg_bad_asset = context + ':bad config - config.apps.*.assets.[css,js,
  * Load the 'config.apps.*' keys of the final state
  * Pure function: (Plain Object) => (mutated Plain Object)
  */
-function load_config_apps_app(arg_app_config)
+function load_config_apps_app(arg_app_config, arg_config_modules, arg_config_plugins)
 {
 	logs.info(context, 'loading config.apps.[app]')
 	
@@ -49,6 +51,7 @@ function load_config_apps_app(arg_app_config)
 			function(module_name)
 			{
 				assert(T.isString(module_name), error_msg_bad_module_name)
+				assert(module_name in arg_config_modules, error_msg_module_not_found)
 			}
 		)
 		
@@ -57,6 +60,7 @@ function load_config_apps_app(arg_app_config)
 			function(plugin_name)
 			{
 				assert(T.isString(plugin_name), error_msg_bad_plugin_name)
+				assert(plugin_name in arg_config_plugins, error_msg_plugin_not_found)
 			}
 		)
 		

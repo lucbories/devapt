@@ -1,5 +1,9 @@
 'use strict';
 
+import create_store from '../common/store/create_store'
+
+let store = create_store();
+
 var Q = require('q'),
     assert = require('assert'),
     restify = require('restify'),

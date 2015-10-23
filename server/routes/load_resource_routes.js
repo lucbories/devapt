@@ -1,5 +1,11 @@
 'use strict';
 
+// import { dispatch } from 'redux'
+
+import { dispatch_store_config_get_value } from '../../common/store/config/actions'
+import { dispatch_store_runtime_get_value } from '../../common/store/runtime/actions'
+
+
 var Q = require('q'),
     fs = require('fs'),
     path = require('path'),
@@ -7,7 +13,7 @@ var Q = require('q'),
     app_config = require('../config/app_config'),
     databases = require('../models/databases'),
     models = require('../models/models'),
-    // authentication = require('../security/authentication'),
+    authentication = require('../security/authentication'),
     authorization = require('../security/authorization')
     ;
 
@@ -94,10 +100,10 @@ exports = module.exports = function load_resource_routes(arg_server, arg_set_nam
     security_restify_cb(arg_set_name, 'ROLE_AUTH_USER_READ', 'list'),
     function (req, res, next)
     {
-      var resources_list = Object.keys(arg_set_obj);
+      var resources_list = dispatch_store_runtime_get_value(['runtime', 'application', 'resources'])
+//      var resources_list = Object.keys(arg_set_obj);
       
       // PREPARE AND SEND OUTPUT
-      // var output_json = JSON.stringify(resources_list);
       res.contentType = 'json';
       res.send({ resources: resources_list });
       return next();

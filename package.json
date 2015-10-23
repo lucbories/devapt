@@ -36,6 +36,7 @@
     "passport-http": "^0.2.2",
     "passport-restify": "^1.0.0",
     "q": "^1.4.1",
+    "redux": "^3.0.4",
     "restify": "^3.0.3",
     "sequelize": "^3.5.1",
     "systemjs": "^0.18.10",
