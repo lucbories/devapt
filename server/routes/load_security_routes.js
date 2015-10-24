@@ -5,7 +5,7 @@ var authentication = require('../security/authentication')
 
 
 // EXPORT
-exports = module.exports = function load_security_routes(arg_server)
+export function load_security_routes(arg_server)
 {
   console.info('load security routes');
   

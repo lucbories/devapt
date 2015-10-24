@@ -41,7 +41,7 @@ function load_config_security(arg_security_config)
 	}
 	catch(e)
 	{
-			arg_security_config = { error: e }
+		arg_security_config = { error: { context:context, exception:e } }
 	}
 	
 	return arg_security_config

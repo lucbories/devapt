@@ -38,7 +38,7 @@ function load_config_plugins(arg_plugins_config)
 	}
 	catch(e)
 	{
-			arg_plugins_config = { error: e }
+		arg_plugins_config = { error: { context:context, exception:e } }
 	}
 	
 	return arg_plugins_config

@@ -1,14 +1,14 @@
 'use strict';
 
 var Q = require('q'),
-    fs = require('fs'),
-    path = require('path'),
+    // fs = require('fs'),
+    // path = require('path'),
     epilogue_module = require('epilogue'),
     
-    app_config = require('../config/app_config'),
+    // app_config = require('../config/app_config'),
     databases = require('../models/databases'),
     models = require('../models/models'),
-    // authentication = require('../security/authentication'),
+    authentication = require('../security/authentication'),
     authorization = require('../security/authorization'),
     
     ForbiddenError = epilogue_module.Errors.ForbiddenError,
@@ -18,7 +18,7 @@ var Q = require('q'),
 
 
 // EXPORT
-exports = module.exports = function load_routes_for_model(arg_model_name)
+export function load_model_routes(arg_model_name)
 {
   console.info('load routes for model [' + arg_model_name + ']');
   

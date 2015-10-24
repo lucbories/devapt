@@ -8,7 +8,7 @@ var fs = require('fs'),
 
 
 
-exports = module.exports = {
+let parser = {
 	split_all_keys: function(arg_cfg)
 	{
 		var self = this;
@@ -173,4 +173,9 @@ exports = module.exports = {
 		logs.info('parser', 'write_json [%s]', arg_file_path_name);
 		return fs.writeFileSync(arg_file_path_name, JSON.stringify(arg_config));
 	}
-};
+}
+
+
+// exports = module.exports = parser
+
+export default parser

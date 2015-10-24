@@ -2,15 +2,17 @@
 
 // import { dispatch } from 'redux'
 
-import { dispatch_store_config_get_value } from '../../common/store/config/actions'
-import { dispatch_store_runtime_get_value } from '../../common/store/runtime/actions'
+// import { dispatch_store_config_get_value } from '../../common/store/config/actions'
+// import { dispatch_store_runtime_get_value } from '../../common/store/runtime/actions'
+
+import { store, config } from '../common/store/index'
 
 
 var Q = require('q'),
     fs = require('fs'),
     path = require('path'),
     
-    app_config = require('../config/app_config'),
+    // app_config = require('../config/app_config'),
     databases = require('../models/databases'),
     models = require('../models/models'),
     authentication = require('../security/authentication'),
@@ -83,7 +85,7 @@ var security_restify_cb = function(arg_resource_name, arg_role, arg_action_name)
 
 // REGISTER ROUTES FOR RESOURCES SET
 // EXPORT
-exports = module.exports = function load_resource_routes(arg_server, arg_set_name, arg_set_obj)
+export function load_resource_routes(arg_server, arg_set_name)
 {
   console.info('loading routes get for resources set [%s]', arg_set_name);
   
@@ -100,7 +102,7 @@ exports = module.exports = function load_resource_routes(arg_server, arg_set_nam
     security_restify_cb(arg_set_name, 'ROLE_AUTH_USER_READ', 'list'),
     function (req, res, next)
     {
-      var resources_list = dispatch_store_runtime_get_value(['runtime', 'application', 'resources'])
+      var resources_list = config.get_resources()
 //      var resources_list = Object.keys(arg_set_obj);
       
       // PREPARE AND SEND OUTPUT
@@ -115,10 +117,11 @@ exports = module.exports = function load_resource_routes(arg_server, arg_set_nam
     security_restify_cb(null, 'ROLE_AUTH_USER_READ', 'list'), // TODO ROLE FOR ACCESS
     function (req, res, next) 
     {
-      var resource_name = req.params.name;
+      let resource_name = req.params.name;
       
       // CHECK RESOURCE NAME
-      var resource_is_valid = resource_name in arg_set_obj;
+      // var resource_is_valid = resource_name in arg_set_obj;
+      let resource_is_valid = config.has_resource_by_type(arg_set_name, resource_name)
       if (! resource_is_valid)
       {
         var error_msg = 'resource not found [%s] in resources set [%s]';
@@ -128,7 +131,8 @@ exports = module.exports = function load_resource_routes(arg_server, arg_set_nam
       }
       
       // GET RESOURCE DEFINITION
-      var resource_def = arg_set_obj[resource_name];
+      var resource_def = config.get_resource(resource_name)
+      // var resource_def = arg_set_obj[resource_name];
       
       // WRAP CONNEXIONS ATTRIBUTES
       if (arg_set_name === 'connexions')
@@ -181,7 +185,8 @@ exports = module.exports = function load_resource_routes(arg_server, arg_set_nam
     security_restify_cb(null, 'ROLE_AUTH_USER_READ', 'list'), // TODO ROLE FOR ACCESS
     function (arg_req, arg_res, arg_next) 
     {
-      var resource_name = arg_req.params.name;
+      let resource_name = arg_req.params.name;
+      
       
       var resources_sets = ['views', 'models', 'menubars', 'menus', 'connexions'];
       var set_name = null;
@@ -189,7 +194,8 @@ exports = module.exports = function load_resource_routes(arg_server, arg_set_nam
       for(set_index in resources_sets)
       {
         set_name = resources_sets[set_index];
-        var resource_def = app_config.get_resource(set_name, resource_name);
+        let resource_def = config.has_resource_by_type(set_name, resource_name)
+        // var resource_def = app_config.get_resource(set_name, resource_name);
         
         // NOT FOUND IN CURRENT SET
         if (! resource_def)

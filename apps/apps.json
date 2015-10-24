@@ -83,7 +83,6 @@
 				"demo_access_views_users.ini",
 				"demo_access_views_user_inspector.ini",
 				"demo_access_views_groups.ini",
-				"demo_access_views.ini",
 				"demo_access_menus.ini"
 			],
 			"templates":[],

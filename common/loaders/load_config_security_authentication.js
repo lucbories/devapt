@@ -44,7 +44,7 @@ function load_config_security_authentication(arg_auth_config)
 	}
 	catch(e)
 	{
-			arg_auth_config = { error: e }
+		arg_auth_config = { error: { context:context, exception:e } }
 	}
 	
 	return arg_auth_config

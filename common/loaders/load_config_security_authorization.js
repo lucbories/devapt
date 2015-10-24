@@ -12,6 +12,10 @@ let error_msg_bad_enabled = context + ':authorization.enabled should be a boolea
 let error_msg_bad_mode = context + ':authorization.mode should be a string in [database]'
 let error_msg_bad_alt = context + ':authorization.alt should be an object'
 
+let error_msg_bad_model = context + ':authorization.model should be a string'
+let error_msg_bad_role = context + ':authorization.role should be a string'
+let error_msg_bad_username = context + ':authorization.username should be a string'
+
 // let error_msg_bad_authorization = context + ':authorization should be an object'
 
 
@@ -44,7 +48,7 @@ function load_config_security_authorization(arg_auth_config)
 	}
 	catch(e)
 	{
-			arg_auth_config = { error: e }
+		arg_auth_config = { error: { context:context, exception:e } }
 	}
 	
 	return arg_auth_config

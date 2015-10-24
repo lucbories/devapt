@@ -7,19 +7,19 @@ export function runtime_reducer(state = INITIAL_STATE, action)
   switch (action.type)
   {
     case STORE_RUNTIME_SET_ALL:
-      return set_all(action.config);
+      return set_all(state, action.config);
     
     case STORE_RUNTIME_GET_VALUE:
-      return get_value(action.path, action.value);
+      return get_value(state, action.path);
     
     case STORE_RUNTIME_UPDATE_VALUE:
-      return update_value(action.path, action.value);
+      return update_value(state, action.path, action.value);
     
     case STORE_RUNTIME_CREATE_VALUE:
-      return create_value(action.path, action.value);
+      return create_value(state, action.path, action.value);
     
     case STORE_RUNTIME_REMOVE_VALUE:
-      return remove_value(action.path);
+      return remove_value(state, action.path);
     
     default:
       return state;

@@ -37,6 +37,9 @@ describe('load_config',
 						expect(state).to.contain.keys('config')
 						expect(state.config).not.to.contain.keys('error')
 						expect(state.item1).equal(100);
+						
+						// RESET STORE STATUS FOR OTHERS TESTS
+						// config = load_config()
 					}
 				)
 			}
@@ -57,6 +60,9 @@ describe('load_config',
 						
 						expect(state).to.contain.keys('config')
 						expect(state.config).to.contain.keys('error')
+						
+						// RESET STORE STATUS FOR OTHERS TESTS
+						// config = load_config()
 					}
 				)
 			}

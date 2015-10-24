@@ -1,12 +1,14 @@
 'use strict';
 
+import { store, config } from '../common/store/index'
+
 var Q = require('q'),
     assert = require('assert'),
     restify = require('restify'),
 	path = require('path'),
 	
-    app_config = require('./config/app_config'),
-    apps_config = require('../apps/apps.json'),
+    // app_config = require('./config/app_config'),
+    // apps_config = require('../apps/apps.json'),
 	
     databases = require('./models/databases'),
     models = require('./models/models'),
@@ -18,25 +20,25 @@ var Q = require('q'),
 
 
 // EXPORTED APPS API
-var API = {};
+let API = {}
 
 
 
 API.init = function(arg_server)
 {
-	var self = this;
-	console.info('init all applications');
+	let self = this
+	console.info('init all applications')
 	
 		
 	// LOAD ALL APPS CONFIGURATIONS
-	var promise = self.load_all_apps(arg_server)
+	let promise = self.load_all_apps(arg_server)
 	
 	
 	// INITIALIZE DATABASES
 	.then(
 		function()
 		{
-			return databases.init(arg_server);
+			return databases.init(arg_server)
 		}
 	)
 	
@@ -44,7 +46,7 @@ API.init = function(arg_server)
 	.then(
 		function()
 		{
-			return models.init(arg_server);
+			return models.init(arg_server)
 		}
 	)
 	
@@ -52,7 +54,7 @@ API.init = function(arg_server)
 	.then(
 		function()
 		{
-			return routes.init(arg_server);
+			return routes.init(arg_server)
 		}
 	)
 	
@@ -60,7 +62,7 @@ API.init = function(arg_server)
 	.then(
 		function()
 		{
-			return authentication.init(arg_server);
+			return authentication.init(arg_server)
 		}
 	)
 	
@@ -68,32 +70,32 @@ API.init = function(arg_server)
 	.then(
 		function()
 		{
-			return authorization.init(arg_server);
+			return authorization.init(arg_server)
 		}
 	)
 	
-	return promise;	
-};
+	return promise
+}
 
 
 
 API.load_all_apps = function(arg_server)
 {
-	console.info('loading all applications');
+	console.info('loading all applications')
 	
 	// INITIALIZE STATIC FILES ROUTES FOR ALL APPS
-	var app_record = null;
-	var app_cfg_file = null;
-	var app_base_dir = null;
-	var app_url_base = null;
-	var app_url_default = null;
+	var app_record = null
+	var app_cfg_file = null
+	var app_base_dir = null
+	var app_url_base = null
+	var app_url_default = null
 	
-	var app_public_dir = '../apps/public/';
+	var app_public_dir = '../apps/public/'
 	
-	var app_static_cb = null;
+	var app_static_cb = null
 	
-	var app_loader_promise = null;
-	var all_loader_promises = [];
+	var app_loader_promise = null
+	var all_loader_promises = []
 	
 	
 	// REGISTER JS ASSETS DEV ROUTE
@@ -103,8 +105,8 @@ API.load_all_apps = function(arg_server)
 			default: 'index.html'*/
 		}
 	);
-	arg_server.get('/client/.*', app_static_cb);
-	console.info('registering static route for application dev JS [%s] at url [%s]', '../client/', '/client/.*');
+	arg_server.get('/client/.*', app_static_cb)
+	console.info('registering static route for application dev JS [%s] at url [%s]', '../client/', '/client/.*')
 	
 	
 	// REGISTER JS ASSETS PRODUCTION ROUTE
@@ -113,9 +115,9 @@ API.load_all_apps = function(arg_server)
 			directory: app_public_dir/*,
 			default: 'index.html'*/
 		}
-	);
-	arg_server.get('/assets/js/.*', app_static_cb);
-	console.info('registering static route for application production JS [%s] at url [%s]', '../apps/public/', '/assets/js/.*');
+	)
+	arg_server.get('/assets/js/.*', app_static_cb)
+	console.info('registering static route for application production JS [%s] at url [%s]', '../apps/public/', '/assets/js/.*')
 	
 	
 	// REGISTER CSS ASSETS PRODUCTION ROUTE
@@ -124,9 +126,9 @@ API.load_all_apps = function(arg_server)
 			directory: app_public_dir/*,
 			default: 'index.html'*/
 		}
-	);
-	arg_server.get('/assets/css/.*', app_static_cb);
-	console.info('registering static route for application production CSS [%s] at url [%s]', '../apps/public/', '/assets/css/.*');
+	)
+	arg_server.get('/assets/css/.*', app_static_cb)
+	console.info('registering static route for application production CSS [%s] at url [%s]', '../apps/public/', '/assets/css/.*')
 	
 	
 	// REGISTER CSS ASSETS PRODUCTION ROUTE
@@ -135,17 +137,17 @@ API.load_all_apps = function(arg_server)
 			directory: app_public_dir/*,
 			default: 'index.html'*/
 		}
-	);
-	arg_server.get('/assets/img/.*', app_static_cb);
-	console.info('registering static route for application production IMG [%s] at url [%s]', '../apps/public/', '/assets/img/.*');
+	)
+	arg_server.get('/assets/img/.*', app_static_cb)
+	console.info('registering static route for application production IMG [%s] at url [%s]', '../apps/public/', '/assets/img/.*')
 	
 	
 	// LOOP ON REGISTERED APPLICATIONS AND LOAD EACH APPLICATION CONFIGURATION
-	var apps_list = apps_config.apps;
+	var apps_list = config.get_application()
 	Object.keys(apps_list).forEach(
 		function(arg_value, arg_index, arg_array)
 		{
-			console.info('loading application [%s]', arg_value);
+			console.info('loading application [%s]', arg_value)
 			
 			app_record = apps_list[arg_value];
 			
@@ -159,7 +161,7 @@ API.load_all_apps = function(arg_server)
 			app_loader_promise.done(
 				function(arg_loaded_cfg)
 				{
-					console.info('registering static files for application [%s] at url [%s]', arg_value, arg_loaded_cfg.url.base);
+					console.info('registering static files for application [%s] at url [%s]', arg_value, arg_loaded_cfg.url.base)
 					
 					// REGISTER STATIC FILES ROUTES FOR APPLICATION
 					app_url_base = arg_loaded_cfg.url.base + '.*';
@@ -174,7 +176,7 @@ API.load_all_apps = function(arg_server)
 						}
 					);
 					arg_server.get(app_url_base, app_static_cb);
-					console.info('new static route at [%s] default [%s] in [%s]', app_url_base, app_url_default, app_public_dir);
+					console.info('new static route at [%s] default [%s] in [%s]', app_url_base, app_url_default, app_public_dir)
 					
 					
 					// REGISTER APPLICATION CONFIGURATION ROUTE FOR APPLICATION
@@ -190,7 +192,7 @@ API.load_all_apps = function(arg_server)
 						return next();
 					};
 					arg_server.get(app_url_base, app_static_cb);
-					console.info('new application [%s] configuration route [%s]', arg_value, app_url_base);
+					console.info('new application [%s] configuration route [%s]', arg_value, app_url_base)
 				}
 			);
 		}
@@ -200,4 +202,4 @@ API.load_all_apps = function(arg_server)
 }
 
 
-module.exports = API;
+export API
