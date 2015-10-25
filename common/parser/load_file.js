@@ -5,7 +5,7 @@ import assert from 'assert'
 import T from 'typr'
 
 import logs from '../../server/utils/logs'
-import * as parser from '../parser'
+import * as parser from './parser'
 
 
 let context = 'common/loaders/load_file'

@@ -5,7 +5,7 @@ import { store, config } from '../common/store/index'
 var Q = require('q'),
     assert = require('assert'),
     restify = require('restify'),
-	path = require('path'),
+	// path = require('path'),
 	
     // app_config = require('./config/app_config'),
     // apps_config = require('../apps/apps.json'),
@@ -19,12 +19,7 @@ var Q = require('q'),
 
 
 
-// EXPORTED APPS API
-let API = {}
-
-
-
-API.init = function(arg_server)
+let init = function(arg_server)
 {
 	let self = this
 	console.info('init all applications')
@@ -79,23 +74,18 @@ API.init = function(arg_server)
 
 
 
-API.load_all_apps = function(arg_server)
+let load_all_apps = function(arg_server)
 {
 	console.info('loading all applications')
 	
 	// INITIALIZE STATIC FILES ROUTES FOR ALL APPS
-	var app_record = null
-	var app_cfg_file = null
-	var app_base_dir = null
-	var app_url_base = null
-	var app_url_default = null
+	let app_record = null
+	let app_url_base = null
+	let app_url_default = null
 	
-	var app_public_dir = '../apps/public/'
+	let app_public_dir = '../apps/public/'
 	
-	var app_static_cb = null
-	
-	var app_loader_promise = null
-	var all_loader_promises = []
+	let app_static_cb = null
 	
 	
 	// REGISTER JS ASSETS DEV ROUTE
@@ -143,63 +133,51 @@ API.load_all_apps = function(arg_server)
 	
 	
 	// LOOP ON REGISTERED APPLICATIONS AND LOAD EACH APPLICATION CONFIGURATION
-	var apps_list = config.get_application()
-	Object.keys(apps_list).forEach(
-		function(arg_value, arg_index, arg_array)
+	var apps_list = config.get_applications()
+	apps_list.forEach(
+		function(arg_app_name)
 		{
-			console.info('loading application [%s]', arg_value)
+			console.info('loading application [%s]', arg_app_name)
 			
-			app_record = apps_list[arg_value];
+			// GET APP CONFIG
+			app_record = config.get_application(arg_app_name)
+			let app_url = app_record.url
+			console.info('registering static files for application [%s] at url [%s]', arg_app_name, app_url)
 			
-			app_cfg_file = app_record.config;
-			app_base_dir = '../apps/' + app_record.base;
+			// REGISTER STATIC FILES ROUTES FOR APPLICATION
+			app_url_base = app_url + '.*';
+			app_url_default = app_record.url.default;
+			app_url_default = (app_url_default ? app_url_default : 'index.html');
+			assert.ok( (typeof app_url_base) === 'string' && app_url_base.length > 3);
 			
-			app_loader_promise = app_config.load_app_config(app_cfg_file, app_base_dir, false);
-			
-			all_loader_promises.push(app_loader_promise);
-			
-			app_loader_promise.done(
-				function(arg_loaded_cfg)
+			app_static_cb = restify.serveStatic(
 				{
-					console.info('registering static files for application [%s] at url [%s]', arg_value, arg_loaded_cfg.url.base)
-					
-					// REGISTER STATIC FILES ROUTES FOR APPLICATION
-					app_url_base = arg_loaded_cfg.url.base + '.*';
-					app_url_default = arg_loaded_cfg.url.default;
-					app_url_default = (app_url_default ? app_url_default : 'index.html');
-					assert.ok( (typeof app_url_base) === 'string' && app_url_base.length > 3);
-					
-					app_static_cb = restify.serveStatic(
-						{
-							directory: app_public_dir,
-							default: app_url_default
-						}
-					);
-					arg_server.get(app_url_base, app_static_cb);
-					console.info('new static route at [%s] default [%s] in [%s]', app_url_base, app_url_default, app_public_dir)
-					
-					
-					// REGISTER APPLICATION CONFIGURATION ROUTE FOR APPLICATION
-					app_url_base = '/resources/applications/' + arg_value;
-					app_static_cb = function (req, res, next)
-					{
-						// PREPARE AND SEND OUTPUT
-						var safe_config = arg_loaded_cfg;
-						safe_config.connexions = null;
-						// var output_json = JSON.stringify(safe_config);
-						res.contentType = 'json';
-						res.send(safe_config);
-						return next();
-					};
-					arg_server.get(app_url_base, app_static_cb);
-					console.info('new application [%s] configuration route [%s]', arg_value, app_url_base)
+					directory: app_public_dir,
+					default: app_url_default
 				}
 			);
+			arg_server.get(app_url_base, app_static_cb);
+			console.info('new static route at [%s] default [%s] in [%s]', app_url_base, app_url_default, app_public_dir)
+			
+			
+			// REGISTER APPLICATION CONFIGURATION ROUTE FOR APPLICATION
+			app_url_base = '/resources/applications/' + arg_app_name // TODO
+			app_static_cb = function (req, res, next)
+			{
+				// PREPARE AND SEND OUTPUT
+				var safe_config = app_record;
+				safe_config.connexions = null;
+				res.contentType = 'json';
+				res.send(safe_config);
+				return next();
+			};
+			arg_server.get(app_url_base, app_static_cb);
+			console.info('new application [%s] configuration route [%s]', arg_app_name, app_url_base)
 		}
-	);
+	)
 	
-	return Q.all(all_loader_promises)
+	return Q(true)
 }
 
 
-export API
+export { init, load_all_apps }

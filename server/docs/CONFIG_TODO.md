@@ -1,8 +1,31 @@
-Devapt / server / config
+Devapt / common / store
 ========================
 
 
 config micro services and remote odels
+
+Service types:
+	rest_api_auth: login, logout clients and svc
+	rest_api_logger: receive and save logs
+	
+	rest_api_models_query
+	rest_api_models_modifier
+	
+	rest_api_resources_query: read operation on datas models
+	rest_api_resources_modifier: create,update,delete operations on datas models
+	
+	rest_api_svcmgt: enable,disable,create,update,delete app svc
+	
+	html_assets
+	html_app
+	
+	socket_udp
+	socket_tcp
+	
+	branch: A(B/C) with request->process A(calc choice:B or C)->process B or C
+	aggregator: A(B,C) with request->process A:process B and process C and merge results
+	proxy: A(B) with request->process A:process B and returns result
+
 
 
 TODO REST API

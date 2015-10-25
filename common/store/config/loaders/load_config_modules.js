@@ -3,12 +3,12 @@ import assert from 'assert'
 import T from 'typr'
 import path from 'path'
 
-import logs from '../utils/logs'
-import parser from '../parser/parser'
+import logs from '../../../utils/logs'
+import parser from '../../../parser/parser'
 
 
 
-let context = 'common/loaders/load_config_modules'
+let context = 'common/store/config/loaders/load_config_modules'
 let error_msg_bad_config = context + ':bad config'
 
 let error_msg_bad_base_dir = context + ':module.base_dir should be a string'
@@ -22,6 +22,9 @@ let error_msg_bad_include = context + ':module.includes.* should be a string'
 
 let error_msg_bad_module_config = context + ':bad module config'
 let error_msg_bad_resource_config = context + ':bad resource config'
+
+
+const apps_dir = '../../../../apps/private/'
 
 
 
@@ -74,10 +77,10 @@ function load_config_modules(arg_modules_config)
 						logs.info(context, 'loading config.modules.' + module_name + ' resources file:' + resource_file)
 						
 						let file_name = path.join(module_obj.base_dir, resource_file)
-						let file_path_name = path.join(__dirname , '../../apps/private/', file_name)
+						let file_path_name = path.join(__dirname , apps_dir, file_name)
 						
 						let config = parser.read(file_path_name, 'utf8')
-						console.log(config, 'config')
+						// console.log(config, 'config')
 						
 						files[file_name] = config
 						module_obj.resources_by_file[file_name] = {}
@@ -122,7 +125,7 @@ function load_config_modules(arg_modules_config)
 	}
 	catch(e)
 	{
-		arg_modules_config = { error: { context:context, exception:e } }
+		arg_modules_config = { error: { context:context, exception:e }, error_msg:e.toString() }
 	}
 	
 	return arg_modules_config

@@ -2,13 +2,14 @@
 import assert from 'assert'
 import T from 'typr'
 
-import logs from '../utils/logs'
+import logs from '../../../utils/logs'
+
 import load_config_security_authorization from './load_config_security_authorization'
 import load_config_security_authentication from './load_config_security_authentication'
 
 
 
-let context = 'common/loaders/load_config_security'
+let context = 'common/store/config/loaders/load_config_security'
 let error_msg_bad_config = context + ':bad config'
 let error_msg_bad_is_readonly = context + ':security.is_readonly should be a boolean'
 let error_msg_bad_connexions = context + ':security.connexions should be an array'

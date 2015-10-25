@@ -2,14 +2,14 @@
 import assert from 'assert'
 import T from 'typr'
 
-import logs from '../utils/logs'
+import logs from '../../../utils/logs'
 import load_config_apps from './load_config_apps'
 import load_config_modules from './load_config_modules'
 import load_config_plugins from './load_config_plugins'
 import load_config_security from './load_config_security'
 
 
-let context = 'common/loaders/load_config'
+let context = 'common/store/config/loaders/load_config'
 let error_msg_bad_config = context + ':bad config'
 
 
@@ -26,11 +26,12 @@ function load_config(arg_state, arg_initial_config)
 	// LOAD APPS.JSON
 	try{
 		// GET CONFIG JSON
-		let config = arg_initial_config || require('../../apps/apps.json')
+		let config = arg_initial_config || require('../../../../apps/apps.json')
+		config.resources = config.resources || {}
+		// config.changes_history = config.changes_history || [{ ts: Date.now(), }]
 		
 		
 		// CHECK CONFIG PARTS
-		config.resources = config.resources || {}
 		assert(T.isObject(config), 'apps.json should be a plain object')
 		assert(T.isString(config.host), 'apps.json:host should be a string')
 		assert(T.isNumber(config.port), 'apps.json:port should be a number')
@@ -67,12 +68,12 @@ function load_config(arg_state, arg_initial_config)
 		// POPULATE STORE RESOURCES
 		Object.keys(arg_state.config.modules).forEach(
 			(module_name) => {
-				if (module_name === 'error' || module_name === 'files')
+				if (module_name === 'error' || module_name === 'error_msg' ||module_name === 'files')
 				{
 					return
 				}
 				
-				logs.info(context, 'loading config for module ' + module_name)
+				// logs.info(context, 'loading config for module ' + module_name)
 				
 				let module_obj = arg_state.config.modules[module_name]
 				arg_state.config.resources.by_module[module_name] = {}
@@ -80,7 +81,7 @@ function load_config(arg_state, arg_initial_config)
 				// REGISTER RESOURCE BY NAME
 				Object.keys(module_obj.resources_by_name).forEach(
 					(resource_name) => {
-						logs.info(context, 'loading config for module ' + module_name + ' for register resource by name for ' + resource_name)
+						// logs.info(context, 'loading config for module ' + module_name + ' for register resource by name for ' + resource_name)
 						
 						let resource_obj = module_obj.resources_by_name[resource_name]
 						arg_state.config.resources.by_name[resource_name] = resource_obj
@@ -91,7 +92,7 @@ function load_config(arg_state, arg_initial_config)
 				// REGISTER RESOURCE BY FILE
 				Object.keys(module_obj.resources_by_file).forEach(
 					(file_name) => {
-						logs.info(context, 'loading config for module ' + module_name + ' for register resource by file:' + file_name)
+						// logs.info(context, 'loading config for module ' + module_name + ' for register resource by file:' + file_name)
 						arg_state.config.resources.by_file[file_name] = {}
 						Object.keys(module_obj.resources_by_file[file_name]).forEach(
 							(resource_name) => {
@@ -105,7 +106,7 @@ function load_config(arg_state, arg_initial_config)
 				// REGISTER RESOURCE BY TYPE
 				Object.keys(module_obj.resources_by_type).forEach(
 					(type_name) => {
-						logs.info(context, 'loading config for module ' + module_name + ' for register resource by type:' + type_name)
+						// logs.info(context, 'loading config for module ' + module_name + ' for register resource by type:' + type_name)
 						Object.keys(module_obj.resources_by_type[type_name]).forEach(
 							(resource_name) => {
 								// logs.info(context, 'loading config for module ' + module_name + ' for register resource by type for resource' + resource_name)
@@ -154,7 +155,7 @@ function load_config(arg_state, arg_initial_config)
 	}
 	catch(e)
 	{
-		arg_state.config = { error: { context:context, exception:e } }
+		arg_state.config = { error: { context:context, exception:e, error_msg:e.toString() } }
 	}
 	
 	return arg_state

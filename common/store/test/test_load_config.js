@@ -2,7 +2,7 @@ import {describe, it} from 'mocha';
 import {expect} from 'chai';
 import {List, Map} from 'immutable';
 
-import load_config from '../../loaders/load_config'
+import load_config from '../config/loaders/load_config'
 
 
 describe('load_config',
@@ -16,8 +16,12 @@ describe('load_config',
 						
 						expect(config).to.contain.keys('config')
 						state.config = config.config
-						// console.log(state, 'state')
-						// console.log(config, 'config')
+						
+						if (state.config.error)
+						{
+							console.log(state, 'state')
+							// console.log(config, 'config')
+						}
 						
 						expect(state).to.contain.keys('config')
 						expect(state.config).not.to.contain.keys('error')
@@ -31,8 +35,12 @@ describe('load_config',
 						
 						expect(config).to.contain.keys('config')
 						state.config = config.config
-						// console.log(state, 'state')
-						// console.log(config, 'config')
+						
+						if (state.config.error)
+						{
+							console.log(state, 'state')
+							// console.log(config, 'config')
+						}
 						
 						expect(state).to.contain.keys('config')
 						expect(state.config).not.to.contain.keys('error')
@@ -55,8 +63,12 @@ describe('load_config',
 						
 						expect(config).to.contain.keys('config')
 						state.config = config.config
-						// console.log(state, 'state')
-						// console.log(config, 'config')
+						
+						if (state.config.error)
+						{
+							console.log(state, 'state')
+							// console.log(config, 'config')
+						}
 						
 						expect(state).to.contain.keys('config')
 						expect(state.config).to.contain.keys('error')

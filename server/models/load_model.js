@@ -1,26 +1,25 @@
 'use strict';
 
-var Sequelize = require('sequelize'),
-    Q = require('q'),
-    databases = require('./databases'),
-    assert = require('assert'),
-    app_config = require('../config/app_config');
+import Q from 'q'
+import assert from 'assert'
+import Sequelize from 'sequelize'
+
+import * as databases from './databases'
+import { store, config } from '../common/store/index'
 
 
 
 
 // EXPORT API
-module.exports = function load_model(arg_model_name, arg_server, arg_load_associations)
+export function load_model(arg_model_name, arg_server, arg_load_associations)
 {
   console.info('loading model', arg_model_name);
   var self = this;
   
   // GET MODELS
-  var cfg_models = app_config.get_models();
-  
-  if (arg_model_name in cfg_models)
+  if (config.has_model(arg_model_name))
   {
-    var cfg_model = cfg_models[arg_model_name];
+    var cfg_model = config.get_model(arg_model_name);
     var cfg_fields = cfg_model.fields;
     // console.log(cfg_model, 'cfg_model');
     
@@ -98,6 +97,7 @@ module.exports = function load_model(arg_model_name, arg_server, arg_load_associ
     }
   }
   
+  var cfg_models = config.get_models();
   console.error(cfg_models, 'models.cfg_models');
   return Q(false);
 }

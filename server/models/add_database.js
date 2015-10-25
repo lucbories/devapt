@@ -1,16 +1,17 @@
 'use strict';
 
-var Sequelize = require('sequelize'),
-    Q = require('q'),
-    assert = require('assert'),
-    
-    apps_config = require('../config/app_config')
-    ;
+import Q from 'q'
+import assert from 'assert'
+import Sequelize from 'sequelize'
+
+// import load_database_cb from './load_database'
+// import add_database_cb from './add_database'
+// import { store, config } from '../common/store/index'
 
 
 
 // EXPORT API
-module.exports = function add_database(arg_databases, arg_cx_name, arg_server, arg_sequelize)
+export default function add_database(arg_databases, arg_cx_name, arg_server, arg_sequelize)
 {
   console.info('adding database', arg_cx_name);
   

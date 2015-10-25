@@ -15,12 +15,8 @@ var Q = require('q'),
     ;
 
 
-// CREATE DEFAULT ROUTES API
-var API = {}
 
-
-
-API.init = function(arg_server)
+export default function init(arg_server)
 {
   console.info('init routes')
   
@@ -61,8 +57,3 @@ API.init = function(arg_server)
   
   return Q(true)
 }
-
-
-
-// EXPORT
-export API

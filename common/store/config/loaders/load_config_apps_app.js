@@ -1,19 +1,24 @@
 
 import assert from 'assert'
 import T from 'typr'
+import path from 'path'
 
-import logs from '../utils/logs'
+import parser from '../../../parser/parser'
+import logs from '../../../utils/logs'
 
 
 
-let context = 'common/loaders/load_config_apps_app'
+let context = 'common/store/config/loaders/load_config_apps_app'
 let error_msg_bad_config = context + ':bad config - config.apps.* should be a plain object'
 let error_msg_bad_from_file = context + ':bad config - config.apps.*.from_file should be a string'
 let error_msg_bad_license = context + ':bad config - config.apps.*.license should be a string'
+let error_msg_bad_url = context + ':bad config - config.apps.*.url should be a string'
+let error_msg_bad_file_config = context + ':bad config - config.apps.*.from_file content should be an object'
 
 let error_msg_bad_modules = context + ':bad config - config.apps.*.modules should be an array'
 let error_msg_bad_plugins = context + ':bad config - config.apps.*.plugins should be an array'
 let error_msg_bad_resources = context + ':bad config - config.apps.*.resources should be an array'
+let error_msg_bad_services = context + ':bad config - config.apps.*.services should be an object'
 
 let error_msg_bad_module_name = context + ':bad config - config.apps.*.modules.* should be a string'
 let error_msg_bad_plugin_name = context + ':bad config - config.apps.*.plugins.* should be a string'
@@ -44,16 +49,37 @@ function load_config_apps_app(arg_app_config, arg_config_modules, arg_config_plu
 	try{
 		// CHECK APPLICATION
 		assert(T.isObject(arg_app_config), error_msg_bad_config)
-		assert(T.isString(arg_app_config.from_file), error_msg_bad_from_file)
+		assert(T.isString(arg_app_config.url), error_msg_bad_url)
 		assert(T.isString(arg_app_config.license), error_msg_bad_license)
+		
+		assert(T.isObject(arg_app_config.services), error_msg_bad_services)
 		assert(T.isArray(arg_app_config.resources), error_msg_bad_resources)
 		assert(T.isArray(arg_app_config.modules), error_msg_bad_modules)
 		assert(T.isArray(arg_app_config.plugins), error_msg_bad_plugins)
+		
 		assert(T.isObject(arg_app_config.assets), error_msg_bad_assets)
 		assert(T.isArray(arg_app_config.assets.css), error_msg_bad_assets_css)
 		assert(T.isArray(arg_app_config.assets.js), error_msg_bad_assets_js)
 		assert(T.isArray(arg_app_config.assets.img), error_msg_bad_assets_img)
 		assert(T.isString(arg_app_config.assets.index), error_msg_bad_assets_index)
+		
+		
+		// LOAD FILE
+		if (arg_app_config.from_file)
+		{
+			logs.info(context, 'loading config.apps.[app].from_file')
+			assert(T.isString(arg_app_config.from_file), error_msg_bad_from_file)
+			
+			let base_dir = path.join(__dirname, '../../apps/')
+			let file_path_name = path.join(base_dir, arg_app_config.from_file)
+			
+			let app_file_config = parser.read(file_path_name, 'utf8')
+			// console.log(config, 'config')
+			assert(T.isObject(app_file_config), error_msg_bad_file_config)
+			
+			Object.assign(arg_app_config, app_file_config)
+		}
+		
 		
 		// LOOP ON RESOURCES
 		arg_app_config.resources.forEach(

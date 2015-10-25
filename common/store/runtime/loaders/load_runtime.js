@@ -2,11 +2,11 @@
 import assert from 'assert'
 import T from 'typr'
 
-import logs from '../utils/logs'
+import logs from '../../../utils/logs'
 import default_runtime from './default_runtime'
 
 
-let context = 'common/loaders/load_runtime'
+let context = 'common/store/runtime/loaders/load_runtime'
 let error_msg_bad_config = context + ':bad config'
 
 

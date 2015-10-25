@@ -2,10 +2,12 @@ import {describe, it} from 'mocha';
 import {expect} from 'chai';
 import {List, Map} from 'immutable';
 import T from 'typr'
+import { ActionCreators } from 'redux-undo';
 
 import { store, config, runtime } from '../store/index'
 import { dispatch_store_config_get_value } from '../store/config/actions'
 import { dispatch_store_runtime_get_value } from '../store/runtime/actions'
+import { dispatch_store_runtime_apps_create } from '../store/runtime/applications/actions'
 
 import * as test_load_config from '../store/test/test_load_config'
 
@@ -16,8 +18,10 @@ describe('store',
 		it('create_store()',
 			() => {
 				let state = store.getState()
-				let config_obj = state.config_reducer.toJS()
+				let config_present = state.config_reducer.present
+				let runtime_present = state.runtime_reducer.present
 				
+				let config_obj = config_present.toJS()
 				// console.log(config_obj, 'config_obj')
 				
 				config_obj = config_obj.config
@@ -32,27 +36,31 @@ describe('store',
 				
 				expect(state).contain.keys('config_reducer', 'runtime_reducer')
 				
-				expect(state.config_reducer.has('config')).to.be.true
-				expect(state.runtime_reducer.has('runtime')).to.be.true
+				expect(config_present.has('config')).to.be.true
+				expect(runtime_present.has('runtime')).to.be.true
 				
-				expect(state.config_reducer.get('config').has('error')).to.be.false
-				expect(state.config_reducer.get('config').has('host')).to.be.true
-				expect(state.config_reducer.get('config').has('port')).to.be.true
-				expect(state.config_reducer.get('config').has('apps')).to.be.true
-				expect(state.config_reducer.get('config').has('modules')).to.be.true
-				expect(state.config_reducer.get('config').has('plugins')).to.be.true
-				expect(state.config_reducer.get('config').has('security')).to.be.true
+				expect(config_present.get('config').has('error')).to.be.false
+				expect(config_present.get('config').has('host')).to.be.true
+				expect(config_present.get('config').has('port')).to.be.true
+				expect(config_present.get('config').has('apps')).to.be.true
+				expect(config_present.get('config').has('modules')).to.be.true
+				expect(config_present.get('config').has('plugins')).to.be.true
+				expect(config_present.get('config').has('security')).to.be.true
 				
-				expect(state.runtime_reducer.get('runtime').has('error')).to.be.false
-				expect(state.runtime_reducer.get('runtime').has('application')).to.be.true
-				expect(state.runtime_reducer.get('runtime').has('records')).to.be.true
-				expect(state.runtime_reducer.get('runtime').has('instances')).to.be.true
-				expect(state.runtime_reducer.get('runtime').has('security')).to.be.true
+				expect(runtime_present.get('runtime').has('error')).to.be.false
+				expect(runtime_present.get('runtime').has('applications')).to.be.true
+				expect(runtime_present.get('runtime').has('records')).to.be.true
+				expect(runtime_present.get('runtime').has('instances')).to.be.true
+				expect(runtime_present.get('runtime').has('security')).to.be.true
 			}
 		)
 		
 		it('store getters',
 			() => {
+				// let state = store.getState()
+				// let config_present = state.config_reducer.present
+				// let runtime_present = state.runtime_reducer.present
+				
 				let store_config = config()
 				// let store_runtime = runtime()
 				
@@ -147,6 +155,40 @@ describe('store',
 				expect( T.isObject(value_obj) ).to.be.true
 				expect( T.isString(value_obj.class_name) ).to.be.true
 				expect( value_obj.class_name ).to.be.equal(RES_CLASS)
+			}
+		)
+		
+		
+		it('create a runtime application for ("tutorial-1")',
+			() => {
+				const APP_NAME = 'tutorial-1'
+				
+				expect( config().has('apps') ).to.be.true
+				expect( runtime().has('applications') ).to.be.true
+				
+				expect( config().get('apps').toMap().has(APP_NAME) ).to.be.true
+				expect( config.has_application(APP_NAME) ).to.be.true
+				expect( runtime().get('applications').toMap().has(APP_NAME) ).to.be.false
+				expect( runtime.has_application(APP_NAME) ).to.be.false
+				
+				dispatch_store_runtime_apps_create(store, APP_NAME, { app_setting_1:'hello' })
+				
+				console.log(runtime().get('applications').toMap().toJS(), 'runtime.apps')
+				
+				expect( config().get('apps').toMap().has(APP_NAME) ).to.be.true
+				expect( runtime().get('applications').toMap().has(APP_NAME) ).to.be.true
+				expect( runtime().hasIn(['applications', APP_NAME, 'app_setting_1']) ).to.be.true
+				
+				store.dispatch( ActionCreators.undo() )
+				
+				expect( config().get('apps').toMap().has(APP_NAME) ).to.be.true
+				expect( runtime().get('applications').toMap().has(APP_NAME) ).to.be.false
+				
+				store.dispatch( ActionCreators.redo() )
+				
+				expect( config().get('apps').toMap().has(APP_NAME) ).to.be.true
+				expect( runtime().get('applications').toMap().has(APP_NAME) ).to.be.true
+				expect( runtime().hasIn(['applications', APP_NAME, 'app_setting_1']) ).to.be.true
 			}
 		)
 	}

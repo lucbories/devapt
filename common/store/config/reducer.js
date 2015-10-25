@@ -2,6 +2,7 @@ import { STORE_CONFIG_SET_ALL, STORE_CONFIG_GET_VALUE, STORE_CONFIG_UPDATE_VALUE
 import { INITIAL_STATE, set_all, get_value, update_value, create_value, remove_value } from './core'
 
 
+
 export function config_reducer(state = INITIAL_STATE, action)
 {
   switch (action.type)

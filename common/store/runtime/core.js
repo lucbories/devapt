@@ -1,7 +1,7 @@
 import {List, Map, fromJS} from 'immutable'
 import T from 'typr'
 
-import load_runtime from '../../loaders/load_runtime'
+import load_runtime from './loaders/load_runtime'
 
 
 

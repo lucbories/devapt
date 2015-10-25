@@ -2,11 +2,11 @@
 import assert from 'assert'
 import T from 'typr'
 
-import logs from '../utils/logs'
+import logs from '../../../utils/logs'
 
 
 
-let context = 'common/loaders/load_config_plugins'
+let context = 'common/store/config/loaders/load_config_plugins'
 let error_msg_bad_config = context + ':bad config'
 let error_msg_bad_plugin = context + ':plugins.* should be an object'
 let error_msg_bad_js = context + ':plugins.*.js should be a string'

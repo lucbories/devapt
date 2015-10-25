@@ -1,6 +1,6 @@
 const default_runtime = {
 	runtime:{
-		application:{
+		applications:{
 			// mutable runtime values (copy of initial config)
 			// resources: available resources names list
 		},
@@ -17,13 +17,13 @@ const default_runtime = {
 			by_class:{}, // class_name:[] (array of id)
 			by_name:{}, // name:id
 			by_type:{
-				view:[], // (array of id)
-				model:[], // (array of id)
-				menubar:[], // (array of id)
-				menu:[], // (array of id)
-				database:[], // (array of id)
-				plugin:[], // (array of id)
-				logger:[] // (array of id)
+				views:[], // (array of id)
+				models:[], // (array of id)
+				menubars:[], // (array of id)
+				menus:[], // (array of id)
+				databases:[], // (array of id)
+				plugins:[], // (array of id)
+				loggers:[] // (array of id)
 			}
 		},
 		

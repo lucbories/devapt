@@ -84,7 +84,7 @@ let parser = {
 	read: function(arg_file_path_name, arg_charset)
 	{
 		var self = this;
-		logs.info('parser', 'read [%s]', arg_file_path_name, arg_charset);
+		// logs.info('parser', 'read [%s]', arg_file_path_name, arg_charset);
 		
 		if (arg_file_path_name.substr(-4).toLocaleLowerCase() === '.ini')
 		{
@@ -101,7 +101,7 @@ let parser = {
 	read_json: function(arg_file_path_name, arg_charset)
 	{
 		var self = this;
-		logs.info('parser', 'read_json [%s] [%s]', arg_file_path_name, arg_charset);
+		// logs.info('parser', 'read_json [%s] [%s]', arg_file_path_name, arg_charset);
 		
 		var config_content = require(arg_file_path_name);
 		
@@ -114,7 +114,7 @@ let parser = {
 	read_ini: function(arg_file_path_name, arg_charset)
 	{
 		var self = this;
-		logs.info('parser', 'read_ini [%s] [%s]', arg_file_path_name, arg_charset);
+		// logs.info('parser', 'read_ini [%s] [%s]', arg_file_path_name, arg_charset);
 		
 		var config_file = fs.readFileSync(arg_file_path_name, arg_charset ? arg_charset : 'utf-8');
 		var config_content = ini_parser.parse(config_file);

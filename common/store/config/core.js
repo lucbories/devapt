@@ -1,7 +1,7 @@
 import {List, Map, fromJS} from 'immutable'
 import T from 'typr'
 
-import load_config from '../../loaders/load_config'
+import load_config from './loaders/load_config'
 
 
 
