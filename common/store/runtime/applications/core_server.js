@@ -43,7 +43,12 @@ export function app_create(state, arg_name, arg_config = {})
   }
   
   // CREATE RUNTIME APPLICATION
-  let checked_config = Object.assign({}, config.get_application(arg_name), arg_config)
+  let merged_config = Object.assign({}, config.get_application(arg_name), arg_config)
+  let checked_config = app_check_safe(merged_config) ? merged_config : null
+  if (! checked_config)
+  {
+    return state
+  }
   const immutable_config = fromJS(checked_config)
   return runtime().setIn(['runtime', 'applications', arg_name], immutable_config)
 }

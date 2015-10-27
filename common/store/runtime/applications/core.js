@@ -4,8 +4,9 @@ import * as core_client from './core_client'
 
 
 
-let is_server = true
+let is_server = module.exports ? true : false
 let is_client = ! is_server
+
 
 export const INITIAL_STATE = {};
 
