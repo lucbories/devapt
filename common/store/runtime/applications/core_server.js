@@ -50,7 +50,11 @@ export function app_create(state, arg_name, arg_config = {})
     return state
   }
   const immutable_config = fromJS(checked_config)
-  return runtime().setIn(['runtime', 'applications', arg_name], immutable_config)
+  const new_state = runtime().setIn(['runtime', 'applications', arg_name], immutable_config)
+  
+  // CREATE 
+  
+  return new_state
 }
 
 
