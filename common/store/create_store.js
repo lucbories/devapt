@@ -3,7 +3,7 @@ import thunk from 'redux-thunk'
 import promise from 'redux-promise'
 import createLogger from 'redux-logger'
 
-import store_reducers from './reducers'
+import * as store_reducers from './reducers'
 
 
 
@@ -21,11 +21,11 @@ let logger_settings = {
   }
 }
 let logger = createLogger(logger_settings)
-const createStoreWithMiddleware = applyMiddleware(thunk, promise, logger)(createStore)
 
 
 export default function create_store(arg_initial_state)
 {
+  const createStoreWithMiddleware = applyMiddleware(thunk, promise, logger)(createStore)
   const store = createStoreWithMiddleware(store_reducers, arg_initial_state)
   
   

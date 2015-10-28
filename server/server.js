@@ -8,17 +8,17 @@ var Q = require('q'),
     assert = require('assert'),
     restify = require('restify'),
     
-    apps_config = require('../apps/apps.json'),
+    // apps_config = require('../apps/apps.json'),
     
     apps = require('./apps')
     ;
 
 
 // GET SERVER CONFIG
-var server = apps_config.server;
+// var server = store.server;
 // var server_hostname = ;
 // var server_hostname = ;
-var server_port = 8080;
+var server_port = store.config().get('port')
 
 
 

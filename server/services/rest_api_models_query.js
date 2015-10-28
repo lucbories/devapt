@@ -4,35 +4,50 @@ import { store, config, runtime } from '../../common/store/index'
 
 
 
-export default class RestApiModelsQueryService extends Service {
+export default class RestApiModelsQueryService extends Service
+{
+	constructor(arg_app_name, arg_svc_name)
+	{
+		super(arg_app_name, arg_svc_name)
+	}
 	
-	let status = Service.STATUS_UNKNOW // unknow -> created -> enabled -> disabled -> enabled
-	let name = null
-	let app = null
 	
-	constructor(arg_app_name, arg_svc_name) {
-		this.name = arg_svc_name
-		
-		if (! runtime.has_application(arg_app_name))
+	
+	enable()
+	{
+		if ( ! super.enable() )
 		{
-			this.status = Service.STATUS_ERROR
-			return
+			return false
 		}
 		
-		this.app = runtime.get_application(arg_app_name)
-		this.status = Service.STATUS_CREATED
-		enabled()
-	}
-	
-	
-	
-	enable() {
-		this.status = Service.STATUS_ENABLED
-	}
-	
-	
-	disable() {
-		this.status = Service.STATUS_DISABLED
+		// LOOP ON MODELS
+		let applications = runtime.get_applications();
+		applications.forEach(
+			(app_name) => {
+				let app_config = runtime.get_application(app_name)
+				
+				// LOOP ON MODELS
+				let models_ids = app_config.getIn('instances', 'by_type')
+				models_ids.forEach(
+					(model_id) => {
+						let model_instance = app_config.getIn('instances', 'by_id', model_id)
+						// TO FINISH
+					}
+				)
+			}
+		)
 		
+		return true
+	}
+	
+	
+	disable()
+	{
+		if ( ! super.enable() )
+		{
+			return false
+		}
+		
+		return true
 	}
 }
