@@ -1,6 +1,7 @@
 
-import Service from './service'
 import { store, config, runtime } from '../../common/store/index'
+
+import Service from './service'
 
 
 

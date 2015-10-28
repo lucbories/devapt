@@ -9,7 +9,10 @@
     "test:watch": "npm run test -- --watch",
     "build": "webpack --progress --colors",
     "build:watch": "webpack --progress --colors --watch",
-    "start:dev": "webpack-dev-server ./entry --progress --colors --hot --inline"
+    "start:dev": "webpack-dev-server ./entry --progress --colors --hot --inline",
+    "build:client": "./node_modules/.bin/babel client/src/js --out-file dist/devapt_client_babel.js",
+    "build:common": "./node_modules/.bin/babel common --out-file dist/devapt_common_babel.js",
+    "build:server": "./node_modules/.bin/babel server --out-file dist/devapt_server_babel.js"
   },
   "keywords": [
     "server",
@@ -24,6 +27,7 @@
   "dependencies": {
     "MD5": "^1.3.0",
     "babel-core": "^5.8.22",
+    "debug": "^2.2.0",
     "epilogue": "^0.5.1",
     "fbemitter": "~2.0.0",
     "immutable": "^3.7.5",

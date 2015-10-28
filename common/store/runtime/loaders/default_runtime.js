@@ -3,6 +3,14 @@ const default_runtime = {
 		applications:{
 			// mutable runtime values (copy of initial config)
 			// resources: available resources names list
+			
+			used_views:[],    // list of id
+			used_models:[],   // list of id
+			used_menubars:[], // list of id
+			used_menus:[],    // list of id
+			used_plugins:[],  // list of id
+			used_loggers:[],  // list of id
+			used_services:[]  // list of id
 		},
 		
 		records:{
@@ -23,7 +31,8 @@ const default_runtime = {
 				menus:[], // (array of id)
 				databases:[], // (array of id)
 				plugins:[], // (array of id)
-				loggers:[] // (array of id)
+				loggers:[], // (array of id)
+				services:[] // (array of id)
 			}
 		},
 		

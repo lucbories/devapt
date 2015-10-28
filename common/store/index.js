@@ -66,7 +66,7 @@ runtime.get_application  = function(arg_name) { return runtime().getIn( ['applic
 
 
 // RUNTIME: GET SERVICES
-// runtime.get_services = function() { return runtime().getIn( ['applications'] ).toMap().keySeq().toArray() }
+runtime.get_services = function() { return runtime().getIn( ['instances', 'by_type', 'services'] ).map(id => runtime().getIn( ['instances', 'by_id', id] ) ).toArray() }
 // runtime.has_service  = function(arg_name) { return runtime().hasIn( ['applications', arg_name] ) }
 // runtime.get_service  = function(arg_name) { return runtime().getIn( ['applications', arg_name] ).toMap().toJS() }
 

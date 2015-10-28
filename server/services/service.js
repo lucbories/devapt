@@ -1,4 +1,8 @@
+
 import { store, config, runtime } from '../../common/store/index'
+
+import Instance from '../utils/instance'
+
 
 
 // STATUS CONSTANTS
@@ -10,7 +14,7 @@ const STATUS_ENABLED = 'enabled'
 const STATUS_DISABLED = 'disabled'
 
 
-export default class Service
+export default class Service extends Instance
 {
 	// STATIC CONST ACCESSORS
 	static STATUS_UNKNOW()   { return STATUS_UNKNOW }
@@ -23,8 +27,9 @@ export default class Service
 	// CONSTRUCTOR
 	constructor(arg_app_name, arg_svc_name)
 	{
+		super('services', arg_svc_name)
+		
 		this.status = STATUS_UNKNOW
-		this.name = null
 		this.app = null
 		
 		// CHECK APPLICATION NAME
@@ -36,6 +41,9 @@ export default class Service
 		
 		this.app = runtime.get_application(arg_app_name)
 		this.status = Service.STATUS_CREATED
+		
+		// REGISTER SERVICE INTO STORE
+		runtime.add_service()// TODO
 	}
 	
 	
