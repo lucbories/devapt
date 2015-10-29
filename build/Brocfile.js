@@ -13,7 +13,7 @@
 // console.log('BROCCOLI TASK IS STARTING');
 
 // var broccoli = require('broccoli')
-// var babel = require('broccoli-babel-transpiler');
+var babel = require('broccoli-babel-transpiler');
 // var mergeTrees = require('broccoli-merge-trees');
 // var browserify = require('broccoli-browserify');
 var Concat = require('broccoli-concat');
@@ -44,7 +44,7 @@ var Concat_tree = Concat(input,
 var Requirejs_settings = {
   verbose   : true,
   requirejs : {
-    name : 'devapt-client-all',
+    name : 'devapt_client_broccoli.js',
     out  : '/devapt-requirejs.js'
   }
 };

@@ -9,41 +9,41 @@ import logs from '../../../utils/logs'
 
 
 let context = 'common/store/config/loaders/load_config_apps_app'
-let error_msg_bad_config = context + ':bad config - config.apps.* should be a plain object'
-let error_msg_bad_from_file = context + ':bad config - config.apps.*.from_file should be a string'
-let error_msg_bad_license = context + ':bad config - config.apps.*.license should be a string'
-let error_msg_bad_url = context + ':bad config - config.apps.*.url should be a string'
-let error_msg_bad_file_config = context + ':bad config - config.apps.*.from_file content should be an object'
+let error_msg_bad_config = context + ':bad config - config.applications.* should be a plain object'
+let error_msg_bad_from_file = context + ':bad config - config.applications.*.from_file should be a string'
+let error_msg_bad_license = context + ':bad config - config.applications.*.license should be a string'
+let error_msg_bad_url = context + ':bad config - config.applications.*.url should be a string'
+let error_msg_bad_file_config = context + ':bad config - config.applications.*.from_file content should be an object'
 
-let error_msg_bad_modules = context + ':bad config - config.apps.*.modules should be an array'
-let error_msg_bad_plugins = context + ':bad config - config.apps.*.plugins should be an array'
-let error_msg_bad_resources = context + ':bad config - config.apps.*.resources should be an array'
-let error_msg_bad_services = context + ':bad config - config.apps.*.services should be an object'
+let error_msg_bad_modules = context + ':bad config - config.applications.*.modules should be an array'
+let error_msg_bad_plugins = context + ':bad config - config.applications.*.plugins should be an array'
+let error_msg_bad_resources = context + ':bad config - config.applications.*.resources should be an array'
+let error_msg_bad_services = context + ':bad config - config.applications.*.services should be an object'
 
-let error_msg_bad_module_name = context + ':bad config - config.apps.*.modules.* should be a string'
-let error_msg_bad_plugin_name = context + ':bad config - config.apps.*.plugins.* should be a string'
-let error_msg_bad_resource_name = context + ':bad config - config.apps.*.resources.* should be a string'
+let error_msg_bad_module_name = context + ':bad config - config.applications.*.modules.* should be a string'
+let error_msg_bad_plugin_name = context + ':bad config - config.applications.*.plugins.* should be a string'
+let error_msg_bad_resource_name = context + ':bad config - config.applications.*.resources.* should be a string'
 
-let error_msg_bad_assets = context + ':bad config - config.apps.*.assets should be a plain object'
-let error_msg_bad_assets_css = context + ':bad config - config.apps.*.assets.css should be an array'
-let error_msg_bad_assets_js = context + ':bad config - config.apps.*.assets.js should be an array'
-let error_msg_bad_assets_img = context + ':bad config - config.apps.*.assets.img should be an array'
-let error_msg_bad_assets_index = context + ':bad config - config.apps.*.assets.index should be a string'
-let error_msg_bad_asset = context + ':bad config - config.apps.*.assets.[css,js,imd].* should be a string'
+let error_msg_bad_assets = context + ':bad config - config.applications.*.assets should be a plain object'
+let error_msg_bad_assets_css = context + ':bad config - config.applications.*.assets.css should be an array'
+let error_msg_bad_assets_js = context + ':bad config - config.applications.*.assets.js should be an array'
+let error_msg_bad_assets_img = context + ':bad config - config.applications.*.assets.img should be an array'
+let error_msg_bad_assets_index = context + ':bad config - config.applications.*.assets.index should be a string'
+let error_msg_bad_asset = context + ':bad config - config.applications.*.assets.[css,js,imd].* should be a string'
 
-let error_msg_plugin_not_found = context + ':bad config - config.apps.*.plugins.* not found in config.plugins'
-let error_msg_module_not_found = context + ':bad config - config.apps.*.modules.* not found in config.modules'
-let error_msg_resource_not_found = context + ':bad config - config.apps.*.resources.* not found in config.resources'
+let error_msg_plugin_not_found = context + ':bad config - config.applications.*.plugins.* not found in config.plugins'
+let error_msg_module_not_found = context + ':bad config - config.applications.*.modules.* not found in config.modules'
+let error_msg_resource_not_found = context + ':bad config - config.applications.*.resources.* not found in config.resources'
 
 
 
 /**
- * Load the 'config.apps.*' keys of the final state
+ * Load the 'config.applications.*' keys of the final state
  * Pure function: (Plain Object) => (mutated Plain Object)
  */
 function load_config_apps_app(arg_app_config, arg_config_modules, arg_config_plugins, arg_config_resources)
 {
-	logs.info(context, 'loading config.apps.[app]')
+	logs.info(context, 'loading config.applications.[app]')
 	
 	
 	try{
@@ -67,7 +67,7 @@ function load_config_apps_app(arg_app_config, arg_config_modules, arg_config_plu
 		// LOAD FILE
 		if (arg_app_config.from_file)
 		{
-			logs.info(context, 'loading config.apps.[app].from_file')
+			logs.info(context, 'loading config.applications.[app].from_file')
 			assert(T.isString(arg_app_config.from_file), error_msg_bad_from_file)
 			
 			let base_dir = path.join(__dirname, '../../apps/')
@@ -134,7 +134,7 @@ function load_config_apps_app(arg_app_config, arg_config_modules, arg_config_plu
 	}
 	catch(e)
 	{
-		arg_app_config.apps = { error: { context:context, exception:e } }
+		arg_app_config.applications = { error: { context:context, exception:e } }
 	}
 	
 	return arg_app_config

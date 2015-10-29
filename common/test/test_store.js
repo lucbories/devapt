@@ -163,30 +163,30 @@ describe('store',
 			() => {
 				const APP_NAME = 'tutorial-1'
 				
-				expect( config().has('apps') ).to.be.true
+				expect( config().has('applications') ).to.be.true
 				expect( runtime().has('applications') ).to.be.true
 				
-				expect( config().get('apps').toMap().has(APP_NAME) ).to.be.true
+				expect( config().get('applications').toMap().has(APP_NAME) ).to.be.true
 				expect( config.has_application(APP_NAME) ).to.be.true
 				expect( runtime().get('applications').toMap().has(APP_NAME) ).to.be.false
 				expect( runtime.has_application(APP_NAME) ).to.be.false
 				
 				dispatch_store_runtime_apps_create(store, APP_NAME, { app_setting_1:'hello' })
 				
-				console.log(runtime().get('applications').toMap().toJS(), 'runtime.apps')
+				console.log(runtime().get('applications').toMap().toJS(), 'runtime.applications')
 				
-				expect( config().get('apps').toMap().has(APP_NAME) ).to.be.true
+				expect( config().get('applications').toMap().has(APP_NAME) ).to.be.true
 				expect( runtime().get('applications').toMap().has(APP_NAME) ).to.be.true
 				expect( runtime().hasIn(['applications', APP_NAME, 'app_setting_1']) ).to.be.true
 				
 				store.dispatch( ActionCreators.undo() )
 				
-				expect( config().get('apps').toMap().has(APP_NAME) ).to.be.true
+				expect( config().get('applications').toMap().has(APP_NAME) ).to.be.true
 				expect( runtime().get('applications').toMap().has(APP_NAME) ).to.be.false
 				
 				store.dispatch( ActionCreators.redo() )
 				
-				expect( config().get('apps').toMap().has(APP_NAME) ).to.be.true
+				expect( config().get('applications').toMap().has(APP_NAME) ).to.be.true
 				expect( runtime().get('applications').toMap().has(APP_NAME) ).to.be.true
 				expect( runtime().hasIn(['applications', APP_NAME, 'app_setting_1']) ).to.be.true
 			}

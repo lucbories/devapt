@@ -6,7 +6,7 @@ import Sequelize from 'sequelize'
 
 import load_database_cb from './load_database'
 import add_database_cb from './add_database'
-import { store, config } from '../common/store/index'
+import { store, config } from '../../common/store/index'
 
 
 

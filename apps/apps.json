@@ -3,7 +3,7 @@
 	"port":8080,
 	
 	
-	"apps": {
+	"applications": {
 		"tutorial-auth": {
 			"url":"tutorial-auth/api/v1",
 			

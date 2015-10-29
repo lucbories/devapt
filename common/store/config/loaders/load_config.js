@@ -35,7 +35,7 @@ function load_config(arg_state, arg_initial_config)
 		assert(T.isObject(config), 'apps.json should be a plain object')
 		assert(T.isString(config.host), 'apps.json:host should be a string')
 		assert(T.isNumber(config.port), 'apps.json:port should be a number')
-		assert(T.isObject(config.apps), 'apps.json:apps should be a plain object')
+		assert(T.isObject(config.applications), 'apps.json:applications should be a plain object')
 		assert(T.isObject(config.resources), 'apps.json:resources should be a plain object')
 		assert(T.isObject(config.modules), 'apps.json:modules should be a plain object')
 		assert(T.isObject(config.plugins), 'apps.json:plugins should be a plain object')
@@ -59,10 +59,10 @@ function load_config(arg_state, arg_initial_config)
 		arg_state.config.resources.by_type.connexions = {} // Resource names (map name:name)
 		arg_state.config.resources.by_type.loggers = {} // Resource names (map name:name)
 		
-		arg_state.config.modules  = load_config_modules(config.modules)
-		arg_state.config.plugins  = load_config_plugins(config.plugins)
-		arg_state.config.apps     = load_config_apps(config.apps, arg_state.config.modules, arg_state.config.plugins, arg_state.config.resources)
-		arg_state.config.security = load_config_security(config.security)
+		arg_state.config.modules      = load_config_modules(config.modules)
+		arg_state.config.plugins      = load_config_plugins(config.plugins)
+		arg_state.config.applications = load_config_apps(config.applications, arg_state.config.modules, arg_state.config.plugins, arg_state.config.resources)
+		arg_state.config.security     = load_config_security(config.security)
 		
 		
 		// POPULATE STORE RESOURCES
@@ -136,13 +136,13 @@ function load_config(arg_state, arg_initial_config)
 			}
 			arg_state.config.suberrors.push(arg_state.config.plugins.error)
 		}
-		if (arg_state.config.apps.error)
+		if (arg_state.config.applications.error)
 		{
 			if (! arg_state.config.suberrors)
 			{
 				arg_state.config.suberrors = []
 			}
-			arg_state.config.suberrors.push(arg_state.config.apps.error)
+			arg_state.config.suberrors.push(arg_state.config.applications.error)
 		}
 		if (arg_state.config.security.error)
 		{

@@ -43,7 +43,7 @@ export default class Service extends Instance
 		this.status = Service.STATUS_CREATED
 		
 		// REGISTER SERVICE INTO STORE
-		runtime.add_service()// TODO
+		// runtime.add_service()// TODO
 	}
 	
 	

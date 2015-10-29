@@ -5,7 +5,7 @@ import assert from 'assert'
 import Sequelize from 'sequelize'
 
 import add_database from './add_database'
-import { store, config } from '../common/store/index'
+import { store, config } from '../../common/store/index'
 
 
 

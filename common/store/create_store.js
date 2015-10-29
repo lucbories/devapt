@@ -22,12 +22,26 @@ let logger_settings = {
 }
 let logger = createLogger(logger_settings)
 
-
-export default function create_store(arg_initial_state)
+// console.log(applyMiddleware, 'applyMiddleware')
+// console.log(thunk, 'thunk')
+// console.log(promise, 'promise')
+// console.log(logger, 'logger')
+// console.log(createStore, 'createStore')
+function createStoreWithMiddleware()
 {
-  const createStoreWithMiddleware = applyMiddleware(thunk, promise, logger)(createStore)
+  return applyMiddleware(thunk, promise, logger)(createStore)
+}
+// console.log(createStoreWithMiddleware, 'createStoreWithMiddleware')
+
+export default function create_store(arg_initial_state) {
+  return createStoreWithMiddleware(store_reducers, arg_initial_state)
+}
+
+
+
+/* export default function create_store(arg_initial_state)
+{
   const store = createStoreWithMiddleware(store_reducers, arg_initial_state)
-  
   
   // HOT MODULE REPLACEMENT OPT-IN
   if (module.hot)
@@ -42,4 +56,4 @@ export default function create_store(arg_initial_state)
   }
 
   return store
-}
+}*/

@@ -1,18 +1,5 @@
 const default_runtime = {
 	runtime:{
-		applications:{
-			// mutable runtime values (copy of initial config)
-			// resources: available resources names list
-			
-			used_views:[],    // list of id
-			used_models:[],   // list of id
-			used_menubars:[], // list of id
-			used_menus:[],    // list of id
-			used_plugins:[],  // list of id
-			used_loggers:[],  // list of id
-			used_services:[]  // list of id
-		},
-		
 		records:{
 			by_id: {},    // record id: record datas (plain object)
 			by_query: {}, // query hash:map of record id
@@ -25,6 +12,7 @@ const default_runtime = {
 			by_class:{}, // class_name:[] (array of id)
 			by_name:{}, // name:id
 			by_type:{
+				applications:[], // (array of id)
 				views:[], // (array of id)
 				models:[], // (array of id)
 				menubars:[], // (array of id)
@@ -42,6 +30,24 @@ const default_runtime = {
 		}
 	}
 }
+
+
+/*
+		applications:
+			// mutable runtime values (copy of initial config)
+			
+			app_name:{
+				// runtime config
+				used_views:[],    // list of id
+				used_models:[],   // list of id
+				used_menubars:[], // list of id
+				used_menus:[],    // list of id
+				used_plugins:[],  // list of id
+				used_loggers:[],  // list of id
+				used_services:[]  // list of id
+			}
+		}
+*/
 
 /*
 	Instance AAA:{

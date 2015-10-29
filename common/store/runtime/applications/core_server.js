@@ -10,7 +10,7 @@ import app_check_safe from './app_check'
 
 let context = 'common/store/runtime/application/core_server'
 
-let error_msg_bad_config    = 'bad config - config.apps.* should be a valid plain object'
+let error_msg_bad_config    = 'bad config - config.applications.* should be a valid plain object'
 let error_msg_app_not_found = 'application not found in store.config'
 let error_msg_app_exists    = 'application already exists in store.runtime'
 

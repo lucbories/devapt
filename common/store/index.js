@@ -1,6 +1,7 @@
 import T from 'typr'
 
 import create_store from './create_store';
+import * as diff from '../utils/obj_diff';
 
 
 
@@ -12,10 +13,40 @@ export const runtime = function() { return store.getState().runtime_reducer.pres
 export let history = [];
 
 
+
+// INIT COLLECTIONS TYPES
+store.collections         = ['applications', 'modules', 'plugins', 'security', 'views', 'models', 'menubars', 'menus', 'loggers', 'services', 'transactions']
+store.config_collections  = ['applications', 'modules', 'plugins', 'security']
+store.runtime_collections = ['applications', 'views', 'models', 'menubars', 'menus', 'loggers', 'services', 'transactions']
+store.has_collection      = function(arg_name) { return store.collections.indexOf(arg_name) > -1 }
+
+
+
+// DEFINE CONFIG COLLECTIONS ACCESSORS
+config.get_collection       = function(arg_name) { return config().get(arg_name).toMap() }
+config.get_collection_names = function(arg_name) { return config().get(arg_name).toMap().keySeq().toArray() }
+config.has_collection       = function(arg_name) { return store.config_collections.indexOf(arg_name) > -1 }
+
+config.get_collection_item  = function(arg_name, arg_item_name) { return config().getIn( [arg_name, arg_item_name] ).toMap() }
+config.has_collection_item  = function(arg_name, arg_item_name) { return config().hasIn( [arg_name, arg_item_name] ) }
+
+
+
+// DEFINE RUNTIME COLLECTIONS ACCESSORS
+runtime.get_collection       = function(arg_name) { return config().get(arg_name).toMap() }
+runtime.get_collection_names = function(arg_name) { return config().get(arg_name).toMap().keySeq().toArray() }
+runtime.has_collection       = function(arg_name) { return store.config_collections.indexOf(arg_name) > -1 }
+
+runtime.get_collection_item  = function(arg_name, arg_item_name) { return config().getIn( [arg_name, arg_item_name] ).toMap() }
+runtime.has_collection_item  = function(arg_name, arg_item_name) { return config().hasIn( [arg_name, arg_item_name] ) }
+
+
+
+
 // CONFIG: GET APPLICATIONS
-config.get_applications = function() { return config().getIn( ['apps'] ).toMap().keySeq().toArray() }
-config.has_application  = function(arg_name) { return config().hasIn( ['apps', arg_name] ) }
-config.get_application  = function(arg_name) { return config().getIn( ['apps', arg_name] ).toMap().toJS() }
+config.get_applications = function() { return config().getIn( ['applications'] ).toMap().keySeq().toArray() }
+config.has_application  = function(arg_name) { return config().hasIn( ['applications', arg_name] ) }
+config.get_application  = function(arg_name) { return config().getIn( ['applications', arg_name] ).toMap().toJS() }
 
 
 // CONFIG: GET RESOURCES LIST
@@ -75,62 +106,6 @@ runtime.get_services = function() { return runtime().getIn( ['instances', 'by_ty
 let server = null
 runtime.get_server = () => { return server }
 runtime.set_server = (arg_server) => { server = arg_server }
-
-
-
-// RETURN DIFFERENT (KEYS PATH, VALUE) BETWEEN TWO JS CONFIG
-const diff = function(config_1, config_2)
-{
-	if (! config_1)
-	{
-		return config_2 ? config_2 : null
-	}
-	
-	if (! config_2)
-	{
-		return config_1 ? config_1 : null
-	}
-	
-	if ( T.isObject(config_1) && ! T.isObject(config_2) )
-	{
-		return null
-	}
-	
-	if ( ! T.isObject(config_1) && T.isObject(config_2) )
-	{
-		return null
-	}
-	
-	if ( T.isArray(config_1) && ! T.isArray(config_2) )
-	{
-		return null
-	}
-	
-	if ( ! T.isArray(config_1) && T.isArray(config_2) )
-	{
-		return null
-	}
-	
-	let keys_1 = Object.keys(config_1)
-	let keys_2 = Object.keys(config_2)
-	
-	// LOOP ON CONFIG 1
-	keys_1.forEach(
-		(key_1) => {
-			let value_1 = config_1[key_1]
-			if (keys_2.indexOf(key_1) < 0)
-			{
-				return value_1
-			}
-			
-			let value_2 = config_2[key_1]
-			if ( T.isObject(value_2) )
-			{
-				return diff(value_1, value_2)
-			}
-		}
-	)
-}
 
 
 export default { store, config, runtime, diff }

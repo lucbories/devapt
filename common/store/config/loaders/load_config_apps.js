@@ -12,12 +12,12 @@ let error_msg_bad_config = context + ':bad config'
 
 
 /**
- * Load the 'config.apps' key of the final state
+ * Load the 'config.applications' key of the final state
  * Pure function: (Plain Object) => (mutated Plain Object)
  */
 function load_config_apps(arg_config, arg_config_modules, arg_config_plugins, arg_config_resources)
 {
-	logs.info(context, 'loading config.apps')
+	logs.info(context, 'loading config.applications')
 	
 	try{
 		// LOOP ON APPLICATIONS
