@@ -6,13 +6,25 @@ import Instance from '../utils/instance'
 
 export default class Transaction extends Instance
 {
-	constructor(arg_app_name, arg_svc_name, arg_tx_name)
+	constructor(arg_app_name, arg_svc_name, arg_tx_name, arg_config)
 	{
-		super('transactions', 'Transaction', arg_tx_name)
+		super('transactions', 'Transaction', arg_tx_name, arg_config)
 	}
 	
 	
 	prepare()
+	{
+		
+	}
+	
+	
+	execute(arg_data)
+	{
+		
+	}
+	
+	
+	finish()
 	{
 		
 	}

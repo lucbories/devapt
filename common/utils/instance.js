@@ -15,7 +15,7 @@ let debug = debug_fn(context)
 
 export default class Instance
 {
-	constructor(arg_collection, arg_class, arg_name)
+	constructor(arg_collection, arg_class, arg_name, arg_config)
 	{
 		debug('Instance.constructor(%s,%s,%s)', arg_collection, arg_class, arg_name)
 		
@@ -27,6 +27,19 @@ export default class Instance
 		this.$type = arg_collection
 		this.$class = arg_class
 		this.$name = arg_name
+		this.$config = arg_config
+	}
+	
+	
+	set_config(arg_config)
+	{
+		
+	}
+	
+	
+	get_config()
+	{
+		return this.$config
 	}
 	
 	

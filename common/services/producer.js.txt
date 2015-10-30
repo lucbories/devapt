@@ -1,0 +1,484 @@
+
+export default class Executable
+{
+	constructor()
+	{
+	}
+	
+	open(Map conf, TopologyContext context, SpoutOutputCollector collector)
+	
+	close()
+	
+	activate()
+	
+	deactivate()
+	
+	
+	get_next_tuple()
+	{
+	}
+	
+	ack(msg_id)
+	{
+	}
+	
+	fail(msg_id)
+	{
+	}
+
+
+https://github.com/apache/storm/tree/master/storm-core/src/jvm/backtype/storm/spout
+
+
+SpoutOutputCollector
+List<Integer> emit(String streamId, List<Object> tuple, Object messageId);
+    void emitDirect(int taskId, String streamId, List<Object> tuple, Object messageId);
+    long getPendingCount();
+	public void reportError(Throwable error)
+
+
+Schemable
+	Scheme getScheme();
+     void setScheme(Scheme scheme);
+
+public interface Scheme extends Serializable {
+    public List<Object> deserialize(byte[] ser);
+    public Fields getOutputFields();
+}
+
+public class RawScheme implements Scheme {
+    public List<Object> deserialize(byte[] ser) {
+        return tuple(ser);
+    }
+
+    public Fields getOutputFields() {
+        return new Fields("bytes");
+    }
+}
+
+
+public interface MultiScheme extends Serializable {
+  public Iterable<List<Object>> deserialize(byte[] ser);
+  public Fields getOutputFields();
+}
+
+
+public class RawMultiScheme implements MultiScheme {
+  @Override
+  public Iterable<List<Object>> deserialize(byte[] ser) {
+    return asList(tuple(ser));
+  }
+
+  @Override
+  public Fields getOutputFields() {
+    return new Fields("bytes");
+  }
+}
+
+Fields
+ public Fields(List<String> fields)
+ public List<Object> select(Fields selector, List<Object> tuple)
+ public int size()
+ public String get(int index)
+ public int fieldIndex(String field)
+ public boolean contains(String field)
+  private void index() {
+        for(int i=0; i<_fields.size(); i++) {
+            _index.put(_fields.get(i), i);
+        }
+    }
+
+
+public interface ITuple {
+	
+    /**
+     * Returns the number of fields in this tuple.
+     */
+    public int size();
+
+    /**
+     * Returns true if this tuple contains the specified name of the field.
+     */
+    public boolean contains(String field);
+
+    /**
+     * Gets the names of the fields in this tuple.
+     */
+    public Fields getFields();
+
+    /**
+    *  Returns the position of the specified field in this tuple.
+    *  
+    * @throws IllegalArgumentException - if field does not exist
+    */
+    public int fieldIndex(String field);
+
+    /**
+     * Returns a subset of the tuple based on the fields selector.
+     */
+    public List<Object> select(Fields selector);
+
+    /**
+     * Gets the field at position i in the tuple. Returns object since tuples are dynamically typed. 
+     *  
+     * @throws IndexOutOfBoundsException - if the index is out of range (index < 0 || index >= size()) 
+     */
+    public Object getValue(int i);
+
+    /**
+     * Returns the String at position i in the tuple. 
+     *  
+     * @throws ClassCastException If that field is not a String 
+     * @throws IndexOutOfBoundsException - if the index is out of range (index < 0 || index >= size()) 
+     */
+    public String getString(int i);
+
+    /**
+     * Returns the Integer at position i in the tuple. 
+     *  
+    * @throws ClassCastException If that field is not a Integer 
+    * @throws IndexOutOfBoundsException - if the index is out of range (index < 0 || index >= size()) 
+     */
+    public Integer getInteger(int i);
+
+    /**
+     * Returns the Long at position i in the tuple. 
+     *  
+    * @throws ClassCastException If that field is not a Long
+    * @throws IndexOutOfBoundsException - if the index is out of range (index < 0 || index >= size()) 
+     */
+    public Long getLong(int i);
+
+    /**
+     * Returns the Boolean at position i in the tuple. 
+     *  
+    * @throws ClassCastException If that field is not a Boolean
+    * @throws IndexOutOfBoundsException - if the index is out of range (index < 0 || index >= size()) 
+     */
+    public Boolean getBoolean(int i);
+
+    /**
+     * Returns the Short at position i in the tuple. 
+     *  
+     * @throws ClassCastException If that field is not a Short
+     * @throws IndexOutOfBoundsException - if the index is out of range (index < 0 || index >= size()) 
+     */
+    public Short getShort(int i);
+
+    /**
+     * Returns the Byte at position i in the tuple. 
+     *  
+     * @throws ClassCastException If that field is not a Byte
+     * @throws IndexOutOfBoundsException - if the index is out of range (index < 0 || index >= size()) 
+     */
+    public Byte getByte(int i);
+
+    /**
+     * Returns the Double at position i in the tuple. 
+     *  
+    * @throws ClassCastException If that field is not a Double
+    * @throws IndexOutOfBoundsException - if the index is out of range (index < 0 || index >= size()) 
+     */
+    public Double getDouble(int i);
+
+    /**
+     * Returns the Float at position i in the tuple. 
+     *  
+    * @throws ClassCastException If that field is not a Float
+    * @throws IndexOutOfBoundsException - if the index is out of range (index < 0 || index >= size()) 
+     */
+    public Float getFloat(int i);
+
+    /**
+     * Returns the byte array at position i in the tuple. 
+     *  
+     * @throws ClassCastException If that field is not a byte array 
+     * @throws IndexOutOfBoundsException - if the index is out of range (index < 0 || index >= size()) 
+     */
+    public byte[] getBinary(int i);
+
+    /**
+     * Gets the field with a specific name. Returns object since tuples are dynamically typed. 
+     *  
+     * @throws IllegalArgumentException - if field does not exist
+     */
+    public Object getValueByField(String field);
+
+    /**
+     * Gets the String field with a specific name.
+     *  
+     * @throws ClassCastException If that field is not a String 
+     * @throws IllegalArgumentException - if field does not exist
+     */
+    public String getStringByField(String field);
+
+    /**
+     * Gets the Integer field with a specific name.
+     *  
+     * @throws ClassCastException If that field is not an Integer
+     * @throws IllegalArgumentException - if field does not exist
+     */
+    public Integer getIntegerByField(String field);
+
+    /**
+     * Gets the Long field with a specific name.
+     *  
+     * @throws ClassCastException If that field is not a Long
+     * @throws IllegalArgumentException - if field does not exist
+     */
+    public Long getLongByField(String field);
+
+    /**
+     * Gets the Boolean field with a specific name.
+     *  
+     * @throws ClassCastException If that field is not a Boolean
+     * @throws IllegalArgumentException - if field does not exist
+     */
+    public Boolean getBooleanByField(String field);
+
+    /**
+     * Gets the Short field with a specific name.
+     *  
+     * @throws ClassCastException If that field is not a Short
+     * @throws IllegalArgumentException - if field does not exist
+     */
+    public Short getShortByField(String field);
+
+    /**
+     * Gets the Byte field with a specific name.
+     *  
+     * @throws ClassCastException If that field is not a Byte
+     * @throws IllegalArgumentException - if field does not exist
+     */
+    public Byte getByteByField(String field);
+
+    /**
+     * Gets the Double field with a specific name.
+     *  
+     * @throws ClassCastException If that field is not a Double
+     * @throws IllegalArgumentException - if field does not exist
+     */
+    public Double getDoubleByField(String field);
+
+    /**
+     * Gets the Float field with a specific name.
+     *  
+     * @throws ClassCastException If that field is not a Float
+     * @throws IllegalArgumentException - if field does not exist
+     */
+    public Float getFloatByField(String field);
+
+    /**
+     * Gets the Byte array field with a specific name.
+     *  
+     * @throws ClassCastException If that field is not a byte array
+     * @throws IllegalArgumentException - if field does not exist
+     */
+    public byte[] getBinaryByField(String field);
+
+    /**
+     * Gets all the values in this tuple.
+     */
+    public List<Object> getValues();
+	
+
+/**
+ * Common methods for all possible components in a topology. This interface is used
+ * when defining topologies using the Java API. 
+ */
+public interface IComponent extends Serializable {
+
+    /**
+     * Declare the output schema for all the streams of this topology.
+     *
+     * @param declarer this is used to declare output stream ids, output fields, and whether or not each output stream is a direct stream
+     */
+    void declareOutputFields(OutputFieldsDeclarer declarer);
+
+    /**
+     * Declare configuration specific to this component. Only a subset of the "topology.*" configs can
+     * be overridden. The component configuration can be further overridden when constructing the 
+     * topology using {@link TopologyBuilder}
+     *
+     */
+    Map<String, Object> getComponentConfiguration();
+
+}
+
+public interface IBasicOutputCollector extends IErrorReporter{
+    List<Integer> emit(String streamId, List<Object> tuple);
+    void emitDirect(int taskId, String streamId, List<Object> tuple);
+}
+
+public interface IBasicBolt extends IComponent {
+    void prepare(Map stormConf, TopologyContext context);
+    /**
+     * Process the input tuple and optionally emit new tuples based on the input tuple.
+     * 
+     * All acking is managed for you. Throw a FailedException if you want to fail the tuple.
+     */
+    void execute(Tuple input, BasicOutputCollector collector);
+    void cleanup();
+}
+
+public interface IRichBolt extends IBolt, IComponent {
+
+}
+public interface IRichSpout extends ISpout, IComponent {
+
+}
+
+
+/**
+ * An IBolt represents a component that takes tuples as input and produces tuples
+ * as output. An IBolt can do everything from filtering to joining to functions
+ * to aggregations. It does not have to process a tuple immediately and may
+ * hold onto tuples to process later.
+ *
+ * <p>A bolt's lifecycle is as follows:</p>
+ *
+ * <p>IBolt object created on client machine. The IBolt is serialized into the topology
+ * (using Java serialization) and submitted to the master machine of the cluster (Nimbus).
+ * Nimbus then launches workers which deserialize the object, call prepare on it, and then
+ * start processing tuples.</p>
+ *
+ * <p>If you want to parameterize an IBolt, you should set the parameters through its
+ * constructor and save the parameterization state as instance variables (which will
+ * then get serialized and shipped to every task executing this bolt across the cluster).</p>
+ *
+ * <p>When defining bolts in Java, you should use the IRichBolt interface which adds
+ * necessary methods for using the Java TopologyBuilder API.</p>
+ */
+public interface IBolt extends Serializable {
+    /**
+     * Called when a task for this component is initialized within a worker on the cluster.
+     * It provides the bolt with the environment in which the bolt executes.
+     *
+     * <p>This includes the:</p>
+     * 
+     * @param stormConf The Storm configuration for this bolt. This is the configuration provided to the topology merged in with cluster configuration on this machine.
+     * @param context This object can be used to get information about this task's place within the topology, including the task id and component id of this task, input and output information, etc.
+     * @param collector The collector is used to emit tuples from this bolt. Tuples can be emitted at any time, including the prepare and cleanup methods. The collector is thread-safe and should be saved as an instance variable of this bolt object.
+     */
+    void prepare(Map stormConf, TopologyContext context, OutputCollector collector);
+
+    /**
+     * Process a single tuple of input. The Tuple object contains metadata on it
+     * about which component/stream/task it came from. The values of the Tuple can
+     * be accessed using Tuple#getValue. The IBolt does not have to process the Tuple
+     * immediately. It is perfectly fine to hang onto a tuple and process it later
+     * (for instance, to do an aggregation or join).
+     *
+     * <p>Tuples should be emitted using the OutputCollector provided through the prepare method.
+     * It is required that all input tuples are acked or failed at some point using the OutputCollector.
+     * Otherwise, Storm will be unable to determine when tuples coming off the spouts
+     * have been completed.</p>
+     *
+     * <p>For the common case of acking an input tuple at the end of the execute method,
+     * see IBasicBolt which automates this.</p>
+     * 
+     * @param input The input tuple to be processed.
+     */
+    void execute(Tuple input);
+
+    /**
+     * Called when an IBolt is going to be shutdown. There is no guarentee that cleanup
+     * will be called, because the supervisor kill -9's worker processes on the cluster.
+     *
+     * <p>The one context where cleanup is guaranteed to be called is when a topology
+     * is killed when running Storm in local mode.</p>
+     */
+    void cleanup();
+}
+
+
+public interface IOutputCollector extends IErrorReporter {
+    /**
+     *  Returns the task ids that received the tuples.
+     */
+    List<Integer> emit(String streamId, Collection<Tuple> anchors, List<Object> tuple);
+    void emitDirect(int taskId, String streamId, Collection<Tuple> anchors, List<Object> tuple);
+    void ack(Tuple input);
+    void fail(Tuple input);
+}
+
+
+public interface IErrorReporter {
+    void reportError(Throwable error);
+}
+
+public interface IBatchBolt<T> extends Serializable, IComponent {
+    void prepare(Map conf, TopologyContext context, BatchOutputCollector collector, T id);
+    void execute(Tuple tuple);
+    void finishBatch();
+}
+/**
+ * EventLogger interface for logging the event info to a sink like log file or db
+ * for inspecting the events via UI for debugging.
+ */
+public interface IEventLogger {
+
+    /**
+     * A wrapper for the fields that we would log.
+     */
+    public static class EventInfo {
+        String ts;
+        String component;
+        String task;
+        String messageId;
+        String values;
+        EventInfo(String ts, String component, String task, String messageId, String values) {
+            this.ts = ts;
+            this.component = component;
+            this.task = task;
+            this.messageId = messageId;
+            this.values = values;
+        }
+
+        /**
+         * Returns a default formatted string with fields separated by ","
+         *
+         * @return a default formatted string with fields separated by ","
+         */
+        @Override
+        public String toString() {
+            return new StringBuilder(new Date(Long.parseLong(ts)).toString()).append(",")
+                    .append(component).append(",")
+                    .append(task).append(",")
+                    .append(messageId).append(",")
+                    .append(values).toString();
+        }
+    }
+
+    void prepare(Map stormConf, TopologyContext context);
+
+    /**
+     * This method would be invoked when the {@link EventLoggerBolt} receives a tuple from the spouts or bolts that has
+     * event logging enabled.
+     *
+     * @param e the event
+     */
+    void log(EventInfo e);
+
+    void close();
+}
+
+public interface IMetric {
+    public Object getValueAndReset();
+}
+
+public interface IReducer<T> {
+    T init();
+    T reduce(T accumulator, Object input);
+    Object extractResult(T accumulator);
+}
+
+public interface IStatefulObject {
+    Object getState();
+}
+
+public interface ICombiner<T> {
+    public T identity();
+    public T combine(T a, T b);
+}
+
