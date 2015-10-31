@@ -50,7 +50,15 @@ config.get_application  = function(arg_name) { return config().getIn( ['applicat
 
 
 // CONFIG: GET RESOURCES LIST
-config.get_resources  = function() { return config().getIn( ['resources', 'by_name'              ] ).toMap().keySeq().toArray() }
+config.get_resources  = function(arg_name)
+{
+	let path = ['resources', 'by_name']
+	if (arg_name)
+	{
+		path.push(arg_name)
+	}
+	return config().getIn(path).toMap().keySeq().toArray()
+}
 config.get_views      = function() { return config().getIn( ['resources', 'by_type', 'views'     ] ).toMap().keySeq().toArray() }
 config.get_models     = function() { return config().getIn( ['resources', 'by_type', 'models'    ] ).toMap().keySeq().toArray() }
 config.get_menubars   = function() { return config().getIn( ['resources', 'by_type', 'menubars'  ] ).toMap().keySeq().toArray() }

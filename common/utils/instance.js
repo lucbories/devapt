@@ -27,13 +27,14 @@ export default class Instance
 		this.$type = arg_collection
 		this.$class = arg_class
 		this.$name = arg_name
-		this.$config = arg_config
+		
+		this.set_config(arg_config)
 	}
 	
 	
 	set_config(arg_config)
 	{
-		
+		this.$config = arg_config
 	}
 	
 	

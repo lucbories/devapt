@@ -1,9 +1,14 @@
 
+import Errorable from './errorable'
 
-export default class Executable
+
+
+export default class Executable extends Errorable
 {
 	constructor()
 	{
+		super()
+		this.is_executable = true
 	}
 	
 	
@@ -16,6 +21,14 @@ export default class Executable
 	}
 	
 	finish()
+	{
+	}
+	
+	exec_ack()
+	{
+	}
+	
+	exec_fail()
 	{
 	}
 }
