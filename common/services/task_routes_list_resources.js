@@ -29,7 +29,8 @@ export function add_list_resources_route(arg_server, arg_set_name)
   
   
   // GET MIDDLEWARES
-  let check_security_mw = check_securtity_for_resources(arg_set_name, 'ROLE_AUTH_USER_READ', 'list')
+  let role = this.store_config().getIn(['security', 'authorization', 'roles', 'list_resources'])
+  let check_security_mw = check_securtity_for_resources(arg_set_name, role, 'list')
   let list_resources_mw = function (req, res, next)
   {
     let exec = new ExecutableHttpListResources()

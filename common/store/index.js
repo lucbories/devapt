@@ -50,12 +50,12 @@ config.get_application  = function(arg_name) { return config().getIn( ['applicat
 
 
 // CONFIG: GET RESOURCES LIST
-config.get_resources  = function(arg_name)
+config.get_resources  = function(arg_set_name)
 {
 	let path = ['resources', 'by_name']
-	if (arg_name)
+	if (arg_set_name)
 	{
-		path.push(arg_name)
+		path = ['resources', 'by_type', arg_set_name]
 	}
 	return config().getIn(path).toMap().keySeq().toArray()
 }

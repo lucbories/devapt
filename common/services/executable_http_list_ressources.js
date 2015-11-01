@@ -3,7 +3,7 @@ import assert from 'assert'
 import debug_fn from 'debug'
 
 import ExecutableHttp from './executable_http'
-
+import authorization from '../../server/security/authorization'
 
 let context = 'common/services/executable_http_list_resources'
 let debug = debug_fn(context)

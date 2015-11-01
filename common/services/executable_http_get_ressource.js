@@ -1,6 +1,8 @@
 import T from 'typr'
 import assert from 'assert'
 import debug_fn from 'debug'
+import fs from 'fs'
+import path from 'path'
 
 import ExecutableHttp from './executable_http'
 
@@ -53,12 +55,53 @@ export default class ExecutableHttpListResources extends ExecutableHttp
 		
 		// TODO: SANITY CHECK OF RESOURCE CONFIG (connections...)
 		
+		// SANITY CHECK OF CONNEXIONS
+        if (args.collection === 'connexions' || resource.type === 'connexions')
+        {
+          resource.host = 'host';
+          resource.port = 'port';
+          resource.user_name = 'user';
+          resource.user_pwd = '******';
+        }
+		
+		
+		// WRAP INCLUDED FILE
+		if ( T.isString(resource.include_file_path_name) )
+		{
+			debug('Process resource.include_file_path_name [%s]', resource.include_file_path_name)
+			
+			resource.include_file_content = this.include_file(resource_name, resource.include_file_path_name)
+		}
 		
 		
 		// SEND OUTPUT
-		res.contentType = 'json';
-		res.send({ resource: resource });
+		res.contentType = 'json'
+		res.send({ resource: resource })
 		
-		return next();
+		return next()
+	}
+	
+	
+	include_file(arg_resource_name, arg_file_path_name)
+	{
+		var file_path = path.join(__dirname, '../../apps/private/', arg_file_path_name)
+		debug('Process file_path [%s]', file_path)
+		
+		let content = null
+		fs.readFile(file_path, {encoding: 'utf-8'},
+			function(err, data)
+			{
+				if (err)
+				{
+					var error_msg = context + ':resource include file not found [%s] for resource [%s]'
+					throw new Error(error_msg, arg_resource_name, file_path);
+				}
+				
+				debug('file is read');
+				content = data
+			}
+		)
+		
+		return content
 	}
 }

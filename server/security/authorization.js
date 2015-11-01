@@ -366,3 +366,4 @@ API.check_authorization = function(arg_request, arg_role)
 
 // EXPORT AUTHORIZATION OBJECT
 module.exports = API
+export default API

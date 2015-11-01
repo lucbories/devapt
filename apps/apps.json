@@ -218,6 +218,17 @@
 			"alt": {
 				"mode":"jsonfile",
 				"file":"users.json"
+			},
+			
+			"roles":{
+				"*": {
+					"list_resources":"ROLE_RESOURCES_LIST",
+					"get_resource":"ROLE_RESOURCE_GET"
+				},
+				"views": {
+					"list_resources":"ROLE_RESOURCES_LIST",
+					"get_resource":"ROLE_RESOURCE_GET"
+				}
 			}
 		}
 	}
