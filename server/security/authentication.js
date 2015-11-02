@@ -195,3 +195,4 @@ if (auth_api.enabled)
 
 // EXPORT AUTHENTICATION OBJECT
 module.exports = auth_api
+export default auth_api

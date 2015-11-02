@@ -3,14 +3,14 @@ import T from 'typr'
 import assert from 'assert'
 import debug_fn from 'debug'
 
-import { store, config, runtime } from '../../common/store/index'
+import { store, config, runtime } from '../store/index'
 
 import Instance from '../utils/instance'
 import MetricDuration from './metric_duration'
 import MetricHost from './metric_host'
 
 
-let context = 'common/services/transaction'
+let context = 'common/base/transaction'
 let debug = debug_fn(context)
 
 
@@ -23,9 +23,9 @@ const STATUS_EXEC_KO  = 'EXEC_KO'
 
 export default class Transaction extends Instance
 {
-	constructor(arg_app_name, arg_svc_name, arg_tx_name, arg_config, arg_executables)
+	constructor(arg_app_name, arg_svc_name, arg_tx_name, arg_settings, arg_executables)
 	{
-		super('transactions', 'Transaction', arg_tx_name, arg_config)
+		super('transactions', 'Transaction', arg_tx_name, arg_settings)
 		
 		this.set_executables(arg_executables)
 		this.metrics = [new MetricDuration(), new MetricHost()]

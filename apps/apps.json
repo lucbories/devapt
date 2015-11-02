@@ -1,22 +1,40 @@
 {
-	"host":"localhost",
-	"port":8080,
+	"servers":{
+		"default":{
+			"host":"localhost",
+			"port":8080,
+			"protocole":"http"
+		},
+		
+		"node1":{
+			"port":8080,
+			"middlewares":[]
+		}
+	},
 	
+	"services":{
+		"svc1":{ "type":"rest_api_models_query", "server":"node1" },
+		"svc2":{ "type":"rest_api_models_modifier", "server":"node1" },
+		"svc3":{ "type":"rest_api_resources_query", "server":"node1" },
+		"svc4":{ "type":"rest_api_resources_modifier", "server":"node1" },
+		"svc5":{ "type":"html_assets", "server":"node1" },
+		"svc6":{ "type":"html_app", "server":"node1" }
+	},
 	
-	"applications": {
-		"tutorial-auth": {
+	"applications":{
+		"tutorial-auth":{
 			"url":"tutorial-auth/api/v1",
 			
 			"services":{
-				"provided":{
-					"rest_api_models_query":["*"],
-					"rest_api_models_modifier":["*"],
-					"rest_api_resources_query":[],
-					"rest_api_resources_modifier":[],
-					"html_assets":false,
-					"html_app":false
+				"provides":{
+					"svc1":["*"],
+					"svc2":["*"],
+					"svc3":[],
+					"svc4":[],
+					"svc5":false,
+					"svc6":false
 				},
-				"consumed":{
+				"consumes":{
 				}
 			},
 			
@@ -37,15 +55,15 @@
 			"url":"tutorial-rest/api/v1",
 			
 			"services":{
-				"provided":{
-					"rest_api_models_query":["*"],
-					"rest_api_models_modifier":["*"],
-					"rest_api_resources_query":["*"],
-					"rest_api_resources_modifier":["*"],
-					"html_assets":false,
-					"html_app":false
+				"provides":{
+					"svc1":["*"],
+					"svc2":["*"],
+					"svc3":["*"],
+					"svc4":["*"],
+					"svc5":false,
+					"svc6":false
 				},
-				"consumed":{
+				"consumes":{
 				}
 			},
 			

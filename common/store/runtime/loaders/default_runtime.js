@@ -12,6 +12,8 @@ const default_runtime = {
 			by_class:{}, // class_name:[] (array of id)
 			by_name:{}, // name:id
 			by_type:{
+				servers:[], // (array of id)
+				services:[], // (array of id)
 				applications:[], // (array of id)
 				views:[], // (array of id)
 				models:[], // (array of id)
@@ -19,8 +21,7 @@ const default_runtime = {
 				menus:[], // (array of id)
 				databases:[], // (array of id)
 				plugins:[], // (array of id)
-				loggers:[], // (array of id)
-				services:[] // (array of id)
+				loggers:[] // (array of id)
 			}
 		},
 		

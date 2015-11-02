@@ -5,7 +5,7 @@ import * as app_core from './applications/core'
 
 
 
-export function runtime_reducer(state = INITIAL_STATE, action)
+export default function runtime_reducer(state = INITIAL_STATE, action)
 {
   switch (action.type)
   {

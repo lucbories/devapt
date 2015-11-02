@@ -33,8 +33,9 @@ function load_config(arg_state, arg_initial_config)
 		
 		// CHECK CONFIG PARTS
 		assert(T.isObject(config), 'apps.json should be a plain object')
-		assert(T.isString(config.host), 'apps.json:host should be a string')
-		assert(T.isNumber(config.port), 'apps.json:port should be a number')
+		assert(T.isObject(config.servers), 'apps.json should be a plain object')
+		// assert(T.isString(config.host), 'apps.json:host should be a string')
+		// assert(T.isNumber(config.port), 'apps.json:port should be a number')
 		assert(T.isObject(config.applications), 'apps.json:applications should be a plain object')
 		assert(T.isObject(config.resources), 'apps.json:resources should be a plain object')
 		assert(T.isObject(config.modules), 'apps.json:modules should be a plain object')
@@ -44,8 +45,6 @@ function load_config(arg_state, arg_initial_config)
 		
 		// LOAD CONFIG PARTS
 		arg_state.config = {}
-		arg_state.config.host = config.host
-		arg_state.config.port = config.port
 		
 		arg_state.config.resources = {}
 		arg_state.config.resources.by_name = {} // Resource plain object definitions
@@ -59,6 +58,7 @@ function load_config(arg_state, arg_initial_config)
 		arg_state.config.resources.by_type.connexions = {} // Resource names (map name:name)
 		arg_state.config.resources.by_type.loggers = {} // Resource names (map name:name)
 		
+		arg_state.config.servers      = config.servers // TODO: bload_config_servers(config.servers)
 		arg_state.config.modules      = load_config_modules(config.modules)
 		arg_state.config.plugins      = load_config_plugins(config.plugins)
 		arg_state.config.applications = load_config_apps(config.applications, arg_state.config.modules, arg_state.config.plugins, arg_state.config.resources)

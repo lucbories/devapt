@@ -106,7 +106,7 @@ module.exports = {
       return Q(true);
     }
     
-    // REGISTER A DATABASE
+    // REGISTER A MODEL
     models[arg_model_name] = {
       database:arg_cx_name,
       name:arg_model_name,

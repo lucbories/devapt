@@ -1,8 +1,16 @@
 
-import { store, config, runtime } from '../../common/store/index'
+
+import T from 'typr'
+import assert from 'assert'
+import debug_fn from 'debug'
 
 import Instance from '../utils/instance'
+import { store, config, runtime } from '../store/index'
 
+
+
+let context = 'common/base/service'
+let debug = debug_fn(context)
 
 
 // STATUS CONSTANTS
@@ -25,12 +33,17 @@ export default class Service extends Instance
 	
 	
 	// CONSTRUCTOR
-	constructor(arg_app_name, arg_svc_name)
+	// TODO: A SERVICE(Name) PER APPLICATION OR PER RUNTIME OR PER SERVICE ?
+	constructor(arg_svc_name)
 	{
-		super('services', arg_svc_name)
-		
 		this.status = STATUS_UNKNOW
-		this.app = null
+		
+		assert( config.has_collection('services'), context + ':not found config.services')
+		let settings = config.hasIn(['services', arg_svc_name]) ? config.getIn(['services', arg_svc_name]) : {}
+		
+		super('services', 'Service', arg_svc_name, settings)
+		
+		/*this.app = null
 		
 		// CHECK APPLICATION NAME
 		if (! runtime.has_application(arg_app_name))
@@ -39,11 +52,10 @@ export default class Service extends Instance
 			return
 		}
 		
+		// GET APPLICATION
 		this.app = runtime.get_application(arg_app_name)
+		*/
 		this.status = Service.STATUS_CREATED
-		
-		// REGISTER SERVICE INTO STORE
-		// runtime.add_service()// TODO
 	}
 	
 	
@@ -79,10 +91,27 @@ export default class Service extends Instance
 		this.status = Service.STATUS_DISABLED
 		return true
 	}
+	
+	// ACTIVATE A SERVICE FEATURE FOR AN APPLICATION
+	activate(arg_app_obj)
+	{
+		
+	}
 }
 
 
 /*
+Loading:
+	create rt = new Runtime()
+	rt.load()
+		load_config
+			fill config.*
+		load_runtime
+			create instances and fill runtime.*
+			1 create servers
+			2 create services
+			3 create applications
+
 EXAMPLES
 	"rest_api_models_query":["*"],
 	"rest_api_models_modifier":["*"],

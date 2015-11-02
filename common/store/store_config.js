@@ -1,42 +1,9 @@
-// import T from 'typr'
+import T from 'typr'
 
-// import create_store from './create_store';
+import { store, config, runtime } from './store';
 
-// import { dispatch_store_config_update_value, dispatch_store_config_remove_value } from './config/actions'
-// import { dispatch_store_runtime_update_value, dispatch_store_runtime_remove_value } from './runtime/actions'
-
-// import * as diff from '../utils/obj_diff';
-import * as st from './store'
-import * as decorated_config from './store_config'
-import * as decorated_runtime from './store_runtime'
-
-
-
-export const store = st.store
-export const config = st.config
-export const runtime = st.runtime
-
-// console.log(store, 'store')
-// console.log(config, 'config')
-// console.log(runtime, 'runtime')
-
-export default { store, config, runtime }
-
-/*
-export const store = create_store();
-
-
-export const config  = function() { return store.getState().config_reducer.present.get('config').toMap() }
-export const runtime = function() { return store.getState().runtime_reducer.present.get('runtime').toMap() }
-export let history = [];
-
-
-
-// INIT COLLECTIONS TYPES
-store.collections         = ['servers', 'applications', 'modules', 'plugins', 'security', 'views', 'models', 'menubars', 'menus', 'loggers', 'services', 'transactions']
-store.config_collections  = ['servers', 'applications', 'modules', 'plugins', 'security']
-store.runtime_collections = ['servers', 'applications', 'views', 'models', 'menubars', 'menus', 'loggers', 'services', 'transactions']
-store.has_collection      = function(arg_name) { return store.collections.indexOf(arg_name) > -1 }
+import { dispatch_store_config_update_value, dispatch_store_config_remove_value } from './config/actions'
+import { dispatch_store_runtime_update_value, dispatch_store_runtime_remove_value } from './runtime/actions'
 
 
 
@@ -60,29 +27,6 @@ config.get_instance_cfg = config.get_collection_item
 config.set_instance_cfg = config.set_collection_item
 config.has_instance_cfg = config.has_collection_item
 config.unset_instanc_cfg = config.unset_collection_item
-
-
-
-// DEFINE RUNTIME COLLECTIONS ACCESSORS
-runtime.get_collection       = function(arg_name) { return config().get(arg_name).toMap() }
-runtime.get_collection_names = function(arg_name) { return config().get(arg_name).toMap().keySeq().toArray() }
-runtime.has_collection       = function(arg_name) { return store.config_collections.indexOf(arg_name) > -1 }
-
-runtime.get_collection_item  = function(arg_name, arg_item_name) { return config().getIn( [arg_name, arg_item_name] ).toMap() }
-runtime.has_collection_item  = function(arg_name, arg_item_name) { return config().hasIn( [arg_name, arg_item_name] ) }
-runtime.set_collection_item  = function(arg_name, arg_item_name, arg_instance)
-{
-	dispatch_store_runtime_update_value(store, ['runtime', 'instances', arg_name, arg_item_name], arg_instance)
-}
-runtime.unset_collection_item  = function(arg_name, arg_item_name)
-{
-	dispatch_store_runtime_remove_value(store, ['runtime', 'instances', arg_name, arg_item_name])
-}
-
-runtime.get_instance = runtime.get_collection_item
-runtime.set_instance = runtime.set_collection_item
-runtime.has_instance = runtime.has_collection_item
-runtime.unset_instanc = runtime.unset_collection_item
 
 
 
@@ -138,26 +82,3 @@ config.get_menubar    = function(arg_name) { return config.get_resource_by_type(
 config.get_menu       = function(arg_name) { return config.get_resource_by_type('menus',      arg_name) }
 config.get_connexion  = function(arg_name) { return config.get_resource_by_type('connexions', arg_name) }
 config.get_logger     = function(arg_name) { return config.get_resource_by_type('loggers',    arg_name) }
-
-
-
-// RUNTIME: GET APPLICATIONS
-runtime.get_applications = function() { return runtime().getIn( ['applications'] ).toMap().keySeq().toArray() }
-runtime.has_application  = function(arg_name) { return runtime().hasIn( ['applications', arg_name] ) }
-runtime.get_application  = function(arg_name) { return runtime().getIn( ['applications', arg_name] ).toMap().toJS() }
-
-
-// RUNTIME: GET SERVICES
-runtime.get_services = function() { return runtime().getIn( ['instances', 'by_type', 'services'] ).map(id => runtime().getIn( ['instances', 'by_id', id] ) ).toArray() }
-// runtime.has_service  = function(arg_name) { return runtime().hasIn( ['applications', arg_name] ) }
-// runtime.get_service  = function(arg_name) { return runtime().getIn( ['applications', arg_name] ).toMap().toJS() }
-
-
-// RUNTIME SERVER
-// let server = null
-// runtime.get_server = () => { return server }
-// runtime.set_server = (arg_server) => { server = arg_server }
-
-
-export default { store, config, runtime, diff }
-*/

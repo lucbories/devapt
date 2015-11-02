@@ -2,20 +2,20 @@ import T from 'typr'
 import assert from 'assert'
 import debug_fn from 'debug'
 
-import uid from './uid'
+import uid from '../utils/uid'
 
-import { store } from '../../common/store/index'
+import { store, config, runtime } from '../store/index'
 
 
 
-let context = 'common/utils/instance'
+let context = 'common/base/instance'
 let debug = debug_fn(context)
 
 
 
 export default class Instance
 {
-	constructor(arg_collection, arg_class, arg_name, arg_config)
+	constructor(arg_collection, arg_class, arg_name, arg_settings)
 	{
 		debug('Instance.constructor(%s,%s,%s)', arg_collection, arg_class, arg_name)
 		
@@ -28,19 +28,33 @@ export default class Instance
 		this.$class = arg_class
 		this.$name = arg_name
 		
-		this.set_config(arg_config)
+		this.set_settings(arg_settings)
+		
+		this.register_instance()
 	}
 	
 	
-	set_config(arg_config)
+	set_settings(arg_settings)
 	{
-		this.$config = arg_config
+		this.$settings = arg_settings
 	}
 	
 	
-	get_config()
+	get_settings()
 	{
-		return this.$config
+		return this.$settings
+	}
+	
+	
+	register_instance()
+	{
+		runtime.set_collection_item(this.$type, this.$name, this)
+	}
+	
+	
+	unregister_instance()
+	{
+		runtime.unset_collection_item(this.$type, this.$name)
 	}
 	
 	
