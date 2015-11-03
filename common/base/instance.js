@@ -23,6 +23,7 @@ export default class Instance
 		assert( store.has_collection(arg_collection), context + ':bad collection')
 		assert( T.isString(arg_name) && arg_name.length > 0, context + ':bad name')
 		
+		this.is_instance = true
 		this.$uid = uid()
 		this.$type = arg_collection
 		this.$class = arg_class

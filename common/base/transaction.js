@@ -27,6 +27,7 @@ export default class Transaction extends Instance
 	{
 		super('transactions', 'Transaction', arg_tx_name, arg_settings)
 		
+		this.is_transaction = true
 		this.set_executables(arg_executables)
 		this.metrics = [new MetricDuration(), new MetricHost()]
 		this.status = STATUS_CREATED

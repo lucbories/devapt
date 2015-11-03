@@ -23,7 +23,7 @@ export default class Application extends Instance
 		
 		super('applications', 'Application', arg_name, settings)
 		
-		
+		this.is_application = true
 	}
 	
 	

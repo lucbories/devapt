@@ -55,6 +55,8 @@ export default class Service extends Instance
 		// GET APPLICATION
 		this.app = runtime.get_application(arg_app_name)
 		*/
+		
+		this.is_service = true
 		this.status = Service.STATUS_CREATED
 	}
 	

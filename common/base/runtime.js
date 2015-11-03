@@ -19,6 +19,7 @@ class Runtime
 	constructor()
 	{
 		debug('Runtime.constructor')
+		this.is_runtime = true
 	}
 	
 	load()

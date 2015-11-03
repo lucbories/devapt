@@ -26,6 +26,7 @@ export default class Server extends Instance
 		
 		super('servers', 'Server', arg_name, settings)
 		
+		this.is_server = true
 		this.server_host = null
 		this.server_port = null
 		this.server_protocole = null
