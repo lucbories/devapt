@@ -10,6 +10,7 @@ import Instance from '../utils/instance'
 let context = 'common/base/collection'
 let debug = debug_fn(context)
 
+
 export default class Collection
 {
 	constructor(...args)
@@ -19,8 +20,12 @@ export default class Collection
 		this.set_all(args)
 	}
 	
+	
+	// DEFAULT GETTER
 	get get_all() { return this.$items }
 	
+	
+	// DEFAULT SETTER
 	set set_all(arg_items)
 	{
 		// ONE INSTANCE IS GIVEN
@@ -43,11 +48,33 @@ export default class Collection
 		}
 	}
 	
+	
+	// DEFAULT ITERATOR
 	* [Symbol.iterator]() {
 		for (let arg of this.args) {
             yield arg;
         }
 	}
 	
+	
+	// NAMES GETTER
 	get_all_names() { return this.$items.map( (item) =>{ return item.$name } ) }
+	
+	
+	// ADD AN ITEM
+	add(arg_item)
+	{
+		if ( T.isObject(arg_item) && arg_item instanceof Instance )
+		{
+			this.$items.push(arg_item)
+		}
+	}
+	
+	
+	// FIND AN ITEM BY NAME
+	find_by_name(arg_name) { return this.$items.find( item => item.$name == arg_name) }
+	
+	
+	// FIND AN ITEM BY ID
+	find_by_id(arg_id) { return this.$items.find( item => item.id == arg_id) }
 }

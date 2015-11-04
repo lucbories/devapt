@@ -5,6 +5,7 @@ import debug_fn from 'debug'
 import uid from '../utils/uid'
 
 import { store, config, runtime } from '../store/index'
+import Collection from './service'
 import Server from './server'
 import Service from './service'
 
@@ -20,6 +21,9 @@ class Runtime
 	{
 		debug('Runtime.constructor')
 		this.is_runtime = true
+		this.servers = new Collection()
+		this.services = new Collection()
+		this.applications = new Collection()
 	}
 	
 	load()
@@ -40,11 +44,12 @@ class Runtime
 	
 	make_servers()
 	{
-		let servers = config.get_collection('servers')
-		servers.forEach(
+		let cfg_servers = config.get_collection('servers')
+		cfg_servers.forEach(
 			(server_name) => {
 				let server = new Server(server_name)
 				server.load()
+				this.servers.add(server)
 			}
 		)
 	}
@@ -91,6 +96,7 @@ class Runtime
 				assert( T.isObject(service), context + ':bad service type [' + cfg_service.type + ']')
 				
 				service.load()
+				this.services.add(service)
 			}
 		)
 	}
@@ -103,6 +109,7 @@ class Runtime
 			(application_name) => {
 				let application = new Server(application_name)
 				application.load()
+				this.applications.add(application)
 			}
 		)
 	}

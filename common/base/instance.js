@@ -4,8 +4,8 @@ import debug_fn from 'debug'
 
 import uid from '../utils/uid'
 
-import { store, config, runtime } from '../store/index'
-
+import { store, config/*, runtime*/ } from '../store/index'
+// import runtime from './runtime'
 
 
 let context = 'common/base/instance'
@@ -47,16 +47,16 @@ export default class Instance
 	}
 	
 	
-	register_instance()
-	{
-		runtime.set_collection_item(this.$type, this.$name, this)
-	}
+	// register_instance()
+	// {
+	// 	runtime.set_collection_item(this.$type, this.$name, this)
+	// }
 	
 	
-	unregister_instance()
-	{
-		runtime.unset_collection_item(this.$type, this.$name)
-	}
+	// unregister_instance()
+	// {
+	// 	runtime.unset_collection_item(this.$type, this.$name)
+	// }
 	
 	
 	get_descriptor()

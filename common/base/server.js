@@ -5,8 +5,9 @@ import debug_fn from 'debug'
 import restify from 'restify'
 import express from 'express'
 
-import Instance from '../utils/instance'
-import { store, config, runtime } from '../store/index'
+import Instance from './instance'
+// import runtime from './runtime'
+import { store, config } from '../store/index'
 
 
 
