@@ -4,7 +4,7 @@
   "description": "Devapt REST API server",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js",
+    "start": "babel-node server/start.js",
     "test": "mocha --compilers js:babel/register --require ./test/test_helper.js --recursive",
     "test:watch": "npm run test -- --watch",
     "build": "webpack --progress --colors",
@@ -29,6 +29,7 @@
     "babel-core": "^5.8.22",
     "debug": "^2.2.0",
     "epilogue": "^0.5.1",
+    "express": "^4.13.3",
     "fbemitter": "~2.0.0",
     "immutable": "^3.7.5",
     "immutable-js": "~0.3.1-6",

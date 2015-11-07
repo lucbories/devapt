@@ -20,12 +20,9 @@ const SERVER_TYPE_RESTIFY = 'restify'
 
 export default class Server extends Instance
 {
-	constructor(arg_name)
+	constructor(arg_name, arg_settings)
 	{
-		assert( config.has_collection('servers'), context + ':not found config.servers')
-		let settings = config.hasIn(['servers', arg_name]) ? config.getIn(['servers', arg_name]) : {}
-		
-		super('servers', 'Server', arg_name, settings)
+		super('servers', 'Server', arg_name, arg_settings, context)
 		
 		this.is_server = true
 		this.server_host = null
@@ -36,37 +33,41 @@ export default class Server extends Instance
 	
 	load()
 	{
+		this.enter_group('load')
+		
 		assert( T.isObject(this.$settings), context + ':bad settings object')
+		
+		const cfg = config()
 		
 		// SET SERVER HOST
 		this.server_host = this.$settings.has('host') ? this.$settings.get('host') : null
-		if ( ! this.server_host && config.hasIn(['servers', 'default', 'host']) )
+		if ( ! this.server_host && cfg.hasIn(['servers', 'default', 'host']) )
 		{
-			this.server_host = config.getIn(['servers', 'default', 'host'])
+			this.server_host = cfg.getIn(['servers', 'default', 'host'])
 		}
 		assert( T.isString(this.server_host), context + ':bad server host string')
 		
 		// SET SERVER PORT
 		this.server_port = this.$settings.has('port') ? this.$settings.get('port') : null
-		if ( ! this.server_port && config.hasIn(['servers', 'default', 'port']) )
+		if ( ! this.server_port && cfg.hasIn(['servers', 'default', 'port']) )
 		{
-			this.server_port = config.getIn(['servers', 'default', 'port'])
+			this.server_port = cfg.getIn(['servers', 'default', 'port'])
 		}
-		assert( T.isString(this.server_port), context + ':bad server port string')
+		assert( T.isNumber(this.server_port), context + ':bad server port string')
 		
 		// SET SERVER PROTOCOLE
 		this.server_protocole = this.$settings.has('protocole') ? this.$settings.get('protocole') : null
-		if ( ! this.server_protocole && config.hasIn(['servers', 'default', 'protocole']) )
+		if ( ! this.server_protocole && cfg.hasIn(['servers', 'default', 'protocole']) )
 		{
-			this.server_protocole = config.getIn(['servers', 'default', 'protocole'])
+			this.server_protocole = cfg.getIn(['servers', 'default', 'protocole'])
 		}
 		assert( T.isString(this.server_protocole), context + ':bad server protocole string')
 		
 		// SET SERVER TYPE
 		this.server_type = this.$settings.has('type') ? this.$settings.get('type') : null
-		if ( ! this.server_type && config.hasIn(['servers', 'default', 'type']) )
+		if ( ! this.server_type && cfg.hasIn(['servers', 'default', 'type']) )
 		{
-			this.server_type = config.getIn(['servers', 'default', 'type'])
+			this.server_type = cfg.getIn(['servers', 'default', 'type'])
 		}
 		assert( T.isString(this.server_type), context + ':bad server type string')
 		
@@ -85,6 +86,8 @@ export default class Server extends Instance
 				assert(false, context + ':bad server type [' + this.server_type + ']')
 			}
 		}
+		
+		this.leave_group('load')
 	}
 	
 	
@@ -135,7 +138,7 @@ export default class Server extends Instance
 		assert( this.server_protocole == 'http' || this.server_protocole == 'https', context + ':bad protocole for express [' + this.server_protocole + ']')
 		
 		// CREATE SERVER
-		this.server = express.createServer();
+		this.server = express();
 		
 		// TODO: BUILD EXPRESS SERVER
 	}
@@ -143,10 +146,15 @@ export default class Server extends Instance
 	
 	enable()
 	{
-		this.server.listen(this.server_port,
+		const name = this.$name
+		const host = this.server_host
+		const port = this.server_port
+		let listener = this.server.listen(this.server_port,
 			function()
 			{
-				console.info('%s listening at %s', this.$name, this.server_host);
+				// let host = listener.address().address;
+				// let port = listener.address().port;
+				console.info('%s listening at %s : %s', name, host, port);
 			}
 		)
 	}

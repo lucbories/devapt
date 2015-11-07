@@ -2,15 +2,14 @@
 
 import T from 'typr'
 import assert from 'assert'
-import debug_fn from 'debug'
 
-import Instance from '../utils/instance'
+import Instance from './instance'
+import { is_browser, is_server } from '../utils/is_browser'
 import { store, config, runtime } from '../store/index'
 
 
 
 let context = 'common/base/service'
-let debug = debug_fn(context)
 
 
 // STATUS CONSTANTS
@@ -33,31 +32,22 @@ export default class Service extends Instance
 	
 	
 	// CONSTRUCTOR
-	// TODO: A SERVICE(Name) PER APPLICATION OR PER RUNTIME OR PER SERVICE ?
-	constructor(arg_svc_name)
+	constructor(arg_svc_name, arg_locale_exec, arg_remote_exec)
 	{
+		assert( config.has_collection('services'), context + ':not found config.services')
+		let settings = config().hasIn(['services', arg_svc_name]) ? config().getIn(['services', arg_svc_name]) : {}
+		
+		super('services', 'Service', arg_svc_name, settings, context)
 		this.status = STATUS_UNKNOW
 		
-		assert( config.has_collection('services'), context + ':not found config.services')
-		let settings = config.hasIn(['services', arg_svc_name]) ? config.getIn(['services', arg_svc_name]) : {}
-		
-		super('services', 'Service', arg_svc_name, settings)
-		
-		/*this.app = null
-		
-		// CHECK APPLICATION NAME
-		if (! runtime.has_application(arg_app_name))
-		{
-			this.status = Service.STATUS_ERROR
-			return
-		}
-		
-		// GET APPLICATION
-		this.app = runtime.get_application(arg_app_name)
-		*/
+		// CHECK EXECUTABLES
+		assert( T.isObject(arg_locale_exec) && arg_locale_exec.is_executable, context + ':bad locale executable')
+		assert( T.isObject(arg_remote_exec) && arg_remote_exec.is_executable, context + ':bad remote executable')
 		
 		this.is_service = true
 		this.status = Service.STATUS_CREATED
+		this.locale_exec = arg_locale_exec
+		this.remote_exec = arg_remote_exec
 	}
 	
 	
@@ -95,9 +85,21 @@ export default class Service extends Instance
 	}
 	
 	// ACTIVATE A SERVICE FEATURE FOR AN APPLICATION
-	activate(arg_app_obj)
+	activate(arg_server)
 	{
+		const exec_cfg = this.get_settings().toJS()
+		exec_cfg.server = arg_server
 		
+		if (is_browser())
+		{
+			this.locale_exec.prepare(exec_cfg)
+			this.locale_exec.execute(this.get_settings())
+		}
+		else if (is_server())
+		{
+			this.remote_exec.prepare(exec_cfg)
+			this.remote_exec.execute(this.get_settings())
+		}
 	}
 }
 

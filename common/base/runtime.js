@@ -1,25 +1,29 @@
 import T from 'typr'
 import assert from 'assert'
-import debug_fn from 'debug'
 
 import uid from '../utils/uid'
 
 import { store, config, runtime } from '../store/index'
-import Collection from './service'
+import Collection from './collection'
+import Loggable from './loggable'
 import Server from './server'
 import Service from './service'
+import Application from './application'
+import * as exec from '../executables/index'
 
 
 
 let context = 'common/base/runtime'
-let debug = debug_fn(context)
 
 
-class Runtime
+class Runtime extends Loggable
 {
 	constructor()
 	{
-		debug('Runtime.constructor')
+		super(context)
+		
+		this.info('Runtime is created')
+		
 		this.is_runtime = true
 		this.servers = new Collection()
 		this.services = new Collection()
@@ -28,6 +32,8 @@ class Runtime
 	
 	load()
 	{
+		this.enter_group('load')
+		
 		// 1 - STORE (config and runtime) IS CREATED BY ../store/index WHICH CALL create_store()
 				// LOAD apps.json
 		
@@ -39,79 +45,133 @@ class Runtime
 		
 		this.make_servers()
 		this.make_services()
-		this.make_applications()
+		// this.make_applications()
+		this.activate_services()
+		
+		this.leave_group('load')
 	}
 	
 	make_servers()
 	{
+		this.enter_group('make_servers')
+		
 		let cfg_servers = config.get_collection('servers')
 		cfg_servers.forEach(
-			(server_name) => {
-				let server = new Server(server_name)
+			(server_cfg, server_name) => {
+				this.info('Processing server creation of:' + server_name)
+				
+				let server = new Server(server_name, server_cfg)
 				server.load()
 				this.servers.add(server)
+				server.enable()
 			}
 		)
+		
+		this.leave_group('make_servers')
 	}
 	
 	make_services()
 	{
-		let services = config.get_collection('services')
+		this.enter_group('make_services')
+		
+		let services = config.get_collection_names('services')
 		services.forEach(
 			(service_name) => {
+				assert(T.isString(service_name), context + ':bad service namr')
+				this.info('Processing service creation of:' + service_name)
+				
 				let cfg_service = config.get_collection_item('services', service_name)
-				assert( T.isString(cfg_service.type), context + ':bad service type [' + cfg_service.type + ']')
-				assert( T.isString(cfg_service.server), context + ':bad service server [' + cfg_service.server + ']')
+				console.log(cfg_service, 'cfg_svc')
+				assert( T.isObject(cfg_service), context + ':bad service cfg for [' + service_name + ']')
+				assert( T.isString(cfg_service.get('type')), context + ':bad service type [' + cfg_service.type + ']')
+				assert( T.isString(cfg_service.get('server')), context + ':bad service server [' + cfg_service.server + ']')
 				
 				let service = null
 				
-				switch(cfg_service.type)
+				switch( cfg_service.get('type') )
 				{
 					case "rest_api_models_query":{
-						service = new Service(service_name) // TODO: create Real service
+						let locale_exec = null
+						let remote_exec = null
+						// service = new Service(service_name, locale_exec, remote_exec) // TODO: create Real service
 						break
 					}
 					case "rest_api_models_modifier":{
-						service = new Service(service_name) // TODO: create Real service
+						let locale_exec = null
+						let remote_exec = null
+						// service = new Service(service_name, locale_exec, remote_exec) // TODO: create Real service
 						break
 					}
 					case "rest_api_resources_query":{
-						service = new Service(service_name) // TODO: create Real service
+						let locale_exec = null
+						let remote_exec = null
+						// service = new Service(service_name, locale_exec, remote_exec) // TODO: create Real service
 						break
 					}
 					case "rest_api_resources_modifier":{
-						service = new Service(service_name) // TODO: create Real service
+						let locale_exec = null
+						let remote_exec = null
+						// service = new Service(service_name, locale_exec, remote_exec) // TODO: create Real service
 						break
 					}
 					case "html_assets":{
-						service = new Service(service_name) // TODO: create Real service
+						let locale_exec = new exec.ExecutableRouteAssets()
+						let remote_exec = locale_exec
+						service = new Service(service_name, locale_exec, remote_exec) // TODO: create Real service
 						break
 					}
 					case "html_app":{
-						service = new Service(service_name) // TODO: create Real service
+						let locale_exec = null
+						let remote_exec = null
+						// service = new Service(service_name, locale_exec, remote_exec) // TODO: create Real service
 						break
 					}
 				}
 				
-				assert( T.isObject(service), context + ':bad service type [' + cfg_service.type + ']')
+				// assert( T.isObject(service), context + ':bad service type [' + cfg_service.get('type') + ']')
 				
-				service.load()
-				this.services.add(service)
+				if (service)
+				{
+					service.enable()
+					this.services.add(service)
+				}
 			}
 		)
+		
+		this.leave_group('make_services')
 	}
 	
 	
 	make_applications()
 	{
+		this.enter_group('make_applications')
+		
 		let applications = config.get_collection('applications')
 		applications.forEach(
 			(application_name) => {
-				let application = new Server(application_name)
+				let application = new Application(application_name)
 				application.load()
 				this.applications.add(application)
 			}
 		)
+		
+		this.leave_group('make_applications')
+	}
+	
+	
+	activate_services()
+	{
+		this.enter_group('activate_services')
+		
+		for(let service of this.services)
+		{
+			const server_name = service.get_setting('server')
+			const server = this.servers.find_by_name(server_name)
+			assert(T.isObject(server), context + ':bad server object')
+			service.activate(server)
+		}
+		
+		this.leave_group('activate_services')
 	}
 }
 

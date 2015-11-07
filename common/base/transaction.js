@@ -25,7 +25,7 @@ export default class Transaction extends Instance
 {
 	constructor(arg_app_name, arg_svc_name, arg_tx_name, arg_settings, arg_executables)
 	{
-		super('transactions', 'Transaction', arg_tx_name, arg_settings)
+		super('transactions', 'Transaction', arg_tx_name, arg_settings, context)
 		
 		this.is_transaction = true
 		this.set_executables(arg_executables)

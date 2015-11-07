@@ -1,21 +1,19 @@
 
 import T from 'typr'
 import assert from 'assert'
-import debug_fn from 'debug'
 
-import Executable from './executable'
+import Executable from '../base/executable'
+
 
 
 let context = 'common/services/executable_http'
-let debug = debug_fn(context)
-
 
 
 export default class ExecutableHttp extends Executable
 {
 	constructor()
 	{
-		super()
+		super(context)
 	}
 	
 	
@@ -55,7 +53,7 @@ export default class ExecutableHttp extends Executable
 		{
 			let error_msg = e.toString()
 			
-			debug('An error occures [%s]', error_msg)
+			this.debug('An error occures [%s]', error_msg)
 			this.error(error_msg)
 			
 			// NOT FOUND

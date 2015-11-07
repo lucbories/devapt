@@ -3,7 +3,7 @@ import T from 'typr'
 import assert from 'assert'
 import debug_fn from 'debug'
 
-import Instance from '../utils/instance'
+import Instance from './instance'
 
 
 
@@ -22,11 +22,13 @@ export default class Collection
 	
 	
 	// DEFAULT GETTER
-	get get_all() { return this.$items }
+	// get $items() { return this.$items }
 	
 	
 	// DEFAULT SETTER
-	set set_all(arg_items)
+	// set $items(arg_items) { this.set_all(arg_items) }
+	
+	set_all(arg_items)
 	{
 		// ONE INSTANCE IS GIVEN
 		if ( T.isObject(arg_items) && arg_items instanceof Instance )
@@ -48,11 +50,13 @@ export default class Collection
 		}
 	}
 	
+	get_all() { return this.$items }
+	
 	
 	// DEFAULT ITERATOR
 	* [Symbol.iterator]() {
-		for (let arg of this.args) {
-            yield arg;
+		for (let item of this.$items) {
+            yield item;
         }
 	}
 	

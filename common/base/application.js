@@ -3,7 +3,7 @@ import T from 'typr'
 import assert from 'assert'
 import debug_fn from 'debug'
 
-import Instance from '../utils/instance'
+import Instance from './instance'
 import { store, config, runtime } from '../store/index'
 // import rt from './runtime'
 

@@ -1,9 +1,17 @@
 
+import Loggable from './loggable'
 
-export default class Errorable
+
+
+let context = 'common/base/errorable'
+
+
+export default class Errorable extends Loggable
 {
-	constructor()
+	constructor(arg_log_context)
 	{
+		super(arg_log_context ? arg_log_context : context)
+		
 		this.$has_error = false
 		this.$error_msg = null
 	}

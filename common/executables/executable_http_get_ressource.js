@@ -1,28 +1,26 @@
 import T from 'typr'
 import assert from 'assert'
-import debug_fn from 'debug'
 import fs from 'fs'
 import path from 'path'
 
 import ExecutableHttp from './executable_http'
 
 
-let context = 'common/services/executable_http_list_resources'
-let debug = debug_fn(context)
+let context = 'common/services/executable_http_get_resources'
 
 
 
-export default class ExecutableHttpListResources extends ExecutableHttp
+export default class ExecutableHttpGetResources extends ExecutableHttp
 {
 	constructor()
 	{
-		super()
+		super(context)
 	}
 	
 	
 	exec_http(req, res, next, args) 
 	{
-		debug('Execute http request')
+		this.debug('Execute http request')
 		
 		
 		// CHECK ARGS
@@ -68,7 +66,7 @@ export default class ExecutableHttpListResources extends ExecutableHttp
 		// WRAP INCLUDED FILE
 		if ( T.isString(resource.include_file_path_name) )
 		{
-			debug('Process resource.include_file_path_name [%s]', resource.include_file_path_name)
+			this.debug('Process resource.include_file_path_name [%s]', resource.include_file_path_name)
 			
 			resource.include_file_content = this.include_file(resource_name, resource.include_file_path_name)
 		}
@@ -85,7 +83,7 @@ export default class ExecutableHttpListResources extends ExecutableHttp
 	include_file(arg_resource_name, arg_file_path_name)
 	{
 		var file_path = path.join(__dirname, '../../apps/private/', arg_file_path_name)
-		debug('Process file_path [%s]', file_path)
+		this.debug('Process file_path [%s]', file_path)
 		
 		let content = null
 		fs.readFile(file_path, {encoding: 'utf-8'},
@@ -97,7 +95,7 @@ export default class ExecutableHttpListResources extends ExecutableHttp
 					throw new Error(error_msg, arg_resource_name, file_path);
 				}
 				
-				debug('file is read');
+				this.debug('file is read');
 				content = data
 			}
 		)

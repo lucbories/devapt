@@ -1,11 +1,10 @@
-import { createStore, applyMiddleware } from 'redux'
+import { createStore, compose, applyMiddleware } from 'redux'
 import thunk from 'redux-thunk'
 import promise from 'redux-promise'
 import createLogger from 'redux-logger'
 
 import store_reducers from './reducers'
-
-
+// console.log(createStore.getState(), 'createStore')
 
 let logger_settings = {
   logger:console,
@@ -23,16 +22,12 @@ let logger_settings = {
 let logger = createLogger(logger_settings)
 
 
-// console.log(applyMiddleware, 'applyMiddleware')
-// console.log(thunk, 'thunk')
-// console.log(promise, 'promise')
-// console.log(logger, 'logger')
-// console.log(createStore, 'createStore')
-function createStoreWithMiddleware()
-{
-  return applyMiddleware(thunk, promise, logger)(createStore)
-}
-// console.log(createStoreWithMiddleware, 'createStoreWithMiddleware')
+
+// function createStoreWithMiddleware()
+// {
+  // return compose( applyMiddleware(thunk, promise, logger) )(createStore)
+// }
+
 
 // console.log(store_reducers, 'store_reducers')
 // export default function create_store(arg_initial_state)
@@ -50,9 +45,10 @@ function createStoreWithMiddleware()
 
 export default function create_store(arg_initial_state)
 {
-  const store_fn = createStoreWithMiddleware(store_reducers, arg_initial_state)
-  console.log(store_fn().getState(), 'state')
-  return store_fn
+  // const store_fn = createStoreWithMiddleware(store_reducers, arg_initial_state)
+  // console.log(store_fn.getState(), 'state')
+  // return store_fn
+  return createStore(store_reducers, arg_initial_state)
 }
 
 

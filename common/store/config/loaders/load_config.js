@@ -59,6 +59,7 @@ function load_config(arg_state, arg_initial_config)
 		arg_state.config.resources.by_type.loggers = {} // Resource names (map name:name)
 		
 		arg_state.config.servers      = config.servers // TODO: bload_config_servers(config.servers)
+		arg_state.config.services     = config.services // TODO: bload_config_services(config.services)
 		arg_state.config.modules      = load_config_modules(config.modules)
 		arg_state.config.plugins      = load_config_plugins(config.plugins)
 		arg_state.config.applications = load_config_apps(config.applications, arg_state.config.modules, arg_state.config.plugins, arg_state.config.resources)

@@ -10,9 +10,13 @@ import { dispatch_store_runtime_update_value, dispatch_store_runtime_remove_valu
 // DEFINE CONFIG COLLECTIONS ACCESSORS
 config.get_collection       = function(arg_name) { return config().get(arg_name).toMap() }
 config.get_collection_names = function(arg_name) { return config().get(arg_name).toMap().keySeq().toArray() }
-config.has_collection       = function(arg_name) { return store.config_collections.indexOf(arg_name) > -1 }
+config.has_collection       = function(arg_name) { return store.config_collections.indexOf(arg_name) > -1 && config().has(arg_name) }
 
-config.get_collection_item  = function(arg_name, arg_item_name) { return config().getIn( [arg_name, arg_item_name] ).toMap() }
+config.get_collection_item  = function(arg_name, arg_item_name)
+{
+	const r= config().getIn( [arg_name, arg_item_name] )
+	return r ? r.toMap() : null
+}
 config.has_collection_item  = function(arg_name, arg_item_name) { return config().hasIn( [arg_name, arg_item_name] ) }
 config.set_collection_item  = function(arg_name, arg_item_name, arg_settings)
 {

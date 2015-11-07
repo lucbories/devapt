@@ -3,7 +3,7 @@ import { INITIAL_STATE, set_all, get_value, update_value, create_value, remove_v
 
 
 
-export default function config_reducer(state = INITIAL_STATE, action)
+function config_reducer(state = INITIAL_STATE, action)
 {
   switch (action.type)
   {
@@ -26,3 +26,5 @@ export default function config_reducer(state = INITIAL_STATE, action)
       return state;
   }
 }
+
+export default config_reducer

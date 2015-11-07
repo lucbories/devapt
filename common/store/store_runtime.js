@@ -1,6 +1,6 @@
 import T from 'typr'
 
-import { store, config, runtime, diff } from './store';
+import { store, config, runtime } from './store';
 
 import { dispatch_store_runtime_update_value, dispatch_store_runtime_remove_value } from './runtime/actions'
 
