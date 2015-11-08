@@ -5,7 +5,8 @@ import assert from 'assert'
 
 import Instance from './instance'
 import { is_browser, is_server } from '../utils/is_browser'
-import { store, config, runtime } from '../store/index'
+import { store, config } from '../store/index'
+import runtime from './runtime'
 
 
 
@@ -85,20 +86,25 @@ export default class Service extends Instance
 	}
 	
 	// ACTIVATE A SERVICE FEATURE FOR AN APPLICATION
-	activate(arg_server)
+	activate(arg_application, arg_app_svc_cfg)
 	{
 		const exec_cfg = this.get_settings().toJS()
-		exec_cfg.server = arg_server
+		const server_name = exec_cfg.server
+		const server = runtime.servers.find_by_name(server_name)
+		assert(T.isObject(server), context + ':bad server object')
+		
+		exec_cfg.server = server
+		exec_cfg.application = arg_application
 		
 		if (is_browser())
 		{
 			this.locale_exec.prepare(exec_cfg)
-			this.locale_exec.execute(this.get_settings())
+			this.locale_exec.execute()
 		}
 		else if (is_server())
 		{
 			this.remote_exec.prepare(exec_cfg)
-			this.remote_exec.execute(this.get_settings())
+			this.remote_exec.execute()
 		}
 	}
 }

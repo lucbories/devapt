@@ -25,7 +25,13 @@ export default class ExecutableHttp extends Executable
 	
 	
 	execute(arg_data)
-	{
+	{/*
+		// CHECK SERVER
+		const server_instance = this.store_config.server
+		assert(T.isString(server_instance.server_type), context + ':bad server_instance.server_type string')
+		assert(server_instance.server_type == 'restify', context + ':server_instance.server_type should be restify')
+		assert(T.isObject(server_instance.server), context + ':bad server_instance.server object')
+		
 		assert( T.isObject(arg_data) && arg_data.req && arg_data.res && arg_data.next, context + ':bad args (req, res, next attempted)')
 		assert( T.isObject(arg_data.req), context + ':bad request')
 		assert( T.isObject(arg_data.res), context + ':bad result')
@@ -61,11 +67,29 @@ export default class ExecutableHttp extends Executable
 			arg_data.res.send(error_msg);
 			
 			return arg_data.next(e)
-		}
+		}*/
 	}
 	
 	
-	exec_http(req, res, next, args) 
-	{
-	}
+	// exec_http(req, res, next, args) 
+	// {
+	// }
+	
 }
+
+/*
+			const restify_server = server_instance.server
+			const app_static_cb = restify.serveStatic(cb_arg)
+			const app_route = T.isString(this.store_config.application.url) ? this.store_config.application.url : ''
+			const route = app_route + cfg_route.route
+			
+			restify_server.get(route, app_static_cb)
+			
+			this.info('registering static route for application dev JS [%s] at url [%s]', cfg_route.directory, route)
+var security_restify_cb = function(arg_resource_name, arg_role, arg_action_name)
+{
+  return function(arg_req, arg_res, arg_next)
+  {
+	  
+  }
+}*/

@@ -1,15 +1,14 @@
 import T from 'typr'
 import assert from 'assert'
 
-import uid from '../utils/uid'
+import { store, config } from '../store/index'
+import * as exec from '../executables/index'
 
-import { store, config, runtime } from '../store/index'
 import Collection from './collection'
 import Loggable from './loggable'
 import Server from './server'
 import Service from './service'
 import Application from './application'
-import * as exec from '../executables/index'
 
 
 
@@ -22,12 +21,19 @@ class Runtime extends Loggable
 	{
 		super(context)
 		
-		this.info('Runtime is created')
-		
 		this.is_runtime = true
+		
 		this.servers = new Collection()
 		this.services = new Collection()
+		
+		this.plugins = new Collection()
+		this.modules = new Collection()
+		this.resources = new Collection()
+		
+		this.transactions = new Collection()
 		this.applications = new Collection()
+		
+		this.info('Runtime is created')
 	}
 	
 	load()
@@ -45,11 +51,13 @@ class Runtime extends Loggable
 		
 		this.make_servers()
 		this.make_services()
-		// this.make_applications()
-		this.activate_services()
+		this.make_plugins()
+		this.make_modules()
+		this.make_applications()
 		
 		this.leave_group('load')
 	}
+	
 	
 	make_servers()
 	{
@@ -69,6 +77,7 @@ class Runtime extends Loggable
 		
 		this.leave_group('make_servers')
 	}
+	
 	
 	make_services()
 	{
@@ -103,9 +112,9 @@ class Runtime extends Loggable
 						break
 					}
 					case "rest_api_resources_query":{
-						let locale_exec = null
-						let remote_exec = null
-						// service = new Service(service_name, locale_exec, remote_exec) // TODO: create Real service
+						let locale_exec = new exec.ExecutableRouteGetResource()
+						let remote_exec = locale_exec
+						service = new Service(service_name, locale_exec, remote_exec)
 						break
 					}
 					case "rest_api_resources_modifier":{
@@ -117,7 +126,7 @@ class Runtime extends Loggable
 					case "html_assets":{
 						let locale_exec = new exec.ExecutableRouteAssets()
 						let remote_exec = locale_exec
-						service = new Service(service_name, locale_exec, remote_exec) // TODO: create Real service
+						service = new Service(service_name, locale_exec, remote_exec)
 						break
 					}
 					case "html_app":{
@@ -142,36 +151,60 @@ class Runtime extends Loggable
 	}
 	
 	
+	make_plugins()
+	{
+		this.enter_group('make_plugins')
+		
+		let plugins = config.get_collection_names('plugins')
+		plugins.forEach(
+			(plugin_name) => {
+				// let plugin = new Plugin(plugin_name)
+				
+				// plugin.load()
+				
+				// this.plugins.add(plugin)
+			}
+		)
+		
+		this.leave_group('make_plugins')
+	}
+	
+	
+	make_modules()
+	{
+		this.enter_group('make_modules')
+		
+		let modules = config.get_collection_names('modules')
+		modules.forEach(
+			(module_name) => {
+				// let module_obj = new Module(module_name)
+				
+				// module_obj.load()
+				
+				// this.modules.add(module_obj)
+			}
+		)
+		
+		this.leave_group('make_modules')
+	}
+	
+	
 	make_applications()
 	{
 		this.enter_group('make_applications')
 		
-		let applications = config.get_collection('applications')
+		let applications = config.get_collection_names('applications')
 		applications.forEach(
 			(application_name) => {
 				let application = new Application(application_name)
+				
 				application.load()
+				
 				this.applications.add(application)
 			}
 		)
 		
 		this.leave_group('make_applications')
-	}
-	
-	
-	activate_services()
-	{
-		this.enter_group('activate_services')
-		
-		for(let service of this.services)
-		{
-			const server_name = service.get_setting('server')
-			const server = this.servers.find_by_name(server_name)
-			assert(T.isObject(server), context + ':bad server object')
-			service.activate(server)
-		}
-		
-		this.leave_group('activate_services')
 	}
 }
 
