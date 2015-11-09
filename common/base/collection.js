@@ -17,6 +17,7 @@ export default class Collection
 	{
 		this.is_collection = true
 		this.$items = []
+		this.$accepted_types = ['*']
 		this.set_all(args)
 	}
 	
@@ -65,20 +66,57 @@ export default class Collection
 	get_all_names() { return this.$items.map( (item) =>{ return item.$name } ) }
 	
 	
-	// ADD AN ITEM
+	// IDs GETTER
+	get_all_ids() { return this.$items.map( (item) =>{ return item.$id } ) }
+	
+	
+	// ADD AN ITEM: TODO update indices
 	add(arg_item)
 	{
 		if ( T.isObject(arg_item) && arg_item instanceof Instance )
 		{
-			this.$items.push(arg_item)
+			if ( this.has_accepted_type('*') || this.has_accepted_type(arg_item.$type) )
+			{
+				this.$items.push(arg_item)
+				return
+			}
+			
+			this.error('not accepted type [' + arg_item.$type + '] for instance [' + arg_item.$name + ']')
+			return
 		}
+		
+		this.error('bad item: not an instance object')
 	}
 	
 	
-	// FIND AN ITEM BY NAME
+	// FIND AN ITEM BY NAME: TODO optimize with a map index
 	find_by_name(arg_name) { return this.$items.find( item => item.$name == arg_name) }
 	
 	
-	// FIND AN ITEM BY ID
+	// FIND AN ITEM BY ID: TODO optimize with a map index
 	find_by_id(arg_id) { return this.$items.find( item => item.id == arg_id) }
+	
+	
+	// MANAGE ACCEPTED TYPES
+	get_accepted_types()
+	{
+		this.$accepted_types
+	}
+	
+	set_accepted_types(arg_types)
+	{
+		assert(T.isArray(arg_types), context + ':bad accepted types array')
+		this.$accepted_types = arg_types
+	}
+	
+	add_accepted_type(arg_type)
+	{
+		assert(T.isString(arg_type), context + ':bad accepted type string')
+		this.$accepted_types.push(arg_type)
+	}
+	
+	has_accepted_type(arg_type)
+	{
+		return this.$accepted_types.indexOf(arg_type) > -1
+	}
 }

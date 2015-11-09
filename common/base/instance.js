@@ -30,6 +30,7 @@ export default class Instance extends Loggable
 		super(my_context)
 		
 		this.is_instance = true
+		this.is_loaded = false
 		this.$uid = my_uid
 		this.$type = arg_collection
 		this.$class = arg_class
@@ -65,4 +66,9 @@ export default class Instance extends Loggable
 	
 	is_browser() { return is_browser() }
 	is_server() { return is_server() }
+	
+	load()
+	{
+		this.is_loaded = true
+	}
 }

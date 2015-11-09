@@ -4,7 +4,7 @@
   "description": "Devapt REST API server",
   "main": "server.js",
   "scripts": {
-    "start": "babel-node server/start.js",
+    "start": "babel-node --debug server/start.js",
     "test": "mocha --compilers js:babel/register --require ./test/test_helper.js --recursive",
     "test:watch": "npm run test -- --watch",
     "build": "webpack --progress --colors",

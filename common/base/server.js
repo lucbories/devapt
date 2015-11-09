@@ -6,7 +6,7 @@ import restify from 'restify'
 import express from 'express'
 
 import Instance from './instance'
-// import runtime from './runtime'
+
 import { store, config } from '../store/index'
 
 
@@ -86,6 +86,8 @@ export default class Server extends Instance
 				assert(false, context + ':bad server type [' + this.server_type + ']')
 			}
 		}
+		
+		super.load()
 		
 		this.leave_group('load')
 	}

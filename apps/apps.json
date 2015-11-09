@@ -4,7 +4,8 @@
 			"type":"restify",
 			"host":"localhost",
 			"port":8080,
-			"protocole":"http"
+			"protocole":"http",
+			"middlewares":[]
 		},
 		
 		"node1":{
@@ -17,20 +18,83 @@
 	"services":{
 		"svc1":{ "type":"rest_api_models_query", "server":"node1" },
 		"svc2":{ "type":"rest_api_models_modifier", "server":"node1" },
-		"svc3":{ "type":"rest_api_resources_query", "server":"node1" },
-		"svc4":{ "type":"rest_api_resources_modifier", "server":"node1" },
 		
-		"svc5":{
+		"rest_api_resources_query_1":{
+			"type":"rest_api_resources_query",
+			"server":"default",
+			"routes":[
+				{
+					"route":"/connexions",
+					"collection":"connexions"
+				},
+				{
+					"route":"/connexions/:name",
+					"collection":"connexions",
+					"item":"name"
+				},
+				
+				{
+					"route":"/views",
+					"collection":"views"
+				},
+				{
+					"route":"/views/:name",
+					"collection":"views",
+					"item":"name"
+				},
+				
+				{
+					"route":"/models",
+					"collection":"models"
+				},
+				{
+					"route":"/models/:name",
+					"collection":"models",
+					"item":"name"
+				},
+				
+				{
+					"route":"/menubars",
+					"collection":"menubars"
+				},
+				{
+					"route":"/menubars/:name",
+					"collection":"menubars",
+					"item":"name"
+				},
+				
+				{
+					"route":"/menus",
+					"collection":"menus"
+				},
+				{
+					"route":"/menus/:name",
+					"collection":"menus",
+					"item":"name"
+				}
+			]
+		},
+		
+		"svc4":{
+			"type":"rest_api_resources_modifier",
+			"server":"node1"
+		},
+		
+		"html_assets_1":{
 			"type":"html_assets",
 			"server":"default",
 			"routes":[
 				{
-					"route":"/assets/.*",
-					"directory":"../apps/assets"
+					"route":"/assets/css/.*",
+					"directory":"../apps/public/assets/css"
 				},
 				{
-					"route":"/assets2/.*",
-					"directory":"../apps/assets2"
+					"route":"/assets/js/.*",
+					"directory":"../apps/public/assets/js"
+				},
+				{
+					"route":"/assets2/img/.*",
+					"directory":"../apps/public/assets/img"
 				}
 			]
 		},
@@ -46,9 +110,7 @@
 				"provides":{
 					"svc1":["*"],
 					"svc2":["*"],
-					"svc3":[],
 					"svc4":[],
-					"svc5":false,
 					"svc6":false
 				},
 				"consumes":{
@@ -73,12 +135,8 @@
 			
 			"services":{
 				"provides":{
-					"svc1":["*"],
-					"svc2":["*"],
-					"svc3":["*"],
-					"svc4":["*"],
-					"svc5":false,
-					"svc6":false
+					"rest_api_resources_query_1":["*"],
+					"html_assets_1":true
 				},
 				"consumes":{
 				}
@@ -103,15 +161,10 @@
 			"from_file": "private/app-tutorial-1/app_cfg.ini",
 			
 			"services":{
-				"provided":{
-					"rest_api_models_query":[],
-					"rest_api_models_modifier":[],
-					"rest_api_resources_query":[],
-					"rest_api_resources_modifier":[],
-					"html_assets":true,
-					"html_app":true
+				"provides":{
+					"html_assets_1":true
 				},
-				"consumed":{
+				"consumes":{
 					
 				},
 				"linked":["tutorial-auth", "tutorial-api"]
