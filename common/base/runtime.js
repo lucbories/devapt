@@ -8,6 +8,8 @@ import Collection from './collection'
 import Loggable from './loggable'
 import Server from './server'
 import Service from './service'
+import Module from './module'
+import Plugin from './plugin'
 import Application from './application'
 import * as exec from '../executables/index'
 
@@ -25,8 +27,11 @@ class Runtime extends Loggable
 		this.info('Runtime is created')
 		
 		this.is_runtime = true
+		
 		this.servers = new Collection()
 		this.services = new Collection()
+		this.modules = new Collection()
+		this.plugins = new Collection()
 		this.applications = new Collection()
 	}
 	
@@ -45,6 +50,8 @@ class Runtime extends Loggable
 		
 		this.make_servers()
 		this.make_services()
+		this.make_modules()
+		this.make_plugins()
 		// this.make_applications()
 		this.activate_services()
 		
@@ -139,6 +146,44 @@ class Runtime extends Loggable
 		)
 		
 		this.leave_group('make_services')
+	}
+	
+	make_modules()
+	{
+		this.enter_group('make_modules')
+		
+		let cfg_modules = config.get_collection('modules')
+		cfg_modules.forEach(
+			(module_cfg, module_name) => {
+				this.info('Processing module creation of:' + module_name)
+				
+				let module = new Module(module_name, module_cfg)
+				module.load()
+				this.modules.add(module)
+				module.enable()
+			}
+		)
+		
+		this.leave_group('make_modules')
+	}
+	
+	make_plugins()
+	{
+		this.enter_group('make_plugins')
+		
+		let cfg_plugins = config.get_collection('plugins')
+		cfg_plugins.forEach(
+			(plugin_cfg, plugin_name) => {
+				this.info('Processing plugin creation of:' + plugin_name)
+				
+				let plugin = new Plugin(plugin_name, plugin_cfg)
+				plugin.load()
+				this.plugins.add(plugin)
+				plugin.enable()
+			}
+		)
+		
+		this.leave_group('make_plugins')
 	}
 	
 	

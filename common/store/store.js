@@ -22,7 +22,7 @@ export const runtime = function() { return store.getState().runtime_reducer.get(
 
 
 // INIT COLLECTIONS TYPES
-store.collections         = ['servers', 'applications', 'modules', 'plugins', 'security', 'views', 'models', 'menubars', 'menus', 'loggers', 'services', 'transactions']
+store.collections         = ['servers', 'applications', 'modules', 'plugins', 'resources', 'security', 'views', 'models', 'menubars', 'menus', 'loggers', 'services', 'transactions']
 store.config_collections  = ['servers', 'applications', 'modules', 'plugins', 'security', 'services']
 store.runtime_collections = ['servers', 'applications', 'views', 'models', 'menubars', 'menus', 'loggers', 'services', 'transactions']
 store.has_collection      = function(arg_name) { return store.collections.indexOf(arg_name) > -1 }
