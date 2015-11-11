@@ -4,6 +4,7 @@ import fs from 'fs'
 import path from 'path'
 
 import { store, config } from '../store/index'
+// import runtime from '../base/runtime'
 
 import ExecutableRoute from './executable_route'
 
@@ -20,12 +21,14 @@ export default class ExecutableRouteGetResources extends ExecutableRoute
 	}
 	
 	
-	get_route_cb(arg_cfg_route)
+	get_route_cb(arg_application, arg_cfg_route)
 	{
 		let self = this
 		
 		return function exec_http(req, res, next)
 		{
+			self.enter_group('ExecutableRouteGetResources.exec_http')
+			
 			// CHECK ARGS
 			assert(T.isString(arg_cfg_route.collection), context + ':bad collection name')
 			
@@ -38,19 +41,24 @@ export default class ExecutableRouteGetResources extends ExecutableRoute
 			// LIST RESOURCES
 			if (! arg_cfg_route.item)
 			{
+				self.info('LIST resources')
+				
 				// GET RESOURCES LIST
-				const resources_list = config.get_resources(arg_cfg_route.collection)
+				// const resources_list = config.get_resources(arg_cfg_route.collection)
+				const resources_list = arg_application.resources.get_all_names(arg_cfg_route.collection)
 				
 				// SEND OUTPUT
 				res.contentType = 'json';
 				res.send({ resources: resources_list });
 				
+				self.leave_group('ExecutableRouteGetResources.exec_http')
 				return next()
 			}
 			
 			
 			// GET ONE RESOURCE
-			let resource_is_valid = null
+			self.info('GET one resource')
+			// let resource_is_valid = null
 			let resource = null
 			
 			assert( T.isString(arg_cfg_route.item), context + ':bad collection item string')
@@ -59,28 +67,36 @@ export default class ExecutableRouteGetResources extends ExecutableRoute
 			
 			if (arg_cfg_route.collection === '*')
 			{
-				resource_is_valid = config.has_resource_by_name(resource_name)
-				resource = config.get_resource(resource_name)
+				self.info('GET one resource [' + resource_name + '] of any collection')
+				
+				resource = arg_application.resources.find_by_name(resource_name)
 			}
 			else
 			{
-				resource_is_valid = config.has_resource_by_type(arg_cfg_route.collection, resource_name)
-				resource = config.get_resource_by_type(arg_cfg_route.collection, resource_name)
+				self.info('GET one resource [' + resource_name + '] of one collection [' + arg_cfg_route.collection + ']')
+				
+				resource = arg_application.resources.find_by_name(resource_name)
+				if (resource)
+				{
+					self.debug('resource found but test collection name')
+					assert(resource.$type == arg_cfg_route.collection, context + ':bad type [' + resource.$type + '] for resource [' + resource_name + ']')
+				}
+				else
+				{
+					self.debug('resource not found [' + resource_name + ']')
+					const resources = arg_application.resources.get_all_names()
+					console.log(resources, 'arg_application.resources')
+				}
+				// if (resource && resource.$type != arg_cfg_route.collection)
+				// {
+				// 	resource = null
+				// }
 			}
-			assert( resource_is_valid, context + ':not found resource [%s]', resource_name)
-			assert( T.isObject(resource), context + ':not found resource [%s]', resource_name)
+			// assert( resource_is_valid, context + ':not found valid resource [%s]', resource_name)
+			assert( T.isObject(resource), context + ':not found resource [' + resource_name + ']')
 			
 			
 			// TODO: SANITY CHECK OF RESOURCE CONFIG (connections...)
-			
-			// SANITY CHECK OF CONNEXIONS
-			if (arg_cfg_route.collection === 'connexions' || resource.type === 'connexions')
-			{
-				resource.host = 'host';
-				resource.port = 'port';
-				resource.user_name = 'user';
-				resource.user_pwd = '******';
-			}
 			
 			
 			// WRAP INCLUDED FILE
@@ -94,8 +110,9 @@ export default class ExecutableRouteGetResources extends ExecutableRoute
 			
 			// SEND OUTPUT
 			res.contentType = 'json'
-			res.send({ resource: resource })
+			res.send({ resource: resource.export_settings() })
 			
+			self.leave_group('ExecutableRouteGetResources.exec_http')
 			return next()
 		}
 	}

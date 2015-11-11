@@ -7,22 +7,24 @@ const default_runtime = {
 			by_view: {}   // view name:map of record id
 		},
 		
+		applications:{},
+		
 		instances:{
-			by_id:{}, // instance id:plain object
-			by_class:{}, // class_name:[] (array of id)
-			by_name:{}, // name:id
-			by_type:{
-				servers:[], // (array of id)
-				services:[], // (array of id)
-				applications:[], // (array of id)
-				views:[], // (array of id)
-				models:[], // (array of id)
-				menubars:[], // (array of id)
-				menus:[], // (array of id)
-				databases:[], // (array of id)
-				plugins:[], // (array of id)
-				loggers:[] // (array of id)
-			}
+			// by_id:{}, // instance id:plain object
+			// by_class:{}, // class_name:[] (array of id)
+			// by_name:{}, // name:id
+			// by_type:{
+			// 	servers:[], // (array of id)
+			// 	services:[], // (array of id)
+			// 	applications:[], // (array of id)
+			// 	views:[], // (array of id)
+			// 	models:[], // (array of id)
+			// 	menubars:[], // (array of id)
+			// 	menus:[], // (array of id)
+			// 	databases:[], // (array of id)
+			// 	plugins:[], // (array of id)
+			// 	loggers:[] // (array of id)
+			// }
 		},
 		
 		security:{

@@ -1,6 +1,6 @@
 'use strict';
 
-module.exports = function to_boolean(arg_value, arg_default)
+function to_boolean(arg_value, arg_default)
 {
 	switch(arg_value)
 	{
@@ -16,5 +16,9 @@ module.exports = function to_boolean(arg_value, arg_default)
 		case 'disabled': return false;
 	}
 	
-	return arg_default;
+	return arg_default
 }
+
+module.exports = to_boolean
+
+export default to_boolean

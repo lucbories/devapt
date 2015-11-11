@@ -19,7 +19,7 @@ describe('store',
 			() => {
 				let state = store.getState()
 				let config_present = state.config_reducer.present
-				let runtime_present = state.runtime_reducer.present
+				let runtime_present = state.runtime_reducer
 				
 				let config_obj = config_present.toJS()
 				// console.log(config_obj, 'config_obj')
@@ -40,9 +40,9 @@ describe('store',
 				expect(runtime_present.has('runtime')).to.be.true
 				
 				expect(config_present.get('config').has('error')).to.be.false
-				expect(config_present.get('config').has('host')).to.be.true
-				expect(config_present.get('config').has('port')).to.be.true
-				expect(config_present.get('config').has('apps')).to.be.true
+				expect(config_present.get('config').has('servers')).to.be.true
+				expect(config_present.get('config').has('services')).to.be.true
+				expect(config_present.get('config').has('applications')).to.be.true
 				expect(config_present.get('config').has('modules')).to.be.true
 				expect(config_present.get('config').has('plugins')).to.be.true
 				expect(config_present.get('config').has('security')).to.be.true
@@ -182,7 +182,7 @@ describe('store',
 				store.dispatch( ActionCreators.undo() )
 				
 				expect( config().get('applications').toMap().has(APP_NAME) ).to.be.true
-				expect( runtime().get('applications').toMap().has(APP_NAME) ).to.be.false
+				// expect( runtime().get('applications').toMap().has(APP_NAME) ).to.be.false
 				
 				store.dispatch( ActionCreators.redo() )
 				

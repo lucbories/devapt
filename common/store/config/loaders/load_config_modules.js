@@ -100,6 +100,7 @@ function load_config_modules(arg_modules_config)
 											// logs.info(context, 'loading config.modules.' + module_name + ' resources file:' + resource_file + ' of type:' + type_name + ' for ' + res_name)
 											
 											let res_obj = config.application[type_name][res_name]
+											res_obj.type = type_name
 											
 											if (type_name !== 'menus' && type_name !== 'models')
 											{
@@ -115,7 +116,7 @@ function load_config_modules(arg_modules_config)
 							}
 						)
 					}
-				)	
+				)
 			}
 		)
 		

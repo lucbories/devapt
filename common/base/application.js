@@ -93,14 +93,16 @@ export default class Application extends Instance
 				if (service)
 				{
 					service.activate(this, service_cfg)
+					
 					service.enable()
+					
 					this.provided_services.add(service)
 				}
 			}
 		)
 		
 		
-		// ENABLE CONSUMED SERVICES
+		// TODO: ENABLE CONSUMED SERVICES
 		assert( this.$settings.hasIn(['services', 'consumes']), context + ':bad settings.services.consumes key')
 		const consumes = this.$settings.getIn(['services', 'consumes'])
 		assert( T.isObject(consumes), context + ':bad settings.services.consumes object')
@@ -110,12 +112,12 @@ export default class Application extends Instance
 				
 				// assert( T.isObject(service) && service.is_service, context + ':bad service object')
 				
-				if (service)
-				{
-					service.activate(this, service_cfg)
-					service.enable()
-					this.consumed_services.add(service)
-				}
+				// if (service)
+				// {
+				// 	service.activate(this, service_cfg)
+				// 	service.enable()
+				// 	this.consumed_services.add(service)
+				// }
 			}
 		)
 		
@@ -128,12 +130,14 @@ export default class Application extends Instance
 			(module_name) => {
 				let module_obj = runtime.modules.find_by_name(module_name)
 				
-				// assert( T.isObject(module_obj) && module_obj.is_module, context + ':bad module object')
+				assert( T.isObject(module_obj) && module_obj.is_module, context + ':bad module object')
 				
-				if (module_obj)
+				this.modules.add(module_obj)
+				
+				// LOOP ON MODULE RESOURCES
+				for(let res_obj of module_obj.resources)
 				{
-					// LOAD RESOURCES
-					this.modules.add(module_obj)
+					this.resources.add(res_obj)
 				}
 			}
 		)

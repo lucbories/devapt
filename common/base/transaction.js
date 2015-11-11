@@ -3,11 +3,11 @@ import T from 'typr'
 import assert from 'assert'
 import debug_fn from 'debug'
 
-import { store, config, runtime } from '../store/index'
+import { store, config } from '../store/index'
 
 import Instance from '../utils/instance'
-import MetricDuration from './metric_duration'
-import MetricHost from './metric_host'
+import MetricDuration from '../metrics/metric_duration'
+import MetricHost from '../metrics/metric_host'
 
 
 let context = 'common/base/transaction'

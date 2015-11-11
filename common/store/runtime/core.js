@@ -5,7 +5,8 @@ import load_runtime from './loaders/load_runtime'
 
 
 
-let default_config = load_runtime({})
+const default_config = load_runtime({})
+
 export const INITIAL_STATE = fromJS(default_config);
 
 

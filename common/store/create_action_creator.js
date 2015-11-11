@@ -1,3 +1,8 @@
+
+import uid from '../utils/uid'
+
+
+
 export function create_action_creator(type, ...argNames)
 {
   return function(...args)
@@ -5,11 +10,16 @@ export function create_action_creator(type, ...argNames)
     let action = { type };
 	
     argNames.forEach(
-		(arg, index) => {
-      		action[argNames[index]] = args[index];
-    	}
-	);
-	
+      (arg, index) => {
+            action[argNames[index]] = args[index];
+        }
+    );
+	  
+    action.id = uid()
+    action.ts = Date.now()
+    
+    // console.log(action, 'action')
+    
     return action;
   }
 }

@@ -2,8 +2,6 @@
 import T from 'typr'
 import assert from 'assert'
 
-import { store, config, runtime } from '../store/index'
-
 import Instance from './instance'
 
 
@@ -13,27 +11,18 @@ let context = 'common/base/resource'
 
 export default class Resource extends Instance
 {
-	constructor(arg_name, arg_settings)
+	constructor(arg_name, arg_settings, arg_class)
 	{
 		assert( T.isObject(arg_settings), context + ':bad settings object')
 		
-		super('resources', 'Resource', arg_name, arg_settings)
+		super('resources', arg_class ? arg_class : 'Resource', arg_name, arg_settings)
 		
 		this.is_resource = true
 	}
 	
-/*	
-	load()
+	
+	export_settings()
 	{
-		assert( T.isObject(this.$settings), context + ':bad settings object')
-		
-		// ENABLE APP SERVICES
-		this.$settings.resources_by_name.forEach(
-			(res_cfg, res_name) => {
-				let resource = new Resource()
-				resource.load()
-				this.resources.add(resource)
-			}
-		)
-	}*/
+		return this.$settings.toJS()
+	}
 }

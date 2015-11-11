@@ -72,7 +72,7 @@ export default class ExecutableRouteAssets extends ExecutableRoute
 		}
 	}*/
 	
-	get_route_cb(arg_cfg_route)
+	get_route_cb(arg_application, arg_cfg_route)
 	{
 		assert(T.isString(arg_cfg_route.directory), context + ':bad directory string')
 		

@@ -1,7 +1,7 @@
 
 // var API = require('./logs_console');
-var API = require('./logs_winston');
+var API = require('./logs_winston')
 
 
-module.exports = API;
-export default API;
+module.exports = API
+export default API

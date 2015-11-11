@@ -1,5 +1,5 @@
 
-import Metric from './metric'
+import Metric from '../base/metric'
 
 
 export default class MetricDuration extends Metric

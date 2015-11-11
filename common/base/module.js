@@ -7,6 +7,11 @@ import { store, config, runtime } from '../store/index'
 import Instance from './instance'
 import Collection from './collection'
 import Resource from './resource'
+import Database from './database'
+import Model from './model'
+import View from './view'
+import Menu from './menu'
+import Menubar from './menubar'
 
 
 
@@ -33,14 +38,41 @@ export default class Module extends Instance
 		assert( T.isObject(this.$settings), context + ':bad settings object')
 		
 		// ENABLE APP SERVICES
-		const cfg = this.$settings.get('resources_by_name').toMap().toJS()
-		Object.keys(cfg).forEach(
+		if (! this.$settings.has('resources_by_name') )
+		{
+			this.debug('no resource for module')
+			return
+		}
+		const cfg = this.$settings.get('resources_by_name').toMap()
+		Object.keys(cfg.toJS()).forEach(
 			(res_name) => {
-				const res_cfg = cfg[res_name]
-				let resource = new Resource(res_name, res_cfg)
+				const res_cfg = cfg.get(res_name)
+				// console.log(res_name, 'res_name')
+				// console.log(res_cfg, 'res_cfg')
+				
+				let resource = this.create_resource(res_name, res_cfg)
 				resource.load()
 				this.resources.add(resource)
 			}
 		)
+	}
+	
+	
+	create_resource(arg_name, arg_settings)
+	{
+		assert( T.isObject(arg_settings), context + ':bad settings object')
+		const res_type =arg_settings.get('type')
+		assert( T.isString(res_type), context + ':bad type string')
+		
+		switch(res_type)
+		{
+			case 'connexions': return new Database(arg_name, arg_settings)
+			case 'views': return new View(arg_name, arg_settings)
+			case 'models': return new Model(arg_name, arg_settings)
+			case 'menus': return new Menu(arg_name, arg_settings)
+			case 'menubars': return new Menubar(arg_name, arg_settings)
+		}
+		
+		return new Resource(arg_name, arg_settings)
 	}
 }

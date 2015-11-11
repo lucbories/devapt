@@ -108,10 +108,7 @@
 			
 			"services":{
 				"provides":{
-					"svc1":["*"],
-					"svc2":["*"],
-					"svc4":[],
-					"svc6":false
+					"rest_api_resources_query_1":["*"]
 				},
 				"consumes":{
 				}

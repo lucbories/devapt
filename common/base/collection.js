@@ -63,7 +63,21 @@ export default class Collection
 	
 	
 	// NAMES GETTER
-	get_all_names() { return this.$items.map( (item) =>{ return item.$name } ) }
+	get_all_names(arg_types) {
+		if (! arg_types)
+		{
+			return this.$items.map( (item) =>{ return item.$name } )
+		}
+		if (T.isString(arg_types))
+		{
+			return this.$items.filter( item => item.$type == arg_types ).map( (item) =>{ return item.$name } )
+		}
+		if (T.isArray(arg_types))
+		{
+			return this.$items.filter( item => arg_types.indexOf(item.$types) >= 0 ).map( (item) =>{ return item.$name } )
+		}
+		return []
+	}
 	
 	
 	// IDs GETTER
@@ -90,7 +104,7 @@ export default class Collection
 	
 	
 	// FIND AN ITEM BY NAME: TODO optimize with a map index
-	find_by_name(arg_name) { return this.$items.find( item => item.$name == arg_name) }
+	find_by_name(arg_name) { return this.$items.find( item => { return item.$name == arg_name } ) }
 	
 	
 	// FIND AN ITEM BY ID: TODO optimize with a map index

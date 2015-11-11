@@ -1,11 +1,13 @@
 import T from 'typr'
 import assert from 'assert'
 
-import Loggable from './loggable'
-
 import uid from '../utils/uid'
 import { is_browser, is_server } from '../utils/is_browser'
 import { store, config } from '../store/index'
+import { dispatch_store_config_create_value } from '../store/config/actions'
+
+import Loggable from './loggable'
+
 
 
 let context = 'common/base/instance'
@@ -31,12 +33,14 @@ export default class Instance extends Loggable
 		
 		this.is_instance = true
 		this.is_loaded = false
-		this.$uid = my_uid
+		this.$id = my_uid
 		this.$type = arg_collection
 		this.$class = arg_class
 		this.$name = arg_name
 		
 		this.set_settings(arg_settings)
+		
+		dispatch_store_config_create_value(store, ['runtime', 'instances', this.$name], {'id':this.$id, 'name':this.$name, 'class':this.$class, 'type':this.$type} )
 	}
 	
 	

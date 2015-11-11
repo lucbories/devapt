@@ -11,6 +11,7 @@ import Service from './service'
 import Module from './module'
 import Plugin from './plugin'
 import Application from './application'
+import Database from './database'
 
 
 
@@ -54,6 +55,7 @@ class Runtime extends Loggable
 		this.make_servers()
 		this.make_services()
 		
+		this.make_connexions()
 		this.make_modules()
 		this.make_plugins()
 		
@@ -106,9 +108,9 @@ class Runtime extends Loggable
 				switch( cfg_service.get('type') )
 				{
 					case "rest_api_models_query":{
-						let locale_exec = null
-						let remote_exec = null
-						// service = new Service(service_name, locale_exec, remote_exec) // TODO: create Real service
+						let locale_exec = new ExecutableRouteModelCrud()
+						let remote_exec = locale_exec
+						service = new Service(service_name, locale_exec, remote_exec) // TODO: create Real service
 						break
 					}
 					case "rest_api_models_modifier":{
@@ -156,6 +158,28 @@ class Runtime extends Loggable
 		this.leave_group('make_services')
 	}
 	
+	make_connexions()
+	{
+		this.enter_group('make_connexions')
+		
+		if ( config().hasIn( ['security', 'resources_by_name'] ) )
+		{
+			const cfg_all_cx = config().getIn( ['security', 'resources_by_name'] ).toArray()
+			cfg_all_cx.forEach(
+				(cfg_cx) => {
+					const cx_name = cfg_cx.get('name')
+					// this.info('Processing connexion creation of:' + cx_name)
+					
+					let cx = new Database(cx_name, cfg_cx)
+					cx.load()
+					this.resources.add(cx)
+				}
+			)
+		}
+		
+		this.leave_group('make_connexions')
+	}
+	
 	make_modules()
 	{
 		this.enter_group('make_modules')
@@ -168,9 +192,22 @@ class Runtime extends Loggable
 				let module = new Module(module_name, module_cfg)
 				module.load()
 				this.modules.add(module)
-				module.enable()
 			}
 		)
+		
+		// LOOP MODULES RESOURCES AND LOAD MODELS ASSOCIATIONS AFTER ALL MODELS ARE CREATED
+		for(let module_obj of this.modules)
+		{
+			for(let res_obj of module_obj.resources)
+			{
+				if (res_obj.is_model)
+				{
+					res_obj.load_associations()
+				}
+				
+				this.resources.add(res_obj)
+			}
+		}
 		
 		this.leave_group('make_modules')
 	}
@@ -187,7 +224,6 @@ class Runtime extends Loggable
 				let plugin = new Plugin(plugin_name, plugin_cfg)
 				plugin.load()
 				this.plugins.add(plugin)
-				plugin.enable()
 			}
 		)
 		

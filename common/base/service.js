@@ -46,6 +46,7 @@ export default class Service extends Instance
 		assert( T.isObject(arg_remote_exec) && arg_remote_exec.is_executable, context + ':bad remote executable')
 		
 		this.is_service = true
+		
 		this.status = Service.STATUS_CREATED
 		this.locale_exec = arg_locale_exec
 		this.remote_exec = arg_remote_exec
@@ -94,17 +95,17 @@ export default class Service extends Instance
 		assert(T.isObject(server), context + ':bad server object')
 		
 		exec_cfg.server = server
-		exec_cfg.application = arg_application
+		// exec_cfg.application = arg_application
 		
 		if (is_browser())
 		{
 			this.locale_exec.prepare(exec_cfg)
-			this.locale_exec.execute()
+			this.locale_exec.execute(arg_application)
 		}
 		else if (is_server())
 		{
 			this.remote_exec.prepare(exec_cfg)
-			this.remote_exec.execute()
+			this.remote_exec.execute(arg_application)
 		}
 	}
 }
