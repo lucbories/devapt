@@ -184,30 +184,44 @@ class Runtime extends Loggable
 	{
 		this.enter_group('make_modules')
 		
+		
+		// CREATE MODULES
 		let cfg_modules = config.get_collection('modules')
 		cfg_modules.forEach(
 			(module_cfg, module_name) => {
 				this.info('Processing module creation of:' + module_name)
 				
-				let module = new Module(module_name, module_cfg)
-				module.load()
-				this.modules.add(module)
+				let module_obj = new Module(module_name, module_cfg)
+				
+				module_obj.load()
+				
+				this.modules.add(module_obj)
 			}
 		)
+		
 		
 		// LOOP MODULES RESOURCES AND LOAD MODELS ASSOCIATIONS AFTER ALL MODELS ARE CREATED
 		for(let module_obj of this.modules)
 		{
+			this.info('make_modules for [' + module_obj.$name + ']')
+			
+			for(let res_obj of module_obj.resources)
+			{
+				this.resources.add(res_obj)
+			}
+			
 			for(let res_obj of module_obj.resources)
 			{
 				if (res_obj.is_model)
 				{
+					// this.info('make_modules for [' + module_obj.$name + '] for model [' + res_obj.$name + ']')
+					
 					res_obj.load_associations()
+					res_obj.load_includes()
 				}
-				
-				this.resources.add(res_obj)
 			}
 		}
+		
 		
 		this.leave_group('make_modules')
 	}

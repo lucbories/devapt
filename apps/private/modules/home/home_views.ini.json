@@ -1,0 +1,29 @@
+{
+	"application": {
+		"views": {
+			"VIEW_HOME": {
+				"role_display": "ROLE_HOME_DISPLAY",
+				"class_name": "IncludeView",
+				"label": "Home",
+				"include_file_path_name": "modules/home/include/VIEW_HOME.html.include"
+			},
+			"page_breadcrumbs": {
+				"role_display": "ROLE_DEMO_DISPLAY",
+				"class_name": "Breadcrumbs",
+				"template_enabled": false
+			},
+			"VIEW_CONTENT_1": {
+				"role_display": "ROLE_HOME_DISPLAY",
+				"class_name": "IncludeView",
+				"label": "Include 1",
+				"include_file_path_name": "modules/home/include/VIEW_CONTENT_1.html.include"
+			},
+			"VIEW_CONTENT_2": {
+				"role_display": "ROLE_HOME_DISPLAY",
+				"class_name": "IncludeView",
+				"label": "Include 2",
+				"include_file_path_name": "modules/home/include/VIEW_CONTENT_2.html.include"
+			}
+		}
+	}
+}

@@ -44,9 +44,8 @@ export default class Model extends Resource
             // const engine_name   = this.$settings.getIn(['engine', 'name']) // IGNORED, FOR CLIENT ONLY
             // const engine_source = this.$settings.getIn(['engine', 'source']) // IGNORED, FOR CLIENT ONLY
             
-            const cfg_associations = this.$settings.has('associations') ? this.$settings.get('associations').toJS() : null
+            const cfg_associations = this.$settings.has('associations') ? this.$settings.get('associations') : null
             // console.log(this.$settings.toJS(), 'model')
-            // console.log(cfg_associations, 'cfg_associations')
             
             const role_read = this.$settings.get('role_read')
             const role_create = this.$settings.get('role_create')
@@ -68,6 +67,7 @@ export default class Model extends Resource
             
             // INCLUDES
             // this.includes = this.$settings.has('includes') ? this.$settings.get('includes').toArray() : []
+            this.includes = []
             
             
             // LOAD FIELDS
@@ -80,46 +80,28 @@ export default class Model extends Resource
             
             // LOAD ASSOCIATIONS
             this.associations = []
-            let association_record = null;
+            let association_record = null
             if (cfg_associations)
             {
-                  Object.keys(cfg_associations).forEach(
-                        function(arg_value, arg_index, arg_array)
+                  for(let [key, arg_value] of cfg_associations)
+                  {
+                        // console.log(key, arg_value, 'cfg_association')
+                        
+                        association_record = arg_value.toJS()
+                        association_record.name = key
+                        association_record.left_model = this.$name
+                        association_record.left_table = crud_table
+                        // console.log(association_record, 'association_record')
+                        
+                        if (should_load_associations)
                         {
-                              association_record = cfg_associations[arg_value];
-                              association_record.name = arg_value;
-                              association_record.left_model = this.$name;
-                              association_record.left_table = crud_table;
-                              if (should_load_associations)
-                              {
-                                    this.load_association(association_record);
-                              }
-                              else
-                              {
-                                    this.associations.push(association_record);
-                              }
+                              this.load_association(association_record)
                         }
-                  )
-            }
-            
-            
-            // LOAD INCLUDED MODELS
-            console.log(this.includes, this.$name + '.includes')
-            if ( T.isArray(this.includes) )
-            {
-                  this.includes.forEach(
-                        function(arg_value, arg_index, arg_array)
+                        else
                         {
-                              var loop_model = arg_array[arg_index].sequelize_model;
-                              // console.log(loop_model, 'loop_model');
-                              // console.log((typeof loop_model), '(typeof loop_model)');
-                              if ( (typeof loop_model).toLocaleLowerCase() === 'string' )
-                              {
-                                    this.includes[arg_index].sequelize_model = runtime.find_by_name(loop_model).sequelize_model;
-                              }
-                              // console.log(this.includes[arg_index].sequelize_model, 'this.includes[arg_index].sequelize_model');
+                              this.associations.push(association_record)
                         }
-                  )
+                  }
             }
             
             
@@ -153,23 +135,50 @@ export default class Model extends Resource
       
       load_associations()
       {
-            if (! this.association)
+            if (! this.associations)
             {
                   return
             }
-            for(let asso of this.association)
+            for(let asso of this.associations)
             {
                   this.load_association(asso)
             }
       }
-	
+      
+      
+      load_includes()
+      {
+            // LOAD INCLUDED MODELS
+            // console.log(this.includes, this.$name + '.includes')
+            if ( ! T.isArray(this.includes) )
+            {
+                  this.error('model.includes is not an array')
+                  return
+            }
+            
+            for(let include of this.includes)
+            {
+                  var loop_model = include.sequelize_model;
+                  // console.log(loop_model, 'loop_model');
+                  // console.log((typeof loop_model), '(typeof loop_model)');
+                  if ( T.isString(loop_model) )
+                  {
+                        // this.info('adding include [' + loop_model + ']')
+                        include.sequelize_model = runtime.find_by_name(loop_model).sequelize_model;
+                  }
+                  // console.log(this.includes[arg_index].sequelize_model, 'this.includes[arg_index].sequelize_model');
+            }
+      }
+      
       
       load_association(arg_asso_cfg)
       {
-            console.log(arg_asso_cfg)
+            // console.log(arg_asso_cfg)
+            
             
             // GET ASSOCIATION MODE
             let mode = arg_asso_cfg.mode
+            
             
             // GET LEFT PART
             let left_model_name = arg_asso_cfg.left_model
@@ -178,25 +187,29 @@ export default class Model extends Resource
             assert.ok(left_model_record && left_model_record.sequelize_model, context + ':bad association left model for name [' + left_model_name + ']')
             let left_model_obj = left_model_record.sequelize_model
             
+            
             // GET RIGHT PART
             let right_model_name = arg_asso_cfg.right_model
-            let right_model_record = runtime.find_by_name(right_model_name)
-            assert(right_model_record, context + ':model not found')
+            let right_model_record = runtime.resources.find_by_name(right_model_name)
+            assert(right_model_record, context + ':model not found for [' + right_model_name + ']')
+            
             let right_model_key = arg_asso_cfg.right_key
             let right_model_fields = arg_asso_cfg.right_fields
             assert.ok(right_model_record && right_model_record.sequelize_model, context + ':bad association right model for name [' + right_model_name + ']')
+           
             let right_model_obj = right_model_record.sequelize_model
             
+            
             // GET MANY PART
-            let many_model_name = arg_asso_cfg.sequelize_model
-            let many_model_obj = runtime.find_by_name(many_model_name)
+            let many_model_name = arg_asso_cfg.model
+            let many_model_obj = runtime.resources.find_by_name(many_model_name)
             assert.ok(many_model_obj && many_model_obj.sequelize_model, context + ':bad association many model for name [' + many_model_name + ']')
             many_model_obj = many_model_obj.sequelize_model
             
             
             if (mode === 'many_to_many')
             {
-                  console.log('add many_to_many with %s: left:%s right:%s', many_model_table, left_model_table, right_model_table);
+                  // console.log('add many_to_many with %s: left:%s right:%s', many_model_table, left_model_table, right_model_table);
                   
                   // SET ASSOCIATION ON THE LEFT SIDE (QUERYABLE MODEL)
                   let asso_settings_left = {

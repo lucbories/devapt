@@ -115,13 +115,14 @@ let parser = {
 	read_ini: function(arg_file_path_name, arg_charset)
 	{
 		var self = this;
-		// logs.info('parser', 'read_ini [%s] [%s]', arg_file_path_name, arg_charset);
+		logs.info('parser', 'read_ini [%s] [%s]', arg_file_path_name, arg_charset);
 		
-		var config_file = fs.readFileSync(arg_file_path_name, arg_charset ? arg_charset : 'utf-8');
-		var config_content = ini_parser.parse(config_file);
+		// var config_file = fs.readFileSync(arg_file_path_name, arg_charset ? arg_charset : 'utf-8');
+		// var config_content = ini_parser.parse(config_file);
 		// console.log(config_content, 'config_content');
-		var out_cfg = self.split_all_keys(config_content);
-		
+		// var out_cfg = self.split_all_keys(config_content);
+		var out_cfg = null
+		// self.write_json(arg_file_path_name + '.json', out_cfg)
 		
 		// var watch_listener = function(arg_prev_stats, arg_cur_stats)
 		// {
