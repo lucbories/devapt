@@ -60,17 +60,26 @@ export default class ExecutableRoute extends Executable
 			assert(T.isObject(cfg_route), context + ':bad cfg_route object')
 			assert(T.isString(cfg_route.route), context + ':bad route string')
 			
-			const route_cb = this.get_route_cb(application, cfg_route)
 			const app_route = T.isString(application.url) ? application.url : ''
 			const route = app_route + cfg_route.route
+			cfg_route.full_route = route
 			
-			server_instance.server.get(route, route_cb)
+			this.process_route(server_instance, application, cfg_route, arg_data)
 			
 			this.info('registering route [' + route + '] for application [' + application.$name + ']')
 		}
 	}
 	
-	get_route_cb(arg_application, arg_cfg_route)
+	
+	process_route(arg_server, arg_application, arg_cfg_route, arg_data)
+	{
+		const route_cb = this.get_route_cb(arg_application, arg_cfg_route, arg_data)
+		
+		arg_server.server.get(arg_cfg_route.full_route, route_cb)
+	}
+	
+	
+	get_route_cb(arg_application, arg_cfg_route, arg_data)
 	{
 		assert(false, context + ':get_route_cb(cfg_route) should be implemented')
 	}

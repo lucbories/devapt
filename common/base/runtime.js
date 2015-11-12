@@ -98,7 +98,7 @@ class Runtime extends Loggable
 				this.info('Processing service creation of:' + service_name)
 				
 				let cfg_service = config.get_collection_item('services', service_name)
-				console.log(cfg_service, 'cfg_svc')
+				// console.log(cfg_service, 'cfg_svc')
 				assert( T.isObject(cfg_service), context + ':bad service cfg for [' + service_name + ']')
 				assert( T.isString(cfg_service.get('type')), context + ':bad service type [' + cfg_service.type + ']')
 				assert( T.isString(cfg_service.get('server')), context + ':bad service server [' + cfg_service.server + ']')
@@ -108,15 +108,15 @@ class Runtime extends Loggable
 				switch( cfg_service.get('type') )
 				{
 					case "rest_api_models_query":{
-						let locale_exec = new ExecutableRouteModelCrud()
+						let locale_exec = new exec.ExecutableRouteModelCrud()
 						let remote_exec = locale_exec
 						service = new Service(service_name, locale_exec, remote_exec) // TODO: create Real service
 						break
 					}
 					case "rest_api_models_modifier":{
-						let locale_exec = null
-						let remote_exec = null
-						// service = new Service(service_name, locale_exec, remote_exec) // TODO: create Real service
+						let locale_exec = new exec.ExecutableRouteModelCrud()
+						let remote_exec = locale_exec
+						service = new Service(service_name, locale_exec, remote_exec) // TODO: create Real service
 						break
 					}
 					case "rest_api_resources_query":{

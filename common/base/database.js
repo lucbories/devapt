@@ -99,7 +99,7 @@ export default class Database extends Resource
 		// }
 	
 		// DEFINE AUTH DATABASE
-		this.sequelize = new Sequelize(cfg_db_name, cfg_db_user, cfg_db_password, db_options)
+		this.sequelize_db = new Sequelize(cfg_db_name, cfg_db_user, cfg_db_password, db_options)
 		
 		
 		super.load()

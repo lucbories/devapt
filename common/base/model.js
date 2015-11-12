@@ -2,6 +2,7 @@
 import T from 'typr'
 import assert from 'assert'
 import Sequelize from 'sequelize'
+import epilogue from 'epilogue'
 
 import Resource from './resource'
 import runtime from './runtime'
@@ -44,6 +45,8 @@ export default class Model extends Resource
             // const engine_source = this.$settings.getIn(['engine', 'source']) // IGNORED, FOR CLIENT ONLY
             
             const cfg_associations = this.$settings.has('associations') ? this.$settings.get('associations').toJS() : null
+            // console.log(this.$settings.toJS(), 'model')
+            // console.log(cfg_associations, 'cfg_associations')
             
             const role_read = this.$settings.get('role_read')
             const role_create = this.$settings.get('role_create')
@@ -63,8 +66,12 @@ export default class Model extends Resource
             }
             
             
+            // INCLUDES
+            // this.includes = this.$settings.has('includes') ? this.$settings.get('includes').toArray() : []
+            
+            
             // LOAD FIELDS
-            this.fields = this.load_fields(this.$name, crud_table, cfg_fields)
+            this.fields = this.load_fields(crud_table, cfg_fields)
             
             
             // LOAD SEQUELIZE MODEL
@@ -72,7 +79,6 @@ export default class Model extends Resource
             
             
             // LOAD ASSOCIATIONS
-            this.includes = []
             this.associations = []
             let association_record = null;
             if (cfg_associations)
@@ -98,18 +104,23 @@ export default class Model extends Resource
             
             
             // LOAD INCLUDED MODELS
-            this.includes.forEach(
-                  function(arg_value, arg_index, arg_array)
-                  {
-                        var loop_model = arg_array[arg_index].sequelize_model;
-                        // console.log(loop_model, 'loop_model');
-                        // console.log((typeof loop_model), '(typeof loop_model)');
-                        if ( (typeof loop_model).toLocaleLowerCase() === 'string' )
+            console.log(this.includes, this.$name + '.includes')
+            if ( T.isArray(this.includes) )
+            {
+                  this.includes.forEach(
+                        function(arg_value, arg_index, arg_array)
                         {
-                              this.includes[arg_index].sequelize_model = runtime.find_by_name(loop_model).sequelize_model;
+                              var loop_model = arg_array[arg_index].sequelize_model;
+                              // console.log(loop_model, 'loop_model');
+                              // console.log((typeof loop_model), '(typeof loop_model)');
+                              if ( (typeof loop_model).toLocaleLowerCase() === 'string' )
+                              {
+                                    this.includes[arg_index].sequelize_model = runtime.find_by_name(loop_model).sequelize_model;
+                              }
+                              // console.log(this.includes[arg_index].sequelize_model, 'this.includes[arg_index].sequelize_model');
                         }
-                  }
-            )
+                  )
+            }
             
             
             // LOAD EPILOGUE
@@ -135,7 +146,8 @@ export default class Model extends Resource
             }
             let db = runtime.resources.find_by_name(cx_name);
             assert(db, context + ':db not found for [' + cx_name + ']')
-            this.sequelize_model = db ? db.sequelize.define(this.$name, this.fields, settings) : null;
+            this.sequelize_db = db.sequelize_db
+            this.sequelize_model = this.sequelize_db ? this.sequelize_db.define(this.$name, this.fields, settings) : null;
       }
       
       
@@ -154,6 +166,8 @@ export default class Model extends Resource
       
       load_association(arg_asso_cfg)
       {
+            console.log(arg_asso_cfg)
+            
             // GET ASSOCIATION MODE
             let mode = arg_asso_cfg.mode
             
@@ -182,7 +196,7 @@ export default class Model extends Resource
             
             if (mode === 'many_to_many')
             {
-                  // console.log('add many_to_many with %s: left:%s right:%s', many_model_table, left_model_table, right_model_table);
+                  console.log('add many_to_many with %s: left:%s right:%s', many_model_table, left_model_table, right_model_table);
                   
                   // SET ASSOCIATION ON THE LEFT SIDE (QUERYABLE MODEL)
                   let asso_settings_left = {
@@ -212,9 +226,10 @@ export default class Model extends Resource
       
       load_fields(arg_crud_table, arg_fields_cfg)
       {
-            this.info('loading fields for model');
+            this.info('loading fields for model')
             
             let cfg_field = null
+            let cfg_name = null
             let cfg_type = null
             let cfg_label = null
             let cfg_is_editable = false
@@ -229,11 +244,13 @@ export default class Model extends Resource
             let field = null
             let self = this
             
+            // console.log(arg_fields_cfg, 'arg_fields_cfg')
             Object.keys(arg_fields_cfg).forEach(
                   function(arg_value, arg_index, arg_array)
                   {
                         cfg_field = arg_fields_cfg[arg_value];
                         
+                        cfg_name = arg_value
                         cfg_type = self.get_field_type(cfg_field.type)
                         cfg_label = cfg_field.label
                         cfg_is_editable = to_boolean(cfg_field.is_editable, false)
@@ -246,7 +263,7 @@ export default class Model extends Resource
                         if (cfg_sql_table === arg_crud_table)
                         {
                               field = {
-                                    field: cfg_sql_column ? cfg_sql_column : arg_value,
+                                    field: cfg_sql_column ? cfg_sql_column : cfg_name,
                                     type:cfg_type,
                                     primaryKey: cfg_sql_is_primary_key,
                                     autoIncrement:cfg_sql_is_primary_key,
@@ -255,14 +272,14 @@ export default class Model extends Resource
                         }
                         else
                         {
-                              console.error('bad model [%s] configuration for field [%s]', this.$name, arg_value);
+                              console.error('bad model [%s] configuration for field [%s]', this.$name, cfg_name);
                               console.log(cfg_field, context + ':cfg_field')
                               console.log(cfg_sql_table, context + ':cfg_sql_table')
                               throw Error(context + ':error bad field')
                               return
                         }
                         
-                        fields[arg_value] = field
+                        fields[cfg_name] = field
                         // console.log(field, 'field')
                   }
             )
@@ -271,12 +288,13 @@ export default class Model extends Resource
       }
       
       
-      get_epilogue_resource(arg_server)
+      get_epilogue_resource(arg_server, arg_route)
       {
+            this.info('get epilogue resource for route [' + arg_route + ']')
             
             var epilogue_settings = {
                   model: this.sequelize_model,
-                  endpoints: ['/' + this.$name, '/' + this.$name + '/:' + this.sequelize_model.primaryKeyAttribute],
+                  endpoints: [arg_route + '/' + this.$name, arg_route + '/' + this.$name + '/:' + this.sequelize_model.primaryKeyAttribute],
                   include: this.includes/*,
                   search: {
                         param: 'searchOnlyUsernames',
@@ -291,17 +309,16 @@ export default class Model extends Resource
                   pagination: false // default: true with use of offset and count or page and count
             */
             }
-            let epilogue_db = require('epilogue')
   		
 		// INITIALIZE EPILOGUE
-		epilogue_db.initialize(
+		epilogue.initialize(
 			{
-				app: arg_server,
-				sequelize: this.sequelize_model
+				app: arg_server.server,
+				sequelize: this.sequelize_db
 			}
 		)
             
-            let epilogue_resource = epilogue_db.resource(epilogue_settings)
+            let epilogue_resource = epilogue.resource(epilogue_settings)
             
             return epilogue_resource
       }

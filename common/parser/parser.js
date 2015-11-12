@@ -19,6 +19,7 @@ let parser = {
 			function(cfg_key, cfg_index, cfg_items)
 			{
 				// if (cfg_index > 10) return;
+		
 				key = cfg_items[cfg_index];
 				if ((typeof key) === 'string' && key.length > 0)
 				{

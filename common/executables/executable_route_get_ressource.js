@@ -21,7 +21,7 @@ export default class ExecutableRouteGetResources extends ExecutableRoute
 	}
 	
 	
-	get_route_cb(arg_application, arg_cfg_route)
+	get_route_cb(arg_application, arg_cfg_route, arg_data)
 	{
 		let self = this
 		

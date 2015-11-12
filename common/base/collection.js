@@ -51,7 +51,23 @@ export default class Collection
 		}
 	}
 	
-	get_all() { return this.$items }
+	
+	get_all(arg_types)
+	{
+		if (! arg_types)
+		{
+			return this.$items
+		}
+		if (T.isString(arg_types))
+		{
+			return this.$items.filter( item => item.$type == arg_types )
+		}
+		if (T.isArray(arg_types))
+		{
+			return this.$items.filter( item => arg_types.indexOf(item.$types) >= 0 )
+		}
+		return []
+	}
 	
 	
 	// DEFAULT ITERATOR
@@ -63,7 +79,8 @@ export default class Collection
 	
 	
 	// NAMES GETTER
-	get_all_names(arg_types) {
+	get_all_names(arg_types)
+	{
 		if (! arg_types)
 		{
 			return this.$items.map( (item) =>{ return item.$name } )

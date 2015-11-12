@@ -16,8 +16,25 @@
 	},
 	
 	"services":{
-		"svc1":{ "type":"rest_api_models_query", "server":"node1" },
-		"svc2":{ "type":"rest_api_models_modifier", "server":"node1" },
+		"rest_api_models_query_1":{ 
+			"type":"rest_api_models_query",
+			"server":"default",
+			"routes":[
+				{
+					"route":"/crud"
+				}
+			]
+		},
+		
+		"rest_api_models_modifier_1":{
+			"type":"rest_api_models_modifier",
+			"server":"default",
+			"routes":[
+				{
+					"route":"/crud"
+				}
+			]
+		},
 		
 		"rest_api_resources_query_1":{
 			"type":"rest_api_resources_query",
@@ -133,13 +150,14 @@
 			"services":{
 				"provides":{
 					"rest_api_resources_query_1":["*"],
+					"rest_api_models_query_1":["*"],
 					"html_assets_1":true
 				},
 				"consumes":{
 				}
 			},
 			
-			"modules": ["home", "appbuilder"],
+			"modules": ["home", "security", "appbuilder"],
 			"plugins":[],
 			"resources":[],
 			

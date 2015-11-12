@@ -80,28 +80,6 @@ export default class Application extends Instance
 		assert( T.isObject(this.$settings), context + ':bad settings object')
 		
 		
-		// ENABLE PROVIDED SERVICES
-		assert( this.$settings.hasIn(['services', 'provides']), context + ':bad settings.services.provides key')
-		const provides = this.$settings.getIn(['services', 'provides'])
-		assert( T.isObject(provides), context + ':bad settings.services.provides object')
-		provides.forEach(
-			(service_cfg, service_name) => {
-				let service = runtime.services.find_by_name(service_name)
-				
-				// assert( T.isObject(service) && service.is_service, context + ':bad service object')
-				
-				if (service)
-				{
-					service.activate(this, service_cfg)
-					
-					service.enable()
-					
-					this.provided_services.add(service)
-				}
-			}
-		)
-		
-		
 		// TODO: ENABLE CONSUMED SERVICES
 		assert( this.$settings.hasIn(['services', 'consumes']), context + ':bad settings.services.consumes key')
 		const consumes = this.$settings.getIn(['services', 'consumes'])
@@ -157,6 +135,28 @@ export default class Application extends Instance
 				{
 					// LOAD RESOURCES
 					this.plugins.add(plugin_obj)
+				}
+			}
+		)
+		
+		
+		// ENABLE PROVIDED SERVICES
+		assert( this.$settings.hasIn(['services', 'provides']), context + ':bad settings.services.provides key')
+		const provides = this.$settings.getIn(['services', 'provides'])
+		assert( T.isObject(provides), context + ':bad settings.services.provides object')
+		provides.forEach(
+			(service_cfg, service_name) => {
+				let service = runtime.services.find_by_name(service_name)
+				
+				// assert( T.isObject(service) && service.is_service, context + ':bad service object')
+				
+				if (service)
+				{
+					service.activate(this, service_cfg)
+					
+					service.enable()
+					
+					this.provided_services.add(service)
 				}
 			}
 		)

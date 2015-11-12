@@ -22,9 +22,10 @@ export default class ExecutableRouteModelCrud extends ExecutableRoute
 	}
 	
 	
-	get_route_cb(arg_application, arg_cfg_route)
+	process_route(arg_server, arg_application, arg_cfg_route, arg_data)
 	{
 		let self = this
+		self.enter_group('ExecutableRouteModelCrud.process_route')
 		
 		
 		// EPILOGUE CALLBACK FUNCTION TO CHECK AUTHENTICATION AND AUTHORIZATION
@@ -83,32 +84,40 @@ export default class ExecutableRouteModelCrud extends ExecutableRoute
 			}
 		}
 		
+			
+		const app_models = arg_application.resources.get_all('models')
 		
-		return function exec_http(req, res, next)
-		{
-			self.enter_group('ExecutableRouteModelCrud.exec_http')
-			
-			// CHECK ARGS
-			assert(T.isString(arg_cfg_route.model_name), context + ':bad model name')
-			assert(T.isObject(arg_cfg_route.model_roles), context + ':bad model roles')
-			assert(T.isObject(arg_cfg_route.model), context + ':bad model object')
-			
-			let epilogue_resource = arg_cfg_route.model.get_epilogue_resource(this.server)
-			
-			// REGISTER CREATE ACCESS CHECK
-			epilogue_resource.create.auth( security_epilogue_cb(arg_cfg_route.model_name, arg_cfg_route.model_roles.create, 'create items') );
-			
-			// REGISTER LIST ACCESS CHECK
-			epilogue_resource.list.auth( security_epilogue_cb(arg_cfg_route.model_name, arg_cfg_route.model_roles.read, 'list items') );
-			
-			// REGISTER READ ACCESS CHECK
-			epilogue_resource.read.auth( security_epilogue_cb(arg_cfg_route.model_name, arg_cfg_route.model_roles.read, 'read an item') );
-			
-			// REGISTER UPDATE ACCESS CHECK
-			epilogue_resource.update.auth( security_epilogue_cb(arg_cfg_route.model_name, arg_cfg_route.model_roles.update, 'update items') );
-			
-			// REGISTER DELETE ACCESS CHECK
-			epilogue_resource.delete.auth( security_epilogue_cb(arg_cfg_route.model_name, arg_cfg_route.model_roles.delete, 'delete items') );
-		}
+		app_models.forEach(
+			(model) => {
+				// CHECK ARGS
+				assert(T.isObject(model), context + ':bad model object')
+				assert(T.isString(model.$name), context + ':bad model name')
+				assert(T.isObject(model.roles), context + ':bad model roles')
+				
+				self.info('add route for model [' + model.$name + ']')
+				
+				let model_name = model.$name
+				let model_roles = model.roles
+				let epilogue_resource = model.get_epilogue_resource(arg_server, arg_cfg_route.full_route)
+				
+				// REGISTER CREATE ACCESS CHECK
+				epilogue_resource.create.auth( security_epilogue_cb(model_name, model_roles.create, 'create items') )
+				
+				// REGISTER LIST ACCESS CHECK
+				epilogue_resource.list.auth( security_epilogue_cb(model_name, model_roles.read, 'list items') )
+				
+				// REGISTER READ ACCESS CHECK
+				epilogue_resource.read.auth( security_epilogue_cb(model_name, model_roles.read, 'read an item') )
+				
+				// REGISTER UPDATE ACCESS CHECK
+				epilogue_resource.update.auth( security_epilogue_cb(model_name, model_roles.update, 'update items') )
+				
+				// REGISTER DELETE ACCESS CHECK
+				epilogue_resource.delete.auth( security_epilogue_cb(model_name, model_roles.delete, 'delete items') )
+			}
+		)
+		
+		
+		self.leave_group('ExecutableRouteModelCrud.process_route')
 	}
 }
