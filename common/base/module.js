@@ -7,11 +7,11 @@ import { store, config, runtime } from '../store/index'
 import Instance from './instance'
 import Collection from './collection'
 import Resource from './resource'
-import Database from './database'
-import Model from './model'
-import View from './view'
-import Menu from './menu'
-import Menubar from './menubar'
+import Database from '../resources/database'
+import Model from '../resources/model'
+import View from '../resources/view'
+import Menu from '../resources/menu'
+import Menubar from '../resources/menubar'
 
 
 

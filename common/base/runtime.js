@@ -11,7 +11,7 @@ import Service from './service'
 import Module from './module'
 import Plugin from './plugin'
 import Application from './application'
-import Database from './database'
+import Database from '../resources/database'
 
 
 
