@@ -4,8 +4,8 @@ import assert from 'assert'
 import Sequelize from 'sequelize'
 import epilogue from 'epilogue'
 
-import Resource from './resource'
-import runtime from './runtime'
+import Resource from '../base/resource'
+import runtime from '../base/runtime'
 import to_boolean from '../utils/to_boolean'
 
 

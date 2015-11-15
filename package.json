@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "Devapt REST API server",
   "author": "Luc BORIES (https://github.com/lucbories)",
-  "license": "APACHE 2",
+  "license": "Apache License 2.0",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/lucbories/devapt.git"

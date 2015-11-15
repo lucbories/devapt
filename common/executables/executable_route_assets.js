@@ -84,6 +84,8 @@ export default class ExecutableRouteAssets extends ExecutableRoute
 			cb_arg.default = arg_cfg_route.default_file
 		}
 		
+		console.log(cb_arg, 'restify route cfg')
+		
 		return restify.serveStatic(cb_arg)
 	}
 }

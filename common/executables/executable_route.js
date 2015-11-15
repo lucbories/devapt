@@ -61,8 +61,9 @@ export default class ExecutableRoute extends Executable
 			assert(T.isString(cfg_route.route), context + ':bad route string')
 			
 			const app_route = T.isString(application.url) ? application.url : ''
-			const route = app_route + cfg_route.route
-			cfg_route.full_route = route
+			let route = app_route + cfg_route.route
+			route = route.replace('/', '\/')
+			cfg_route.full_route = new RegExp('/' + route + '/')
 			
 			this.process_route(server_instance, application, cfg_route, arg_data)
 			

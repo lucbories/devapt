@@ -129,6 +129,15 @@ export default class Server extends Instance
 			}
 		)
 		
+		let app = require('../../server/devtools/app.js')
+		server.get(/devapp\/.*/, function(req, res, next) {
+				console.log('/devapp/* is requested')
+				// res.send('hello')
+				app(req, res)
+				return next()
+			}
+		)
+		
 		
 		// SET URL
 		this.server_url = this.server_protocole + '//' + this.server_host + ':' + this.server_port

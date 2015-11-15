@@ -16,6 +16,42 @@
 	},
 	
 	"services":{
+		"devtools_store":{
+			"type":"html_assets",
+			"server":"default",
+			"routes":[
+				{
+					"route":"/store",
+					"directory":"./apps/public",
+					"default_file":"store_config.html"
+				},
+				{
+					"route":"/examples",
+					"directory":"./apps/public",
+					"default_file":"react_counter.html"
+				}
+			]
+		},
+		
+		"html_assets_1":{
+			"type":"html_assets",
+			"server":"default",
+			"routes":[
+				{
+					"route":"/css/.*",
+					"directory":"./apps/public"
+				},
+				{
+					"route":"/js/.*",
+					"directory":"./apps/public"
+				},
+				{
+					"route":"/img/.*",
+					"directory":"./apps/public"
+				}
+			]
+		},
+		
 		"rest_api_models_query_1":{ 
 			"type":"rest_api_models_query",
 			"server":"default",
@@ -97,29 +133,58 @@
 			"server":"node1"
 		},
 		
-		"html_assets_1":{
-			"type":"html_assets",
-			"server":"default",
-			"routes":[
-				{
-					"route":"/assets/css/.*",
-					"directory":"../apps/public/assets/css"
-				},
-				{
-					"route":"/assets/js/.*",
-					"directory":"../apps/public/assets/js"
-				},
-				{
-					"route":"/assets2/img/.*",
-					"directory":"../apps/public/assets/img"
-				}
-			]
-		},
-		
 		"svc6":{ "type":"html_app", "server":"node1" }
 	},
 	
 	"applications":{
+		"assets":{
+			"url":"assets",
+			
+			"services":{
+				"provides":{
+					"html_assets_1":true
+				},
+				"consumes":{
+				}
+			},
+			
+			"modules": [],
+			"plugins":[],
+			"resources":[],
+			
+			"assets":{
+				"css":[],
+				"js":[],
+				"img":[],
+				"index":""
+			},
+			"license":"APACHE-LICENSE-2.0"
+		},
+		
+		"devtools":{
+			"url":"devtools",
+			
+			"services":{
+				"provides":{
+					"devtools_store":["*"]
+				},
+				"consumes":{
+				}
+			},
+			
+			"modules": [],
+			"plugins":[],
+			"resources":[],
+			
+			"assets":{
+				"css":[],
+				"js":[],
+				"img":[],
+				"index":""
+			},
+			"license":"APACHE-LICENSE-2.0"
+		},
+		
 		"tutorial-auth":{
 			"url":"tutorial-auth/api/v1",
 			
@@ -177,7 +242,6 @@
 			
 			"services":{
 				"provides":{
-					"html_assets_1":true
 				},
 				"consumes":{
 					

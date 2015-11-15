@@ -3,7 +3,7 @@ import T from 'typr'
 import assert from 'assert'
 import Sequelize from 'sequelize'
 
-import Resource from './resource'
+import Resource from '../base/resource'
 
 
 
