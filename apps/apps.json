@@ -33,6 +33,17 @@
 			]
 		},
 		
+		"devtools_panel":{
+			"type":"middleware",
+			"server":"node1",
+			"routes":[
+				{
+					"route":"/test_app",
+					"mw_file":"server/devtools/app.js"
+				}
+			]
+		},
+		
 		"html_assets_1":{
 			"type":"html_assets",
 			"server":"default",
@@ -166,7 +177,8 @@
 			
 			"services":{
 				"provides":{
-					"devtools_store":["*"]
+					"devtools_store":true,
+					"devtools_panel":true
 				},
 				"consumes":{
 				}

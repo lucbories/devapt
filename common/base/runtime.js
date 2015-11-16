@@ -107,6 +107,12 @@ class Runtime extends Loggable
 				
 				switch( cfg_service.get('type') )
 				{
+					case "middleware":{
+						let locale_exec = new exec.ExecutableRouteMiddleware()
+						let remote_exec = locale_exec
+						service = new Service(service_name, locale_exec, remote_exec) // TODO: create Real service
+						break
+					}
 					case "rest_api_models_query":{
 						let locale_exec = new exec.ExecutableRouteModelCrud()
 						let remote_exec = locale_exec

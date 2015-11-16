@@ -95,6 +95,7 @@ export default class Server extends Instance
 	
 	build_restify_server()
 	{
+		this.info('build restify server')
 		assert( this.server_protocole == 'http' || this.server_protocole == 'https', context + ':bad protocole for restify [' + this.server_protocole + ']')
 		
 		// CREATE REST SERVER
@@ -129,14 +130,14 @@ export default class Server extends Instance
 			}
 		)
 		
-		let app = require('../../server/devtools/app.js')
-		server.get(/devapp\/.*/, function(req, res, next) {
+		/*let app = require('../../server/devtools/app.js')
+		server.get(/devapp\/.*//*, function(req, res, next) {
 				console.log('/devapp/* is requested')
 				// res.send('hello')
 				app(req, res)
 				return next()
 			}
-		)
+		)*/
 		
 		
 		// SET URL
@@ -146,6 +147,7 @@ export default class Server extends Instance
 	
 	build_express_server()
 	{
+		this.info('build express server')
 		assert( this.server_protocole == 'http' || this.server_protocole == 'https', context + ':bad protocole for express [' + this.server_protocole + ']')
 		
 		// CREATE SERVER

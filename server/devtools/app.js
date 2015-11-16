@@ -8,10 +8,12 @@ import { store, config, runtime } from '../../common/store/index'
 
 
 // const state = store.getState()
-const state = config().toJS()
 
-export default function (req, res)
+
+export default function middleware(req, res)
 {
+	const state = config().toJS()
+	
 	let html_content = '<ul>'
 	const keys = Object.keys(state)
 	for(let key of keys)
@@ -19,8 +21,35 @@ export default function (req, res)
 		html_content += '<li>' + key + '</li>'
 	}
 	html_content += '</ul>'
-				
 	
+	// var maxAge = opts.maxAge === undefined ? 3600 : opts.maxAge;
+	// const maxAge = 3600
+	// res.cache({maxAge: maxAge});
+	// res.set('Content-Length', stats.size);
+	// res.set('Content-Type', 'text/html; charset=UTF-8');
+	// res.set('Last-Modified', Date.now());
+	// if (opts.charSet) {
+		// var type = res.getHeader('Content-Type') +
+		// 	'; charset=' + opts.charSet;
+		// res.setHeader('Content-Type', type);
+	// }
+	// if (opts.etag) {
+		// res.set('ETag', opts.etag(stats, opts));
+	// }
+	// res.writeHead(200);
+	res.contentType = 'text/html'
+	
+	// const head = '<head><meta charSet="utf-8"/><meta Content-Type="text/html"/><title>React Redux Isomorphic Example</title></head>'
+	const head = '<head><meta charSet="utf-8"/><title>React Redux Isomorphic Example</title></head>'
+	const body = '<body><div id="content">' + html_content + '</div></body>'
+	
+	// console.log(head, 'head')
+	// console.log(body, 'body')
+	
+	res.send('<!doctype html>\n<html lang="en-us">' + head + body + '</html>\n')
+	
+	
+	/*
 	res.send('<!doctype html>\n' + React.renderToString(
 		<html lang="en-us">
 			<head>
@@ -32,16 +61,17 @@ export default function (req, res)
 				<div id="content">
 				</div>
 				<script dangerouslySetInnerHTML={{__html: `window.__INITIAL_STATE__=${JSON.stringify(state)};`}}/>
+			</body>
+		</html>)
+	)*/
+}
+/*
+
 				<script type="javascript">
 					const content = document.getElementById('content')
 					
 					content.html = "${html_content}"
 				</script>
-			</body>
-		</html>)
-	)
-}
-/*
 
 				<div id="content" dangerouslySetInnerHTML={{__html: React.renderToString(
 					<Provider store={store}>
