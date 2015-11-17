@@ -4,7 +4,7 @@ import document from 'react-dom'
 import redux from 'redux'
 import {Provider} from 'react-redux'
 
-import { create_store } from '../../../common/store/create_store'
+import * as create_store from '../../../common/store/create_store'
 
 
 
@@ -36,8 +36,8 @@ export default class Counter extends React.Component
   }
 }
 
-
-const dest = document.getElementById('content')
+// console.log(document, 'document')
+// const dest = document.getElementById('content')
 const store = create_store(/*client, */window.__INITIAL_STATE__)
 
     // {() =>  }
@@ -47,4 +47,4 @@ const element = (
   </Provider>
 )
 
-React.render(element, dest)
+React.render(element, document.getElementById('content'))

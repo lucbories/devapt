@@ -1,10 +1,11 @@
 
 import React from 'react'
 import redux from 'redux'
+// import document from 'react-dom'
 import {Provider} from 'react-redux'
 
 import { store, config, runtime } from '../../common/store/index'
-// import {Counter} from '../../apps/public/devtools/app_component'
+import {Counter} from '../../apps/public/devtools/app_component'
 
 
 // const state = store.getState()
@@ -37,47 +38,47 @@ export default function middleware(req, res)
 		// res.set('ETag', opts.etag(stats, opts));
 	// }
 	// res.writeHead(200);
-	res.contentType = 'text/html'
+	// res.contentType = 'text/html'
 	
 	// const head = '<head><meta charSet="utf-8"/><meta Content-Type="text/html"/><title>React Redux Isomorphic Example</title></head>'
-	const head = '<head><meta charSet="utf-8"/><title>React Redux Isomorphic Example</title></head>'
-	const body = '<body><div id="content">' + html_content + '</div></body>'
+	// const head = '<head><meta charSet="utf-8"/><title>React Redux Isomorphic Example</title></head>'
+	// const body = '<body><div id="content">' + html_content + '</div></body>'
 	
 	// console.log(head, 'head')
 	// console.log(body, 'body')
+	// sss
+	// res.send('<!doctype html>\n<html lang="en-us">' + head + body + '</html>\n')
 	
-	res.send('<!doctype html>\n<html lang="en-us">' + head + body + '</html>\n')
 	
 	
-	/*
 	res.send('<!doctype html>\n' + React.renderToString(
 		<html lang="en-us">
 			<head>
 				<meta charSet="utf-8"/>
-				<title>React Redux Isomorphic Example</title>
+				<title>React Redux Isomorphic Devtools</title>
 			</head>
 			
 			<body>
-				<div id="content">
-				</div>
-				<script dangerouslySetInnerHTML={{__html: `window.__INITIAL_STATE__=${JSON.stringify(state)};`}}/>
-			</body>
-		</html>)
-	)*/
-}
-/*
-
-				<script type="javascript">
-					const content = document.getElementById('content')
-					
-					content.html = "${html_content}"
-				</script>
-
 				<div id="content" dangerouslySetInnerHTML={{__html: React.renderToString(
 					<Provider store={store}>
 						<Counter />
 					</Provider>)
 				}}/>
+				<script dangerouslySetInnerHTML={{__html: `window.__INITIAL_STATE__=${JSON.stringify(state)};`}}/>
+			</body>
+		</html>)
+	)
+}
+/*
+
+
+				<div id="content">
+				</div>
+				<script type="javascript">
+					const content = document.getElementById('content')
+					
+					content.html = "${html_content}"
+				</script>
 				
 				<script src='./app_component.js'/>
 */

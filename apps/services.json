@@ -1,0 +1,133 @@
+{
+	"services":{
+		"devtools_store":{
+			"type":"html_assets",
+			"server":"default",
+			"routes":[
+				{
+					"route":"/store",
+					"directory":"./apps/public",
+					"default_file":"store_config.html"
+				},
+				{
+					"route":"/examples",
+					"directory":"./apps/public",
+					"default_file":"react_counter.html"
+				}
+			]
+		},
+		
+		"devtools_panel":{
+			"type":"middleware",
+			"server":"node1",
+			"routes":[
+				{
+					"route":"/test_app",
+					"mw_file":"server/devtools/app.js"
+				}
+			]
+		},
+		
+		"html_assets_1":{
+			"type":"html_assets",
+			"server":"default",
+			"routes":[
+				{
+					"route":"/css/.*",
+					"directory":"./apps/public"
+				},
+				{
+					"route":"/js/.*",
+					"directory":"./apps/public"
+				},
+				{
+					"route":"/img/.*",
+					"directory":"./apps/public"
+				}
+			]
+		},
+		
+		"rest_api_models_query_1":{ 
+			"type":"rest_api_models_query",
+			"server":"default",
+			"routes":[
+				{
+					"route":"/crud"
+				}
+			]
+		},
+		
+		"rest_api_models_modifier_1":{
+			"type":"rest_api_models_modifier",
+			"server":"default",
+			"routes":[
+				{
+					"route":"/crud"
+				}
+			]
+		},
+		
+		"rest_api_resources_query_1":{
+			"type":"rest_api_resources_query",
+			"server":"default",
+			"routes":[
+				{
+					"route":"/connexions",
+					"collection":"connexions"
+				},
+				{
+					"route":"/connexions/:name",
+					"collection":"connexions",
+					"item":"name"
+				},
+				
+				{
+					"route":"/views",
+					"collection":"views"
+				},
+				{
+					"route":"/views/:name",
+					"collection":"views",
+					"item":"name"
+				},
+				
+				{
+					"route":"/models",
+					"collection":"models"
+				},
+				{
+					"route":"/models/:name",
+					"collection":"models",
+					"item":"name"
+				},
+				
+				{
+					"route":"/menubars",
+					"collection":"menubars"
+				},
+				{
+					"route":"/menubars/:name",
+					"collection":"menubars",
+					"item":"name"
+				},
+				
+				{
+					"route":"/menus",
+					"collection":"menus"
+				},
+				{
+					"route":"/menus/:name",
+					"collection":"menus",
+					"item":"name"
+				}
+			]
+		},
+		
+		"svc4":{
+			"type":"rest_api_resources_modifier",
+			"server":"node1"
+		},
+		
+		"svc6":{ "type":"html_app", "server":"node1" }
+	}
+}

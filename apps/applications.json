@@ -1,0 +1,129 @@
+{
+	"applications":{
+		"assets":{
+			"url":"assets",
+			
+			"services":{
+				"provides":{
+					"html_assets_1":true
+				},
+				"consumes":{
+				}
+			},
+			
+			"modules": [],
+			"plugins":[],
+			"resources":[],
+			
+			"assets":{
+				"css":[],
+				"js":[],
+				"img":[],
+				"index":""
+			},
+			"license":"APACHE-LICENSE-2.0"
+		},
+		
+		"devtools":{
+			"url":"devtools",
+			
+			"services":{
+				"provides":{
+					"devtools_store":true,
+					"devtools_panel":true
+				},
+				"consumes":{
+				}
+			},
+			
+			"modules": [],
+			"plugins":[],
+			"resources":[],
+			
+			"assets":{
+				"css":[],
+				"js":[],
+				"img":[],
+				"index":""
+			},
+			"license":"APACHE-LICENSE-2.0"
+		},
+		
+		"tutorial-auth":{
+			"url":"tutorial-auth/api/v1",
+			
+			"services":{
+				"provides":{
+					"rest_api_resources_query_1":["*"]
+				},
+				"consumes":{
+				}
+			},
+			
+			"modules": ["security"],
+			"plugins":[],
+			"resources":[],
+			
+			"assets":{
+				"css":[],
+				"js":[],
+				"img":[],
+				"index":""
+			},
+			"license":"APACHE-LICENSE-2.0"
+		},
+		
+		"tutorial-rest": {
+			"url":"tutorial-rest/api/v1",
+			
+			"services":{
+				"provides":{
+					"rest_api_resources_query_1":["*"],
+					"rest_api_models_query_1":["*"],
+					"html_assets_1":true
+				},
+				"consumes":{
+				}
+			},
+			
+			"modules": ["home", "security", "appbuilder"],
+			"plugins":[],
+			"resources":[],
+			
+			"assets":{
+				"css":[],
+				"js":[],
+				"img":[],
+				"index":""
+			},
+			"license":"APACHE-LICENSE-2.0"
+		},
+		
+		"tutorial-1": {
+			"url":"tutorial-1",
+			
+			"from_file": "private/app-tutorial-1/app_cfg.ini.json",
+			
+			"services":{
+				"provides":{
+				},
+				"consumes":{
+					
+				},
+				"linked":["tutorial-auth", "tutorial-api"]
+			},
+			
+			"modules": ["home", "security", "appbuilder", "demo_views", "backend_security"],
+			"plugins":["backend-foundation5"],
+			"resources":[],
+			
+			"assets":{
+				"css":["assets/css/app.css"],
+				"js":[],
+				"img":[],
+				"index":"index.html"
+			},
+			"license":"APACHE-LICENSE-2.0"
+		}
+	}
+}

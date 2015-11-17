@@ -1,0 +1,17 @@
+{
+	"servers":{
+		"default":{
+			"type":"restify",
+			"host":"localhost",
+			"port":8080,
+			"protocole":"http",
+			"middlewares":[]
+		},
+		
+		"node1":{
+			"type":"express",
+			"port":8081,
+			"middlewares":[]
+		}
+	}
+}

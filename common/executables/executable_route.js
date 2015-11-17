@@ -39,12 +39,11 @@ export default class ExecutableRoute extends Executable
 	
 	execute(arg_data)
 	{
-		this.debug('Execute: add server route')
-		
 		// CHECK APPLICATION
 		assert(T.isObject(arg_data), context + ':bad application object')
 		assert(arg_data.is_application, context + ':bad application instance')
 		const application = arg_data
+		this.info('Execute: add server route for ' + application.$name)
 		
 		// CHECK SERVER
 		const server_instance = this.server
@@ -78,8 +77,14 @@ export default class ExecutableRoute extends Executable
 	process_route(arg_server, arg_application, arg_cfg_route, arg_data)
 	{
 		const route_cb = this.get_route_cb(arg_application, arg_cfg_route, arg_data)
-		
-		arg_server.server.get(arg_cfg_route.full_route, route_cb)
+		try
+		{
+			arg_server.server.get(arg_cfg_route.full_route, route_cb)
+		}
+		catch(e)
+		{
+			console.error(e, context)
+		}
 	}
 	
 	

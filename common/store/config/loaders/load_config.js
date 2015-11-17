@@ -1,6 +1,7 @@
 
 import assert from 'assert'
 import T from 'typr'
+import path from 'path'
 
 import logs from '../../../utils/logs'
 import load_config_apps from './load_config_apps'
@@ -26,10 +27,42 @@ function load_config(arg_state, arg_initial_config)
 	// LOAD APPS.JSON
 	try{
 		// GET CONFIG JSON
-		let config = arg_initial_config || require('../../../../apps/apps.json')
+		const base_dir = '../../../../'
+		let config = arg_initial_config || require(base_dir + 'apps/apps.json')
 		config.resources = config.resources || {}
 		// config.changes_history = config.changes_history || [{ ts: Date.now(), }]
 		
+		// LOAD OTHERS FILES
+		if (T.isString(config.servers))
+		{
+			const file_path_name = path.join(base_dir, 'apps', config.servers)
+			config.servers = require(file_path_name).servers
+		}
+		if (T.isString(config.services))
+		{
+			const file_path_name = path.join(base_dir, 'apps', config.services)
+			config.services = require(file_path_name).services
+		}
+		if (T.isString(config.applications))
+		{
+			const file_path_name = path.join(base_dir, 'apps', config.applications)
+			config.applications = require(file_path_name).applications
+		}
+		if (T.isString(config.modules))
+		{
+			const file_path_name = path.join(base_dir, 'apps', config.modules)
+			config.modules = require(file_path_name).modules
+		}
+		if (T.isString(config.plugins))
+		{
+			const file_path_name = path.join(base_dir, 'apps', config.plugins)
+			config.plugins = require(file_path_name).plugins
+		}
+		if (T.isString(config.security))
+		{
+			const file_path_name = path.join(base_dir, 'apps', config.security)
+			config.security = require(file_path_name).security
+		}
 		
 		// CHECK CONFIG PARTS
 		assert(T.isObject(config), 'apps.json should be a plain object')
@@ -157,6 +190,7 @@ function load_config(arg_state, arg_initial_config)
 	catch(e)
 	{
 		arg_state.config = { error: { context:context, exception:e, error_msg:e.toString() } }
+		console.error(e, context)
 	}
 	
 	return arg_state
