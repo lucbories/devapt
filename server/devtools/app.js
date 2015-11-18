@@ -1,91 +1,135 @@
 
-import React from 'react'
-import ReactDom from 'react-dom/server'
-import redux from 'redux'
-// import document from 'react-dom'
-import {Provider} from 'react-redux'
+import T from 'typr'
+import assert from 'assert'
 
 import { store, config, runtime } from '../../common/store/index'
-import Counter from '../../apps/public/devtools/app_component'
 
 
-// const state = store.getState()
+
+const MAX_DEPTH = 15
+
+
+function render_safe_string(arg_value)
+{
+	return arg_value ? arg_value.toString().replace('<li>', '!lia!').replace('</li>', '!lib!').replace('<ul>', '!ula!').replace('</ul>', '!ulb!').replace('<', '!aaa!').replace('>', '!bbb!') : arg_value
+}
+
+function render_node(arg_value, arg_depth, arg_label)
+{
+	arg_depth = arg_depth ? arg_depth : 1
+	arg_label = arg_label == 0 ? '0' : arg_label
+	arg_label = arg_label ? arg_label : 'no name'
+	
+	if (arg_depth > MAX_DEPTH)
+	{
+		console.log('MAX DEPTH ${MAX_DEPTH} is reached')
+		return `<p>MAX DEPTH ${MAX_DEPTH} is reached</p>\n`
+	}
+	if (T.isString(arg_value))
+	{
+		arg_value = render_safe_string(arg_label) + '=' + render_safe_string(arg_value)
+		// console.log('<p>${arg_value}<p>')
+		return `<span>${arg_value}</span>\n`
+	}
+	if (T.isNumber(arg_value))
+	{
+		// console.log('<p>${arg_value}<p>')
+		return render_safe_string(arg_label) + '=' + `<span>${arg_value}</span>\n`
+	}
+	
+	if (T.isBoolean(arg_value))
+	{
+		// console.log('<p>${value}<p>')
+		const value = arg_value ? 'true' : 'false'
+		return render_safe_string(arg_label) + '=' + `<span>${value}</span>\n`
+	}
+	
+	if (T.isArray(arg_value))
+	{
+		// console.log('value is an array')
+		if (arg_value.length == 0)
+		{
+			return render_safe_string(arg_label) + '=' + '[]'
+		}
+		
+		if (arg_value.length == 1)
+		{
+			return render_safe_string(arg_label) + '=' + '[' + render_node(arg_value[0], arg_depth + 1, '0') + ']'
+		}
+		
+		let str = '<div><a class="node">' + render_safe_string(arg_label) + '</a><ul>'
+		try
+		{
+			arg_value.forEach( (value, index) =>
+				{
+					str += '<li>' + render_node(value, arg_depth + 1, index) + '</li>\n'
+				}
+			)
+		}
+		catch(e)
+		{
+		}
+		return str + '</ul></div>\n'
+	}
+	
+	if (T.isObject(arg_value))
+	{
+		// console.log('value is an object')
+		let str = '<div><a class="node">' + render_safe_string(arg_label) + '</a><ul>'
+		try
+		{
+			Object.keys(arg_value).forEach( key =>
+				{
+					str += `<li>` + render_node(arg_value[key], arg_depth + 1, key) + '</li>\n'
+				}
+			)
+		}
+		catch(e)
+		{
+		}
+		return str + '</ul></div>\n'
+	}
+	
+	
+	console.log(arg_value, 'value is unknow')
+	return '<p>unknow node of type [' + (typeof arg_value) + ']</p>\n'
+}
 
 
 export default function middleware(req, res)
 {
 	const state = config().toJS()
 	
-	// let html_content = '<ul>'
-	// const keys = Object.keys(state)
-	// for(let key of keys)
-	// {
-	// 	html_content += '<li>' + key + '</li>'
-	// }
-	// html_content += '</ul>'
 	
-	// var maxAge = opts.maxAge === undefined ? 3600 : opts.maxAge;
-	// const maxAge = 3600
-	// res.cache({maxAge: maxAge});
-	// res.set('Content-Length', stats.size);
-	// res.set('Content-Type', 'text/html; charset=UTF-8');
-	// res.set('Last-Modified', Date.now());
-	// if (opts.charSet) {
-		// var type = res.getHeader('Content-Type') +
-		// 	'; charset=' + opts.charSet;
-		// res.setHeader('Content-Type', type);
-	// }
-	// if (opts.etag) {
-		// res.set('ETag', opts.etag(stats, opts));
-	// }
-	// res.writeHead(200);
-	// res.contentType = 'text/html'
-	
-	// const head = '<head><meta charSet="utf-8"/><meta Content-Type="text/html"/><title>React Redux Isomorphic Example</title></head>'
-	// const head = '<head><meta charSet="utf-8"/><title>React Redux Isomorphic Example</title></head>'
-	// const body = '<body><div id="content">' + html_content + '</div></body>'
-	
-	// console.log(head, 'head')
-	// console.log(body, 'body')
-	// sss
-	// res.send('<!doctype html>\n<html lang="en-us">' + head + body + '</html>\n')
+	let html_content = render_node(state, 1, 'state')
 	
 	
 	
-	const html_content = React.renderToString(
-		`<Provider store={state}>
-			<Counter />
-		</Provider>`
-	)
-	
-	const html_body = ReactDom.renderToString(
-		`<html lang="en-us">
+	const html = `
+		<html lang="en-us">
 			<head>
 				<meta charSet="utf-8"/>
 				<title>Devapt Devtools</title>
 			</head>
 			
 			<body>
-				<div id="content" dangerouslySetInnerHTML={__html:` + html_content + `}/>
+				<div id="content">
+					${html_content}
+				</div>
+				<script type="text/javascript" src="http://localhost:8080/assets/js/vendor/jquery.js"> </script>
 				
-				<script dangerouslySetInnerHTML={{__html: ` + '`var __INITIAL_STATE__=${JSON.stringify(state)};`' + `}}/>
+				<script type="text/javascript">
+					$('a.node').click(
+						function(ev)
+						{
+							console.log(ev, 'ev');
+							var div = $(ev.currentTarget).parent();
+							div.children('div, ul, span').toggle()
+						}
+					)
+				</script>
 			</body>
 		</html>`
-	)
 	
-	res.send('<!doctype html>\n' + html_body)
+	res.send('<!doctype html>\n' + html)
 }
-/*
-
-
-				<div id="content">
-				</div>
-				<script type="javascript">
-					const content = document.getElementById('content')
-					
-					content.html = "${html_content}"
-				</script>
-				
-				<script src='./app_component.js'/>
-*/
-//{() => <AppComponent />}

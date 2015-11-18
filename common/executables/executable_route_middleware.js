@@ -40,7 +40,7 @@ export default class ExecutableRouteMiddleware extends ExecutableRoute
 				self.info('Loading middleware before')
 				
 				const path_file_name = path.join(__dirname, '..', '..', arg_cfg_route.mw_file)
-				mw_cb = null
+				// mw_cb = null
 				
 				if (!mw_cb)
 				{
@@ -48,13 +48,17 @@ export default class ExecutableRouteMiddleware extends ExecutableRoute
 					mw_cb = require(path_file_name)
 				}
 				
-				// fs.watch(path_file_name,
-				// 	function(event, target_file)
-				// 	{
-				// 		console.log(target_file, 'is', event)
-				// 		mw_cb = require(path_file_name)
-				// 	}
-				// )
+				fs.watch(path_file_name,
+					function(event, target_file)
+					{
+						mw_cb = null
+						self.info('Reloading middleware file [' + path_file_name + ']')
+						console.log(target_file, 'is', event)
+						delete require.cache[path_file_name]
+						mw_cb = require(path_file_name)
+						console.log(mw_cb, 'mw_cb')
+					}
+				)
 				
 				self.info('Loading middleware after')
 			}
@@ -71,7 +75,7 @@ export default class ExecutableRouteMiddleware extends ExecutableRoute
 			try
 			{
 				self.info('Execute middleware: before')
-				console.log(mw_cb, 'mw_cb')
+				// console.log(mw_cb, 'mw_cb')
 				mw_cb(req, res)
 				self.info('Execute middleware: after')
 			}
