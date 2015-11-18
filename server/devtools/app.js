@@ -1,11 +1,12 @@
 
 import React from 'react'
+import ReactDom from 'react-dom/server'
 import redux from 'redux'
 // import document from 'react-dom'
 import {Provider} from 'react-redux'
 
 import { store, config, runtime } from '../../common/store/index'
-import {Counter} from '../../apps/public/devtools/app_component'
+import Counter from '../../apps/public/devtools/app_component'
 
 
 // const state = store.getState()
@@ -15,13 +16,13 @@ export default function middleware(req, res)
 {
 	const state = config().toJS()
 	
-	let html_content = '<ul>'
-	const keys = Object.keys(state)
-	for(let key of keys)
-	{
-		html_content += '<li>' + key + '</li>'
-	}
-	html_content += '</ul>'
+	// let html_content = '<ul>'
+	// const keys = Object.keys(state)
+	// for(let key of keys)
+	// {
+	// 	html_content += '<li>' + key + '</li>'
+	// }
+	// html_content += '</ul>'
 	
 	// var maxAge = opts.maxAge === undefined ? 3600 : opts.maxAge;
 	// const maxAge = 3600
@@ -51,23 +52,28 @@ export default function middleware(req, res)
 	
 	
 	
-	res.send('<!doctype html>\n' + React.renderToString(
-		<html lang="en-us">
+	const html_content = React.renderToString(
+		`<Provider store={state}>
+			<Counter />
+		</Provider>`
+	)
+	
+	const html_body = ReactDom.renderToString(
+		`<html lang="en-us">
 			<head>
 				<meta charSet="utf-8"/>
-				<title>React Redux Isomorphic Devtools</title>
+				<title>Devapt Devtools</title>
 			</head>
 			
 			<body>
-				<div id="content" dangerouslySetInnerHTML={{__html: React.renderToString(
-					<Provider store={store}>
-						<Counter />
-					</Provider>)
-				}}/>
-				<script dangerouslySetInnerHTML={{__html: `window.__INITIAL_STATE__=${JSON.stringify(state)};`}}/>
+				<div id="content" dangerouslySetInnerHTML={__html:` + html_content + `}/>
+				
+				<script dangerouslySetInnerHTML={{__html: ` + '`var __INITIAL_STATE__=${JSON.stringify(state)};`' + `}}/>
 			</body>
-		</html>)
+		</html>`
 	)
+	
+	res.send('<!doctype html>\n' + html_body)
 }
 /*
 

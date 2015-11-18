@@ -38,17 +38,25 @@ export default class ExecutableRouteMiddleware extends ExecutableRoute
 			// LOAD MIDDLEWARE FILE
 			try{
 				self.info('Loading middleware before')
-				const path_file_name = path.join(__dirname, '..', '..', arg_cfg_route.mw_file)
-				mw_cb = require(path_file_name)
-				self.info('Loading middleware after')
 				
-				fs.watch(path_file_name,
-					function(event, target_file)
-					{
-						console.log(target_file, 'is', event)
-						mw_cb = require(path_file_name)
-					}
-				)
+				const path_file_name = path.join(__dirname, '..', '..', arg_cfg_route.mw_file)
+				mw_cb = null
+				
+				if (!mw_cb)
+				{
+					self.info('Loading middleware file [' + path_file_name + ']')
+					mw_cb = require(path_file_name)
+				}
+				
+				// fs.watch(path_file_name,
+				// 	function(event, target_file)
+				// 	{
+				// 		console.log(target_file, 'is', event)
+				// 		mw_cb = require(path_file_name)
+				// 	}
+				// )
+				
+				self.info('Loading middleware after')
 			}
 			catch(e)
 			{

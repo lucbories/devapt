@@ -1,6 +1,6 @@
 
 import React from 'react'
-import document from 'react-dom'
+// import document from 'react-dom'
 import redux from 'redux'
 import {Provider} from 'react-redux'
 
@@ -38,7 +38,7 @@ export default class Counter extends React.Component
 
 // console.log(document, 'document')
 // const dest = document.getElementById('content')
-const store = create_store(/*client, */window.__INITIAL_STATE__)
+const store = create_store(/*client, */__INITIAL_STATE__)
 
     // {() =>  }
 const element = (
