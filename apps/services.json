@@ -19,11 +19,15 @@
 		
 		"devtools_panel":{
 			"type":"middleware",
-			"server":"node1",
+			"server":"express1",
 			"routes":[
 				{
-					"route":"/test_app",
-					"mw_file":"server/devtools/app.js"
+					"route":"/store/config",
+					"mw_file":"server/devtools/store_config_mw.js"
+				},
+				{
+					"route":"/store/runtime",
+					"mw_file":"server/devtools/store_runtime_mw.js"
 				}
 			]
 		},
@@ -125,9 +129,9 @@
 		
 		"svc4":{
 			"type":"rest_api_resources_modifier",
-			"server":"node1"
+			"server":"express1"
 		},
 		
-		"svc6":{ "type":"html_app", "server":"node1" }
+		"svc6":{ "type":"html_app", "server":"express1" }
 	}
 }

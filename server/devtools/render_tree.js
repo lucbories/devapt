@@ -2,8 +2,6 @@
 import T from 'typr'
 import assert from 'assert'
 
-import { store, config, runtime } from '../../common/store/index'
-
 
 
 const MAX_DEPTH = 15
@@ -32,7 +30,7 @@ function render_expandable_node(arg_label, arg_content)
 }
 
 
-function render_node(arg_value, arg_depth, arg_label)
+export function render_node(arg_value, arg_depth, arg_label)
 {
 	arg_depth = arg_depth ? arg_depth : 1
 	arg_label = arg_label == 0 ? '0' : arg_label
@@ -108,54 +106,4 @@ function render_node(arg_value, arg_depth, arg_label)
 	
 	console.log(arg_value, 'value is unknow')
 	return '<p>unknow node of type [' + (typeof arg_value) + ']</p>\n'
-}
-
-
-export default function middleware(req, res)
-{
-	const state = config().toJS()
-	
-	
-	let html_content = render_node(state, 1, 'state')
-	
-	
-	const html = `
-		<html lang="en-us">
-			<head>
-				<meta charSet="utf-8"/>
-				<title>Devapt Devtools</title>
-				
-				<style type='text/css'>
-					#content      { margin-left: 50px; }
-					.node         { cursor: default; }
-					.node_a       { position: relative; cursor: pointer; }
-					.node_content { margin-left: 10px; }
-					.node_opened  { position: absolute;left: -0.7em; }
-					.node_closed  { position: absolute;left: -0.7em; }
-				</style>
-			</head>
-			
-			<body>
-				<div id="content">
-					${html_content}
-				</div>
-				<script type="text/javascript" src="http://localhost:8080/assets/js/vendor/jquery.js"> </script>
-				
-				<script type="text/javascript">
-					$('.node_closed').hide()
-					$('a.node_a').click(
-						function(ev)
-						{
-							var node = $(ev.currentTarget).parent();
-							
-							$('div.node_content', node).toggle()
-							$('span.node_opened', node).toggle()
-							$('span.node_closed', node).toggle()
-						}
-					)
-				</script>
-			</body>
-		</html>`
-	
-	res.send('<!doctype html>\n' + html)
 }

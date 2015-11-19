@@ -162,14 +162,53 @@ export default class Server extends Instance
 		const name = this.$name
 		const host = this.server_host
 		const port = this.server_port
-		let listener = this.server.listen(this.server_port,
-			function()
+		
+		let should_listen = true
+		/*
+		const has_cluster = this.$settings.has('workers')
+		
+		// CLUSTER
+		if (has_cluster)
+		{
+			var cluster = require('cluster');
+			var numCPUs = require('os').cpus().length;
+			
+			// const workers = this.$settings.get('workers')
+			// const min_workers = this.workers.min || 1;
+			// const max_workers = this.workers.max || 3;
+			// const method_workers = this.workers.method || 'roundrobin';
+			
+			should_listen = ! cluster.isMaster
+			
+			if (cluster.isMaster)
 			{
-				// let host = listener.address().address;
-				// let port = listener.address().port;
-				console.info('%s listening at %s : %s', name, host, port);
+				// Fork workers.
+				for(var i = 0; i < numCPUs; i++)
+				{
+					cluster.fork()
+				}
+				
+				cluster.on('exit',
+					function(worker, code, signal)
+					{
+						console.log('worker ' + worker.process.pid + ' died')
+					}
+				)
 			}
-		)
+		}*/
+		
+		// LISTENER
+		if (should_listen)
+		{
+			let listener = this.server.listen(this.server_port,
+				function()
+				{
+					// let host = listener.address().address;
+					// let port = listener.address().port;
+					console.info('%s listening at %s : %s', name, host, port);
+				}
+			)
+		}
 	}
 	
 	
