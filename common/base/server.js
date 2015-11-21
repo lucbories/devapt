@@ -200,7 +200,7 @@ export default class Server extends Instance
 		// LISTENER
 		if (should_listen)
 		{
-			let listener = this.server.listen(this.server_port,
+			/*let listener =*/ this.server.listen(this.server_port,
 				function()
 				{
 					// let host = listener.address().address;

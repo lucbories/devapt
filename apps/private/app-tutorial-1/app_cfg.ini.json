@@ -1,0 +1,144 @@
+{
+	"application":{
+		"name":"Tutorial-1",
+		"title":"Devapt Demo App",
+		"short_label":"Tutorial-1",
+		"long_label":"Devapt tutorial 1 Application",
+		"version":"1.0.0",
+		"hostname":"localhost",
+		
+		"url":{
+			"base":"/tutorial-1/",
+			"default":"index.html",
+			
+			"home":"/views/VIEW_HOME",
+			"login":"/views/VIEW_LOGIN/html_page",
+			"logout":"/views/VIEW_LOGOUT/html_page"
+		},
+		
+		"favico":{
+			"url":"assets/img/favico.ico",
+			"format":"image/vnd.microsoft.icon"
+		},
+
+		"status":{
+			"env":"DEV",
+			"offline":false,
+			"load_all_classes":true
+		},
+
+		"loggers":{
+			"default":{
+				"remote":{
+					"enabled":false,
+					"access":"ROLE_LOGGER"
+				},
+				"console":{
+					"enabled":false
+				},
+				"file":{
+					"enabled":true,
+					"path":"datas/traces.log"
+				},
+				"db":{
+					"enabled":false,
+					"connexion":"cx_auth",
+					"table":{
+						"fields":{
+							"timestamp":"",
+							"priority":"",
+							"message":""
+						}
+					}
+				}
+			},
+			"security":{
+				"remote":{
+					"enabled":true,
+					"access":"ROLE_LOGGER"
+				},
+				"file":{
+					"enabled":true,
+					"path":"datas/security.log"
+				}
+			}
+		},
+
+		"traces":{ // class name regexp : instance name regexp : method name regexp : level(all, debug, info, warning, error)
+			"enabled":true,
+			"items":{
+				"view_access_user_inspector_form":":view_access_user_inspector_form::all",
+				"view_access_users_list":":view_access_users_list::all",
+				"DevaptApplication":"DevaptApplication:::all"
+			}
+		},
+		
+		"locales":{
+			"default_zone":"Europe/Paris",
+			"default_charset":"WINDOWS-FR",
+			"html_language":"FR",
+			"html_charset":"UTF-8"
+		},
+		
+		"contact":{
+			"author":"Luc BORIES",
+			"email":"contact--NO SPAM--@--NO SPAM--devapt.org"
+		},
+	
+		"sessions":{
+			"mode":"disabled", // disabled, standard
+		
+			"standard":{
+				"cache_expire":1,
+				"gc_maxlifetime":3600,
+				"remember_me_seconds":30,
+				"use_cookies":false
+			}
+		},
+		
+		"security":{
+			"connexions":{
+				"files"[]:"db_connexions.ini"
+			}
+		},
+
+		"layouts":{
+			"default":{
+				"logo":{
+					"url":"/assets/img/logo_libapt_2.jpg",
+					"alt":"logo"
+				},
+				"header":{
+					"template":{
+						"file":"modules/home/template/header.html.template",
+						"string":""
+					}
+				},
+				"footer":{
+					"template":{
+						"file":"modules/home/template/footer.html.template",
+						"string":""
+					}
+				},
+				"home":{
+					"name":"VIEW_HOME"
+				},
+				"topbar":{
+					"name":"HOME_MENUBAR",
+					"container_id":"menubars_id"
+				},
+				"breadcrumbs":{
+					"name":"page_breadcrumbs",
+					"container_id":"page_breadcrumbs_id"
+				},
+				"content":{
+					"name":"VIEW_HOME",
+					"id":"page_content_id"
+				},
+				"backend":{
+					"name":"foundation5"
+				}
+			}
+		}
+	}
+}
