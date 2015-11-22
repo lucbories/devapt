@@ -101,7 +101,7 @@ export function html_tree_template(html_content, arg_html_title)
 	return '<!doctype html>\n' + html
 }
 
-
+/*
 export function html_table_template(arg_array, arg_html_title)
 {
 	assert( T.isArray(arg_array), 'html_table_template:bad array')
@@ -146,8 +146,8 @@ export function html_table_template(arg_array, arg_html_title)
 	html_table += '<tfoot></tfoot></table>'
 	
 	return html_template(html_table, arg_html_title, '', '')
-}
+}*/
 
 
 
-export default { html_template, html_tree_template, html_table_template }
+export default { html_template, html_tree_template }

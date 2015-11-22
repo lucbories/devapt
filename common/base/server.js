@@ -4,6 +4,8 @@ import assert from 'assert'
 import debug_fn from 'debug'
 import restify from 'restify'
 import express from 'express'
+import fs from 'fs'
+import path from 'path'
 
 import Instance from './instance'
 
@@ -88,6 +90,21 @@ export default class Server extends Instance
 		}
 		
 		super.load()
+		
+		let self = this
+		const dir_to_watch = path.join(__dirname, '../../apps/private/devtools/lib/')
+		fs.watch(dir_to_watch,
+			function(event, target_file)
+			{
+				self.info('Reloading apps/private/devtools/lib/ file [' + target_file + ']')
+				console.log(target_file, 'is', event)
+				
+				const file_path_name = path.join(dir_to_watch, target_file)
+				delete require.cache[file_path_name]
+				require(file_path_name)
+			}
+		)
+		
 		
 		this.leave_group('load')
 	}
