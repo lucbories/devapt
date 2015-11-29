@@ -76,8 +76,12 @@ class Runtime extends Loggable
 			(server_cfg, server_name) => {
 				this.info('Processing server creation of:' + server_name)
 				
-				let server = new Server(server_name, server_cfg)
+				const server_type = server_cfg.has('type') ? server_cfg.get('type') : null
+				assert( T.isString(server_type), context + ':bad server type string for server name [' + server_name + ']')
+				
+				let server = Server.create(server_type, server_name, server_cfg)
 				server.load()
+				
 				this.servers.add(server)
 				server.enable()
 			}
@@ -267,6 +271,24 @@ class Runtime extends Loggable
 		)
 		
 		this.leave_group('make_applications')
+	}
+	
+	
+	watch_files()
+	{
+		/*let self = this
+		const dir_to_watch = path.join(__dirname, '../../apps/private/devtools/lib/')
+		fs.watch(dir_to_watch,
+			function(event, target_file)
+			{
+				self.info('Reloading apps/private/devtools/lib/ file [' + target_file + ']')
+				console.log(target_file, 'is', event)
+				
+				const file_path_name = path.join(dir_to_watch, target_file)
+				delete require.cache[file_path_name]
+				require(file_path_name)
+			}
+		)*/
 	}
 }
 

@@ -6,6 +6,7 @@ import restify from 'restify'
 import express from 'express'
 import fs from 'fs'
 import path from 'path'
+import bunyan from 'bunyan'
 
 import Instance from './instance'
 
@@ -22,11 +23,12 @@ const SERVER_TYPE_RESTIFY = 'restify'
 
 export default class Server extends Instance
 {
-	constructor(arg_name, arg_settings)
+	constructor(arg_name, arg_settings, arg_context)
 	{
-		super('servers', 'Server', arg_name, arg_settings, context)
+		super('servers', 'Server', arg_name, arg_settings, arg_context ? arg_context : context)
 		
 		this.is_server = true
+		this.is_build = false
 		this.server_host = null
 		this.server_port = null
 		this.server_protocole = null
@@ -74,103 +76,16 @@ export default class Server extends Instance
 		assert( T.isString(this.server_type), context + ':bad server type string')
 		
 		// BUILD SERVER
-		switch(this.server_type)
-		{
-			case SERVER_TYPE_EXPRESS: {
-				this.build_express_server()
-				break
-			}
-			case SERVER_TYPE_RESTIFY: {
-				this.build_restify_server()
-				break
-			}
-			default:{
-				assert(false, context + ':bad server type [' + this.server_type + ']')
-			}
-		}
+		// console.log(this.build_server)
+		// console.log(typeof (this.build_server) )
+		assert( T.isFunction(this.build_server), context + ':bad build_server function')
+		this.build_server()
+		this.is_build = true
 		
 		super.load()
 		
-		let self = this
-		const dir_to_watch = path.join(__dirname, '../../apps/private/devtools/lib/')
-		fs.watch(dir_to_watch,
-			function(event, target_file)
-			{
-				self.info('Reloading apps/private/devtools/lib/ file [' + target_file + ']')
-				console.log(target_file, 'is', event)
-				
-				const file_path_name = path.join(dir_to_watch, target_file)
-				delete require.cache[file_path_name]
-				require(file_path_name)
-			}
-		)
-		
 		
 		this.leave_group('load')
-	}
-	
-	
-	build_restify_server()
-	{
-		this.info('build restify server')
-		assert( this.server_protocole == 'http' || this.server_protocole == 'https', context + ':bad protocole for restify [' + this.server_protocole + ']')
-		
-		// CREATE REST SERVER
-		this.server = restify.createServer();
-		let server = this.server
-		
-		
-		// SET MIDDLEWARES
-		
-		// TODO: LOAD MIDDLEWARES FROM SETTINGS
-		
-		// var acceptable = server.acceptable.concat(['application/x-es-module */*', 'application/x-es-module']);
-		// console.log(acceptable, 'acceptable');
-		// server.use(restify.acceptParser(acceptable));
-		server.use(restify.acceptParser(server.acceptable));
-		
-		server.use(restify.authorizationParser());
-		server.use(restify.queryParser());
-		server.use(restify.jsonp());
-		server.use(restify.gzipResponse());
-		server.use(restify.bodyParser());
-		server.use(restify.requestLogger());
-		
-		
-		// ERROR HANDLING
-		server.on('InternalServerError',
-			function (req, res, err, cb)
-			{
-				console.error(err, 'Internal server error');
-				err._customContent = 'something is wrong!';
-				return cb();
-			}
-		)
-		
-		/*let app = require('../../server/devtools/app.js')
-		server.get(/devapp\/.*//*, function(req, res, next) {
-				console.log('/devapp/* is requested')
-				// res.send('hello')
-				app(req, res)
-				return next()
-			}
-		)*/
-		
-		
-		// SET URL
-		this.server_url = this.server_protocole + '//' + this.server_host + ':' + this.server_port
-	}
-	
-	
-	build_express_server()
-	{
-		this.info('build express server')
-		assert( this.server_protocole == 'http' || this.server_protocole == 'https', context + ':bad protocole for express [' + this.server_protocole + ']')
-		
-		// CREATE SERVER
-		this.server = express();
-		
-		// TODO: BUILD EXPRESS SERVER
 	}
 	
 	
@@ -181,7 +96,49 @@ export default class Server extends Instance
 		const port = this.server_port
 		
 		let should_listen = true
-		/*
+		
+		// LISTENER
+		if (should_listen)
+		{
+			/*let listener =*/ this.server.listen(this.server_port,
+				function()
+				{
+					// let host = listener.address().address;
+					// let port = listener.address().port;
+					console.info('%s listening at %s : %s', name, host, port);
+				}
+			)
+		}
+	}
+	
+	
+	disable()
+	{
+		
+	}
+	
+	
+	static create(arg_type, arg_name, arg_settings)
+	{
+		// BUILD SERVER
+		switch(arg_type)
+		{
+			case SERVER_TYPE_EXPRESS: {
+				const ExpressServer = require('../servers/express_server')
+				return new ExpressServer(arg_name, arg_settings)
+			}
+			case SERVER_TYPE_RESTIFY: {
+				const RestifyServer = require('../servers/restify_server')
+				return new RestifyServer(arg_name, arg_settings)
+			}
+			default:{
+				assert(false, context + ':bad server type [' + arg_type + '] for name [' + arg_name + ']')
+			}
+		}
+	}
+}
+
+/*
 		const has_cluster = this.$settings.has('workers')
 		
 		// CLUSTER
@@ -212,25 +169,5 @@ export default class Server extends Instance
 					}
 				)
 			}
-		}*/
-		
-		// LISTENER
-		if (should_listen)
-		{
-			/*let listener =*/ this.server.listen(this.server_port,
-				function()
-				{
-					// let host = listener.address().address;
-					// let port = listener.address().port;
-					console.info('%s listening at %s : %s', name, host, port);
-				}
-			)
 		}
-	}
-	
-	
-	disable()
-	{
-		
-	}
-}
+*/

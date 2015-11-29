@@ -20,6 +20,8 @@ export default class Table extends Component
 		arg_settings.page_headers = ['<meta keywords="table" />']
 		
 		super(arg_settings)
+		
+		this.$type = 'Table'
 		// console.log(this.settings, 'table.settings')
 		// console.log(this.state, 'state')
 	}

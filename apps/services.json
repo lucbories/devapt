@@ -23,59 +23,65 @@
 			"routes":[
 				{
 					"route":"/store/config/all",
-					"mw_file":"apps/private/devtools/store/store_config_mw.js"
+					"mw_file":"apps/private/devtools/store/config/store_config_mw.js"
 				},
 				{
 					"route":"/store/config/applications",
-					"mw_file":"apps/private/devtools/store/store_config_applications_mw.js"
+					"mw_file":"apps/private/devtools/store/config/store_config_applications_mw.js"
 				},
 				{
 					"route":"/store/config/resources",
-					"mw_file":"apps/private/devtools/store/store_config_resources_mw.js"
-				},
-				{
-					"route":"/store/config/views",
-					"mw_file":"apps/private/devtools/store/store_config_views_mw.js"
-				},
-				{
-					"route":"/store/config/models",
-					"mw_file":"apps/private/devtools/store/store_config_models_mw.js"
-				},
-				{
-					"route":"/store/config/menus",
-					"mw_file":"apps/private/devtools/store/store_config_menus_mw.js"
-				},
-				{
-					"route":"/store/config/menubars",
-					"mw_file":"apps/private/devtools/store/store_config_menubars_mw.js"
+					"mw_file":"apps/private/devtools/store/config/store_config_resources_mw.js"
 				},
 				{
 					"route":"/store/config/services",
-					"mw_file":"apps/private/devtools/store/store_config_services_mw.js"
+					"mw_file":"apps/private/devtools/store/config/store_config_services_mw.js"
 				},
 				{
 					"route":"/store/config/servers",
-					"mw_file":"apps/private/devtools/store/store_config_servers_mw.js"
+					"mw_file":"apps/private/devtools/store/config/store_config_servers_mw.js"
 				},
 				{
 					"route":"/store/config/modules",
-					"mw_file":"apps/private/devtools/store/store_config_modules_mw.js"
+					"mw_file":"apps/private/devtools/store/config/store_config_modules_mw.js"
 				},
 				{
 					"route":"/store/config/plugins",
-					"mw_file":"apps/private/devtools/store/store_config_plugins_mw.js"
+					"mw_file":"apps/private/devtools/store/config/store_config_plugins_mw.js"
 				},
 				{
 					"route":"/store/config/security",
-					"mw_file":"apps/private/devtools/store/store_config_security_mw.js"
+					"mw_file":"apps/private/devtools/store/config/store_config_security_mw.js"
 				},
+				
+				
+				{
+					"route":"/store/config/views",
+					"mw_file":"apps/private/devtools/store/config/resources/store_config_views_mw.js"
+				},
+				{
+					"route":"/store/config/models",
+					"mw_file":"apps/private/devtools/store/config/resources/store_config_models_mw.js"
+				},
+				{
+					"route":"/store/config/menus",
+					"mw_file":"apps/private/devtools/store/config/resources/store_config_menus_mw.js"
+				},
+				{
+					"route":"/store/config/menubars",
+					"mw_file":"apps/private/devtools/store/config/resources/store_config_menubars_mw.js"
+				},
+				
+				
+				{
+					"route":"/store/runtime",
+					"mw_file":"apps/private/devtools/store/runtime/store_runtime_mw.js"
+				},
+				
+				
 				{
 					"route":"/logs",
 					"mw_file":"apps/private/devtools/logs/logs_mw.js"
-				},
-				{
-					"route":"/store/runtime",
-					"mw_file":"apps/private/devtools/store/store_runtime_mw.js"
 				}
 			]
 		},

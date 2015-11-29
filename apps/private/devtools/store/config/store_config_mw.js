@@ -2,10 +2,10 @@
 import T from 'typr'
 import assert from 'assert'
 
-import { store, config, runtime } from '../../../../common/store/index'
+import { store, config, runtime } from '../../../../../common/store/index'
 
-import { render_node } from '../lib/render_tree'
-import { html_tree_template } from '../lib/html_template'
+import { render_node } from '../../lib/render_tree'
+import { html_tree_template } from '../../lib/html_template'
 
 
 

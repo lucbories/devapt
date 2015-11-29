@@ -14,6 +14,8 @@ export default class Page extends Component
 	constructor(arg_settings)
 	{
 		super(arg_settings)
+		
+		this.$type = 'Page'
 	}
 	
 	

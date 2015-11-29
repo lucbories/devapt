@@ -1,5 +1,9 @@
-var fs = require('fs.extra');
+// var fs = require('fs.extra');
 
+var exec = require('child_process').exec;
+var child = exec('babel-node server/start.js', function(err, stdout, stderr) {
+  console.log(stdout);
+});
 
 
 

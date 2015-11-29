@@ -10,6 +10,8 @@ export default class Component
 {
 	constructor(arg_settings)
 	{
+		this.$type = 'Component'
+		
 		this.dom_node = null
 		this.dom_is_rendered_on_node = false
 		
@@ -25,6 +27,17 @@ export default class Component
 		}
 		
 		this.update_settings(arg_settings)
+	}
+	
+	
+	add_child(arg_child)
+	{
+		if ( ! T.isArray(this.settings.children) )
+		{
+			this.settings.children = []
+		}
+		
+		this.settings.children.push(arg_child)
 	}
 	
 	
