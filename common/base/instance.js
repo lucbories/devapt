@@ -62,6 +62,30 @@ export default class Instance extends Loggable
 	}
 	
 	
+	get_id()
+	{
+		return this.$id
+	}
+	
+	
+	get_name()
+	{
+		return this.$sname
+	}
+	
+	
+	get_type()
+	{
+		return this.$type
+	}
+	
+	
+	get_class()
+	{
+		return this.$class
+	}
+	
+	
 	get_descriptor()
 	{
 		return { $type:this.$type, $class:this.$class, $id:this.$id, $name:this.$name }

@@ -6,7 +6,7 @@ import { store, config, runtime } from '../../../../common/store/index'
 
 // import { render_node } from '../lib/render_tree'
 // import { html_tree_template } from '../lib/html_template'
-import Render from '../lib/render'
+import Render from '../../../../common/rendering/render'
 
 
 const context = 'apps/private/devtools/store/store_helper'

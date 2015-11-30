@@ -2,23 +2,26 @@
 import T from 'typr'
 import assert from 'assert'
 
+import Instance from './instance'
 
-const context = 'apps/devtools/lib/component'
+
+const context = 'common/rendering/base/component'
 
 
-export default class Component
+
+export default class Component extends Instance
 {
-	constructor(arg_settings)
+	constructor(arg_name, arg_settings, arg_context)
 	{
-		this.$type = 'Component'
+		super('components', 'Component', arg_name, {}, arg_context ? arg_context : context)
 		
 		this.dom_node = null
 		this.dom_is_rendered_on_node = false
 		
-		this.settings = {}
+		this.$settings = {}
 		if ( T.isFunction(this.get_default_settings) )
 		{
-			this.settings = this.get_default_settings()
+			this.$settings = this.get_default_settings()
 		}
 		
 		if ( T.isFunction(this.get_initial_state) )
@@ -32,47 +35,47 @@ export default class Component
 	
 	add_child(arg_child)
 	{
-		if ( ! T.isArray(this.settings.children) )
+		if ( ! T.isArray(this.$settings.children) )
 		{
-			this.settings.children = []
+			this.$settings.children = []
 		}
 		
-		this.settings.children.push(arg_child)
+		this.$settings.children.push(arg_child)
 	}
 	
 	
 	// READONLY INITIAL SETTINGS
 	set_settings(arg_settings)
 	{
-		this.settings = arg_settings
+		this.$settings = arg_settings
 		
-		if ( T.isObject(this.settings) && T.isObject(this.settings.state) )
+		if ( T.isObject(this.$settings) && T.isObject(this.$settings.state) )
 		{
-			this.update_state(this.settings.state)
+			this.update_state(this.$settings.state)
 		}
 	}
 	
 	update_settings(arg_settings)
 	{
-		assert( T.isObject(this.settings), context + ':update_settings:bad settings object')
+		assert( T.isObject(this.$settings), context + ':update_settings:bad settings object')
 		assert( T.isObject(arg_settings), context + ':update_settings:bad new settings object')
 		
-		this.settings = Object.assign(this.settings, arg_settings)
+		this.$settings = Object.assign(this.$settings, arg_settings)
 		
-		if ( T.isObject(this.settings) && T.isObject(this.settings.state) )
+		if ( T.isObject(this.$settings) && T.isObject(this.$settings.state) )
 		{
-			this.update_state(this.settings.state)
+			this.update_state(this.$settings.state)
 		}
 	}
 	
 	get_settings()
 	{
-		return this.settings
+		return this.$settings
 	}
 	
 	// get_default_settings()
 	// {
-	// 	return this.settings
+	// 	return this.$settings
 	// }
 	
 	
@@ -124,21 +127,21 @@ export default class Component
 	
 	get_headers()
 	{
-		return T.isArray(this.settings.page_headers) ? this.settings.page_headers : []
+		return T.isArray(this.$settings.page_headers) ? this.$settings.page_headers : []
 	}
 	
 	get_styles()
 	{
-		return T.isArray(this.settings.page_styles) ? this.settings.page_styles : []
+		return T.isArray(this.$settings.page_styles) ? this.$settings.page_styles : []
 	}
 	
 	get_scripts()
 	{
-		return T.isArray(this.settings.page_scripts) ? this.settings.page_scripts : []
+		return T.isArray(this.$settings.page_scripts) ? this.$settings.page_scripts : []
 	}
 	
 	get_scripts_urls()
 	{
-		return T.isArray(this.settings.page_scripts_urls) ? this.settings.page_scripts_urls : []
+		return T.isArray(this.$settings.page_scripts_urls) ? this.$settings.page_scripts_urls : []
 	}
 }
