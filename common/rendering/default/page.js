@@ -2,18 +2,18 @@
 import T from 'typr'
 import assert from 'assert'
 
-import Component from './component'
+import Component from '../base/component'
 
 
 
-const context = 'apps/devtools/lib/page'
+const context = 'common/rendering/default/page'
 
 
 export default class Page extends Component
 {
-	constructor(arg_settings)
+	constructor(arg_name, arg_settings)
 	{
-		super(arg_settings)
+		super(arg_name, arg_settings)
 		
 		this.$type = 'Page'
 	}
@@ -44,19 +44,19 @@ export default class Page extends Component
 	// RENDERING
 	render()
 	{
-		// console.log(this.settings, 'page.settings')
+		// console.log(this.$settings, 'page.settings')
 		// console.log(this.state, 'page.state')
 		
-		assert( T.isObject(this.settings), context + ':bad state object')
-		assert( T.isArray(this.settings.headers), context + ':bad state headers array')
-		assert( T.isArray(this.settings.styles), context + ':bad state styles array')
-		assert( T.isArray(this.settings.children), context + ':bad state children array')
-		assert( T.isArray(this.settings.scripts), context + ':bad state scripts array')
-		assert( T.isArray(this.settings.scripts_urls), context + ':bad state scripts urls array')
-		assert( T.isString(this.settings.label), context + ':bad state label string')
+		assert( T.isObject(this.$settings), context + ':bad state object')
+		assert( T.isArray(this.$settings.headers), context + ':bad state headers array')
+		assert( T.isArray(this.$settings.styles), context + ':bad state styles array')
+		assert( T.isArray(this.$settings.children), context + ':bad state children array')
+		assert( T.isArray(this.$settings.scripts), context + ':bad state scripts array')
+		assert( T.isArray(this.$settings.scripts_urls), context + ':bad state scripts urls array')
+		assert( T.isString(this.$settings.label), context + ':bad state label string')
 		
 		// CONCAT CHILDREN STATES
-		for(let child of this.settings.children)
+		for(let child of this.$settings.children)
 		{
 			// console.log(child.state, 'child.state')
 			// console.log(child.settings, 'child.settings')
@@ -67,19 +67,19 @@ export default class Page extends Component
 			
 			if (child_headers && child_headers.length > 0)
 			{
-				this.settings.headers = Array.concat(this.settings.headers, child_headers)
+				this.$settings.headers = Array.concat(this.$settings.headers, child_headers)
 			}
 			if (child_styles && child_styles.length > 0)
 			{
-				this.settings.styles = Array.concat(this.settings.styles, child_styles)
+				this.$settings.styles = Array.concat(this.$settings.styles, child_styles)
 			}
 			if (child_scripts && child_scripts.length > 0)
 			{
-				this.settings.scripts = Array.concat(this.settings.scripts, child_scripts)
+				this.$settings.scripts = Array.concat(this.$settings.scripts, child_scripts)
 			}
 			if (child_scripts_urls && child_scripts_urls.length > 0)
 			{
-				this.settings.scripts_urls = Array.concat(this.settings.scripts_urls, child_scripts_urls)
+				this.$settings.scripts_urls = Array.concat(this.$settings.scripts_urls, child_scripts_urls)
 			}
 		}
 		
@@ -92,12 +92,12 @@ export default class Page extends Component
 	
 	render_head()
 	{
-		const html_styles = this.settings.styles.join('\n')
-		const html_headers = this.settings.headers.join('\n')
+		const html_styles = this.$settings.styles.join('\n')
+		const html_headers = this.$settings.headers.join('\n')
 		
 		return `<head>
-			<meta charSet="${this.settings.charset}"/>
-			<title>${this.settings.label}</title>
+			<meta charSet="${this.$settings.charset}"/>
+			<title>${this.$settings.label}</title>
 			
 			${html_headers}
 			
@@ -112,11 +112,11 @@ export default class Page extends Component
 		let html = '<body>\n' + this.render_body_header()
 		html += '<div id="content">\n' + this.render_body_children() + '</div>\n'
 		
-		// console.log(this.settings.scripts, 'scripts')
-		// console.log(this.settings.scripts_urls, 'scripts_urls')
-		if (this.settings.scripts_urls.length > 0)
+		// console.log(this.$settings.scripts, 'scripts')
+		// console.log(this.$settings.scripts_urls, 'scripts_urls')
+		if (this.$settings.scripts_urls.length > 0)
 		{
-			html += this.settings.scripts_urls.map(url => `<script type="text/javascript" src="${url}"></script>`).join('\n') + '\n'
+			html += this.$settings.scripts_urls.map(url => `<script type="text/javascript" src="${url}"></script>`).join('\n') + '\n'
 		}
 		
 		html += this.render_body_script()
@@ -132,12 +132,12 @@ export default class Page extends Component
 	
 	render_body_children()
 	{
-		return this.settings.children.map(child => child.render()).join('\n')
+		return this.$settings.children.map(child => child.render()).join('\n')
 	}
 	
 	render_body_script()
 	{
-		const html_scripts = this.settings.scripts.join('\n')
+		const html_scripts = this.$settings.scripts.join('\n')
 		return `<script>${html_scripts}</script>\n`
 	}
 	

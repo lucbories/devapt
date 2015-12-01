@@ -2,16 +2,16 @@
 import T from 'typr'
 import assert from 'assert'
 
-import Component from './component'
+import Component from '../base/component'
 
 
 
-const context = 'apps/devtools/table'
+const context = 'common/rendering/default/table'
 
 
 export default class Table extends Component
 {
-	constructor(arg_settings)
+	constructor(arg_name, arg_settings)
 	{
 		arg_settings = T.isObject(arg_settings) ? arg_settings : {}
 		
@@ -19,10 +19,10 @@ export default class Table extends Component
 		
 		arg_settings.page_headers = ['<meta keywords="table" />']
 		
-		super(arg_settings)
+		super(arg_name, arg_settings)
 		
 		this.$type = 'Table'
-		// console.log(this.settings, 'table.settings')
+		// console.log(this.$settings, 'table.settings')
 		// console.log(this.state, 'state')
 	}
 	
@@ -95,7 +95,7 @@ export default class Table extends Component
 		
 		
 		// BUILD HTML TABLE
-		let html_table = '<table><thead><tr><th>' + this.state.label + '</th></tr><tr>' + html_head + '</tr><thead>'
+		let html_table = '<table id="' + this.get_dom_id() + '"><thead><tr><th>' + this.state.label + '</th></tr><tr>' + html_head + '</tr><thead>'
 		html_table += html_rows
 		html_table += '<tfoot></tfoot></table>'
 		

@@ -2,18 +2,18 @@
 import T from 'typr'
 import assert from 'assert'
 
-import { render_node } from '../lib/render_tree'
+import { render_node } from '../base/render_tree'
 
-import Component from './component'
+import Component from '../base/component'
 
 
 
-const context = 'apps/devtools/lib/tree'
+const context = 'common/rendering/default/tree'
 
 
 export default class Tree extends Component
 {
-	constructor(arg_settings)
+	constructor(arg_name, arg_settings)
 	{
 		arg_settings = T.isObject(arg_settings) ? arg_settings : {}
 		
@@ -40,7 +40,7 @@ export default class Tree extends Component
 			)`]
 		arg_settings.page_scripts_urls = ["http://localhost:8080/assets/js/vendor/foundation/jquery.js"]
 		
-		super(arg_settings)
+		super(arg_name, arg_settings)
 		
 		this.$type = 'Tree'
 	}
@@ -73,6 +73,6 @@ export default class Tree extends Component
 		assert( T.isObject(this.state.tree), context + ':bad state tree object')
 		assert( T.isString(this.state.label), context + ':bad state label string')
 		
-		return render_node(this.state.tree, 1, this.state.label)
+		return '<div id="' + this.get_dom_id() + '">' + render_node(this.state.tree, 1, this.state.label) + '</div>'
 	}
 }

@@ -21,7 +21,7 @@ export default class Instance extends Loggable
 		Loggable.static_info(context, 'Instance.constructor(%s,%s,%s)', arg_collection, arg_class, arg_name)
 		
 		assert( T.isString(arg_collection) && arg_collection.length > 0, context + ':bad collection string')
-		assert( store.has_collection(arg_collection), context + ':bad collection')
+		assert( arg_collection == 'components' || store.has_collection(arg_collection), context + ':bad collection')
 		assert( T.isString(arg_class) && arg_class.length > 0, context + ':bad class [' + arg_class + ']')
 		assert( T.isString(arg_name) && arg_name.length > 0, context + ':bad name [' + arg_name + ']')
 		
@@ -40,7 +40,10 @@ export default class Instance extends Loggable
 		
 		this.set_settings(arg_settings)
 		
-		dispatch_store_config_create_value(store, ['runtime', 'instances', this.$name], {'id':this.$id, 'name':this.$name, 'class':this.$class, 'type':this.$type} )
+		if (arg_collection != 'components')
+		{
+			dispatch_store_config_create_value(store, ['runtime', 'instances', this.$name], {'id':this.$id, 'name':this.$name, 'class':this.$class, 'type':this.$type} )
+		}
 	}
 	
 	
@@ -70,7 +73,7 @@ export default class Instance extends Loggable
 	
 	get_name()
 	{
-		return this.$sname
+		return this.$name
 	}
 	
 	

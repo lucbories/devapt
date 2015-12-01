@@ -1,5 +1,5 @@
 
-import make_middleware from './store_helper'
+import make_middleware from '../store_helper'
 
 
 

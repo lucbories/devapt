@@ -7,7 +7,7 @@ import { store, config, runtime } from '../../../../common/store/index'
 // import { render_node } from '../lib/render_tree'
 // import { html_tree_template } from '../lib/html_template'
 import Render from '../../../../common/rendering/render'
-
+// const Render = require('../../../../common/rendering/render')
 
 const context = 'apps/private/devtools/store/store_helper'
 
@@ -65,10 +65,12 @@ export default function make_middleware(arg_collection, arg_label, arg_title, ar
 		}
 		
 		const html = new Render()
-			.page({label:'Devapt Devtools - Store / Config / ' + arg_title})
-			.hbox(null, {items:get_menu_anchors('devtools'), label:'menu'})
+			.page('main', {label:'Devapt Devtools - Store / Config / ' + arg_title})
+			.hbox('menus', null, {items:get_menu_anchors('devtools'), label:'menu'})
 			.up()
-			.tree(null, {tree:state, label:arg_label})
+			.button('button1', null, {label:'mybutton', action_url:'myurl'})
+			.up()
+			.tree('config', null, {tree:state, label:arg_label})
 			.up()
 			.render()
 		

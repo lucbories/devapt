@@ -6,10 +6,10 @@ import Component from '../base/component'
 
 
 
-const context = 'common/rendering/default/hbox'
+const context = 'common/rendering/default/vbox'
 
 
-export default class HBox extends Component
+export default class VBox extends Component
 {
 	constructor(arg_name, arg_settings)
 	{
@@ -17,11 +17,11 @@ export default class HBox extends Component
 		
 		arg_settings.page_styles = []
 		
-		arg_settings.page_headers = ['<meta keywords="hbox" />']
+		arg_settings.page_headers = ['<meta keywords="vbox" />']
 		
 		super(arg_name, arg_settings)
 		
-		this.$type = 'HBox'
+		this.$type = 'VBox'
 	}
 	
 	
@@ -45,23 +45,13 @@ export default class HBox extends Component
 		
 		
 		// BUILD HTML ROWS
-		let html_rows = '<tr>'
+		let html_rows = ''
 		for(let i = 0 ; i < this.state.items.length ; i++)
 		{
 			const row = this.state.items[i]
 			
-			// if (T.isObject(row))
-			// {
-			// 	const keys = Object.keys(row)
-			// 	for(let key of keys)
-			// 	{
-			// 		const value = row[key]
-					
-					html_rows += '<td>' + row + '</td>'
-			// 	}
-			// }
+			html_rows += '<tr><td>' + row + '</td></tr>'
 		}
-		html_rows += '</tr>'
 		
 		
 		// BUILD HTML TABLE

@@ -2,7 +2,7 @@
 import T from 'typr'
 import assert from 'assert'
 
-import Instance from './instance'
+import Instance from '../../base/instance'
 
 
 const context = 'common/rendering/base/component'
@@ -14,6 +14,8 @@ export default class Component extends Instance
 	constructor(arg_name, arg_settings, arg_context)
 	{
 		super('components', 'Component', arg_name, {}, arg_context ? arg_context : context)
+		
+		this.is_component = true
 		
 		this.dom_node = null
 		this.dom_is_rendered_on_node = false
@@ -118,6 +120,11 @@ export default class Component extends Instance
 	get_dom_node()
 	{
 		return this.dom_node
+	}
+	
+	get_dom_id()
+	{
+		return this.get_name()
 	}
 	
 	is_rendered_on_dom()
