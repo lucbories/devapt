@@ -140,6 +140,22 @@ export default class Render
 	}
 	
 	
+	script(arg_name, arg_settings, arg_state)
+	{
+		arg_settings = arg_settings ? arg_settings : {}
+		arg_settings.state = arg_state
+		
+		let component = this.rendering_manager.create('Script', arg_name, arg_settings)
+		assert( T.isObject(component) && component.is_component, context + ':bad Script component object')
+		
+		this.current().add_child(component)
+		this.push(component)
+		// this.up()
+		
+		return this
+	}
+	
+	
 	render()
 	{
 		if (! this.current())

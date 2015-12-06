@@ -25,17 +25,21 @@ export default class ExecutableRouteMiddleware extends ExecutableRoute
 	{
 		let self = this
 		
+		
 		const path_file_name = path.join(__dirname, '..', '..', arg_cfg_route.mw_file)
 		fs.watch(path_file_name,
 			function(event, target_file)
 			{
 				self.info('Reloading middleware file [' + path_file_name + ']')
+				
 				console.log(target_file, 'is', event)
 				delete require.cache[path_file_name]
+				
 				const mw_cb = require(path_file_name)
 				console.log(mw_cb, 'mw_cb')
 			}
 		)
+		
 		
 		return function exec_http(req, res, next)
 		{

@@ -30,7 +30,7 @@ export default class Loggable
 		
 		if (T.isArray(args) && args.length > 0)
 		{
-			const arg_0 = args[0]
+			const arg_0 = args[0].toString()
 			const parts = arg_0.split('%s', args.length)
 			
 			if (parts.length > 1 && args.length > 1)

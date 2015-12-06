@@ -5,7 +5,7 @@
 			
 			"services":{
 				"provides":{
-					"html_assets_1":true
+					"html_assets_1": { "servers":["default"], "filters":["*"] }
 				},
 				"consumes":{
 				}
@@ -29,8 +29,8 @@
 			
 			"services":{
 				"provides":{
-					"devtools_store":true,
-					"devtools_panel":true
+					"devtools_store": { "servers":["default"] },
+					"devtools_panel": { "servers":["express1"] }
 				},
 				"consumes":{
 				}
@@ -54,7 +54,7 @@
 			
 			"services":{
 				"provides":{
-					"rest_api_resources_query_1":["*"]
+					"rest_api_resources_query_1": { "servers":["default"], "filters":["*"] }
 				},
 				"consumes":{
 				}
@@ -78,9 +78,9 @@
 			
 			"services":{
 				"provides":{
-					"rest_api_resources_query_1":["*"],
-					"rest_api_models_query_1":["*"],
-					"html_assets_1":true
+					"rest_api_resources_query_1": { "servers":["default"], "filters":["*"] },
+					"rest_api_models_query_1": { "servers":["default"], "filters":["*"] },
+					"html_assets_1": { "servers":["default"], "filters":["*"] }
 				},
 				"consumes":{
 				}

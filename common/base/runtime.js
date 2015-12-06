@@ -13,6 +13,8 @@ import Plugin from './plugin'
 import Application from './application'
 import Database from '../resources/database'
 
+import MiddlewareService from '../services/mw_service'
+
 
 
 let context = 'common/base/runtime'
@@ -105,16 +107,14 @@ class Runtime extends Loggable
 				// console.log(cfg_service, 'cfg_svc')
 				assert( T.isObject(cfg_service), context + ':bad service cfg for [' + service_name + ']')
 				assert( T.isString(cfg_service.get('type')), context + ':bad service type [' + cfg_service.type + ']')
-				assert( T.isString(cfg_service.get('server')), context + ':bad service server [' + cfg_service.server + ']')
+				// assert( T.isString(cfg_service.get('server')), context + ':bad service server [' + cfg_service.server + ']')
 				
 				let service = null
 				
 				switch( cfg_service.get('type') )
 				{
 					case "middleware":{
-						let locale_exec = new exec.ExecutableRouteMiddleware()
-						let remote_exec = locale_exec
-						service = new Service(service_name, locale_exec, remote_exec) // TODO: create Real service
+						service = new MiddlewareService(service_name, cfg_service)
 						break
 					}
 					case "rest_api_models_query":{

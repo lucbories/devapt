@@ -11,7 +11,7 @@ import Loggable from './loggable'
 
 
 let context = 'common/base/instance'
-
+const NOT_STORED_COLLECTIONS = ['components', 'svc_providers', 'svc_consumers']
 
 
 export default class Instance extends Loggable
@@ -21,7 +21,7 @@ export default class Instance extends Loggable
 		Loggable.static_info(context, 'Instance.constructor(%s,%s,%s)', arg_collection, arg_class, arg_name)
 		
 		assert( T.isString(arg_collection) && arg_collection.length > 0, context + ':bad collection string')
-		assert( arg_collection == 'components' || store.has_collection(arg_collection), context + ':bad collection')
+		assert( (NOT_STORED_COLLECTIONS.indexOf(arg_collection) > -1) || store.has_collection(arg_collection), context + ':bad collection')
 		assert( T.isString(arg_class) && arg_class.length > 0, context + ':bad class [' + arg_class + ']')
 		assert( T.isString(arg_name) && arg_name.length > 0, context + ':bad name [' + arg_name + ']')
 		
@@ -40,7 +40,7 @@ export default class Instance extends Loggable
 		
 		this.set_settings(arg_settings)
 		
-		if (arg_collection != 'components')
+		if ( store.has_collection(arg_collection) )
 		{
 			dispatch_store_config_create_value(store, ['runtime', 'instances', this.$name], {'id':this.$id, 'name':this.$name, 'class':this.$class, 'type':this.$type} )
 		}

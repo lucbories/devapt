@@ -33,17 +33,18 @@ export default class Service extends Instance
 	
 	
 	// CONSTRUCTOR
-	constructor(arg_svc_name, arg_locale_exec, arg_remote_exec)
+	constructor(arg_svc_name, arg_locale_exec, arg_remote_exec, arg_context)
 	{
 		assert( config.has_collection('services'), context + ':not found config.services')
 		let settings = config().hasIn(['services', arg_svc_name]) ? config().getIn(['services', arg_svc_name]) : {}
 		
-		super('services', 'Service', arg_svc_name, settings, context)
+		super('services', 'Service', arg_svc_name, settings, arg_context ? arg_context : context)
+		
 		this.status = STATUS_UNKNOW
 		
 		// CHECK EXECUTABLES
-		assert( T.isObject(arg_locale_exec) && arg_locale_exec.is_executable, context + ':bad locale executable')
-		assert( T.isObject(arg_remote_exec) && arg_remote_exec.is_executable, context + ':bad remote executable')
+		// assert( T.isObject(arg_locale_exec) && arg_locale_exec.is_executable, context + ':bad locale executable')
+		// assert( T.isObject(arg_remote_exec) && arg_remote_exec.is_executable, context + ':bad remote executable')
 		
 		this.is_service = true
 		
@@ -86,16 +87,33 @@ export default class Service extends Instance
 		return true
 	}
 	
+	
 	// ACTIVATE A SERVICE FEATURE FOR AN APPLICATION
 	activate(arg_application, arg_app_svc_cfg)
 	{
-		const exec_cfg = this.get_settings().toJS()
-		const server_name = exec_cfg.server
-		const server = runtime.servers.find_by_name(server_name)
-		assert(T.isObject(server), context + ':bad server object')
+		// console.log(arg_app_svc_cfg, context + ':arg_app_svc_cfg')
+		assert( T.isObject(arg_app_svc_cfg) , context + ":bad app svc settings object")
+		assert( T.isArray(arg_app_svc_cfg.servers), context + ":bad app svc servers array")
 		
-		exec_cfg.server = server
-		// exec_cfg.application = arg_application
+		for(let i in arg_app_svc_cfg.servers)
+		{
+			const server_name = arg_app_svc_cfg.servers[i]
+			assert(T.isString(server_name), context + ':bad server name string')
+			
+			const server = runtime.servers.find_by_name(server_name)
+			assert(T.isObject(server), context + ':bad server object')
+			
+			this.activate_on_server(arg_application, server, arg_app_svc_cfg)
+		}
+	}
+	
+	
+	// ACTIVATE A SERVICE FEATURE FOR AN APPLICATION ON A SERVER
+	activate_on_server(arg_application, arg_server, arg_app_svc_cfg)
+	{
+		const exec_cfg = this.get_settings().toJS()
+		exec_cfg.server = arg_server
+		// console.log(exec_cfg, context + ':exec_cfg')
 		
 		if (is_browser())
 		{

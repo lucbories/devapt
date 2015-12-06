@@ -10,7 +10,7 @@ export default class RenderStack
 {
 	constructor()
 	{
-		this.has_trace = false
+		this.has_trace = true
 		this.stack = []
 		this.components = {}
 	}
@@ -38,10 +38,9 @@ export default class RenderStack
 	{
 		let current_component = this.current()
 		
-		this.trace(this.stack.length, 'before pop')
-		this.trace('before pop ' + (current_component ? current_component.get_type() : 'empty') )
+		this.trace('before pop (' + this.stack.length + ') ' + (current_component ? current_component.get_type() : 'empty') )
 		this.stack.pop()
-		this.trace(this.stack.length, 'after pop')
+		this.trace('after pop (' + this.stack.length + ') ' + (current_component ? current_component.get_type() : 'empty') )
 		
 		return this.stack.length > 0 ? this.stack[this.stack.length -1] : null
 	}
@@ -51,7 +50,7 @@ export default class RenderStack
 	{
 		let current_component = this.current()
 		
-		this.trace('before push ' + (current_component ? current_component.get_type() : 'empty') )
+		this.trace('before push (' + this.stack.length + ') ' + (current_component ? current_component.get_type() : 'empty') )
 		this.stack.push(arg_component)
 		this.trace('after push ' + (this.current().get_type()) )
 		
@@ -63,7 +62,7 @@ export default class RenderStack
 	{
 		let current_component = this.current()
 		
-		this.trace('before enter ' + (current_component ? current_component.get_type() : 'empty') )
+		this.trace('before enter (' + this.stack.length + ') ' + (current_component ? current_component.get_type() : 'empty') )
 		
 		// GET TARGET COMPONENT
 		let target_component = (T.isObject(arg_value) && arg_value.is_component) ? arg_value : null

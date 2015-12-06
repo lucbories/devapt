@@ -138,7 +138,7 @@ export default class Page extends Component
 	render_body_script()
 	{
 		const html_scripts = this.$settings.scripts.join('\n')
-		return `<script>${html_scripts}</script>\n`
+		return `<script type="text/babel">${html_scripts}</script>\n`
 	}
 	
 	render_body_footter()

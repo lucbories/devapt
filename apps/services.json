@@ -2,7 +2,6 @@
 	"services":{
 		"devtools_store":{
 			"type":"html_assets",
-			"server":"default",
 			"routes":[
 				{
 					"route":"/store",
@@ -19,7 +18,6 @@
 		
 		"devtools_panel":{
 			"type":"middleware",
-			"server":"express1",
 			"routes":[
 				{
 					"route":"/store/config/all",
@@ -88,7 +86,6 @@
 		
 		"html_assets_1":{
 			"type":"html_assets",
-			"server":"default",
 			"routes":[
 				{
 					"route":"/css/.*",
@@ -107,7 +104,6 @@
 		
 		"rest_api_models_query_1":{ 
 			"type":"rest_api_models_query",
-			"server":"default",
 			"routes":[
 				{
 					"route":"/crud"
@@ -117,7 +113,6 @@
 		
 		"rest_api_models_modifier_1":{
 			"type":"rest_api_models_modifier",
-			"server":"default",
 			"routes":[
 				{
 					"route":"/crud"
@@ -127,7 +122,6 @@
 		
 		"rest_api_resources_query_1":{
 			"type":"rest_api_resources_query",
-			"server":"default",
 			"routes":[
 				{
 					"route":"/connexions",
@@ -182,10 +176,9 @@
 		},
 		
 		"svc4":{
-			"type":"rest_api_resources_modifier",
-			"server":"express1"
+			"type":"rest_api_resources_modifier"
 		},
 		
-		"svc6":{ "type":"html_app", "server":"express1" }
+		"svc6":{ "type":"html_app" }
 	}
 }

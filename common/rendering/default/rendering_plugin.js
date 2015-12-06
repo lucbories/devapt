@@ -11,6 +11,7 @@ import VBox from './vbox'
 import List from './list'
 import Table from './table'
 import Page from './page'
+import Script from './script'
 
 
 const context = 'common/rendering/default/rendering_plugin'
@@ -38,9 +39,11 @@ export default class DefaultPlugin extends RenderingPlugin
 			case 'List':   return new List(arg_name, arg_settings, arg_state)
 			case 'Table':  return new Table(arg_name, arg_settings, arg_state)
 			case 'Page':   return new Page(arg_name, arg_settings, arg_state)
+			case 'Script': return new Script(arg_name, arg_settings, arg_state)
 		}
 		
 		assert(false, context + ':bad class name')
+		return undefined
 	}
 	
 	
@@ -55,6 +58,7 @@ export default class DefaultPlugin extends RenderingPlugin
 			case 'List':
 			case 'Table':
 			case 'Page':
+			case 'Script':
 				return true
 		}
 		

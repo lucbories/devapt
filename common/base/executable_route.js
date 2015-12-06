@@ -12,7 +12,7 @@ let context = 'common/services/executable_route'
 
 
 
-export default class ExecutableRoute extends Executable
+export default class ExecutableRoute2 extends Executable
 {
 	constructor()
 	{
@@ -22,8 +22,6 @@ export default class ExecutableRoute extends Executable
 	
 	prepare(arg_settings)
 	{
-		// console.log(arg_settings, context + ':arg_settings')
-		
 		assert( T.isObject(arg_settings), context + ':no given config')
 		this.store_config = arg_settings
 		
@@ -41,13 +39,10 @@ export default class ExecutableRoute extends Executable
 	
 	execute(arg_data)
 	{
-		// console.log(this.store_config, context + ':store_config')
-		
 		// CHECK APPLICATION
 		assert(T.isObject(arg_data), context + ':bad application object')
 		assert(arg_data.is_application, context + ':bad application instance')
 		const application = arg_data
-		
 		this.info('Execute: add server route for ' + application.$name)
 		
 		// CHECK SERVER

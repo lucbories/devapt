@@ -2,7 +2,8 @@
 import T from 'typr'
 import assert from 'assert'
 
-import { store, config, runtime } from '../../../../common/store/index'
+import { store, config } from '../../../../common/store/index'
+import runtime from '../../../../common/base/runtime'
 
 // import { render_node } from '../lib/render_tree'
 // import { html_tree_template } from '../lib/html_template'
@@ -64,14 +65,75 @@ export default function make_middleware(arg_collection, arg_label, arg_title, ar
 			state = selection
 		}
 		
+		// TEST SVC CONSUMER
+		let svc = runtime.services.find_by_name('devtools_panel')
+		let consumer = svc.create_consumer()
+		let result1 = consumer.consume()
+		// console.log(result1, 'result1')
+		let result2 = consumer.consume({route:'/store/config/resources'})
+		// console.log(result2, 'result2')
+		
+		const get_script1 = `
+			const host = this.service.provider.server.server_host
+			const port = this.service.provider.server.server_port
+			const url = this.service.provider.application.url
+			let self = this
+			
+			let get_cb = function()
+			{
+				let client = restify.createJsonClient(
+					{
+						url: 'http://' + host + ':' + port,
+						version: '~1.0'
+					}
+				)
+				
+				for(let key of routes)
+				{
+					const route = url + routes[key]
+					self.info('svc consume route', route)
+					
+					client.get(route,
+						function (err, req, res, obj)
+						{
+							assert.ifError(err);
+							console.log('Server returned: %j', obj);
+						}
+					)
+				}
+			}
+			
+			get_cb()
+		`
+		
+		const get_script2 = `
+			// let runtime = require('http://localhost:8080/assets/../../../common/base/runtime')
+			
+			// let svc = runtime.services.find_by_name('devtools_panel')
+			// let consumer = svc.create_consumer()
+			// console.log(consumer, 'consumer')
+			
+			// let result1 = consumer.consume()
+			// console.log(result1, 'result1')
+			
+			// let result2 = consumer.consume({route:'/store/config/resources'})
+			// console.log(result2, 'result2')
+		`
+		
 		const html = new Render()
 			.page('main', {label:'Devapt Devtools - Store / Config / ' + arg_title})
-			.hbox('menus', null, {items:get_menu_anchors('devtools'), label:'menu'})
-			.up()
-			.button('button1', null, {label:'mybutton', action_url:'myurl'})
-			.up()
-			.tree('config', null, {tree:state, label:arg_label})
-			.up()
+				.hbox('menus', null, {items:get_menu_anchors('devtools'), label:'menu'})
+					.up()
+				// .vbox('content', null, {label:'content'})
+					.button('button1', null, {label:'mybutton', action_url:'myurl'})
+						.up()
+					.tree('config', null, {tree:state, label:arg_label})
+						.up()
+				// .up()
+			.script('test', {
+					page_scripts:[get_script2],
+					page_scripts_urls:[/*'http://localhost:8080/assets/js/vendor/require.js',*/ 'http://localhost:8080/assets/js/vendor/browser.min.js'] }, null)
+				.up()
 			.render()
 		
 		res.send(html)

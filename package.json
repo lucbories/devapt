@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "description": "Devapt REST API server",
   "author": "Luc BORIES (https://github.com/lucbories)",
-  "license": "Apache License 2.0",
+  "license": "Apache-2.0",
+  "license2": "Apache License 2.0",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/lucbories/devapt.git"
@@ -15,6 +16,7 @@
   "main": "start.js",
   "scripts": {
     "start": "babel-node --debug server/start.js",
+    "cli": "babel-node --debug server/cli.js",
     "start-vscode": "babel-node server/start.js",
     "test": "mocha --compilers js:babel/register --require ./test/test_helper.js --recursive",
     "test:watch": "npm run test -- --watch",
@@ -37,6 +39,7 @@
     "MD5": "^1.3.0",
     "babel-core": "^5.8.22",
     "bunyan": "^1.5.1",
+    "commander": "^2.9.0",
     "debug": "^2.2.0",
     "epilogue": "^0.5.2",
     "express": "^4.13.3",
@@ -62,7 +65,11 @@
     "redux-undo": "^0.5.0",
     "restify": "^3.0.3",
     "sequelize": "^3.13.0",
+    "socket.io": "^1.3.7",
     "typr": "^0.2.1",
+    "vantage": "^1.5.1",
+    "vantage-command-proxy": "^1.0.0",
+    "vantage-repl-mysql": "^1.0.0",
     "winston": "^1.0.1"
   },
   "devDependencies": {

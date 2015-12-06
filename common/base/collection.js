@@ -128,6 +128,10 @@ export default class Collection
 	find_by_id(arg_id) { return this.$items.find( item => item.id == arg_id) }
 	
 	
+	// FIND AN ITEM BY AN ATTRIBUTE: TODO optimize with a map index
+	find_by_attr(arg_attr_name, arg_attr_value) { return this.$items.find( item => (arg_attr_name in item) && item[arg_attr_name] == arg_attr_value) }
+	
+	
 	// MANAGE ACCEPTED TYPES
 	get_accepted_types()
 	{
