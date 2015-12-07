@@ -8,6 +8,7 @@ import load_config_apps from './load_config_apps'
 import load_config_modules from './load_config_modules'
 import load_config_plugins from './load_config_plugins'
 import load_config_security from './load_config_security'
+import load_config_nodes from './load_config_nodes'
 
 
 let context = 'common/store/config/loaders/load_config'
@@ -33,10 +34,10 @@ function load_config(arg_state, arg_initial_config)
 		// config.changes_history = config.changes_history || [{ ts: Date.now(), }]
 		
 		// LOAD OTHERS FILES
-		if (T.isString(config.servers))
+		if (T.isString(config.nodes))
 		{
-			const file_path_name = path.join(base_dir, 'apps', config.servers)
-			config.servers = require(file_path_name).servers
+			const file_path_name = path.join(base_dir, 'apps', config.nodes)
+			config.nodes = require(file_path_name).nodes
 		}
 		if (T.isString(config.services))
 		{
@@ -66,9 +67,7 @@ function load_config(arg_state, arg_initial_config)
 		
 		// CHECK CONFIG PARTS
 		assert(T.isObject(config), 'apps.json should be a plain object')
-		assert(T.isObject(config.servers), 'apps.json should be a plain object')
-		// assert(T.isString(config.host), 'apps.json:host should be a string')
-		// assert(T.isNumber(config.port), 'apps.json:port should be a number')
+		assert(T.isObject(config.nodes), 'apps.json:nodes should be a plain object')
 		assert(T.isObject(config.applications), 'apps.json:applications should be a plain object')
 		assert(T.isObject(config.resources), 'apps.json:resources should be a plain object')
 		assert(T.isObject(config.modules), 'apps.json:modules should be a plain object')
@@ -91,7 +90,7 @@ function load_config(arg_state, arg_initial_config)
 		arg_state.config.resources.by_type.connexions = {} // Resource names (map name:name)
 		arg_state.config.resources.by_type.loggers = {} // Resource names (map name:name)
 		
-		arg_state.config.servers      = config.servers // TODO: bload_config_servers(config.servers)
+		arg_state.config.nodes        = load_config_nodes(config.nodes)
 		arg_state.config.services     = config.services // TODO: bload_config_services(config.services)
 		arg_state.config.modules      = load_config_modules(config.modules)
 		arg_state.config.plugins      = load_config_plugins(config.plugins)

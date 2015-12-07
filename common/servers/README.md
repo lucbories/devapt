@@ -1,3 +1,12 @@
+
+cli
+nodes.promote_master node_name
+
+
+
+
+
+
 2 kind of servers:
 Express
 Restify

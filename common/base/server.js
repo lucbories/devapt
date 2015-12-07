@@ -1,7 +1,6 @@
 
 import T from 'typr'
 import assert from 'assert'
-import debug_fn from 'debug'
 import restify from 'restify'
 import express from 'express'
 import fs from 'fs'
@@ -15,11 +14,12 @@ import { store, config } from '../store/index'
 
 
 let context = 'common/base/server'
-let debug = debug_fn(context)
 
 
 const SERVER_TYPE_EXPRESS = 'express'
 const SERVER_TYPE_RESTIFY = 'restify'
+const SERVER_TYPE_CLUSTER = 'cluster'
+
 
 export default class Server extends Instance
 {
@@ -130,6 +130,10 @@ export default class Server extends Instance
 			case SERVER_TYPE_RESTIFY: {
 				const RestifyServer = require('../servers/restify_server')
 				return new RestifyServer(arg_name, arg_settings)
+			}
+			case SERVER_TYPE_CLUSTER: {
+				const ExpressServer = require('../servers/express_server')
+				return new ExpressServer(arg_name, arg_settings)
 			}
 			default:{
 				assert(false, context + ':bad server type [' + arg_type + '] for name [' + arg_name + ']')

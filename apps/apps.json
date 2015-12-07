@@ -1,5 +1,5 @@
 {
-	"servers":"servers.json",
+	"nodes":"nodes.json",
 	
 	"services":"services.json",
 	

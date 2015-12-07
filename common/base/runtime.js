@@ -28,6 +28,7 @@ class Runtime extends Loggable
 		
 		this.is_runtime = true
 		
+		this.nodes = new Collection()
 		this.servers = new Collection()
 		this.services = new Collection()
 		
@@ -54,7 +55,7 @@ class Runtime extends Loggable
 			// 2 create services
 			// 3 create applications
 		
-		this.make_servers()
+		this.make_nodes()
 		this.make_services()
 		
 		this.make_connexions()
@@ -69,12 +70,47 @@ class Runtime extends Loggable
 	}
 	
 	
-	make_servers()
+	make_nodes()
+	{
+		this.enter_group('make_nodes')
+		
+		// LOOP ON NODES
+		let cfg_nodes= config.get_collection('nodes')
+		cfg_nodes.forEach(
+			(node_cfg, node_name) => {
+				this.info('Processing node creation of:' + node_name)
+				console.log(node_cfg, 'node_cfg')
+				const is_master = node_cfg.has('is_master') ? node_cfg.get('is_master') : false
+				
+				// TODO: create Node/Master
+				/*let node = null
+				if (is_master)
+				{
+					node = new Master(node_name, node_cfg)
+				}
+				else
+				{
+					node = new Node(node_name, node_cfg)
+				}
+				
+				node.load()
+				
+				this.nodes.add(node)
+				node.enable()*/
+				
+				this.make_servers( node_cfg.get('servers') )
+			}
+		)
+		
+		this.leave_group('make_nodes')
+	}
+	
+	
+	make_servers(arg_node_servers_config)
 	{
 		this.enter_group('make_servers')
 		
-		let cfg_servers = config.get_collection('servers')
-		cfg_servers.forEach(
+		arg_node_servers_config.forEach(
 			(server_cfg, server_name) => {
 				this.info('Processing server creation of:' + server_name)
 				

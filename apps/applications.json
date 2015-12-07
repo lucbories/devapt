@@ -5,7 +5,7 @@
 			
 			"services":{
 				"provides":{
-					"html_assets_1": { "servers":["default"], "filters":["*"] }
+					"html_assets_1": { "servers":["serverA1"], "filters":["*"] }
 				},
 				"consumes":{
 				}
@@ -29,8 +29,8 @@
 			
 			"services":{
 				"provides":{
-					"devtools_store": { "servers":["default"] },
-					"devtools_panel": { "servers":["express1"] }
+					"devtools_store": { "servers":["serverA1"] },
+					"devtools_panel": { "servers":["serverA2"] }
 				},
 				"consumes":{
 				}
@@ -54,9 +54,10 @@
 			
 			"services":{
 				"provides":{
-					"rest_api_resources_query_1": { "servers":["default"], "filters":["*"] }
+					"rest_api_resources_query_1": { "servers":["serverA1"], "filters":["*"] }
 				},
 				"consumes":{
+					"rest_api_models_query_1": { "servers":["serverA1"], "filters":["*"] }
 				}
 			},
 			
@@ -78,9 +79,9 @@
 			
 			"services":{
 				"provides":{
-					"rest_api_resources_query_1": { "servers":["default"], "filters":["*"] },
-					"rest_api_models_query_1": { "servers":["default"], "filters":["*"] },
-					"html_assets_1": { "servers":["default"], "filters":["*"] }
+					"rest_api_resources_query_1": { "servers":["serverA1"], "filters":["*"] },
+					"rest_api_models_query_1": { "servers":["serverA1"], "filters":["*"] },
+					"html_assets_1": { "servers":["serverA1"], "filters":["*"] }
 				},
 				"consumes":{
 				}

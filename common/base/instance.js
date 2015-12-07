@@ -59,9 +59,9 @@ export default class Instance extends Loggable
 	}
 	
 	
-	get_setting(arg_name)
+	get_setting(arg_name, arg_default)
 	{
-		return this.$settings.has(arg_name) ? this.$settings.get(arg_name) : null
+		return this.$settings.has(arg_name) ? this.$settings.get(arg_name) : (arg_default ? arg_default : null)
 	}
 	
 	
