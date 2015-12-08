@@ -32,6 +32,35 @@
 
 // BABEL TASK ES6/7 => ES5
 // http://blogs.msdn.com/b/vscode/archive/2015/07/06/vs-code-es6.aspx
+
+{
+	"version": "0.1.0",
+	"command": "${workspaceRoot}/node_modules/.bin/babel",
+	"isShellCommand": true,
+	"tasks": [
+		{
+			"args": ["common", "--out-dir", "dist/", "-w", "--source-maps"],
+			"taskName": "watch-common",
+			"suppressTaskName": true,
+			"isBuildCommand": true, // make this the F1 > Task: Run Build Task gesture
+			"isWatching": false // tell VS Code not wait for this task to finish
+		},
+		{
+			"args": ["server/start.js", "--out-dir", "dist/", "-w", "--source-maps"],
+			"taskName": "watch-start",
+			"suppressTaskName": true,
+			"isBuildCommand": true, // make this the F1 > Task: Run Build Task gesture
+			"isWatching": false // tell VS Code not wait for this task to finish
+		},
+		{
+			"args": ["server/cli.js", "--out-dir", "dist/", "-w", "--source-maps"],
+			"taskName": "watch-cli",
+			"suppressTaskName": true,
+			"isBuildCommand": true, // make this the F1 > Task: Run Build Task gesture
+			"isWatching": false // tell VS Code not wait for this task to finish
+		}
+	]
+}
 /*{
 	"version": "0.1.0",
 	"command": "${workspaceRoot}/node_modules/.bin/babel",
@@ -46,6 +75,7 @@
 		}
 	]
 }*/
+/*
 {
 	"version": "0.1.0",
 	"command": "babel",
@@ -59,9 +89,26 @@
 			"isWatching": true // tell VS Code not wait for this task to finish
 		}
 	]
+}*/
+
+/*
+
+{
+	"version": "0.1.0",
+	"command": "${workspaceRoot}/node_modules/.bin/babel",
+	"isShellCommand": true,
+	"tasks": [
+		{
+			"args": ["src", "--out-dir", "lib", "-w", "--source-maps"],
+			"taskName": "watch",
+			"suppressTaskName": true,
+			"isBuildCommand": true, // make this the F1 > Task: Run Build Task gesture
+			"isWatching": true // tell VS Code not wait for this task to finish
+		}
+	]
 }
 
-
+*/
 
 
 // A task runner that calls the Typescipt compiler (tsc) and 

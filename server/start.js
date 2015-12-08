@@ -1,5 +1,5 @@
 
-import runtime from '../common/base/runtime'
+import runtime from 'dist/common/base/runtime'
 
 
 runtime.load()
