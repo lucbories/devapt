@@ -7,7 +7,7 @@
 	
 	"modules":{
 		"home":{
-			"base_dir":"modules/home",
+			"base_dir":"home",
 			"resources":[
 				"home_views.ini.json",
 				"home_menubars.ini.json"
@@ -17,7 +17,7 @@
 		},
 		
 		"security":{
-			"base_dir":"modules/security",
+			"base_dir":"security",
 			"resources":[
 				"security_views.ini.json",
 				"users/auth_models_many_users_groups.ini.json",
@@ -42,7 +42,7 @@
 		},
 		
 		"appbuilder":{
-			"base_dir":"modules/appbuilder",
+			"base_dir":"appbuilder",
 			"resources":[
 				"appbuilder_views.ini.json",
 				"appbuilder_menubars.ini.json"
@@ -52,7 +52,7 @@
 		},
 		
 		"demo_views":{
-			"base_dir":"modules/demo_views",
+			"base_dir":"demo_views",
 			"resources":[
 				"demo_views.ini.json",
 				"demo_containers.ini.json",
@@ -64,7 +64,7 @@
 		},
 		
 		"backend_security":{
-			"base_dir":"modules/backend_security",
+			"base_dir":"backend_security",
 			"resources":[
 				"demo_access_views_users.ini.json",
 				"demo_access_views_user_inspector.ini.json",
@@ -79,12 +79,12 @@
 	
 	"plugins":{
 		"backend-foundation5":{
-			"js":"plugins/backend-foundation5/plugin",
+			"js":"backend-foundation5/plugin",
 			"css":["/assets/css/normalize.css", "/assets/css/foundation.css"],
 			"autoload":true
 		},
 		"backend-jquery-ui":{
-			"js":"plugins/backend-jquery-ui/plugin",
+			"js":"backend-jquery-ui/plugin",
 			"css":[],
 			"autoload":true
 		}

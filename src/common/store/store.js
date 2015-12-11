@@ -1,7 +1,7 @@
 
 import T from 'typr'
 
-import create_store from './create_store';
+import create_store from './create_store'
 
 
 

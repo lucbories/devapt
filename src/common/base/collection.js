@@ -1,14 +1,13 @@
 
 import T from 'typr'
 import assert from 'assert'
-import debug_fn from 'debug'
+import Polyfill from 'babel-polyfill'
 
 import Instance from './instance'
 
 
 
 let context = 'common/base/collection'
-let debug = debug_fn(context)
 
 
 export default class Collection

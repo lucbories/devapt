@@ -19,7 +19,24 @@
 # babel apps/private/devtools/store  --out-file dist/apps-devtools-store-compiled.js  --watch
 
 
-babel common              --out-dir dist/ --source-maps
-babel server/start.js     --out-file dist/server/start.js
-babel server/cli.js       --out-file dist/server/cli.js
+echo "clean dist"
+test -d dist/ && rm -rf dist/*
+
+echo "create dist sub directories"
+test -d dist/apps    || mkdir dist/apps
+test -d dist/modules || mkdir dist/modules
+test -d dist/plugins || mkdir dist/plugins
+
+echo "copy apps to dist"
+cp -r src/apps/*     dist/apps/
+
+echo "copy modules to dist"
+cp -r src/modules/*  dist/modules/
+
+echo "copy plugins to dist"
+cp -r src/plugins/*  dist/plugins/
+
+
+echo "compile js code to dist"
+babel src --out-dir dist/ --source-maps --presets es2015
 

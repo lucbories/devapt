@@ -48,6 +48,12 @@ export default function create_store(arg_initial_state)
   // const store_fn = createStoreWithMiddleware(store_reducers, arg_initial_state)
   // console.log(store_fn.getState(), 'state')
   // return store_fn
+  
+  // const default_config =  require('./config/loaders/default_config_app.js').default_config
+  // console.log(default_config, 'default_config')
+  
+  arg_initial_state = arg_initial_state || require('./config/loaders/default_config_app.js').default_config
+  
   return createStore(store_reducers, arg_initial_state)
 }
 

@@ -28,8 +28,10 @@ function load_config(arg_state, arg_initial_config)
 	// LOAD APPS.JSON
 	try{
 		// GET CONFIG JSON
-		const base_dir = '../../../../'
-		let config = arg_initial_config || require(base_dir + 'apps/apps.json')
+		// const base_dir = '../../../../'
+		// console.log(__dirname + base_dir + 'apps/apps.json', 'apps.json file')
+		// let config = arg_initial_config || require(base_dir + 'apps/apps.json')
+		let config = arg_initial_config || {}
 		config.resources = config.resources || {}
 		// config.changes_history = config.changes_history || [{ ts: Date.now(), }]
 		
@@ -51,12 +53,12 @@ function load_config(arg_state, arg_initial_config)
 		}
 		if (T.isString(config.modules))
 		{
-			const file_path_name = path.join(base_dir, 'apps', config.modules)
+			const file_path_name = path.join(base_dir, 'modules', config.modules)
 			config.modules = require(file_path_name).modules
 		}
 		if (T.isString(config.plugins))
 		{
-			const file_path_name = path.join(base_dir, 'apps', config.plugins)
+			const file_path_name = path.join(base_dir, 'plugins', config.plugins)
 			config.plugins = require(file_path_name).plugins
 		}
 		if (T.isString(config.security))

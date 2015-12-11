@@ -1,4 +1,3 @@
-.vscode/*
 *.log
 *.session
 *.cache
@@ -8,11 +7,10 @@
 .buildpath
 npm-debug.log
 
-dist/*
+dist
 tmp
 unused
 node_modules
-extjs-5*
 
 db_connexions.ini
 unused_*

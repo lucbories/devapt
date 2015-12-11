@@ -1,5 +1,6 @@
 import T from 'typr'
 import assert from 'assert'
+import path from 'path'
 
 import { store, config } from '../store/index'
 import * as exec from '../executables/index'
@@ -10,23 +11,46 @@ import Server from './server'
 import Service from './service'
 import Module from './module'
 import Plugin from './plugin'
+import Node from './node'
 import Application from './application'
 import Database from '../resources/database'
 
 import MiddlewareService from '../services/mw_service'
-
+import { dispatch_store_config_set_all } from '../store/config/actions'
 
 
 let context = 'common/base/runtime'
 
 
+// DEFAULT RUNTIME SETTINGS
+const default_settings = {
+	'node_name': null,
+	'master':{
+		'host':null,
+		'port':null
+	},
+	'apps_settings_file':null,
+	'logs':{
+		'enabled':true,
+		'levels':['debug', 'info', 'warn', 'error'],
+		'classes':null,
+		'instances':null
+	}
+}
+
+
 class Runtime extends Loggable
 {
-	constructor()
+	constructor(arg_settings)
 	{
 		super(context)
 		
+		this.settings = Object.assign(default_settings, arg_settings)
+		
 		this.is_runtime = true
+		this.is_master = false
+		
+		this.node = null;
 		
 		this.nodes = new Collection()
 		this.servers = new Collection()
@@ -42,16 +66,27 @@ class Runtime extends Loggable
 		this.info('Runtime is created')
 	}
 	
+	
 	load()
 	{
 		this.enter_group('load')
 		
 		// 1 - STORE (config and runtime) IS CREATED BY ../store/index WHICH CALL create_store()
 				// LOAD apps.json
+		if (this.is_master)
+		{
+			this.info('Node is master')
+			if ( T.isString(this.settings.apps_settings_file) )
+			{
+				this.info('Node is master: load settings file [' + this.settings.apps_settings_file + ']')
+				const json = require( path.joins('..', this.settings.apps_settings_file) )
+				dispatch_store_config_set_all(json)
+			}
+		}
 		
 		// 2 - CREATE RUNTIME INSTANCES
 			// create instances and fill runtime.*
-			// 1 create servers
+			// 1 create nodes
 			// 2 create services
 			// 3 create applications
 		
@@ -76,29 +111,28 @@ class Runtime extends Loggable
 		
 		// LOOP ON NODES
 		let cfg_nodes= config.get_collection('nodes')
+		// console.log(cfg_nodes, 'cfg_nodes')
 		cfg_nodes.forEach(
 			(node_cfg, node_name) => {
 				this.info('Processing node creation of:' + node_name)
-				console.log(node_cfg, 'node_cfg')
-				const is_master = node_cfg.has('is_master') ? node_cfg.get('is_master') : false
 				
-				// TODO: create Node/Master
-				/*let node = null
-				if (is_master)
-				{
-					node = new Master(node_name, node_cfg)
-				}
-				else
-				{
-					node = new Node(node_name, node_cfg)
-				}
 				
+				// CREATE NODE
+				const node = new Node(node_name, node_cfg)
+				
+				if (this.settings.node_name == node_name)
+				{
+					this.info('Setting runtime node:' + node_name + ' (is_master:' + (node.is_master ? 'true' : 'false') + ')')
+					this.node = node
+					this.is_master = node.is_master
+				}
+				/*
 				node.load()
 				
 				this.nodes.add(node)
 				node.enable()*/
 				
-				this.make_servers( node_cfg.get('servers') )
+				this.make_servers( node_cfg.get('servers'), node)
 			}
 		)
 		
@@ -106,7 +140,7 @@ class Runtime extends Loggable
 	}
 	
 	
-	make_servers(arg_node_servers_config)
+	make_servers(arg_node_servers_config, arg_node)
 	{
 		this.enter_group('make_servers')
 		
@@ -120,6 +154,7 @@ class Runtime extends Loggable
 				let server = Server.create(server_type, server_name, server_cfg)
 				server.load()
 				
+				arg_node.servers.add(server)
 				this.servers.add(server)
 				server.enable()
 			}
@@ -235,6 +270,11 @@ class Runtime extends Loggable
 		let cfg_modules = config.get_collection('modules')
 		cfg_modules.forEach(
 			(module_cfg, module_name) => {
+				if (module_name == 'error')
+				{
+					console.log(module_cfg, 'error')
+					assert(false, context + ':an error occures in the modules loading process')	
+				}
 				this.info('Processing module creation of:' + module_name)
 				
 				let module_obj = new Module(module_name, module_cfg)
