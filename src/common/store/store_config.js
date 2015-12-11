@@ -14,7 +14,13 @@ config.has_collection       = function(arg_name) { return store.config_collectio
 
 config.get_collection_item  = function(arg_name, arg_item_name)
 {
+	if ( ! config().hasIn( [arg_name, arg_item_name] ) )
+	{
+		return null
+	}
+	
 	const r= config().getIn( [arg_name, arg_item_name] )
+	
 	return r ? r.toMap() : null
 }
 config.has_collection_item  = function(arg_name, arg_item_name) { return config().hasIn( [arg_name, arg_item_name] ) }

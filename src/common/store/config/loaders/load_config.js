@@ -14,6 +14,8 @@ import load_config_nodes from './load_config_nodes'
 let context = 'common/store/config/loaders/load_config'
 let error_msg_bad_config = context + ':bad config'
 
+const base_dir = '../../../..'
+
 
 
 /**
@@ -28,10 +30,12 @@ function load_config(arg_state, arg_initial_config)
 	// LOAD APPS.JSON
 	try{
 		// GET CONFIG JSON
-		// const base_dir = '../../../../'
-		// console.log(__dirname + base_dir + 'apps/apps.json', 'apps.json file')
-		// let config = arg_initial_config || require(base_dir + 'apps/apps.json')
-		let config = arg_initial_config || {}
+		if (! arg_initial_config)
+		{
+			arg_initial_config = require('./default_config_app').default_config
+		}
+		
+		let config = arg_initial_config
 		config.resources = config.resources || {}
 		// config.changes_history = config.changes_history || [{ ts: Date.now(), }]
 		

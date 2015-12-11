@@ -10,6 +10,7 @@ console.log(tt, 'test')
 
 const runtime_settings = {
 	'node_name': 'NodeA',
+	'is_master':true,
 	'apps_settings_file': 'apps/apps.json',
 	'logs':{
 		'enabled':true,

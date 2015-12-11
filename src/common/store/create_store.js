@@ -52,8 +52,6 @@ export default function create_store(arg_initial_state)
   // const default_config =  require('./config/loaders/default_config_app.js').default_config
   // console.log(default_config, 'default_config')
   
-  arg_initial_state = arg_initial_state || require('./config/loaders/default_config_app.js').default_config
-  
   return createStore(store_reducers, arg_initial_state)
 }
 

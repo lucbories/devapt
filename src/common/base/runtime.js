@@ -25,6 +25,7 @@ let context = 'common/base/runtime'
 // DEFAULT RUNTIME SETTINGS
 const default_settings = {
 	'node_name': null,
+	'is_master':false,
 	'master':{
 		'host':null,
 		'port':null
@@ -41,14 +42,14 @@ const default_settings = {
 
 class Runtime extends Loggable
 {
-	constructor(arg_settings)
+	constructor()
 	{
 		super(context)
 		
-		this.settings = Object.assign(default_settings, arg_settings)
+		this.settings = default_settings
 		
 		this.is_runtime = true
-		this.is_master = false
+		this.is_master = this.settings.is_master
 		
 		this.node = null;
 		
@@ -67,9 +68,12 @@ class Runtime extends Loggable
 	}
 	
 	
-	load()
+	load(arg_settings)
 	{
 		this.enter_group('load')
+		
+		this.settings = Object.assign(default_settings, arg_settings)
+		this.is_master = this.settings.is_master
 		
 		// 1 - STORE (config and runtime) IS CREATED BY ../store/index WHICH CALL create_store()
 				// LOAD apps.json
@@ -79,8 +83,8 @@ class Runtime extends Loggable
 			if ( T.isString(this.settings.apps_settings_file) )
 			{
 				this.info('Node is master: load settings file [' + this.settings.apps_settings_file + ']')
-				const json = require( path.joins('..', this.settings.apps_settings_file) )
-				dispatch_store_config_set_all(json)
+				const json = require( path.join('../..', this.settings.apps_settings_file) )
+				dispatch_store_config_set_all(store, json)
 			}
 		}
 		

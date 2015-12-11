@@ -4,8 +4,7 @@ import T from 'typr'
 import load_config from './loaders/load_config'
 
 
-
-const default_config = load_config({})
+const default_config = load_config({}, undefined)
 
 export const INITIAL_STATE = fromJS(default_config);
 

@@ -22,7 +22,7 @@
 			"showOutput": "always",
 			
 			// Task is running in watching mode.
-			"isWatching": true
+			"isWatching": false
 		}
 	]
 }
