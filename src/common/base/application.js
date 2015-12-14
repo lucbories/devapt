@@ -81,6 +81,7 @@ export default class Application extends Instance
 		
 		
 		// TODO: ENABLE CONSUMED SERVICES
+		this.info('enable consumed services (todo)')
 		assert( this.$settings.hasIn(['services', 'consumes']), context + ':bad settings.services.consumes key')
 		const consumes = this.$settings.getIn(['services', 'consumes'])
 		assert( T.isObject(consumes), context + ':bad settings.services.consumes object')
@@ -101,6 +102,7 @@ export default class Application extends Instance
 		
 		
 		// ENABLE USED MODULES
+		this.info('enable used modules')
 		assert( this.$settings.has('modules'), context + ':bad settings.modules key')
 		const cfg_modules = this.$settings.get('modules')
 		assert( T.isObject(cfg_modules), context + ':bad settings.modules object')
@@ -122,6 +124,7 @@ export default class Application extends Instance
 		
 		
 		// ENABLE USED PLUGINS
+		this.info('enable used plugins')
 		assert( this.$settings.has('plugins'), context + ':bad settings.plugins key')
 		const cfg_plugins = this.$settings.get('plugins')
 		assert( T.isObject(cfg_plugins), context + ':bad settings.plugins object')
@@ -141,17 +144,20 @@ export default class Application extends Instance
 		
 		
 		// ENABLE PROVIDED SERVICES
+		this.info('enable provided services')
 		assert( this.$settings.hasIn(['services', 'provides']), context + ':bad settings.services.provides key')
 		const provides = this.$settings.getIn(['services', 'provides'])
 		assert( T.isObject(provides), context + ':bad settings.services.provides object')
 		provides.forEach(
 			(provide_svc_cfg, service_name) => {
+				this.info('loop on service [' + service_name + ']')
 				let service = runtime.services.find_by_name(service_name)
 				
 				// assert( T.isObject(service) && service.is_service, context + ':bad service object')
 				
 				if (service)
 				{
+					// this.info('activate service [' + service_name + ']')
 					service.activate(this, provide_svc_cfg.toJS())
 					
 					service.enable()

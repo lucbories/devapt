@@ -82,6 +82,7 @@ function load_config(arg_state, arg_initial_config)
 		
 		
 		// LOAD CONFIG PARTS
+		logs.info(context, 'loading config parts')
 		arg_state.config = {}
 		
 		arg_state.config.resources = {}
@@ -105,6 +106,7 @@ function load_config(arg_state, arg_initial_config)
 		
 		
 		// POPULATE STORE RESOURCES
+		logs.info(context, 'populate store resources, loop on modules')
 		Object.keys(arg_state.config.modules).forEach(
 			(module_name) => {
 				if (module_name === 'error' || module_name === 'error_msg' ||module_name === 'files')
@@ -112,12 +114,13 @@ function load_config(arg_state, arg_initial_config)
 					return
 				}
 				
-				// logs.info(context, 'loading config for module ' + module_name)
+				logs.info(context, 'loading config for module ' + module_name)
 				
 				let module_obj = arg_state.config.modules[module_name]
 				arg_state.config.resources.by_module[module_name] = {}
 				
 				// REGISTER RESOURCE BY NAME
+				logs.info(context, 'storing resources by name for module ' + module_name)
 				Object.keys(module_obj.resources_by_name).forEach(
 					(resource_name) => {
 						// logs.info(context, 'loading config for module ' + module_name + ' for register resource by name for ' + resource_name)
@@ -129,6 +132,7 @@ function load_config(arg_state, arg_initial_config)
 				)
 				
 				// REGISTER RESOURCE BY FILE
+				logs.info(context, 'storing resources by file for module ' + module_name)
 				Object.keys(module_obj.resources_by_file).forEach(
 					(file_name) => {
 						// logs.info(context, 'loading config for module ' + module_name + ' for register resource by file:' + file_name)
@@ -143,6 +147,7 @@ function load_config(arg_state, arg_initial_config)
 				)
 				
 				// REGISTER RESOURCE BY TYPE
+				logs.info(context, 'storing resources by type for module ' + module_name)
 				Object.keys(module_obj.resources_by_type).forEach(
 					(type_name) => {
 						// logs.info(context, 'loading config for module ' + module_name + ' for register resource by type:' + type_name)
@@ -154,11 +159,14 @@ function load_config(arg_state, arg_initial_config)
 						)
 					}
 				)
+				
+				logs.info(context, 'storing resources end for module ' + module_name)
 			}
 		)
 		
 		
 		// PROCESS ERROR
+		logs.info(context, 'processing errors')
 		if (arg_state.config.modules.error)
 		{
 			if (! arg_state.config.suberrors)
@@ -198,6 +206,8 @@ function load_config(arg_state, arg_initial_config)
 		console.error(e, context)
 	}
 	
+	
+	logs.info(context, 'loading config is finished, returns state')
 	return arg_state
 }
 

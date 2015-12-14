@@ -17,6 +17,7 @@ export default class Loggable
 	{
 		this.is_loggable = true
 		this.$context = arg_context
+		this.is_trace_enabled = true
 	}
 	
 	
@@ -64,32 +65,46 @@ export default class Loggable
 	// INSTANCE METHODS
 	debug(...arg_msg)
 	{
-		
-		logs.debug(this.$context, Loggable.format(arg_msg))
+		if(this.is_trace_enabled)
+		{
+			logs.debug(this.$context, Loggable.format(arg_msg))
+		}
 	}
 	
 	
 	info(...arg_msg)
 	{
-		logs.info(this.$context, Loggable.format(arg_msg))
+		if(this.is_trace_enabled)
+		{
+			logs.info(this.$context, Loggable.format(arg_msg))
+		}
 	}
 	
 	
 	error(...arg_msg)
 	{
-		logs.error(this.$context, Loggable.format(arg_msg))
+		if(this.is_trace_enabled)
+		{
+			logs.error(this.$context, Loggable.format(arg_msg))
+		}
 	}
 	
 	
 	enter_group(arg_group)
 	{
-		logs.info(this.$context, '[' + arg_group + '] ENTER ----------------------------------------------------------------')
+		if(this.is_trace_enabled)
+		{
+			logs.info(this.$context, '[' + arg_group + '] ------- ENTER -------')
+		}
 	}
 	
 	
 	leave_group(arg_group)
 	{
-		logs.info(this.$context, '[' + arg_group + '] LEAVE ----------------------------------------------------------------')
+		if(this.is_trace_enabled)
+		{
+			logs.info(this.$context, '[' + arg_group + '] ------- LEAVE -------')
+		}
 	}
 	
 	
@@ -115,12 +130,12 @@ export default class Loggable
 	
 	static static_enter_group(arg_context, arg_group)
 	{
-		logs.info(arg_context, '[' + arg_group + '] ENTER ----------------------------------------------------------------')
+		logs.info(arg_context, '[' + arg_group + '] ------- ENTER -------')
 	}
 	
 	
 	static static_leave_group(arg_context, arg_group)
 	{
-		logs.info(arg_context, '[' + arg_group + '] LEAVE ----------------------------------------------------------------')
+		logs.info(arg_context, '[' + arg_group + '] ------- LEAVE -------')
 	}
 }

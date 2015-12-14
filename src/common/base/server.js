@@ -15,10 +15,12 @@ import { store, config } from '../store/index'
 
 let context = 'common/base/server'
 
+export const ServerTypes = {
+	SERVER_TYPE_EXPRESS : 'express',
+	SERVER_TYPE_RESTIFY : 'restify',
+	SERVER_TYPE_CLUSTER : 'cluster'
+}
 
-const SERVER_TYPE_EXPRESS = 'express'
-const SERVER_TYPE_RESTIFY = 'restify'
-const SERVER_TYPE_CLUSTER = 'cluster'
 
 
 export default class Server extends Instance
@@ -34,6 +36,7 @@ export default class Server extends Instance
 		this.server_protocole = null
 		this.server_type = null
 	}
+	
 	
 	load()
 	{
@@ -84,7 +87,6 @@ export default class Server extends Instance
 		
 		super.load()
 		
-		
 		this.leave_group('load')
 	}
 	
@@ -115,30 +117,6 @@ export default class Server extends Instance
 	disable()
 	{
 		
-	}
-	
-	
-	static create(arg_type, arg_name, arg_settings)
-	{
-		// BUILD SERVER
-		switch(arg_type)
-		{
-			case SERVER_TYPE_EXPRESS: {
-				const ExpressServer = require('../servers/express_server')
-				return new ExpressServer(arg_name, arg_settings)
-			}
-			case SERVER_TYPE_RESTIFY: {
-				const RestifyServer = require('../servers/restify_server')
-				return new RestifyServer(arg_name, arg_settings)
-			}
-			case SERVER_TYPE_CLUSTER: {
-				const ExpressServer = require('../servers/express_server')
-				return new ExpressServer(arg_name, arg_settings)
-			}
-			default:{
-				assert(false, context + ':bad server type [' + arg_type + '] for name [' + arg_name + ']')
-			}
-		}
 	}
 }
 

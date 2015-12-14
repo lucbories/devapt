@@ -8,7 +8,7 @@ import Server from '../base/server'
 
 
 
-let context = 'common/server/restify_server'
+let context = 'common/servers/restify_server'
 
 
 export default class RestifyServer extends Server

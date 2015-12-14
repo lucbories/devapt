@@ -1,11 +1,12 @@
 
-
 import T from 'typr'
 import assert from 'assert'
 
-import Instance from './instance'
 import { is_browser, is_server } from '../utils/is_browser'
 import { store, config } from '../store/index'
+
+import Instance from './instance'
+import Collection from './collection'
 import runtime from './runtime'
 
 
@@ -49,6 +50,8 @@ export default class Service extends Instance
 		this.is_service = true
 		
 		this.status = Service.STATUS_CREATED
+		this.registered_nodes = new Collection()
+		
 		this.locale_exec = arg_locale_exec
 		this.remote_exec = arg_remote_exec
 	}
@@ -94,16 +97,23 @@ export default class Service extends Instance
 		// console.log(arg_app_svc_cfg, context + ':arg_app_svc_cfg')
 		assert( T.isObject(arg_app_svc_cfg) , context + ":bad app svc settings object")
 		assert( T.isArray(arg_app_svc_cfg.servers), context + ":bad app svc servers array")
+		// this.info('servers ' + arg_app_svc_cfg.servers.length)
 		
 		for(let i in arg_app_svc_cfg.servers)
 		{
 			const server_name = arg_app_svc_cfg.servers[i]
 			assert(T.isString(server_name), context + ':bad server name string')
+			// this.info('server_name ' + server_name)
 			
-			const server = runtime.servers.find_by_name(server_name)
-			assert(T.isObject(server), context + ':bad server object')
-			
-			this.activate_on_server(arg_application, server, arg_app_svc_cfg)
+			const server = runtime.node.servers.find_by_name(server_name)
+			if ( T.isObject(server) )
+			{
+				this.activate_on_server(arg_application, server, arg_app_svc_cfg)
+			}
+			else
+			{
+				this.info('server_name not found ' + server_name)
+			}
 		}
 	}
 	
@@ -111,6 +121,7 @@ export default class Service extends Instance
 	// ACTIVATE A SERVICE FEATURE FOR AN APPLICATION ON A SERVER
 	activate_on_server(arg_application, arg_server, arg_app_svc_cfg)
 	{
+		this.info('activate_on_server [' + arg_server.get_name() + '] for application [' + arg_application.get_name() + ']')
 		const exec_cfg = this.get_settings().toJS()
 		exec_cfg.server = arg_server
 		// console.log(exec_cfg, context + ':exec_cfg')

@@ -153,4 +153,12 @@ export default class Collection
 	{
 		return this.$accepted_types.indexOf(arg_type) > -1
 	}
+	
+	forEach(arg_cb)
+	{
+		for(let item of this.$items)
+		{
+			arg_cb(item)
+		}
+	}
 }

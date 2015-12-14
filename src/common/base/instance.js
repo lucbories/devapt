@@ -11,7 +11,7 @@ import Loggable from './loggable'
 
 
 let context = 'common/base/instance'
-const NOT_STORED_COLLECTIONS = ['components', 'svc_providers', 'svc_consumers']
+const NOT_STORED_COLLECTIONS = ['registered_services', 'components', 'svc_providers', 'svc_consumers']
 
 
 export default class Instance extends Loggable

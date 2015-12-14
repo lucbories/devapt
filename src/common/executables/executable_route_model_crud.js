@@ -10,7 +10,7 @@ import ExecutableRoute from './executable_route'
 
 
 
-let context = 'common/services/executable_route_model_crud'
+let context = 'common/executables/executable_route_model_crud'
 let ForbiddenError = epilogue.Errors.ForbiddenError;
 
 

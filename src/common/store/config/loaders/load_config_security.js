@@ -21,7 +21,7 @@ let error_msg_bad_connexion = context + ':security.connexions.* should be a stri
 let error_msg_bad_cx_config = context + ':security.connexions.*.* should be a valid connexion'
 
 const apps_dir = '../../../../apps/private/'
-
+	
 
 function load_config_security(arg_security_config)
 {

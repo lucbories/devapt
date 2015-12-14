@@ -5,7 +5,7 @@
 		"port": "3306",
 		"database_name": "auth_dev",
 		"user_name": "root",
-		"user_pwd": "jokari",
+		"user_pwd": "",
 		"charset": "Latin1"
 	}
 }

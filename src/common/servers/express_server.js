@@ -2,12 +2,13 @@
 import T from 'typr'
 import assert from 'assert'
 import express from 'express'
+// import browsersync from "browser-sync"
 
 import Server from '../base/server'
 
 
 
-let context = 'common/server/express_server'
+let context = 'common/servers/express_server'
 
 
 export default class ExpressServer extends Server
@@ -29,7 +30,12 @@ export default class ExpressServer extends Server
 		
 		// CREATE SERVER
 		this.server = express();
-		
+		// browsersync.create().init(
+		// 	{
+		// 		server:'../..',
+		// 		middleware:[this.server]
+		// 	}
+		// )
 		
 		this.leave_group('build_server')
 	}

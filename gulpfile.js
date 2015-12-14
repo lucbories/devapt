@@ -7,10 +7,12 @@ var sourcemaps = require('gulp-sourcemaps');
 var babel = require('gulp-babel');
 var concat = require('gulp-concat');
 var changed = require('gulp-changed');
+var browserSync = require('browser-sync').create();
 
 
 
-var SRC_ALL = 'src/**/*.js';
+var SRC_ALL_JS = 'src/**/*.js';
+var SRC_ALL_JSON = 'src/**/*.json';
 var SRC_BROWSER = 'src/browser/**/*.js';
 var SRC_COMMON  = 'src/common/**/*.js';
 var SRC_SERVER  = 'src/server/**/*.js';
@@ -23,12 +25,12 @@ var DST_SERVER  = 'dist/server/**/*.js';
 
 
 /*
-    BUILD ALL SRC/ FILES TO DIST/
+    BUILD ALL SRC/ JS FILES TO DIST/
         with sourcemap files
         build only changed files
 */
-gulp.task('build_all_files', () => {
-    return gulp.src(SRC_ALL)
+gulp.task('build_all_js', () => {
+    return gulp.src(SRC_ALL_JS)
 		.pipe(changed(DST))
         .pipe(sourcemaps.init())
         .pipe(
@@ -37,6 +39,17 @@ gulp.task('build_all_files', () => {
             })
         )
         .pipe(sourcemaps.write('.'))
+        .pipe(gulp.dest(DST));
+});
+
+
+/*
+    COPY ALL SRC/ JSON FILES TO DIST/
+        build only changed files
+*/
+gulp.task('build_all_json', () => {
+    return gulp.src(SRC_ALL_JSON)
+		.pipe(changed(DST))
         .pipe(gulp.dest(DST));
 });
 
@@ -78,4 +91,36 @@ gulp.task('build_bundles', ['build_bundle_browser', 'build_bundle_common', 'buil
 
 gulp.task('release', ['build_all_files', 'build_bundles']);
 
-gulp.task('default', ['build_all_files']);
+gulp.task('default', ['build_all_js', 'build_all_json']);
+
+
+
+
+
+// var watcher = gulp.watch('js/**/*.js', ['uglify','reload']);
+// watcher.on('change', function(event) {
+//   console.log('File ' + event.path + ' was ' + event.type + ', running tasks...');
+// });
+
+gulp.task('js-watch', ['build_all_js'], browserSync.reload);
+gulp.task('serve', ['build_all_js'],
+    function ()
+    {
+        // Serve files from the root of this project
+        browserSync.init({
+            server: {
+                baseDir: "./"
+            }
+        });
+    
+        // add browserSync.reload to the tasks array to make
+        // all browsers reload after tasks are complete.
+        var watcher = gulp.watch(SRC_ALL_JS, ['js-watch']);
+        watcher.on('change',
+            function(event)
+            {
+                console.log('File ' + event.path + ' was ' + event.type + ', running tasks...');
+            }
+        );
+    }
+);

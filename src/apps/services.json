@@ -89,15 +89,15 @@
 			"routes":[
 				{
 					"route":"/css/.*",
-					"directory":"./apps/public"
+					"directory":"./public"
 				},
 				{
 					"route":"/js/.*",
-					"directory":"./apps/public"
+					"directory":"./public"
 				},
 				{
 					"route":"/img/.*",
-					"directory":"./apps/public"
+					"directory":"./public"
 				}
 			]
 		},

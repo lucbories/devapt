@@ -7,7 +7,7 @@ import Server from '../base/server'
 
 
 
-let context = 'common/server/socketio_server'
+let context = 'common/servers/socketio_server'
 
 
 export default class SocketIOServer extends Server

@@ -38,6 +38,7 @@
   "dependencies": {
     "MD5": "^1.3.0",
     "babel-core": "^6.1.0",
+    "browser-sync": "^2.10.0",
     "bunyan": "^1.5.1",
     "commander": "^2.9.0",
     "debug": "^2.2.0",
@@ -65,11 +66,14 @@
     "redux-undo": "^0.5.0",
     "restify": "^3.0.3",
     "sequelize": "^3.13.0",
+    "simplebus": "0.0.4",
+    "simpleremote": "0.0.5",
     "socket.io": "^1.3.7",
     "typr": "^0.2.1",
     "vantage": "^1.5.1",
     "vantage-command-proxy": "^1.0.0",
     "vantage-repl-mysql": "^1.0.0",
+    "vantage-repl-sandboxed": "^1.0.1",
     "winston": "^1.0.1"
   },
   "devDependencies": {
