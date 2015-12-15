@@ -30,6 +30,8 @@ export default class BusServer extends Server
 		const port = this.server_port
 		const size = this.get_setting('size', 1000)
 		
+		console.log('BusServer.build_server %s:%s of size %s', host, port, size)
+		
 		this.bus = simplebus.createBus(size);
 		this.server = simplebus.createServer(this.bus, port, host);
 		
@@ -65,6 +67,7 @@ export default class BusServer extends Server
 	
 	static create_client(arg_host, arg_port)
 	{
+		console.log('BusServer.create_client %s:%s', arg_host, arg_port)
 		var client = simplebus.createClient(arg_port, arg_host)
 		
 		return client

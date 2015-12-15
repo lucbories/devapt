@@ -1,14 +1,14 @@
 import T from 'typr'
 import assert from 'assert'
 import path from 'path'
-import { Map } from 'immutable'
+import { Map, fromJS } from 'immutable'
 
 import { store, config } from '../store/index'
 import * as exec from '../executables/index'
 import MiddlewareService from '../services/mw_service'
 
 import Collection from './collection'
-import Loggable from './loggable'
+import Settingsable from './settingsable'
 import Service from './service'
 import RegisteredService from './registered_service'
 
@@ -20,36 +20,33 @@ let context = 'common/base/runtime'
 // DEFAULT RUNTIME SETTINGS
 const default_settings = {
 	'is_master':false,
+	
 	'master':{
 		'name': null,
 		'host':"localhost",
 		'port':5000
 	},
+	
 	'node':{
-		'name': null,
+		'name': null/*,
 		'host':"localhost",
-		'port':5001
+		'port':5001*/
 	},
-	'apps_settings_file':null,
-	'logs':{
-		'enabled':true,
-		'levels':['debug', 'info', 'warn', 'error'],
-		'classes':null,
-		'instances':null
-	}
+	
+	'apps_settings_file':null
 }
 
 
-class Runtime extends Loggable
+class Runtime extends Settingsable
 {
 	constructor()
 	{
 		super(context)
 		
-		this.settings = default_settings
+		this.$settings = fromJS( default_settings )
 		
 		this.is_runtime = true
-		this.is_master = this.settings.is_master
+		this.is_master = this.get_setting('is_master', false)
 		
 		this.node = null;
 		
@@ -73,8 +70,8 @@ class Runtime extends Loggable
 	{
 		this.enter_group('load')
 		
-		this.settings = Object.assign(default_settings, arg_settings)
-		this.is_master = this.settings.is_master
+		this.$settings = fromJS( Object.assign(default_settings, arg_settings) )
+		this.is_master = this.get_setting('is_master', false)
 		
 		
 		this.info('==========================================================================================================================')

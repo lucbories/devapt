@@ -54,19 +54,19 @@ export default class Node extends Instance
 		
 		super.load()
 		
-		// const master_cfg = this.is_master ? this.get_settings().toJS() : this.get_setting('master')
-		// const host = master_cfg.host
-		// const port = master_cfg.port
-		// const node_server_cfg = {
-		// 	"type":"bus",
-		// 	"host":host,
-		// 	"port":port,
-		// 	"protocole":"msg",
-		// 	"middlewares":[]
-		// }
+		const master_cfg = this.get_setting('master').toJS()
+		const host = master_cfg.host
+		const port = master_cfg.port
+		const node_server_cfg = {
+			"type":"bus",
+			"host":host,
+			"port":port,
+			"protocole":"msg",
+			"middlewares":[]
+		}
 		
 		// CREATE MASTER MESSAGE BUS
-		/*if (this.is_master)
+		if (this.is_master)
 		{
 			this.master_name = this.get_name()
 			
@@ -95,7 +95,6 @@ export default class Node extends Instance
 			const node_name = this.get_name()
 			
 			this.master_name = master_cfg.name
-			
 			client.start(
 				function ()
 				{
@@ -107,12 +106,12 @@ export default class Node extends Instance
 						}
 					)
 					
-					this.info('Messages bus client is started')
+					self.info('Messages bus client is started')
 					
-					this.register_to_master()
+					self.register_to_master()
 				}
 			)
-		}*/
+		}
 		
 		this.leave_group('load()')
 	}
@@ -151,12 +150,14 @@ export default class Node extends Instance
 	send_msg_to_master(arg_payload)
 	{
 		this.send_msg(this.master_name, arg_payload)
+		console.log('send a msg to master %s', this.master_name, arg_payload)
 	}
 	
 	
 	// REGISTER NODE TO MASTER
 	register_to_master()
 	{
+		console.log('send a msg to master')
 		this.switch_state(STATE_REGISTERING)
 		
 		this.send_msg_to_master( { "action":"NODE_ACTION_REGISTERING" } )

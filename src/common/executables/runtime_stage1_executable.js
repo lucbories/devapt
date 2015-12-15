@@ -30,6 +30,10 @@ export default class RuntimeStage1Executable extends RuntimeExecutable
 	
 	execute()
 	{
+		const saved_trace = this.get_trace()
+		const has_trace = this.runtime.get_setting(['trace', 'stages', 'RuntimeStage1', 'enabled'], false)
+		this.set_trace(has_trace)
+		
 		this.enter_group('execute')
 		
 		if (this.runtime.is_master)
@@ -37,11 +41,12 @@ export default class RuntimeStage1Executable extends RuntimeExecutable
 			this.info('Node is master')
 			
 			// LOAD MASTER SETTINGS
-			if ( T.isString(this.runtime.settings.apps_settings_file) )
+			const file_path = this.runtime.get_setting('apps_settings_file', null)
+			if ( T.isString(file_path) )
 			{
-				this.info('Node is master: load settings file [' + this.runtime.settings.apps_settings_file + ']')
+				this.info('Node is master: load settings file [' + file_path + ']')
 				
-				const json = require( path.join('../..', this.runtime.settings.apps_settings_file) )
+				const json = require( path.join('../..', file_path) )
 				dispatch_store_config_set_all(store, json)
 			}
 		}
@@ -51,5 +56,6 @@ export default class RuntimeStage1Executable extends RuntimeExecutable
 		}
 		
 		this.leave_group('execute')
+		this.set_trace(saved_trace)
 	}
 }

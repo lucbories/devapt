@@ -28,6 +28,10 @@ export default class RuntimeStage3Executable extends RuntimeExecutable
 	
 	execute()
 	{
+		const saved_trace = this.get_trace()
+		const has_trace = this.runtime.get_setting(['trace', 'stages', 'RuntimeStage3', 'enabled'], false)
+		this.set_trace(has_trace)
+		
 		this.enter_group('execute')
 		
 		if (this.runtime.is_master)
@@ -41,6 +45,7 @@ export default class RuntimeStage3Executable extends RuntimeExecutable
 		}
 		
 		this.leave_group('execute')
+		this.set_trace(saved_trace)
 	}
 	
 	

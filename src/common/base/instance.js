@@ -7,6 +7,7 @@ import { store, config } from '../store/index'
 import { dispatch_store_config_create_value } from '../store/config/actions'
 
 import Loggable from './loggable'
+import Settingsable from './settingsable'
 
 
 
@@ -14,7 +15,7 @@ let context = 'common/base/instance'
 const NOT_STORED_COLLECTIONS = ['registered_services', 'components', 'svc_providers', 'svc_consumers']
 
 
-export default class Instance extends Loggable
+export default class Instance extends Settingsable
 {
 	constructor(arg_collection, arg_class, arg_name, arg_settings, arg_log_context)
 	{
@@ -29,7 +30,7 @@ export default class Instance extends Loggable
 		const my_info = `[${arg_collection},${arg_name},${my_uid}] `
 		const my_context = arg_log_context ? arg_log_context + my_info : context + my_info
 		
-		super(my_context)
+		super(arg_settings, my_context)
 		
 		this.is_instance = true
 		this.is_loaded = false
@@ -38,30 +39,10 @@ export default class Instance extends Loggable
 		this.$class = arg_class
 		this.$name = arg_name
 		
-		this.set_settings(arg_settings)
-		
 		if ( store.has_collection(arg_collection) )
 		{
 			dispatch_store_config_create_value(store, ['runtime', 'instances', this.$name], {'id':this.$id, 'name':this.$name, 'class':this.$class, 'type':this.$type} )
 		}
-	}
-	
-	
-	set_settings(arg_settings)
-	{
-		this.$settings = arg_settings
-	}
-	
-	
-	get_settings()
-	{
-		return this.$settings
-	}
-	
-	
-	get_setting(arg_name, arg_default)
-	{
-		return this.$settings.has(arg_name) ? this.$settings.get(arg_name) : (arg_default ? arg_default : null)
 	}
 	
 	

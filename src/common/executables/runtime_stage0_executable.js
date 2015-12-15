@@ -31,34 +31,50 @@ export default class RuntimeStage0Executable extends RuntimeExecutable
 	
 	execute()
 	{
+		const saved_trace = this.get_trace()
+		const has_trace = this.runtime.get_setting(['trace', 'stages', 'RuntimeStage0', 'enabled'], false)
+		this.set_trace(has_trace)
+		
 		this.enter_group('execute')
 		
-		const master_name = this.runtime.settings.master.name
-		const master_host = this.runtime.settings.master.host
-		const master_port = this.runtime.settings.master.port
-		const master_cfg = {
-			"is_master":true,
-			"name":master_name,
-			"host":master_host,
-			"port":master_port
-		}
+		const node_name = this.runtime.get_setting('name', null)
+		const master_name = this.runtime.get_setting(['master','name'])
+		// const master_host = this.runtime.get_setting(['master','host'])
+		// const master_port = this.runtime.get_setting(['master','port'])
+		
+		// const master_cfg = {
+		// 	"is_master":true,
+			
+		// 	"master":{
+		// 		"name":master_name,
+		// 		"host":master_host,
+		// 		"port":master_port
+		// 	}
+		// }
+		
+		// const node_cfg = {
+		// 	"is_master":false,
+		// 	"master":master_cfg
+		// }
 		
 		if (this.runtime.is_master)
 		{
 			this.info('Node is master')
+			assert(node_name == master_name, context + ':node name [' + node_name + '] not equals master name [' + master_name + ']')
 			
 			// LOAD MASTER SETTINGS
-			// if ( T.isString(this.runtime.settings.apps_settings_file) )
-			// {
-			// 	this.info('Node is master: load settings file [' + this.runtime.settings.apps_settings_file + ']')
+			const apps_file_path = this.runtime.get_setting('apps_settings_file')
+			if ( T.isString(apps_file_path) )
+			{
+				this.info('Node is master: load settings file [' + apps_file_path + ']')
 				
-			// 	const json = require( path.join('../..', this.runtime.settings.apps_settings_file) )
-			// 	dispatch_store_config_set_all(store, json)
-			// }
+				const json = require( path.join('../..', apps_file_path) )
+				dispatch_store_config_set_all(store, json)
+			}
 			
 			// CREATE MASTER NODE
 			this.info('Create Node and load it')
-			this.runtime.node = new Node(master_name, immutable.fromJS(master_cfg))
+			this.runtime.node = new Node(node_name, this.runtime.get_settings())
 			this.runtime.node.load()
 		}
 		else
@@ -66,19 +82,11 @@ export default class RuntimeStage0Executable extends RuntimeExecutable
 			this.info('Node is not master')
 			
 			// CREATE SIMPLE NODE
-			const node_name = this.runtime.settings.node.name
-			const node_host = this.runtime.settings.node.host
-			const node_port = this.runtime.settings.node.port
-			const node_cfg = {
-				"is_master":false,
-				"host":node_host,
-				"port":node_port,
-				"master":master_cfg
-			}
-			this.runtime.node = new Node(node_name, immutable.fromJS(node_cfg))
+			this.runtime.node = new Node(node_name, this.runtime.get_settings())
 			this.runtime.node.load()
 		}
 		
 		this.leave_group('execute')
+		this.set_trace(saved_trace)
 	}
 }

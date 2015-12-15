@@ -21,6 +21,32 @@ export default class Loggable
 	}
 	
 	
+	enable_trace()
+	{
+		logs.enable_trace()
+	}
+	
+	
+	disable_trace()
+	{
+		logs.disable_trace()
+	}
+	
+	get_trace()
+	{
+		return logs.get_trace()
+	}
+	
+	set_trace(arg_value)
+	{
+		logs.set_trace(arg_value)
+	}
+	
+	toggle_trace()
+	{
+		logs.toggle_trace()
+	}
+	
 	// FORMAT MESSAGE
 	static format(args)
 	{
