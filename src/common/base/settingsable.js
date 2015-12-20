@@ -33,6 +33,16 @@ export default class Settingsable extends Loggable
 	}
 	
 	
+	has_setting(arg_name)
+	{
+		if ( T.isArray(arg_name) )
+		{
+			return this.$settings.hasIn(arg_name)
+		}
+		return this.$settings.has(arg_name)
+	}
+	
+	
 	get_setting(arg_name, arg_default)
 	{
 		if ( T.isArray(arg_name) )
@@ -40,5 +50,15 @@ export default class Settingsable extends Loggable
 			return this.$settings.hasIn(arg_name) ? this.$settings.getIn(arg_name) : (arg_default ? arg_default : null)
 		}
 		return this.$settings.has(arg_name) ? this.$settings.get(arg_name) : (arg_default ? arg_default : null)
+	}
+	
+	
+	set_setting(arg_name, arg_value)
+	{
+		if ( T.isArray(arg_name) )
+		{
+			this.$settings = this.$settings.setIn(arg_name, arg_value)
+		}
+		this.$settings = this.$settings.set(arg_name, arg_value)
 	}
 }

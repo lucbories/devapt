@@ -36,7 +36,7 @@ function load_config_nodes(arg_nodes_config)
 				
 				// CHECK ATTRIBUTES
 				assert(T.isString(node_obj.host), error_msg_bad_node_host)
-				assert(T.isNumber(node_obj.port), error_msg_bad_node_port)
+				// assert(T.isNumber(node_obj.port), error_msg_bad_node_port)
 				assert(T.isBoolean(node_obj.is_master), error_msg_bad_node_is_master)
 				assert(T.isObject(node_obj.servers), error_msg_bad_node_servers)
 				

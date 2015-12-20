@@ -54,9 +54,6 @@ export default class ExecutableRoute extends Executable
 		const server_instance = this.server
 		assert(T.isString(server_instance.server_type), context + ':bad server_instance.server_type string')
 		assert(this.store_config.server_types.indexOf(server_instance.server_type) > -1, context + ':server_instance.server_type not valid')
-		// console.log(server_instance, 'server_instance')
-		// console.log(server_instance.server, 'server_instance.server')
-		// assert(T.isObject(server_instance.server), context + ':bad server_instance.server object')
 		assert(T.isObject(server_instance.server) || T.isFunction(server_instance.server), context + ':bad server_instance.server object or function')
 		
 		// LOOP ON ROUTES
@@ -68,9 +65,21 @@ export default class ExecutableRoute extends Executable
 			assert(T.isString(cfg_route.route), context + ':bad route string')
 			
 			const app_route = T.isString(application.url) ? application.url : ''
+			
 			let route = app_route + cfg_route.route
-			route = route.replace('/', '\/')
-			cfg_route.full_route = new RegExp('/' + route + '/')
+			route = (route[0] == '/' ? '' : '/') + route
+			// console.log(route, 'route')
+				
+			if ( route.indexOf('.*') > -1 )
+			{
+				route = route.replace('/', '\/')
+				cfg_route.full_route = new RegExp(route)
+			}
+			else
+			{
+				cfg_route.full_route = route
+			}
+			
 			
 			this.process_route(server_instance, application, cfg_route, arg_data)
 			
@@ -81,6 +90,8 @@ export default class ExecutableRoute extends Executable
 	
 	process_route(arg_server, arg_application, arg_cfg_route, arg_data)
 	{
+		// console.log(arg_cfg_route, 'arg_cfg_route')
+		
 		const route_cb = this.get_route_cb(arg_application, arg_cfg_route, arg_data)
 		try
 		{

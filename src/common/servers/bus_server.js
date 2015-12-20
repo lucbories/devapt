@@ -65,10 +65,29 @@ export default class BusServer extends Server
 	}
 	
 	
-	static create_client(arg_host, arg_port)
+	static create_client(arg_node, arg_host, arg_port)
 	{
-		console.log('BusServer.create_client %s:%s', arg_host, arg_port)
+		const node_name = arg_node.get_name()
+		console.log('BusServer.create_client %s:%s for node %s', arg_host, arg_port, node_name)
+		
 		var client = simplebus.createClient(arg_port, arg_host)
+		
+		client.start(
+			function ()
+			{
+				client.subscribe( { "target": node_name },
+					function(arg_msg)
+					{
+						assert( T.isObject(arg_msg) && T.isObject(arg_msg.payload), context + ':subscribe:bad payload object')
+						arg_node.receive_msg(arg_msg.sender, arg_msg.payload)
+					}
+				)
+				
+				arg_node.info('Messages bus client is started')
+				
+				arg_node.register_to_master()
+			}
+		)
 		
 		return client
 	}

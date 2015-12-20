@@ -7,9 +7,9 @@ import fs from 'fs'
 import path from 'path'
 import bunyan from 'bunyan'
 
-import Instance from './instance'
-
 import { store, config } from '../store/index'
+
+import BusClientInstance from './bus_client_instance'
 
 
 
@@ -23,7 +23,7 @@ export const ServerTypes = {
 
 
 
-export default class Server extends Instance
+export default class Server extends BusClientInstance
 {
 	constructor(arg_name, arg_settings, arg_context)
 	{
@@ -31,6 +31,7 @@ export default class Server extends Instance
 		
 		this.is_server = true
 		this.is_build = false
+		
 		this.server_host = null
 		this.server_port = null
 		this.server_protocole = null

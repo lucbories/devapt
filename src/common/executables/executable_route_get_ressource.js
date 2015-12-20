@@ -21,17 +21,41 @@ export default class ExecutableRouteGetResources extends ExecutableRoute
 	}
 	
 	
+	
+	send_resources_list(res, arg_application, arg_cfg_route)
+	{
+		this.info('LIST resources')
+				
+		// GET RESOURCES LIST
+		const resources_list = arg_application.resources.get_all_names(arg_cfg_route.collection)
+		
+		// SEND OUTPUT
+		res.contentType = 'json';
+		res.send({ resources: resources_list });
+	}
+	
+	
+	
+	// send_resource_item(res, arg_application, arg_cfg_route)
+	// {
+		
+	// }
+	
+	
+	
 	get_route_cb(arg_application, arg_cfg_route, arg_data)
 	{
 		let self = this
 		
 		return function exec_http(req, res, next)
 		{
+			// self.enable_trace()
+			
 			self.enter_group('ExecutableRouteGetResources.exec_http')
 			
 			// CHECK ARGS
 			assert(T.isString(arg_cfg_route.collection), context + ':bad collection name')
-			
+			// console.log(arg_cfg_route, 'arg_cfg_route')
 			
 			
 			// TODO: CHECK ACCESS TO RESOURCE FROM USER
@@ -41,15 +65,22 @@ export default class ExecutableRouteGetResources extends ExecutableRoute
 			// LIST RESOURCES
 			if (! arg_cfg_route.item)
 			{
-				self.info('LIST resources')
+				self.send_resources_list(res, arg_application, arg_cfg_route)
 				
-				// GET RESOURCES LIST
-				// const resources_list = config.get_resources(arg_cfg_route.collection)
-				const resources_list = arg_application.resources.get_all_names(arg_cfg_route.collection)
-				
-				// SEND OUTPUT
-				res.contentType = 'json';
-				res.send({ resources: resources_list });
+				self.leave_group('ExecutableRouteGetResources.exec_http')
+				return next()
+			}
+			assert( T.isString(arg_cfg_route.item), context + ':bad collection item string')
+			
+			
+			// GET RESOURCE NAME
+			let resource = null
+			let resource_name = req.params[arg_cfg_route.item];
+			assert( T.isString(resource_name), context + ':bad resource name [%s]', resource_name)
+			
+			if (resource_name.length == 0)
+			{
+				self.send_resources_list(res, arg_application, arg_cfg_route)
 				
 				self.leave_group('ExecutableRouteGetResources.exec_http')
 				return next()
@@ -58,13 +89,6 @@ export default class ExecutableRouteGetResources extends ExecutableRoute
 			
 			// GET ONE RESOURCE
 			self.info('GET one resource')
-			// let resource_is_valid = null
-			let resource = null
-			
-			assert( T.isString(arg_cfg_route.item), context + ':bad collection item string')
-			let resource_name = req.params[arg_cfg_route.item];
-			assert( T.isString(resource_name) && resource_name.length > 0, context + ':bad resource name [%s]', resource_name)
-			
 			if (arg_cfg_route.collection === '*')
 			{
 				self.info('GET one resource [' + resource_name + '] of any collection')
@@ -75,6 +99,7 @@ export default class ExecutableRouteGetResources extends ExecutableRoute
 			{
 				self.info('GET one resource [' + resource_name + '] of one collection [' + arg_cfg_route.collection + ']')
 				
+				// LOOKUP RESOURCE
 				resource = arg_application.resources.find_by_name(resource_name)
 				if (resource)
 				{
@@ -84,27 +109,58 @@ export default class ExecutableRouteGetResources extends ExecutableRoute
 				else
 				{
 					self.debug('resource not found [' + resource_name + ']')
-					const resources = arg_application.resources.get_all_names()
-					console.log(resources, 'arg_application.resources')
+					// const resources = arg_application.resources.get_all_names()
+					// console.log(resources, 'arg_application.resources')
 				}
-				// if (resource && resource.$type != arg_cfg_route.collection)
-				// {
-				// 	resource = null
-				// }
+				
+				// CHECK RESOURCE TYPE
+				if (resource && resource.$type != arg_cfg_route.collection)
+				{
+					console.error('bad resource type')
+					console.log(resource.$type, 'resource.$type')
+					console.log(arg_cfg_route.collection, 'arg_cfg_route.collection')
+					resource = null
+				}
 			}
-			// assert( resource_is_valid, context + ':not found valid resource [%s]', resource_name)
-			assert( T.isObject(resource), context + ':not found resource [' + resource_name + ']')
+			
+			// RESOURCE NOT FOUND ?
+			if ( ! T.isObject(resource) )
+			{
+				// SEND OUTPUT
+				res.status(404)
+				res.contentType = 'json'
+				res.send({ error: 'Resource not found [' + resource_name + ']' })
+				
+				// next( new Error('Resource not found [' + resource_name + ']') )
+				return next()
+			}
 			
 			
 			// TODO: SANITY CHECK OF RESOURCE CONFIG (connections...)
 			
 			
+			
 			// WRAP INCLUDED FILE
-			if ( T.isString(resource.include_file_path_name) )
+			if ( resource.has_setting('include_file_path_name') )
 			{
 				self.debug('Process resource.include_file_path_name [%s]', resource.include_file_path_name)
 				
-				resource.include_file_content = self.include_file(resource_name, resource.include_file_path_name)
+				const file_path = resource.get_setting('include_file_path_name')
+				if ( T.isString(file_path) )
+				{
+					try
+					{
+						const file_content = self.include_file(self, resource_name, file_path)
+						resource.set_setting('include_file_content', file_content)
+					}
+					catch(e)
+					{
+						const error_msg = 'an error occures when loading file [' + e.toString() + ']'
+						resource.set_setting('include_file_content', error_msg)
+						self.error(error_msg)
+						console.error(error_msg)
+					}
+				}
 			}
 			
 			
@@ -118,27 +174,23 @@ export default class ExecutableRouteGetResources extends ExecutableRoute
 	}
 	
 	
-	include_file(arg_resource_name, arg_file_path_name)
+	include_file(self, arg_resource_name, arg_file_path_name)
 	{
-		const file_path = path.join(__dirname, '../../apps/private/', arg_file_path_name)
-		this.debug('Process file_path [%s]', file_path)
-		// console.log(file_path, 'file_path')
+		const file_path = path.join(__dirname, '../../', arg_file_path_name)
+		self.debug('Process file_path [%s]', file_path)
 		
-		let content = null
-		fs.readFile(file_path, {encoding: 'utf-8'},
-			function(err, data)
-			{
-				if (err)
-				{
-					var error_msg = context + ':resource include file not found [%s] for resource [%s]'
-					throw new Error(error_msg, arg_resource_name, file_path);
-				}
-				
-				this.debug('file is read');
-				content = data
-			}
-		)
 		
+		let content = fs.readFileSync(file_path, {encoding: 'utf-8'} )
+		
+		if (! content)
+		{
+			var error_msg = context + ':resource include file not found [' + arg_resource_name + '] for resource [' + file_path + ']'
+			console.error('loading resource include file')
+			throw new Error(error_msg);
+		}
+		
+		
+		console.log('loading resource include file: return')
 		return content
 	}
 }

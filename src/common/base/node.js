@@ -1,11 +1,11 @@
 
 import T from 'typr'
 import assert from 'assert'
-import { Map as IMap } from 'immutable'
+import { Map as IMap, fromJS } from 'immutable'
 
 import { store, config, runtime } from '../store/index'
 
-import Instance from './instance'
+import BusServerInstance from './bus_server_instance'
 import Server from './server'
 import { ServerTypes } from './server'
 import Collection from './collection'
@@ -13,6 +13,7 @@ import RestifyServer from '../servers/restify_server'
 import ExpressServer from '../servers/express_server'
 import VantageServer from '../servers/vantage_server'
 import BusServer from '../servers/bus_server'
+import MetricsServer from '../servers/metrics_server'
 
 
 
@@ -30,13 +31,13 @@ const STATE_UNREGISTERING = 'NODE_IS_UNREGISTERING_TO_MASTER'
 
 
 
-export default class Node extends Instance
+export default class Node extends BusServerInstance
 {
 	constructor(arg_name, arg_settings)
 	{
 		assert( T.isObject(arg_settings), context + ':bad settings object')
 		
-		super('nodes', 'Node', arg_name, arg_settings)
+		super('nodes', 'Node', arg_name, arg_settings, context)
 		
 		this.is_node = true
 		this.is_master = this.get_setting('is_master', false)
@@ -57,60 +58,24 @@ export default class Node extends Instance
 		const master_cfg = this.get_setting('master').toJS()
 		const host = master_cfg.host
 		const port = master_cfg.port
-		const node_server_cfg = {
-			"type":"bus",
-			"host":host,
-			"port":port,
-			"protocole":"msg",
-			"middlewares":[]
-		}
 		
 		// CREATE MASTER MESSAGE BUS
 		if (this.is_master)
 		{
 			this.master_name = this.get_name()
 			
-			const self = this
-			this.bus_server = new BusServer(this.get_name() + '_server', new IMap(node_server_cfg) )
-			this.bus_server.load()
-			this.bus_server.enable()
-			this.bus_server.bus.subscribe( { "target": this.get_name() },
-				function(arg_msg)
-				{
-					assert( T.isObject(arg_msg) && T.isObject(arg_msg.payload), context + ':subscribe:bad payload object')
-					self.receive_msg(arg_msg.payload)
-				}
-			)
-			this.info('Messages bus server is started')
-			
+			this.init_bus_server(host, port)
 			this.bus_server.node = this
+            
+            this.init_metrics_server(host, port)
 		}
+		
 		// CONNECT TO MASTER MESSAGE BUS
 		else
 		{
-			this.bus_client = BusServer.create_client(host, port)
-			
-			const self = this
-			const client = this.bus_client
-			const node_name = this.get_name()
-			
 			this.master_name = master_cfg.name
-			client.start(
-				function ()
-				{
-					client.subscribe( { "target": node_name },
-						function(arg_msg)
-						{
-							assert( T.isObject(arg_msg) && T.isObject(arg_msg.payload), context + ':subscribe:bad payload object')
-							self.receive_msg(arg_msg.payload)
-						}
-					)
-					
-					self.info('Messages bus client is started')
-					
-					self.register_to_master()
-				}
-			)
+			
+			this.init_bus_client(host, port)
 		}
 		
 		this.leave_group('load()')
@@ -123,34 +88,31 @@ export default class Node extends Instance
 		this.info(arg_state)
 	}
 	
-	
-	// MESSAGING
-	send_msg(arg_node_name, arg_payload)
-	{
-		assert( T.isString(arg_node_name), context + ':send_msg:bad node name string')
-		assert( T.isObject(arg_payload), context + ':send_msg:bad payload object')
-		
-		this.info('sending a message to [' + arg_node_name + ']')
-		
-		if (this.is_master)
-		{
-			this.bus_server.post( { "target":arg_node_name, "sender":this.get_name(), "payload":arg_payload } )
-		}
-		else
-		{
-			this.bus_client.post( { "target":arg_node_name, "sender":this.get_name(), "payload":arg_payload } )
-		}
-	}
-	
-	receive_msg(arg_payload)
-	{
-		this.info('receiving a message')
-	}
+    
+    init_metrics_server(arg_host, arg_port)
+    {
+        const metrics_settings = {
+            "protocole":"bus",
+            "host":arg_host,
+            "port":arg_port,
+            "type":"metrics"
+        }
+        this.metrics_server = new MetricsServer('metrics_server', fromJS(metrics_settings) )
+        this.metrics_server.load()
+        this.metrics_server.node = this
+        this.metrics_server.init_bus_client(arg_host, arg_port)
+    }
+    
+    get_metrics_server()
+    {
+        return this.metrics_server
+    }
+    
 	
 	send_msg_to_master(arg_payload)
 	{
 		this.send_msg(this.master_name, arg_payload)
-		console.log('send a msg to master %s', this.master_name, arg_payload)
+		console.log('send a msg to master [%s]', this.master_name, arg_payload)
 	}
 	
 	
@@ -160,7 +122,11 @@ export default class Node extends Instance
 		console.log('send a msg to master')
 		this.switch_state(STATE_REGISTERING)
 		
-		this.send_msg_to_master( { "action":"NODE_ACTION_REGISTERING" } )
+		const msg_payload = {
+			"action":"NODE_ACTION_REGISTERING",
+			"node":this.get_settings().toJS()
+		}
+			this.send_msg_to_master(msg_payload)
 		
 		this.switch_state(STATE_WAITING)
 	}
@@ -285,6 +251,8 @@ export default class Node extends Instance
 		
 		const servers = this.get_setting('servers')
 		// console.log(servers, 'servers')
+		const host = this.get_setting(['master', 'host'])
+		const port = this.get_setting(['master', 'port'])
 		
 		servers.forEach(
 			(server_cfg, server_name) => {
@@ -296,6 +264,7 @@ export default class Node extends Instance
 				let server = this.create_server(server_type, server_name, server_cfg)
 				server.load()
 				server.node = this
+				server.init_bus_client(host, port)
 				
 				this.servers.add(server)
 				

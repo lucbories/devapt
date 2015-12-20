@@ -20,7 +20,7 @@ let error_msg_bad_authorization = context + ':security.authorization should be a
 let error_msg_bad_connexion = context + ':security.connexions.* should be a string'
 let error_msg_bad_cx_config = context + ':security.connexions.*.* should be a valid connexion'
 
-const apps_dir = '../../../../apps/private/'
+const apps_dir = '../../../../apps/'
 	
 
 function load_config_security(arg_security_config)
@@ -45,6 +45,7 @@ function load_config_security(arg_security_config)
 				assert(T.isString(file_name), error_msg_bad_connexion)
 				
 				let file_path_name = path.join(__dirname , apps_dir, file_name)
+				// console.log(file_path_name, 'connexions file_path_name')
 				
 				let config = parser.read(file_path_name, 'utf8')
 				// console.log(config, 'config')

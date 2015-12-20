@@ -93,7 +93,7 @@
 	"security":{
 		"is_readonly":false,
 		
-		"connexions":["db_connexions.ini.json"],
+		"connexions":["connexions.json"],
 		
 		"authentication": {
 			"enabled":true,

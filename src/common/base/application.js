@@ -44,8 +44,16 @@ let context = 'common/base/application'
 			"license":"APACHE-LICENSE-2.0"
 		},...
 */
+
+/**
+ * Application class
+ */
 export default class Application extends Instance
 {
+    /**
+     * Application constructor
+     * {string} Application name
+     */
 	constructor(arg_name)
 	{
 		const cfg = config()
@@ -71,7 +79,10 @@ export default class Application extends Instance
 		this.info('Application is created')
 	}
 	
-	
+    
+	/**
+     * Load configuration and build application
+     */
 	load()
 	{
 		this.info('Application is loading')
@@ -176,30 +187,51 @@ export default class Application extends Instance
 	}
 	
 	
+    /**
+     * Get all application models names
+     * return Array of String
+     */
 	get_models_names()
 	{
 		return this.get_resources_names('models')
 	}
 	
 	
+    /**
+     * Get all application views names
+     * return Array of String
+     */
 	get_views_names()
 	{
 		return this.get_resources_names('views')
 	}
 	
 	
+    /**
+     * Get all application menubars names
+     * return Array of String
+     */
 	get_menubars_names()
 	{
 		return this.get_resources_names('menubars')
 	}
 	
 	
+    /**
+     * Get all application menus names
+     * return Array of String
+     */
 	get_menus_names()
 	{
 		return this.get_resources_names('menus')
 	}
 	
 	
+    /**
+     * Get all application resources of given type names
+     * {string} Resource type
+     * return Array of String
+     */
 	get_resources_names(arg_type)
 	{
 		let resources = []

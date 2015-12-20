@@ -30,6 +30,7 @@ export default class RuntimeStage4Executable extends RuntimeExecutable
 		const has_trace = this.runtime.get_setting(['trace', 'stages', 'RuntimeStage4', 'enabled'], false)
 		this.set_trace(has_trace)
 		
+		this.separate_level_1()
 		this.enter_group('execute')
 		
 		if (this.runtime.is_master)
@@ -41,6 +42,7 @@ export default class RuntimeStage4Executable extends RuntimeExecutable
 		}
 		
 		this.leave_group('execute')
+		this.separate_level_1()
 		this.set_trace(saved_trace)
 	}
 	

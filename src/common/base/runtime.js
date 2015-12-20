@@ -41,9 +41,9 @@ class Runtime extends Settingsable
 {
 	constructor()
 	{
-		super(context)
+		super(fromJS( default_settings ), context)
 		
-		this.$settings = fromJS( default_settings )
+		// this.$settings = fromJS( default_settings )
 		
 		this.is_runtime = true
 		this.is_master = this.get_setting('is_master', false)
@@ -68,47 +68,40 @@ class Runtime extends Settingsable
 	
 	load(arg_settings)
 	{
+		this.separate_level_1()
 		this.enter_group('load')
 		
 		this.$settings = fromJS( Object.assign(default_settings, arg_settings) )
 		this.is_master = this.get_setting('is_master', false)
 		
 		
-		this.info('==========================================================================================================================')
-		
 		const stage0 = new exec.RuntimeStage0Executable()
 		stage0.prepare({runtime:this})
 		stage0.execute()
 		
-		this.info('==========================================================================================================================')
 		const stage1 = new exec.RuntimeStage1Executable()
 		stage1.prepare({runtime:this})
 		stage1.execute()
 		
-		this.info('==========================================================================================================================')
 		const stage2 = new exec.RuntimeStage2Executable()
 		stage2.prepare({runtime:this})
 		stage2.execute()
 		
-		this.info('==========================================================================================================================')
 		const stage3 = new exec.RuntimeStage3Executable()
 		stage3.prepare({runtime:this})
 		stage3.execute()
 		
-		this.info('==========================================================================================================================')
 		const stage4 = new exec.RuntimeStage4Executable()
 		stage4.prepare({runtime:this})
 		stage4.execute()
 		
-		this.info('==========================================================================================================================')
 		const stage5 = new exec.RuntimeStage5Executable()
 		stage5.prepare({runtime:this})
 		stage5.execute()
 		
-		this.info('==========================================================================================================================')
-		
 		
 		this.leave_group('load')
+		this.separate_level_1()
 	}
 	
 	

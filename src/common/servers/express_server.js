@@ -5,6 +5,7 @@ import express from 'express'
 // import browsersync from "browser-sync"
 
 import Server from '../base/server'
+import MetricsMiddleware from '../metrics/metric_http'
 
 
 
@@ -36,6 +37,8 @@ export default class ExpressServer extends Server
 		// 		middleware:[this.server]
 		// 	}
 		// )
+		
+		this.server.use( MetricsMiddleware.create_middleware(this) )
 		
 		this.leave_group('build_server')
 	}

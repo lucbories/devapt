@@ -15,3 +15,11 @@ const runtime_settings = {
 }
 
 runtime.load(runtime_settings)
+
+
+process.on('SIGTERM',
+	function()
+	{
+		process.exit()
+	}
+)

@@ -28,7 +28,7 @@ export default class SocketIOServer extends Server
 		assert( this.server_protocole == 'http' || this.server_protocole == 'https', context + ':bad protocole for socketio [' + this.server_protocole + ']')
 		
 		// CREATE SERVER
-		// this.server = express();//TODO 
+		// this.server = express(); //TODO 
 		
 		
 		this.leave_group('build_server')

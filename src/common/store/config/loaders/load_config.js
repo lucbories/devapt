@@ -57,12 +57,12 @@ function load_config(arg_state, arg_initial_config)
 		}
 		if (T.isString(config.modules))
 		{
-			const file_path_name = path.join(base_dir, 'modules', config.modules)
+			const file_path_name = path.join(base_dir, 'apps', config.modules)
 			config.modules = require(file_path_name).modules
 		}
 		if (T.isString(config.plugins))
 		{
-			const file_path_name = path.join(base_dir, 'plugins', config.plugins)
+			const file_path_name = path.join(base_dir, 'apps', config.plugins)
 			config.plugins = require(file_path_name).plugins
 		}
 		if (T.isString(config.security))

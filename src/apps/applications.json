@@ -5,7 +5,7 @@
 			
 			"services":{
 				"provides":{
-					"html_assets_1": { "servers":["serverA1"], "filters":["*"] }
+					"html_assets_1": { "servers":["serverA2"], "filters":["*"] }
 				},
 				"consumes":{
 				}

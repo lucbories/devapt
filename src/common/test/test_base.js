@@ -32,3 +32,5 @@ describe('common/base',
 		)
 	}
 )
+
+// curl http://localhost:8080/tutorial-rest/api/v1/views/VIEW_HOME

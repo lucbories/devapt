@@ -2,7 +2,6 @@
 	"nodes":{
 		"NodeA":{
 			"host":"localhost",
-			"port":5000,
 			"is_master":true,
 			"servers":{
 				"serverA1":{
@@ -28,7 +27,6 @@
 		
 		"NodeB":{
 			"host":"localhost",
-			"port":5001,
 			"is_master":false,
 			"servers":{
 				"serverB1":{

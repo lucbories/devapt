@@ -5,6 +5,7 @@ import restify from 'restify'
 import bunyan from 'bunyan'
 
 import Server from '../base/server'
+import MetricsMiddleware from '../metrics/metric_http'
 
 
 
@@ -63,6 +64,7 @@ export default class RestifyServer extends Server
 		// server.use(restify.acceptParser(acceptable));
 		server.use( restify.acceptParser(server.acceptable) )
 		
+		server.use( MetricsMiddleware.create_middleware(this) )
 		server.use( restify.authorizationParser()) 
 		server.use( restify.queryParser() )
 		server.use( restify.jsonp() )
@@ -81,7 +83,8 @@ export default class RestifyServer extends Server
 			}
 		)
 		
-		server.on('after', restify.auditLogger(audit_settings) )
+		// ENABLE / DISABLE AUDIT LOGS
+		// server.on('after', restify.auditLogger(audit_settings) )
 		
 		
 		// SET URL
