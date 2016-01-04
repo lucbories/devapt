@@ -13,11 +13,13 @@ var browserSync = require('browser-sync').create();
 
 var SRC_ALL_JS = 'src/**/*.js';
 var SRC_ALL_JSON = 'src/**/*.json';
+var SRC_APPS = 'src/apps/**/*.js';
 var SRC_BROWSER = 'src/browser/**/*.js';
 var SRC_COMMON  = 'src/common/**/*.js';
 var SRC_SERVER  = 'src/server/**/*.js';
 
 var DST = 'dist';
+var DST_APPS = 'dist/apps/**/*.js';
 var DST_BROWSER = 'dist/browser/**/*.js';
 var DST_COMMON  = 'dist/common/**/*.js';
 var DST_SERVER  = 'dist/server/**/*.js';
@@ -54,10 +56,69 @@ gulp.task('build_all_json', () => {
 });
 
 
+/*
+    COPY ALL SRC/APPS FILES TO DIST/
+        build all files
+*/
+gulp.task('build_all_apps', () => {
+    return gulp.src(SRC_APPS)
+        .pipe(sourcemaps.init())
+        .pipe(
+            babel({
+                presets: ['es2015']
+            })
+        )
+        .pipe(sourcemaps.write('.'))
+        .pipe(gulp.dest(DST));
+});
+
+
+/*
+    COPY ALL SRC/COMMON FILES TO DIST/
+        build all files
+*/
+gulp.task('build_all_common', () => {
+    return gulp.src(SRC_COMMON)
+        .pipe(sourcemaps.init())
+        .pipe(
+            babel({
+                presets: ['es2015']
+            })
+        )
+        .pipe(sourcemaps.write('.'))
+        .pipe(gulp.dest(DST));
+});
+
+
+/*
+    COPY ALL SRC/SERVER FILES TO DIST/
+        build all files
+*/
+gulp.task('build_all_server', () => {
+    return gulp.src(SRC_SERVER)
+        .pipe(sourcemaps.init())
+        .pipe(
+            babel({
+                presets: ['es2015']
+            })
+        )
+        .pipe(sourcemaps.write('.'))
+        .pipe(gulp.dest(DST));
+});
+
+
 
 /*
     BUILD JS BUNDLES
 */
+gulp.task('build_bundle_apps', () => {
+    return gulp.src(DST_APPS)
+        .pipe(concat('devapt-bundle-apps.js'))
+        .pipe(sourcemaps.init())
+        .pipe(sourcemaps.write('.'))
+        .pipe(gulp.dest(DST));
+});
+
 gulp.task('build_bundle_browser', () => {
     return gulp.src(DST_BROWSER)
         .pipe(concat('devapt-bundle-browser.js'))

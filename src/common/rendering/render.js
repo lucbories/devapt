@@ -2,6 +2,8 @@
 import T from 'typr'
 import assert from 'assert'
 
+import Loggable from '../base/loggable'
+import runtime from '../base/runtime'
 import RenderStack from './base/render_stack'
 import RenderingManager from './base/rendering_manager'
 
@@ -10,15 +12,130 @@ const context = 'common/rendering/render'
 
 
 
-export default class Render
+/**
+ * Rendering class
+ */
+export default class Render extends Loggable
 {
-	constructor()
+    /**
+     * Create a render
+     */
+	constructor(arg_assets_img, arg_assets_html, arg_assets_scripts)
 	{
+        super(context)
+        
+        this.is_render = true
+        
 		this.stack = new RenderStack()
 		this.rendering_manager = new RenderingManager()
+        
+        this.assets_images_service_name = arg_assets_img ? arg_assets_img : null
+        this.assets_html_service_name = arg_assets_html ? arg_assets_html : null
+        this.assets_scripts_service_name = arg_assets_scripts ? arg_assets_scripts : null
+        
+        this.assets_images_service_consumer = null
+        this.assets_html_service_consumer = null
+        this.assets_scripts_service_consumer = null
 	}
 	
+    
+    /**
+     * Get an url to server the given image asset
+     * @param {string} arg_url - image asset relative url.
+     * @return {string} absolute image asset url.
+     */
+    get_assets_image_url(arg_url)
+    {
+        this.enter_group('get_assets_image_url')
+        
+        const name = this.assets_images_service_name
+        const url = this.get_assets_url(this.assets_images_service_consumer, name, arg_url)
+        
+        this.leave_group('get_assets_image_url')
+        return url
+    }
 	
+    
+    /**
+     * Get an url to server the given static html asset
+     * @param {string} arg_url - html asset relative url.
+     * @return {string} absolute html asset url.
+     */
+    get_assets_html_url(arg_url)
+    {
+        this.enter_group('get_assets_html_url')
+        
+        const name = this.assets_html_service_name
+        const url = this.get_assets_url(this.assets_html_service_consumer, name, arg_url)
+        
+        this.leave_group('get_assets_html_url')
+        return url
+    }
+	
+    
+    /**
+     * Get an url to server the given script asset
+     * @param {string} arg_url - script asset relative url.
+     * @return {string} absolute script asset url.
+     */
+    get_assets_script_url(arg_url)
+    {
+        this.enter_group('get_assets_script_url')
+        
+        const name = this.assets_scripts_service_name
+        const url = this.get_assets_url(this.assets_scripts_service_consumer, name, arg_url)
+        
+        this.leave_group('get_assets_script_url')
+        return url
+    }
+	
+    
+    /**
+     * Get an url to server the given image asset
+     * @param {object} arg_consumer - service consumer.
+     * @param {string} arg_svc_name - service name or null.
+     * @param {string} arg_url - image asset relative url.
+     * @return {string} absolute image asset url.
+     */
+    get_assets_url(arg_consumer, arg_svc_name, arg_url)
+    {
+        this.enter_group('get_assets_url')
+        
+        assert( T.isString(arg_url), context + ':get_assets_url:bad url string')
+        
+        const has_consumer = T.isObject(arg_consumer) && arg_consumer.is_service_consumer
+        if (! has_consumer)
+        {
+            assert( T.isString(arg_svc_name), context + ':get_assets_url:bad svc name string')
+            
+            const service = runtime.services.find_by_name(arg_svc_name)
+            assert( T.isObject(service) && service.is_service, context + ':get_assets_script_url:bad service object')
+            
+            this.assets_scripts_service_consumer = service.create_consumer()
+        }
+         assert( T.isObject(this.assets_scripts_service_consumer) && this.assets_scripts_service_consumer.is_service_consumer, context + ':get_assets_script_url:bad consumer object')
+        
+        const service = this.assets_scripts_service_consumer.get_service()
+        if (! service)
+        {
+            this.error('no service found for images assets')
+            this.leave_group('get_assets_url')
+            return null
+        }
+        
+        const strategy = null
+        const provider = service.get_a_provider(strategy)
+        const url = this.assets_scripts_service_consumer.get_url_for(provider, { url: arg_url})
+        
+        this.leave_group('get_assets_url')
+        return url
+    }
+    
+	
+    /**
+     * Move up to the rendered components stack
+     * @return {object} the Render instance
+     */
 	up()
 	{
 		this.stack.leave()
@@ -33,6 +150,17 @@ export default class Render
 	}
 	
 	
+	add(arg_component)
+	{
+		assert( T.isObject(arg_component) && arg_component.is_component, context + ':bad component object')
+		
+		this.current().add_child(arg_component)
+		this.push(arg_component)
+		
+		return this
+	}
+	
+	
 	current()
 	{
 		return this.stack.current()
@@ -41,6 +169,9 @@ export default class Render
 	
 	page(arg_name, arg_settings)
 	{
+        arg_settings = arg_settings ? arg_settings : {}
+        arg_settings.render = this
+        
 		let component = this.rendering_manager.create('Page', arg_name, arg_settings)
 		assert( T.isObject(component) && component.is_component, context + ':bad Page component object')
 		

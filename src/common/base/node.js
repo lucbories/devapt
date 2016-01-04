@@ -126,7 +126,8 @@ export default class Node extends BusServerInstance
 			"action":"NODE_ACTION_REGISTERING",
 			"node":this.get_settings().toJS()
 		}
-			this.send_msg_to_master(msg_payload)
+		
+        this.send_msg_to_master(msg_payload)
 		
 		this.switch_state(STATE_WAITING)
 	}

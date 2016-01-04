@@ -14,6 +14,7 @@ apps/
 Via npm on Node:
 
 ```
+npm init
 npm install devapt --save
 ```
 

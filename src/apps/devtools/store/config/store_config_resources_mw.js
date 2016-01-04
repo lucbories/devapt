@@ -3,4 +3,4 @@ import make_middleware from '../store_helper'
 
 
 
-export default make_middleware('resources', 'resources', 'Resources')
+export default make_middleware(['resources', 'by_name'], 'resources', 'Resources', '*')

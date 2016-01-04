@@ -123,7 +123,7 @@ function load_config(arg_state, arg_initial_config)
 				logs.info(context, 'storing resources by name for module ' + module_name)
 				Object.keys(module_obj.resources_by_name).forEach(
 					(resource_name) => {
-						// logs.info(context, 'loading config for module ' + module_name + ' for register resource by name for ' + resource_name)
+						logs.debug(context, 'loading config for module ' + module_name + ' for register resource by name for ' + resource_name)
 						
 						let resource_obj = module_obj.resources_by_name[resource_name]
 						arg_state.config.resources.by_name[resource_name] = resource_obj
@@ -153,7 +153,7 @@ function load_config(arg_state, arg_initial_config)
 						// logs.info(context, 'loading config for module ' + module_name + ' for register resource by type:' + type_name)
 						Object.keys(module_obj.resources_by_type[type_name]).forEach(
 							(resource_name) => {
-								// logs.info(context, 'loading config for module ' + module_name + ' for register resource by type for resource' + resource_name)
+								logs.debug(context, 'loading config for module ' + module_name + ' for register resource by type for resource' + resource_name)
 								arg_state.config.resources.by_type[type_name][resource_name] = resource_name
 							}
 						)
@@ -206,6 +206,7 @@ function load_config(arg_state, arg_initial_config)
 		console.error(e, context)
 	}
 	
+    // console.log( Object.keys(arg_state.config.resources.by_name), 'resources' )
 	
 	logs.info(context, 'loading config is finished, returns state')
 	return arg_state

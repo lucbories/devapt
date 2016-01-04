@@ -75,6 +75,7 @@ export default class Component extends Instance
 		return this.$settings
 	}
 	
+    // FOR CHILD CLASS ONLY
 	// get_default_settings()
 	// {
 	// 	return this.$settings
@@ -105,6 +106,7 @@ export default class Component extends Instance
 		return this.state
 	}
 	
+    // FOR CHILD CLASS ONLY
 	// get_initial_state()
 	// {
 	// 	return {}
@@ -144,11 +146,27 @@ export default class Component extends Instance
 	
 	get_scripts()
 	{
-		return T.isArray(this.$settings.page_scripts) ? this.$settings.page_scripts : []
+        let scripts = T.isArray(this.$settings.page_scripts) ? this.$settings.page_scripts : []
+        
+        if ( T.isArray(this.$settings.children) && this.$settings.children.length > 0 )
+        {
+            const children_scripts = this.$settings.children.map( component => component.get_scripts() )
+            scripts = Array.concat(scripts, children_scripts)
+        }
+        
+		return scripts
 	}
 	
 	get_scripts_urls()
 	{
-		return T.isArray(this.$settings.page_scripts_urls) ? this.$settings.page_scripts_urls : []
+        let scripts = T.isArray(this.$settings.page_scripts_urls) ? this.$settings.page_scripts_urls : []
+        
+        if ( T.isArray(this.$settings.children) && this.$settings.children.length > 0 )
+        {
+            const children_scripts = this.$settings.children.map( component => component.get_scripts_urls() )
+            scripts = Array.concat(scripts, children_scripts)
+        }
+        
+		return scripts
 	}
 }

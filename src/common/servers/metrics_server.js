@@ -90,7 +90,8 @@ export default class MetricsServer extends Server
             {
                 this.info('processing metric type:' + arg_metric_type)
                 this.http_state = this.http_reducer.reduce(this.http_state, arg_metrics)
-                console.log(this.http_state, 'http state')
+                
+                // console.log(this.http_state, 'http state')
             }
         }
         

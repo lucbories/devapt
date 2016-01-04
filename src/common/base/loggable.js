@@ -1,14 +1,14 @@
 
 import T from 'typr'
 import assert from 'assert'
-import debug_fn from 'debug'
+// import debug_fn from 'debug'
 
 import logs from '../utils/logs'
 
 
 
 let context = 'common/base/loggable'
-let debug = debug_fn(context)
+// let debug = debug_fn(context)
 
 
 export default class Loggable
@@ -57,31 +57,40 @@ export default class Loggable
 		
 		if (T.isArray(args) && args.length > 0)
 		{
-			const arg_0 = args[0].toString()
-			const parts = arg_0.split('%s', args.length)
-			
-			if (parts.length > 1 && args.length > 1)
+            let str = ''
+            
+            const arg_0 = args[0] ? args[0].toString() : ''
+            const parts = arg_0.split('%s', args.length)
+            let arg_index = 0
+            
+            if (parts.length > 1 && args.length > 1)
+            {
+                while(arg_index < parts.length && (arg_index + 1) < args.length)
+                {
+                    // console.log(str, 'i:' + i)
+                    str += parts[arg_index]
+                    str += args[arg_index + 1]
+                    arg_index++
+                }
+                
+                if ( arg_index < parts.length )
+                {
+                    str += parts[arg_index]
+                }
+                
+                arg_index++
+            }
+            
+            const args_count = Math.min(args.length, 4)
+            for( ; arg_index < args_count ; arg_index++)
 			{
-				let i = 0
-				let str = ''
-				
-				while(i < parts.length && (i+1) < args.length)
-				{
-					// console.log(str, 'i:' + i)
-					str += parts[i]
-					str += args[i+1]
-					i++
-				}
-				
-				if ( i < parts.length )
-				{
-					str += parts[i]
-				}
-				
-				return str
-			}
-			
-			return arg_0
+                if ( args[arg_index] )
+                {
+                    str += ':' + args[arg_index].toString()
+                }
+            }
+            
+			return str
 		}
 		
 		return args
@@ -89,20 +98,20 @@ export default class Loggable
 	
 	
 	// INSTANCE METHODS
-	debug(...arg_msg)
+	debug(...args)
 	{
 		if(this.is_trace_enabled)
 		{
-			logs.debug(this.$context, Loggable.format(arg_msg))
+			logs.debug(this.$context, Loggable.format(args))
 		}
 	}
 	
 	
-	info(...arg_msg)
+	info(...args)
 	{
 		if(this.is_trace_enabled)
 		{
-			logs.info(this.$context, Loggable.format(arg_msg))
+			logs.info(this.$context, Loggable.format(args))
 		}
 	}
 	

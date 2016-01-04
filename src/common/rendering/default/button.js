@@ -46,6 +46,7 @@ export default class Button extends Component
 		assert( T.isString(this.state.label), context + ':bad state label string')
 		assert( T.isString(this.state.action_url), context + ':bad state action url string')
 		
+        // console.log(this.$settings.page_scripts, 'button scripts')
 		
 		// BUILD HTML ELEMENT
 		let html = '<button id="' + this.get_dom_id() + '" onclick="button_on_click(this)">' + this.state.label + '</button>'

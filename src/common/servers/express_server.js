@@ -39,7 +39,35 @@ export default class ExpressServer extends Server
 		// )
 		
 		this.server.use( MetricsMiddleware.create_middleware(this) )
+        
+		// this.server.use(
+        //     '/hello',
+        //     express.static('public/assets')
+        // )
+        
+		this.server.use(
+            function(err, req, res, next)
+            {
+                if (req.xhr)
+                {
+                    res.status(500).send( { error: 'Something failed!' } );
+                }
+                else
+                {
+                    next(err);
+                }
+            }
+        )
+        
+		this.server.use(
+            function(err, req, res, next)
+            {
+                console.error(err.stack);
+                res.status(500)
+                res.render('error', { error: err } )
+            }
+        )
 		
-		this.leave_group('build_server')
+        this.leave_group('build_server')
 	}
 }

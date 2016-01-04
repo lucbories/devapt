@@ -44,7 +44,7 @@ API.warn = function(arg_module, arg_msg, arg_val_1, arg_val_2, arg_val_3)
 
 API.error = function(arg_module, arg_msg)
 {
-	return trace(console.error, arg_module, arg_msg, arg_val_1, arg_val_2, arg_val_3);
+	return trace(console.error, arg_module, arg_msg);
 }
 
 

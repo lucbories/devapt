@@ -19,6 +19,7 @@ export default class Instance extends Settingsable
 {
 	constructor(arg_collection, arg_class, arg_name, arg_settings, arg_log_context)
 	{
+		Loggable.static_debug(context, 'Instance.constructor(%s,%s,%s)', arg_collection, arg_class, arg_name)
 		Loggable.static_info(context, 'Instance.constructor(%s,%s,%s)', arg_collection, arg_class, arg_name)
 		
 		assert( T.isString(arg_collection) && arg_collection.length > 0, context + ':bad collection string')
@@ -32,12 +33,17 @@ export default class Instance extends Settingsable
 		
 		super(arg_settings, my_context)
 		
+        // CLASS ATTRIBUTES
 		this.is_instance = true
+		this.is_weaked = false
+        
+        // INSTANCE ATTRIBUTES
 		this.is_loaded = false
 		this.$id = my_uid
 		this.$type = arg_collection
 		this.$class = arg_class
 		this.$name = arg_name
+        this.$weak = 1
 		
 		if ( store.has_collection(arg_collection) )
 		{
@@ -55,6 +61,19 @@ export default class Instance extends Settingsable
 	get_name()
 	{
 		return this.$name
+	}
+	
+	
+	get_weak()
+	{
+		return this.$weak
+	}
+	
+	
+	set_weak(arg_weak)
+	{
+        assert( T.isNumber(arg_weak), context + ':bad weak value')
+		this.$weak = arg_weak
 	}
 	
 	

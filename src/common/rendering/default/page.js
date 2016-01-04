@@ -16,6 +16,10 @@ export default class Page extends Component
 		super(arg_name, arg_settings)
 		
 		this.$type = 'Page'
+        
+        const render = arg_settings.render ? arg_settings.render : null
+        assert( T.isObject(render) && render.is_render, context + ':bad render object')
+        this.renderer = render
 	}
 	
 	
@@ -116,7 +120,12 @@ export default class Page extends Component
 		// console.log(this.$settings.scripts_urls, 'scripts_urls')
 		if (this.$settings.scripts_urls.length > 0)
 		{
-			html += this.$settings.scripts_urls.map(url => `<script type="text/javascript" src="${url}"></script>`).join('\n') + '\n'
+			html += this.$settings.scripts_urls.map(
+                url => {
+                    const absolute_url = this.renderer.get_assets_script_url(url)
+                    return `<script type="text/javascript" src="${absolute_url}"></script>`
+                }
+            ).join('\n') + '\n'
 		}
 		
 		html += this.render_body_script()

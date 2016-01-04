@@ -27,7 +27,7 @@ export default class ExecutableRouteMiddleware extends ExecutableRoute
 		
 		
 		const path_file_name = path.join(__dirname, '..', '..', arg_cfg_route.mw_file)
-		fs.watch(path_file_name,
+		/*fs.watch(path_file_name,
 			function(event, target_file)
 			{
 				self.info('Reloading middleware file [' + path_file_name + ']')
@@ -35,10 +35,10 @@ export default class ExecutableRouteMiddleware extends ExecutableRoute
 				console.log(target_file, 'is', event)
 				delete require.cache[path_file_name]
 				
-				const mw_cb = require(path_file_name)
-				console.log(mw_cb, 'mw_cb')
+				const mw_cb = require(path_file_name).default
+				// console.log(mw_cb, 'mw_cb')
 			}
-		)
+		)*/
 		
 		
 		return function exec_http(req, res, next)
@@ -58,7 +58,8 @@ export default class ExecutableRouteMiddleware extends ExecutableRoute
 				if (!mw_cb)
 				{
 					self.info('Loading middleware file [' + path_file_name + ']')
-					mw_cb = require(path_file_name)
+					mw_cb = require(path_file_name).default
+                    // console.log(mw_cb, 'mw_cb')
 				}
 				
 				self.info('Loading middleware after')
@@ -68,7 +69,7 @@ export default class ExecutableRouteMiddleware extends ExecutableRoute
 				console.log(context + ':middleware loading error:' + e)
 				self.error('middleware file not found or not valid')
 				self.leave_group('ExecutableRouteMiddleware.exec_http')
-				return next()
+				return next(e)
 			}
 			assert(T.isFunction(mw_cb), context + ':bad middleware function')
 			
@@ -85,7 +86,7 @@ export default class ExecutableRouteMiddleware extends ExecutableRoute
 				console.log(context + ':middleware execution error:' + e)
 				self.error('middleware execution failed')
 				self.leave_group('ExecutableRouteMiddleware.exec_http')
-				return next()
+				return next(e)
 			}
 			
 			

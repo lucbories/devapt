@@ -35,7 +35,7 @@ const optional_trace_settings = {
 		* 		- create services
 		*/
 		"RuntimeStage2":{
-			"enabled":false
+			"enabled":true
 		},
 		
 		/**

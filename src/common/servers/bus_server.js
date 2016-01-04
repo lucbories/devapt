@@ -35,6 +35,12 @@ export default class BusServer extends Server
 		this.bus = simplebus.createBus(size);
 		this.server = simplebus.createServer(this.bus, port, host);
 		
+        // SET SOCKET SERVER HANDLERS
+        // this.server.on('connection', BusServer.on_server_connection)
+        // this.server.on('close', BusServer.on_client_close)
+        // this.server.on('error', BusServer.on_client_error)
+        // this.server.on('listening', BusServer.on_client_listening)
+        
 		this.leave_group('build_server')
 	}
 	
@@ -78,8 +84,12 @@ export default class BusServer extends Server
 				client.subscribe( { "target": node_name },
 					function(arg_msg)
 					{
-						assert( T.isObject(arg_msg) && T.isObject(arg_msg.payload), context + ':subscribe:bad payload object')
+                        console.log(arg_msg, context + ':client.on_msg:enter')
+						
+                        assert( T.isObject(arg_msg) && T.isObject(arg_msg.payload), context + ':subscribe:bad payload object')
 						arg_node.receive_msg(arg_msg.sender, arg_msg.payload)
+                        
+                        console.log(context + ':client.on_msg:leave')
 					}
 				)
 				
@@ -88,7 +98,81 @@ export default class BusServer extends Server
 				arg_node.register_to_master()
 			}
 		)
+        
+        // SET SOCKET CLIENT HANDLERS
+        client.on('connect', BusServer.on_client_connect)
+        client.on('close', BusServer.on_client_close)
+        client.on('data', BusServer.on_client_data)
+        client.on('end', BusServer.on_client_end)
+        client.on('error', BusServer.on_client_error)
+        client.on('timeout', BusServer.on_client_timeout)
 		
 		return client
 	}
+    
+    
+    
+    // SOCKET SERVER EVENT HANDLERS
+    
+    static on_server_connection()
+    {
+        console.log(context + ':connection on bus server')
+    }
+    
+    
+    static on_server_close()
+    {
+        console.log(context + ':close on bus server')
+    }
+    
+    
+    static on_server_error()
+    {
+        console.log(context + ':error on bus server')
+    }
+    
+    
+    static on_server_listening()
+    {
+        console.log(context + ':listening on bus server')
+    }
+    
+    
+    
+    // SOCKET CLIENT EVENT HANDLERS
+    
+    static on_client_connect()
+    {
+        console.log(context + ':connect on bus client')
+    }
+    
+    
+    static on_client_data()
+    {
+        console.log(context + ':data on bus client')
+    }
+    
+    
+    static on_client_error(e)
+    {
+        console.log(context + ':error on bus client', e)
+    }
+    
+    
+    static on_client_close()
+    {
+        console.log(context + ':close on bus client')
+    }
+    
+    
+    static on_client_end()
+    {
+        console.log(context + ':end on bus client')
+    }
+    
+    
+    static on_client_timeout()
+    {
+        console.log(context + ':timeout on bus client')
+    }
 }

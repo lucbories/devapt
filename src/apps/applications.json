@@ -80,8 +80,7 @@
 			"services":{
 				"provides":{
 					"rest_api_resources_query_1": { "servers":["serverA1"], "filters":["*"] },
-					"rest_api_models_query_1": { "servers":["serverA1"], "filters":["*"] },
-					"html_assets_1": { "servers":["serverA1"], "filters":["*"] }
+					"rest_api_models_query_1": { "servers":["serverA1"], "filters":["*"] }
 				},
 				"consumes":{
 				}

@@ -76,7 +76,7 @@ API.error = function(arg_module, arg_msg)
 {
 	if ( should_trace('error', arg_module) )
 	{
-		mw.error(arg_module, arg_msg, arg_val_1, arg_val_2, arg_val_3)
+		mw.error(arg_module, arg_msg)
 	}
 }
 

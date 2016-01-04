@@ -100,6 +100,33 @@ export default class Collection
 	get_all_ids() { return this.$items.map( (item) =>{ return item.$id } ) }
 	
 	
+	// ITEMS COUNT
+	get_count() { return this.$items.length }
+    
+    
+	// GET FIRST ITEM
+	get_first()
+    {
+        if ( ! this.$weak_map )
+        {
+            return this.$items.length > 0 ? this.$items[0] : null
+        }
+        
+        return this.$weak_map.first() // TO FIX
+    }
+    
+	// GET FIRST ITEM
+	get_last()
+    {
+        if ( ! this.$weak_map )
+        {
+            return this.$items.length > 0 ? this.$items[ this.$items.length - 1 ] : null
+        }
+        
+        return this.$weak_map.last() // TO FIX
+    }
+	
+	
 	// ADD AN ITEM: TODO update indices
 	add(arg_item)
 	{
@@ -108,6 +135,17 @@ export default class Collection
 			if ( this.has_accepted_type('*') || this.has_accepted_type(arg_item.$type) )
 			{
 				this.$items.push(arg_item)
+                
+                // CLASS USES WEAK ?
+                if (arg_item.is_weaked)
+                {
+                    if ( ! T.isObject(this.$weak_map) )
+                    {
+                        this.$weak_map = new WeakMap()
+                        this.$weak_map.push(arg_item.get_weak(), arg_item)
+                    }
+                }
+                
 				return
 			}
 			
@@ -121,7 +159,7 @@ export default class Collection
 	
 	// FIND AN ITEM BY NAME: TODO optimize with a map index
 	find_by_name(arg_name) { return this.$items.find( item => { return item.$name == arg_name } ) }
-	
+    
 	
 	// FIND AN ITEM BY ID: TODO optimize with a map index
 	find_by_id(arg_id) { return this.$items.find( item => item.id == arg_id) }

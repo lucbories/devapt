@@ -54,7 +54,7 @@ export default class MetricHttp extends Metric
 		this.metrics.service.url = this.req.originalUrl || this.req.url
 		this.metrics.service.method = this.req.method
 		this.metrics.service.http_version = this.req.httpVersion 
-		this.metrics.service.route = this.req.route ? this.req.route.path : null
+		this.metrics.service.route = this.req.route ? this.req.route.path : 'unknown route'
 		
 		// SERVER IDENTIFICATION
 		this.metrics.server = {}
@@ -126,10 +126,17 @@ export default class MetricHttp extends Metric
 			arg_server.server.on('after',
 				function (req, res)
 				{
-					console.log('MetricHttp middleware on finish')
+					// console.log('MetricHttp middleware on finish')
 					
 					let metric = req.devapt_metrics
-					metric.after()
+                    // console.log(metric, 'metric')
+                    
+                    if (metric)
+                    {
+					   metric.after()
+                    }
+                    
+                    // console.log('MetricHttp middleware on finish, leave')
 				}
 			)
 		}
@@ -138,7 +145,7 @@ export default class MetricHttp extends Metric
         // MIDDLEWARE FUNCTION
 		return function(req, res, next)
 		{
-			console.log('MetricHttp middleware created')
+			// console.log('MetricHttp middleware created')
 			
 			let metric = new MetricHttp(req, res)
             metric.server = arg_server
@@ -150,10 +157,15 @@ export default class MetricHttp extends Metric
 				res.on('finish',
 					function ()
 					{
-						console.log('MetricHttp middleware on finish')
+						// console.log('MetricHttp middleware on finish')
 						
-						// let metric = res.devapt_metrics
-						metric.after()
+						let metric = res.devapt_metrics
+                        // console.log(metric, 'metric')
+                        
+                        if (metric)
+                        {
+						  metric.after()
+                        }
 					}
 				)
 			}

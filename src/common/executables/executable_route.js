@@ -80,7 +80,8 @@ export default class ExecutableRoute extends Executable
 				cfg_route.full_route = route
 			}
 			
-			
+			this.debug('route', cfg_route.full_route.toString())
+			this.debug('directory', cfg_route.directory)
 			this.process_route(server_instance, application, cfg_route, arg_data)
 			
 			this.info('registering route [' + route + '] for application [' + application.$name + ']')
@@ -93,9 +94,35 @@ export default class ExecutableRoute extends Executable
 		// console.log(arg_cfg_route, 'arg_cfg_route')
 		
 		const route_cb = this.get_route_cb(arg_application, arg_cfg_route, arg_data)
+        if (!route_cb)
+        {
+            console.error('bad route callback', context)
+            return;
+        }
+        
 		try
 		{
-			arg_server.server.get(arg_cfg_route.full_route, route_cb)
+            // RESTIFY SERVER
+            if (this.store_config.server.is_restify_server)
+            {
+                this.debug('process restify route [%s]', arg_cfg_route.full_route)
+                
+                // TODO Restify route should be: an app assets/ with a route /js/.* and folder should be ./public to serve a file in ./public/assets/js/test.js
+                
+                arg_server.server.get(arg_cfg_route.full_route, route_cb)
+                return
+            }
+            
+            // EXPRESS SERVER
+            if (this.store_config.server.is_express_server)
+            {
+                this.debug('process express route [%s]', arg_cfg_route.full_route)
+                
+                // TODO Restify route should be: an app assets/ with a route /js and folder should be ./public/assets/js to serve a file in ./public/assets/js/test.js
+                
+                arg_server.server.use(arg_cfg_route.full_route, route_cb)
+                return
+            }
 		}
 		catch(e)
 		{

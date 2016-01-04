@@ -17,21 +17,23 @@ var myCustomLevels = {
 
 var logger = new (winston.Logger)(
 	{
-		// levels: myCustomLevels.levels,
+		levels: myCustomLevels.levels,
 		
 		transports: [
 			new (winston.transports.Console)(
 				{
-					level:'verbose',
+					level:'debug',
 					
-					timestamp: function() {
+					timestamp: function()
+                    {
 						return Date.now();
 					},
 					
-					formatter: function(options) {
+					formatter: function(options)
+                    {
 						// Return string will be passed to logger.
 						return options.timestamp().toString().substr(-6) +' '+ process.pid +' '+ options.level.toUpperCase() +' '+ (undefined !== options.message ? options.message : '') +
-						(options.meta && Object.keys(options.meta).length ? '\n\t'+ JSON.stringify(options.meta) : '' );
+						  (options.meta && Object.keys(options.meta).length ? '\n\t'+ JSON.stringify(options.meta) : '' );
 					},
 					
 					colorize:true
@@ -40,7 +42,7 @@ var logger = new (winston.Logger)(
 			new (winston.transports.File)(
 				{
 					filename: './tmp/apps.log',
-					level: 'verbose',
+					level: 'debug',
 					maxsize:100000,
 					maxFiles:2
 				}
@@ -59,19 +61,19 @@ var trace = function(arg_trace_level, arg_module, arg_msg, arg_val_1, arg_val_2,
 {
 	if (arg_val_1 && arg_val_2 && arg_val_3)
 	{
-		logger.log(arg_trace_level, arg_module + ':' + arg_msg, arg_val_1, arg_val_2, arg_val_3);
+		logger.log(arg_trace_level, arg_module + ':' + arg_msg + ':' + arg_val_1.toString() + ':' + arg_val_2.toString() + ':' + arg_val_3.toString());
 		return;
 	}
 	
 	if (arg_val_1 && arg_val_2)
 	{
-		logger.log(arg_trace_level, arg_module + ':' + arg_msg, arg_val_1, arg_val_2);
+		logger.log(arg_trace_level, arg_module + ':' + arg_msg + ':' + arg_val_1.toString() + ':' + arg_val_2.toString());
 		return;
 	}
 	
 	if (arg_val_1)
 	{
-		logger.log(arg_trace_level, arg_module + ':' + arg_msg, arg_val_1);
+		logger.log(arg_trace_level, arg_module + ':' + arg_msg + ':' + arg_val_1.toString());
 		return;
 	}
 	
@@ -101,9 +103,9 @@ API.warn = function(arg_module, arg_msg, arg_val_1, arg_val_2, arg_val_3)
 }
 
 
-API.error = function(arg_module, arg_msg, arg_val_1, arg_val_2, arg_val_3)
+API.error = function(arg_module, arg_msg)
 {
-	trace('error', arg_module, arg_msg, arg_val_1, arg_val_2, arg_val_3);
+	trace('error', arg_module, arg_msg);
 	return API;
 }
 

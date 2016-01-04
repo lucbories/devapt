@@ -4,13 +4,13 @@
 			"type":"html_assets",
 			"routes":[
 				{
-					"route":"/store",
-					"directory":"./apps/public",
-					"default_file":"store_config.html"
+					"route":"/assets2",
+					"directory":"./public/tutorial-1",
+					"default_file":"index.html"
 				},
 				{
 					"route":"/examples",
-					"directory":"./apps/public",
+					"directory":"./public/devtools",
 					"default_file":"react_counter.html"
 				}
 			]
@@ -19,6 +19,12 @@
 		"devtools_panel":{
 			"type":"middleware",
 			"routes":[
+				{
+					"route":"/metrics",
+					"mw_file":"apps/devtools/metrics/metrics_mw.js"
+				},
+                
+                
 				{
 					"route":"/store/config/all",
 					"mw_file":"apps/devtools/store/config/store_config_mw.js"
@@ -36,7 +42,7 @@
 					"mw_file":"apps/devtools/store/config/store_config_services_mw.js"
 				},
 				{
-					"route":"/store/config/servers",
+					"route":"/store/config/nodes",
 					"mw_file":"apps/devtools/store/config/store_config_servers_mw.js"
 				},
 				{
@@ -88,15 +94,15 @@
 			"type":"html_assets",
 			"routes":[
 				{
-					"route":"/css/.*",
+					"route":"/css/.*.css",
 					"directory":"./public"
 				},
 				{
-					"route":"/js/.*",
-					"directory":"./public"
+					"route":"/js",
+					"directory":"public/assets/js"
 				},
 				{
-					"route":"/img/.*",
+					"route":"/img/.*.jpg",
 					"directory":"./public"
 				}
 			]

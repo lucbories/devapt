@@ -38,7 +38,9 @@ export default class Tree extends Component
 					$('span.node_closed', node).toggle()
 				}
 			)`]
-		arg_settings.page_scripts_urls = ["http://localhost:8080/assets/js/vendor/foundation/jquery.js"]
+        // const jquery_url = // TODO
+		// arg_settings.page_scripts_urls = ["http://localhost:8081/assets/js/vendor/foundation/jquery.js"]
+		arg_settings.page_scripts_urls = ["js/vendor/foundation/jquery.js"]
 		
 		super(arg_name, arg_settings)
 		

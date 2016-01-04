@@ -22,7 +22,6 @@ export default class MidlewareService extends Service
 		super(arg_svc_name, null, null, arg_context ? arg_context : context)
 		
 		this.is_mw_service = true
-		this.providers = new Collection()
 	}
 	
 	
@@ -35,25 +34,9 @@ export default class MidlewareService extends Service
 	}
 	
 	
-	get_providers()
+	create_provider(arg_name, arg_service)
 	{
-		return this.providers
-	}
-	
-	
-	get_provider_by_app_server(arg_app_name, arg_server_name)
-	{
-		const key = arg_app_name + '-' + arg_server_name
-		let provider = this.providers.find_by_attr('application_server', key)
-		assert(! provider, context + ':service provider already activated')
-		
-		if (! provider)
-		{
-			provider = new MidlewareSvcProvider(this.get_name() + '_provider_for_' + key, this)
-			this.providers.add(provider)
-		}
-		
-		return provider
+		return new MidlewareSvcProvider(arg_name, arg_service)
 	}
 	
 	

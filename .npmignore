@@ -1,0 +1,15 @@
+.vscode/
+build/
+docs/
+legacy/
+node_modules/
+src/
+tmp/
+.babelrc
+.gitignore
+gulpfile.js
+json.config
+run_master.js
+run_nodeB.js
+start_master.js
+start_nodeB.js

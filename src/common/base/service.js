@@ -9,6 +9,9 @@ import Instance from './instance'
 import Collection from './collection'
 import runtime from './runtime'
 
+import ServiceConsumer from '../services/service_consumer'
+import ProducerConsumer from '../services/service_provider'
+
 
 
 let context = 'common/base/service'
@@ -54,6 +57,8 @@ export default class Service extends Instance
 		
 		this.locale_exec = arg_locale_exec
 		this.remote_exec = arg_remote_exec
+        
+		this.providers = new Collection()
 	}
 	
 	
@@ -122,7 +127,8 @@ export default class Service extends Instance
 	activate_on_server(arg_application, arg_server, arg_app_svc_cfg)
 	{
 		this.info('activate_on_server [' + arg_server.get_name() + '] for application [' + arg_application.get_name() + ']')
-		const exec_cfg = this.get_settings().toJS()
+		
+        const exec_cfg = this.get_settings().toJS()
 		exec_cfg.server = arg_server
 		// console.log(exec_cfg, context + ':exec_cfg')
 		
@@ -136,6 +142,70 @@ export default class Service extends Instance
 			this.remote_exec.prepare(exec_cfg)
 			this.remote_exec.execute(arg_application)
 		}
+        
+		let provider = this.get_provider_by_app_server(arg_application.get_name(), arg_server.get_name())
+		
+		provider.activate(arg_application, arg_server, arg_app_svc_cfg)
+	}
+	
+	
+	get_providers()
+	{
+		return this.providers
+	}
+    
+    
+    get_a_provider(arg_strategy)
+    {
+        let provider = null
+        
+        if (! arg_strategy)
+        {
+            // USE THE FIRST ITEM OF THE LIST OR THE WEAKED LIST IF ENABLED
+            provider = this.providers.get_first()
+        }
+        
+        // TODO: define metrics on the provider and update the weak at each turn
+        // TODO: define Strategy class with: bablance, round
+        
+        if (! provider)
+		{
+            // const key = 'app' + '-' + 'name'
+			// provider = this.create_provider(this.get_name() + '_provider_for_' + key, this)
+			// this.providers.add(provider)
+		}
+        
+        return provider
+    }
+	
+	
+	get_provider_by_app_server(arg_app_name, arg_server_name)
+	{
+		const key = arg_app_name + '-' + arg_server_name
+		let provider = this.providers.find_by_attr('application_server', key)
+		assert(! provider, context + ':service provider already activated')
+		
+		if (! provider)
+		{
+			provider = this.create_provider(this.get_name() + '_provider_for_' + key, this)
+			this.providers.add(provider)
+		}
+		
+		return provider
+	}
+	
+	
+	create_provider(arg_name, arg_service)
+	{
+        // this.error('create_provider is not implemented')
+		return new ProducerConsumer(arg_name, arg_service)
+	}
+	
+	
+	create_consumer()
+	{
+        // this.error('create_consumer is not implemented')
+		return new ServiceConsumer(this.get_name() + '_consumer_' + this.get_id(), this)
 	}
 }
 
