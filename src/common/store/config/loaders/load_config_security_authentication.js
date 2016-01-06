@@ -16,7 +16,7 @@ let error_msg_bad_alt = context + ':authentication.alt should be an object'
 
 
 
-function load_config_security_authentication(arg_auth_config)
+function load_config_security_authentication(arg_auth_config, arg_base_dir)
 {
 	logs.info(context, 'loading config.security')
 	

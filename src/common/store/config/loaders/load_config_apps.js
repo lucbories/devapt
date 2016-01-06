@@ -3,6 +3,7 @@ import assert from 'assert'
 import T from 'typr'
 
 import logs from '../../../utils/logs'
+
 import load_config_apps_app from './load_config_apps_app'
 
 
@@ -15,7 +16,7 @@ let error_msg_bad_config = context + ':bad config'
  * Load the 'config.applications' key of the final state
  * Pure function: (Plain Object) => (mutated Plain Object)
  */
-function load_config_apps(arg_config, arg_config_modules, arg_config_plugins, arg_config_resources)
+function load_config_apps(arg_config, arg_config_modules, arg_config_plugins, arg_config_resources, arg_base_dir)
 {
 	logs.info(context, 'loading config.applications')
 	
@@ -25,7 +26,7 @@ function load_config_apps(arg_config, arg_config_modules, arg_config_plugins, ar
 			function(app_name)
 			{
 				let app = arg_config[app_name]
-				arg_config[app_name] = load_config_apps_app(app, arg_config_modules, arg_config_plugins)
+				arg_config[app_name] = load_config_apps_app(app, arg_config_modules, arg_config_plugins, arg_base_dir)
 				
 				// PROCESS ERROR
 				if (arg_config[app_name].error)

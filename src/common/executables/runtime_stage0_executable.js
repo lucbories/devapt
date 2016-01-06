@@ -64,14 +64,14 @@ export default class RuntimeStage0Executable extends RuntimeExecutable
 			assert(node_name == master_name, context + ':node name [' + node_name + '] not equals master name [' + master_name + ']')
 			
 			// LOAD MASTER SETTINGS
-			const apps_file_path = this.runtime.get_setting('apps_settings_file')
-			if ( T.isString(apps_file_path) )
-			{
-				this.info('Node is master: load settings file [' + apps_file_path + ']')
+			// const apps_file_path = this.runtime.get_setting('apps_settings_file')
+			// if ( T.isString(apps_file_path) )
+			// {
+			// 	this.info('Node is master: load settings file [' + apps_file_path + ']')
 				
-				const json = require( path.join('../..', apps_file_path) )
-				dispatch_store_config_set_all(store, json)
-			}
+			// 	const json = require( path.join('../..', apps_file_path) )
+			// 	dispatch_store_config_set_all(store, json)
+			// }
 			
 			// CREATE MASTER NODE
 			this.info('Create Node and load it')

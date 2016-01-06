@@ -41,7 +41,7 @@ let error_msg_resource_not_found = context + ':bad config - config.applications.
  * Load the 'config.applications.*' keys of the final state
  * Pure function: (Plain Object) => (mutated Plain Object)
  */
-function load_config_apps_app(arg_app_config, arg_config_modules, arg_config_plugins, arg_config_resources)
+function load_config_apps_app(arg_app_config, arg_config_modules, arg_config_plugins, arg_config_resources, arg_base_dir)
 {
 	logs.info(context, 'loading config.applications.[app]')
 	
@@ -70,8 +70,7 @@ function load_config_apps_app(arg_app_config, arg_config_modules, arg_config_plu
 			logs.info(context, 'loading config.applications.[app].from_file')
 			assert(T.isString(arg_app_config.from_file), error_msg_bad_from_file)
 			
-			let base_dir = path.join(__dirname, '../../apps/')
-			let file_path_name = path.join(base_dir, arg_app_config.from_file)
+			let file_path_name = path.join(arg_base_dir, 'apps', arg_app_config.from_file)
 			
 			let app_file_config = parser.read(file_path_name, 'utf8')
 			// console.log(config, 'config')

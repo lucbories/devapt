@@ -4,7 +4,7 @@ import fs from 'fs'
 import path from 'path'
 
 import { store, config } from '../store/index'
-// import runtime from '../base/runtime'
+import { get_base_dir } from '../utils/paths'
 
 import ExecutableRoute from './executable_route'
 
@@ -26,7 +26,7 @@ export default class ExecutableRouteMiddleware extends ExecutableRoute
 		let self = this
 		
 		
-		const path_file_name = path.join(__dirname, '..', '..', arg_cfg_route.mw_file)
+		const path_file_name = path.join(get_base_dir(), arg_cfg_route.mw_file)
 		/*fs.watch(path_file_name,
 			function(event, target_file)
 			{

@@ -20,10 +20,10 @@ let error_msg_bad_authorization = context + ':security.authorization should be a
 let error_msg_bad_connexion = context + ':security.connexions.* should be a string'
 let error_msg_bad_cx_config = context + ':security.connexions.*.* should be a valid connexion'
 
-const apps_dir = '../../../../apps/'
+// const apps_dir = '../../../../apps/'
 	
 
-function load_config_security(arg_security_config)
+function load_config_security(arg_security_config, arg_base_dir)
 {
 	logs.info(context, 'loading config.security')
 	
@@ -44,7 +44,7 @@ function load_config_security(arg_security_config)
 				// CHECK CONNEXIONS
 				assert(T.isString(file_name), error_msg_bad_connexion)
 				
-				let file_path_name = path.join(__dirname , apps_dir, file_name)
+				let file_path_name = path.join(arg_base_dir, 'resources', file_name)
 				// console.log(file_path_name, 'connexions file_path_name')
 				
 				let config = parser.read(file_path_name, 'utf8')
@@ -77,10 +77,10 @@ function load_config_security(arg_security_config)
 		)
 		
 		// CHECK AUTHENTICATION
-		arg_security_config.authentication = load_config_security_authentication(arg_security_config.authentication)
+		arg_security_config.authentication = load_config_security_authentication(arg_security_config.authentication, arg_base_dir)
 		
 		// CHECK AUTHORIZATION
-		arg_security_config.authorization = load_config_security_authorization(arg_security_config.authorization)
+		arg_security_config.authorization = load_config_security_authorization(arg_security_config.authorization, arg_base_dir)
 	}
 	catch(e)
 	{

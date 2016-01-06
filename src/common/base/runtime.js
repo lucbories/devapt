@@ -129,7 +129,7 @@ class Runtime extends Settingsable
 	watch_files()
 	{
 		/*let self = this
-		const dir_to_watch = path.join(__dirname, '../../apps/private/devtools/lib/')
+		const dir_to_watch = path.join(base_idr, '../../apps/private/devtools/lib/')
 		fs.watch(dir_to_watch,
 			function(event, target_file)
 			{

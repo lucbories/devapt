@@ -20,7 +20,7 @@ let error_msg_bad_username = context + ':authorization.username should be a stri
 
 
 
-function load_config_security_authorization(arg_auth_config)
+function load_config_security_authorization(arg_auth_config, arg_base_dir)
 {
 	logs.info(context, 'loading config.security')
 	

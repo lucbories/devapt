@@ -122,6 +122,7 @@ export default class Page extends Component
 		{
 			html += this.$settings.scripts_urls.map(
                 url => {
+                    // console.log(url, 'url')
                     const absolute_url = this.renderer.get_assets_script_url(url)
                     return `<script type="text/javascript" src="${absolute_url}"></script>`
                 }

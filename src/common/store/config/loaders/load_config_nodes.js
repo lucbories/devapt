@@ -20,7 +20,7 @@ let error_msg_bad_node_servers_server_protocole = context + ':nodes.*.servers.*.
 
 
 
-function load_config_nodes(arg_nodes_config)
+function load_config_nodes(arg_nodes_config, arg_base_dir)
 {
 	logs.info(context, 'loading config.nodes')
 	
@@ -40,7 +40,7 @@ function load_config_nodes(arg_nodes_config)
 				assert(T.isBoolean(node_obj.is_master), error_msg_bad_node_is_master)
 				assert(T.isObject(node_obj.servers), error_msg_bad_node_servers)
 				
-				load_config_node_servers(node_obj.servers, node_name, node_obj.host)
+				load_config_node_servers(node_obj.servers, node_name, node_obj.host, arg_base_dir)
 			}
 		)
 	}
@@ -53,7 +53,7 @@ function load_config_nodes(arg_nodes_config)
 }
 
 
-function load_config_node_servers(arg_servers_config, arg_node_name, arg_host)
+function load_config_node_servers(arg_servers_config, arg_node_name, arg_host, arg_base_dir)
 {
 	logs.info(context, 'loading config.nodes.*.servers')
 	

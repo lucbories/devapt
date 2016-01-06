@@ -43,11 +43,13 @@ export default class RuntimeStage1Executable extends RuntimeExecutable
 			
 			// LOAD MASTER SETTINGS
 			const file_path = this.runtime.get_setting('apps_settings_file', null)
-			if ( T.isString(file_path) )
+			const base_dir = this.runtime.get_setting('base_dir', null)
+			if ( T.isString(file_path) && T.isString(base_dir) )
 			{
 				this.info('Node is master: load settings file [' + file_path + ']')
 				
-				const json = require( path.join('../..', file_path) )
+				const json = require( path.join(base_dir, file_path) )
+				
 				dispatch_store_config_set_all(store, json)
 			}
 		}

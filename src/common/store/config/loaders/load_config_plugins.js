@@ -15,7 +15,7 @@ let error_msg_bad_autoload = context + ':plugins.*.autoload should be a boolean'
 
 
 
-function load_config_plugins(arg_plugins_config)
+function load_config_plugins(arg_plugins_config, arg_base_dir)
 {
 	logs.info(context, 'loading config.plugins')
 	

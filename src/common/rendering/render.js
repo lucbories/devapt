@@ -101,7 +101,8 @@ export default class Render extends Loggable
     {
         this.enter_group('get_assets_url')
         
-        assert( T.isString(arg_url), context + ':get_assets_url:bad url string')
+        console.log(typeof arg_url, 'arg_url', arg_url)
+        assert( T.isString(arg_url), context + ':get_assets_url:bad url string for svc [' + arg_svc_name + '] for url [' + arg_url + ']')
         
         const has_consumer = T.isObject(arg_consumer) && arg_consumer.is_service_consumer
         if (! has_consumer)

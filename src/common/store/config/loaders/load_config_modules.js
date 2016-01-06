@@ -24,11 +24,11 @@ let error_msg_bad_module_config = context + ':bad module config'
 let error_msg_bad_resource_config = context + ':bad resource config'
 
 
-const modules_dir = '../../../../modules/'
+// const modules_dir = '../../../../modules/'
 
 
 
-function load_config_modules(arg_modules_config)
+function load_config_modules(arg_modules_config, arg_base_dir)
 {
 	logs.info(context, 'loading config.modules')
 	
@@ -77,7 +77,7 @@ function load_config_modules(arg_modules_config)
 						logs.info(context, 'loading config.modules.' + module_name + ' resources file:' + resource_file)
 						
 						let file_name = path.join(module_obj.base_dir, resource_file)
-						let file_path_name = path.join(__dirname , modules_dir, file_name)
+						let file_path_name = path.join(arg_base_dir , 'resources', 'modules', file_name)
 						
 						let config = parser.read(file_path_name, 'utf8')
 						// console.log(config, 'config')

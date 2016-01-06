@@ -3,7 +3,9 @@ import assert from 'assert'
 import T from 'typr'
 import path from 'path'
 
+// import { base_dir, get_absolute_path } from '../../../utils/paths'
 import logs from '../../../utils/logs'
+
 import load_config_apps from './load_config_apps'
 import load_config_modules from './load_config_modules'
 import load_config_plugins from './load_config_plugins'
@@ -14,7 +16,7 @@ import load_config_nodes from './load_config_nodes'
 let context = 'common/store/config/loaders/load_config'
 let error_msg_bad_config = context + ':bad config'
 
-const base_dir = '../../../..'
+// const base_dir = '../../../..'
 
 
 
@@ -22,10 +24,12 @@ const base_dir = '../../../..'
  * Load the 'config' key of the final state
  * Pure function: (Plain Object) => (new Plain Object)
  */
-function load_config(arg_state, arg_initial_config)
+function load_config(arg_state, arg_initial_config, arg_base_dir)
 {
 	logs.info(context, 'loading config')
 	
+    const base_dir = arg_base_dir
+    console.log(base_dir, 'load_config:base_dir')
 	
 	// LOAD APPS.JSON
 	try{
@@ -42,32 +46,32 @@ function load_config(arg_state, arg_initial_config)
 		// LOAD OTHERS FILES
 		if (T.isString(config.nodes))
 		{
-			const file_path_name = path.join(base_dir, 'apps', config.nodes)
+			const file_path_name = path.join(base_dir, 'resources', config.nodes)
 			config.nodes = require(file_path_name).nodes
 		}
 		if (T.isString(config.services))
 		{
-			const file_path_name = path.join(base_dir, 'apps', config.services)
+			const file_path_name = path.join(base_dir, 'resources', config.services)
 			config.services = require(file_path_name).services
 		}
 		if (T.isString(config.applications))
 		{
-			const file_path_name = path.join(base_dir, 'apps', config.applications)
+			const file_path_name = path.join(base_dir, 'resources', config.applications)
 			config.applications = require(file_path_name).applications
 		}
 		if (T.isString(config.modules))
 		{
-			const file_path_name = path.join(base_dir, 'apps', config.modules)
+			const file_path_name = path.join(base_dir, 'resources', config.modules)
 			config.modules = require(file_path_name).modules
 		}
 		if (T.isString(config.plugins))
 		{
-			const file_path_name = path.join(base_dir, 'apps', config.plugins)
+			const file_path_name = path.join(base_dir, 'resources', config.plugins)
 			config.plugins = require(file_path_name).plugins
 		}
 		if (T.isString(config.security))
 		{
-			const file_path_name = path.join(base_dir, 'apps', config.security)
+			const file_path_name = path.join(base_dir, 'resources', config.security)
 			config.security = require(file_path_name).security
 		}
 		
@@ -97,12 +101,12 @@ function load_config(arg_state, arg_initial_config)
 		arg_state.config.resources.by_type.connexions = {} // Resource names (map name:name)
 		arg_state.config.resources.by_type.loggers = {} // Resource names (map name:name)
 		
-		arg_state.config.nodes        = load_config_nodes(config.nodes)
-		arg_state.config.services     = config.services // TODO: bload_config_services(config.services)
-		arg_state.config.modules      = load_config_modules(config.modules)
-		arg_state.config.plugins      = load_config_plugins(config.plugins)
-		arg_state.config.applications = load_config_apps(config.applications, arg_state.config.modules, arg_state.config.plugins, arg_state.config.resources)
-		arg_state.config.security     = load_config_security(config.security)
+		arg_state.config.nodes        = load_config_nodes(config.nodes, arg_base_dir)
+		arg_state.config.services     = config.services // TODO: bload_config_services(config.services, arg_base_dir)
+		arg_state.config.modules      = load_config_modules(config.modules, arg_base_dir)
+		arg_state.config.plugins      = load_config_plugins(config.plugins, arg_base_dir)
+		arg_state.config.applications = load_config_apps(config.applications, arg_state.config.modules, arg_state.config.plugins, arg_state.config.resources, arg_base_dir)
+		arg_state.config.security     = load_config_security(config.security, arg_base_dir)
 		
 		
 		// POPULATE STORE RESOURCES

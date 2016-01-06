@@ -1,6 +1,7 @@
 import {List, Map, fromJS} from 'immutable'
 import T from 'typr'
 
+import runtime from '../../base/runtime'
 import load_config from './loaders/load_config'
 
 
@@ -27,18 +28,20 @@ function get_path_array(arg_path)
 
 export function set_all(state, arg_config)
 {
-  let checked_config = load_config({}, arg_config)
-  if (checked_config.error)
-  {
-    return false
-  }
-  
-  const config = fromJS(checked_config.config)
-  
-//   console.log( Object.keys(config.resources.by_name), 'set_all')
-//   console.log( Object.keys(config), 'set_all')
-  
-  return state.set('config', config)
+    const base_dir = runtime.get_setting('base_dir', null)
+    
+    let checked_config = load_config({}, arg_config, base_dir)
+    if (checked_config.error)
+    {
+        return false
+    }
+    
+    const config = fromJS(checked_config.config)
+    
+    //   console.log( Object.keys(config.resources.by_name), 'set_all')
+    //   console.log( Object.keys(config), 'set_all')
+    
+    return state.set('config', config)
 }
 
 

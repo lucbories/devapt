@@ -3,13 +3,15 @@
 
 Dynamic, reactive, configurable application builder for Node.js.
 
+
 ## Installation
 
 Via npm on Node:
 
-```
+```js
 npm install devapt
 ```
+
 
 ## Usage
 
