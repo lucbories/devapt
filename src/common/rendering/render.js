@@ -13,12 +13,14 @@ const context = 'common/rendering/render'
 
 
 /**
- * Rendering class
+ * Rendering wrapper class.
+ * @author Luc BORIES
+ * @license Apache-2.0
  */
 export default class Render extends Loggable
 {
     /**
-     * Create a render
+     * Create a rendering wrapper class.
      */
 	constructor(arg_assets_img, arg_assets_html, arg_assets_scripts)
 	{
@@ -40,9 +42,9 @@ export default class Render extends Loggable
 	
     
     /**
-     * Get an url to server the given image asset
+     * Get an url to server the given image asset.
      * @param {string} arg_url - image asset relative url.
-     * @return {string} absolute image asset url.
+     * @returns {string} absolute image asset url.
      */
     get_assets_image_url(arg_url)
     {
@@ -57,9 +59,9 @@ export default class Render extends Loggable
 	
     
     /**
-     * Get an url to server the given static html asset
+     * Get an url to server the given static html asset.
      * @param {string} arg_url - html asset relative url.
-     * @return {string} absolute html asset url.
+     * @returns {string} absolute html asset url.
      */
     get_assets_html_url(arg_url)
     {
@@ -74,9 +76,9 @@ export default class Render extends Loggable
 	
     
     /**
-     * Get an url to server the given script asset
+     * Get an url to server the given script asset.
      * @param {string} arg_url - script asset relative url.
-     * @return {string} absolute script asset url.
+     * @returns {string} absolute script asset url.
      */
     get_assets_script_url(arg_url)
     {
@@ -91,11 +93,11 @@ export default class Render extends Loggable
 	
     
     /**
-     * Get an url to server the given image asset
+     * Get an url to server the given image asset.
      * @param {object} arg_consumer - service consumer.
      * @param {string} arg_svc_name - service name or null.
      * @param {string} arg_url - image asset relative url.
-     * @return {string} absolute image asset url.
+     * @returns {string} absolute image asset url.
      */
     get_assets_url(arg_consumer, arg_svc_name, arg_url)
     {
@@ -134,8 +136,8 @@ export default class Render extends Loggable
     
 	
     /**
-     * Move up to the rendered components stack
-     * @return {object} the Render instance
+     * Move up to the rendered components stack.
+     * @returns {object} the Render instance.
      */
 	up()
 	{
@@ -144,6 +146,11 @@ export default class Render extends Loggable
 	}
 	
 	
+    /**
+     * Push a Component instance on the rendering stack.
+     * @param {object} arg_component - Component instance.
+     * @returns {object} this.
+     */
 	push(arg_component)
 	{
 		this.stack.enter(arg_component)
@@ -151,6 +158,11 @@ export default class Render extends Loggable
 	}
 	
 	
+    /**
+     * Add a Component instance to the current component children and push it on the rendering stack.
+     * @param {object} arg_component - Component instance.
+     * @returns {object} this.
+     */
 	add(arg_component)
 	{
 		assert( T.isObject(arg_component) && arg_component.is_component, context + ':bad component object')
@@ -162,12 +174,22 @@ export default class Render extends Loggable
 	}
 	
 	
+    /**
+     * Get the current Component instance.
+     * @returns {object} current Component instance..
+     */
 	current()
 	{
 		return this.stack.current()
 	}
 	
 	
+    /**
+     * Create a Page component instance and push it on the rendering stack.
+     * @param {string} arg_name - component name.
+     * @param {object} arg_settings - component settings plain object.
+     * @returns {object} this.
+     */
 	page(arg_name, arg_settings)
 	{
         arg_settings = arg_settings ? arg_settings : {}
@@ -182,6 +204,13 @@ export default class Render extends Loggable
 	}
 	
 	
+    /**
+     * Create a Button component instance and push it on the rendering stack.
+     * @param {string} arg_name - component name.
+     * @param {object} arg_settings - component settings plain object.
+     * @param {object} arg_state - component initial state plain object.
+     * @returns {object} this.
+     */
 	button(arg_name, arg_settings, arg_state)
 	{
 		arg_settings = arg_settings ? arg_settings : {}
@@ -197,6 +226,13 @@ export default class Render extends Loggable
 	}
 	
 	
+    /**
+     * Create a Tree component instance and push it on the rendering stack.
+     * @param {string} arg_name - component name.
+     * @param {object} arg_settings - component settings plain object.
+     * @param {object} arg_state - component initial state plain object.
+     * @returns {object} this.
+     */
 	tree(arg_name, arg_settings, arg_state)
 	{
 		arg_settings = arg_settings ? arg_settings : {}
@@ -212,6 +248,13 @@ export default class Render extends Loggable
 	}
 	
 	
+    /**
+     * Create a HBox component instance and push it on the rendering stack.
+     * @param {string} arg_name - component name.
+     * @param {object} arg_settings - component settings plain object.
+     * @param {object} arg_state - component initial state plain object.
+     * @returns {object} this.
+     */
 	hbox(arg_name, arg_settings, arg_state)
 	{
 		arg_settings = arg_settings ? arg_settings : {}
@@ -227,6 +270,13 @@ export default class Render extends Loggable
 	}
 	
 	
+    /**
+     * Create a VBox component instance and push it on the rendering stack.
+     * @param {string} arg_name - component name.
+     * @param {object} arg_settings - component settings plain object.
+     * @param {object} arg_state - component initial state plain object.
+     * @returns {object} this.
+     */
 	vbox(arg_name, arg_settings, arg_state)
 	{
 		arg_settings = arg_settings ? arg_settings : {}
@@ -242,6 +292,13 @@ export default class Render extends Loggable
 	}
 	
 	
+    /**
+     * Create a List component instance and push it on the rendering stack.
+     * @param {string} arg_name - component name.
+     * @param {object} arg_settings - component settings plain object.
+     * @param {object} arg_state - component initial state plain object.
+     * @returns {object} this.
+     */
 	list(arg_name, arg_settings, arg_state)
 	{
 		arg_settings = arg_settings ? arg_settings : {}
@@ -257,6 +314,13 @@ export default class Render extends Loggable
 	}
 	
 	
+    /**
+     * Create a Table component instance and push it on the rendering stack.
+     * @param {string} arg_name - component name.
+     * @param {object} arg_settings - component settings plain object.
+     * @param {object} arg_state - component initial state plain object.
+     * @returns {object} this.
+     */
 	table(arg_name, arg_settings, arg_state)
 	{
 		arg_settings = arg_settings ? arg_settings : {}
@@ -272,6 +336,13 @@ export default class Render extends Loggable
 	}
 	
 	
+    /**
+     * Create a Script component instance and push it on the rendering stack.
+     * @param {string} arg_name - component name.
+     * @param {object} arg_settings - component settings plain object.
+     * @param {object} arg_state - component initial state plain object.
+     * @returns {object} this.
+     */
 	script(arg_name, arg_settings, arg_state)
 	{
 		arg_settings = arg_settings ? arg_settings : {}
@@ -288,6 +359,10 @@ export default class Render extends Loggable
 	}
 	
 	
+    /**
+     * Render the rendering stack of componenents.
+     * @returns {string} rendered HTML string.
+     */
 	render()
 	{
 		if (! this.current())

@@ -35,7 +35,7 @@ export default class Instance extends Settingsable
 		
         // CLASS ATTRIBUTES
 		this.is_instance = true
-		this.is_weaked = false
+		this.is_weighted = false
         
         // INSTANCE ATTRIBUTES
 		this.is_loaded = false
@@ -43,7 +43,7 @@ export default class Instance extends Settingsable
 		this.$type = arg_collection
 		this.$class = arg_class
 		this.$name = arg_name
-        this.$weak = 1
+        this.$weight = 1
 		
 		if ( store.has_collection(arg_collection) )
 		{
@@ -64,16 +64,16 @@ export default class Instance extends Settingsable
 	}
 	
 	
-	get_weak()
+	get_weight()
 	{
-		return this.$weak
+		return this.$weight
 	}
 	
 	
-	set_weak(arg_weak)
+	set_weight(arg_weight)
 	{
-        assert( T.isNumber(arg_weak), context + ':bad weak value')
-		this.$weak = arg_weak
+        assert( T.isNumber(arg_weight), context + ':bad weight value')
+		this.$weight = arg_weight
 	}
 	
 	

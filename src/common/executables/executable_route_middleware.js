@@ -13,14 +13,28 @@ let context = 'common/executables/executable_route_middleware'
 
 
 
+/**
+ * Middleware route registering class.
+ */
 export default class ExecutableRouteMiddleware extends ExecutableRoute
 {
+    /**
+     *  Create a route middleware executable
+     */
 	constructor()
 	{
 		super(context)
 	}
 	
-	
+    
+	/**
+     * Callback for route handling.
+     * @override
+     * @param {object} arg_application - Application instance.
+     * @param {object} arg_cfg_route - plain object route configuration.
+     * @param {object} arg_data - plain object contextual datas.
+     * @param {function} route handler.
+     */
 	get_route_cb(arg_application, arg_cfg_route, arg_data)
 	{
 		let self = this

@@ -35,5 +35,6 @@ export default class RuntimeExecutable extends Executable
 		this.info('not yet implemented')
 		
 		this.leave_group('execute')
+        return Promise.reject(context + ':execute:not yet implemented')
 	}
 }

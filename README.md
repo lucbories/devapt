@@ -21,6 +21,13 @@ Simply launch index.html and your application is up a rich user interface and ma
 
 See [GETTING_STARTED](https://github.com/lucbories/Devapt/tree/master/docs/GETTING_STARTED.md)
 
+Devapt library offers a "runtime" instance which delivers this features:
+* main rendering wrapper (Render instance)
+* rendering base class (Component class)
+* Redux store wrapper
+* configuration settings wrapper
+* main logging wrapper
+
 
 ## LICENCE
 
@@ -35,7 +42,7 @@ See [LICENSE](https://github.com/lucbories/Devapt/issues) TO CHECK
 ## Technical details
 
 With Devapt you define 
-* A topology, simple (one application, one server) or complex (many applications on many distributed servers). 
+* A topology, simple (one application, one server, one service) or complex (many services distributed for many applications on many distributed servers).
 * Some resources (models, views, menubars, menus)
 * Security rules
 

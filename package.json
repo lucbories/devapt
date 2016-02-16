@@ -15,7 +15,9 @@
   "homepage": "https://github.com/lucbories/devapt#readme.md",
   "main": "dist/index.js",
   "engines": [],
-  "directories": ["dist"],
+  "directories": [
+    "dist"
+  ],
   "scripts": {
     "start_master": "babel-node --debug src/server/start_master.js",
     "start_nodeB": "babel-node --debug src/server/start_nodeB.js",
@@ -51,7 +53,8 @@
     "node-uuid": "^1.4.7",
     "passport": "^0.2.2",
     "passport-http": "^0.2.2",
-    "passport-restify": "^1.0.0",
+    "passport-local": "^1.0.0",
+    "passport-restify": "^1.0.1",
     "q": "^1.4.1",
     "react": "^0.14.2",
     "react-dom": "^0.14.2",

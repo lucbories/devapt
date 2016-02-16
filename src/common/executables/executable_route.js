@@ -12,14 +12,28 @@ let context = 'common/executables/executable_route'
 
 
 
+/**
+ * Route registering base class.
+ * @abstract
+ */
 export default class ExecutableRoute extends Executable
 {
+    /**
+     * Create a ExecutableRoute instance.
+     * @abstract
+     */
 	constructor()
 	{
 		super(context)
 	}
 	
-	
+    
+	/**
+     * Prepare an execution with contextual informations.
+     * @override
+     * @param {object} arg_settings - execution settings.
+     * @returns {nothing}
+     */
 	prepare(arg_settings)
 	{
 		// console.log(arg_settings, context + ':arg_settings')
@@ -37,8 +51,14 @@ export default class ExecutableRoute extends Executable
 		// assert(T.isArray(this.store_config.server_types), context + ':bad server_types array')
 		this.store_config.server_types = ['restify', 'express']
 	}
+    
 	
-	
+	/**
+     * Execution with contextual informations.
+     * @override
+     * @param {object} arg_data - Application instance.
+     * @returns {object} promise.
+     */
 	execute(arg_data)
 	{
 		// console.log(this.store_config, context + ':store_config')
@@ -57,6 +77,7 @@ export default class ExecutableRoute extends Executable
 		assert(T.isObject(server_instance.server) || T.isFunction(server_instance.server), context + ':bad server_instance.server object or function')
 		
 		// LOOP ON ROUTES
+        let routes_registering_promises = []
 		assert(T.isArray(this.store_config.routes), context + ':bad server_instance.routes object')
 		const cfg_routes = this.store_config.routes
 		for(let cfg_route of cfg_routes)
@@ -82,13 +103,24 @@ export default class ExecutableRoute extends Executable
 			
 			this.debug('route', cfg_route.full_route.toString())
 			this.debug('directory', cfg_route.directory)
-			this.process_route(server_instance, application, cfg_route, arg_data)
-			
+			const route_resistering_promise = this.process_route(server_instance, application, cfg_route, arg_data)
+			routes_registering_promises.push(route_resistering_promise)
+            
 			this.info('registering route [' + route + '] for application [' + application.$name + ']')
 		}
+        
+        return Promise.all(routes_registering_promises)
 	}
 	
-	
+    
+	/**
+     * Process a route registering.
+     * @param {object} arg_server - Server instance.
+     * @param {object} arg_application - Application instance.
+     * @param {object} arg_cfg_route - plain object route configuration.
+     * @param {object} arg_data - plain object contextual datas.
+     * @returns {object} promise with a boolean resolved value (true:success, false: failure).
+     */
 	process_route(arg_server, arg_application, arg_cfg_route, arg_data)
 	{
 		// console.log(arg_cfg_route, 'arg_cfg_route')
@@ -97,7 +129,7 @@ export default class ExecutableRoute extends Executable
         if (!route_cb)
         {
             console.error('bad route callback', context)
-            return;
+            return Promise.reject(context + ':process_route:bad route callback')
         }
         
 		try
@@ -110,7 +142,7 @@ export default class ExecutableRoute extends Executable
                 // TODO Restify route should be: an app assets/ with a route /js/.* and folder should be ./public to serve a file in ./public/assets/js/test.js
                 
                 arg_server.server.get(arg_cfg_route.full_route, route_cb)
-                return
+                return Promise.resolved(true)
             }
             
             // EXPRESS SERVER
@@ -121,16 +153,27 @@ export default class ExecutableRoute extends Executable
                 // TODO Restify route should be: an app assets/ with a route /js and folder should be ./public/assets/js to serve a file in ./public/assets/js/test.js
                 
                 arg_server.server.use(arg_cfg_route.full_route, route_cb)
-                return
+                return Promise.resolved(true)
             }
 		}
 		catch(e)
 		{
 			console.error(e, context)
+            return Promise.reject(context + ':process_route:' + e.toString())
 		}
+        
+        return Promise.reject(context + ':process_route:bad server type')
 	}
+    
 	
-	
+	/**
+     * Callback for route handling.
+     * @abstract
+     * @param {object} arg_application - Application instance.
+     * @param {object} arg_cfg_route - plain object route configuration.
+     * @param {object} arg_data - plain object contextual datas.
+     * @param {function} route handler.
+     */
 	get_route_cb(arg_application, arg_cfg_route, arg_data)
 	{
 		assert(false, context + ':get_route_cb(cfg_route) should be implemented')

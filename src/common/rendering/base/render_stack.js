@@ -6,8 +6,17 @@ import assert from 'assert'
 const context = 'common/rendering/base/render_stack'
 
 
+
+/**
+ * Rendering components stack class.
+ * @author Luc BORIES
+ * @license Apache-2.0
+ */
 export default class RenderStack
 {
+    /**
+     * Create a RenderStack instance
+     */
 	constructor()
 	{
 		this.has_trace = true
@@ -16,6 +25,11 @@ export default class RenderStack
 	}
 	
 	
+    /**
+     * Trace a or many messages
+     * @param {string} args - set of strings
+     * @returns {nothing}
+     */
 	trace(...args)
 	{
 		if (this.has_trace)
@@ -25,6 +39,11 @@ export default class RenderStack
 	}
 	
 	
+    /**
+     * Ragister an instance of Component class 
+     * @param {object} arg_component - instance of Component class.
+     * @returns {nothing}
+     */
 	register(arg_component)
 	{
 		assert( T.isObject(arg_component) && arg_component.is_component, context + ':bad component object')
@@ -34,6 +53,10 @@ export default class RenderStack
 	}
 	
 	
+    /**
+     * Get and remove the top component.
+     * @returns {object|null} instance of a Component class on top of the stack
+     */
 	pop()
 	{
 		let current_component = this.current()
@@ -46,6 +69,11 @@ export default class RenderStack
 	}
 	
 	
+    /**
+     * Push a component on the stack.
+     * @param {object} arg_component - instance of Component class.
+     * @returns {object} this.
+     */
 	push(arg_component)
 	{
 		let current_component = this.current()
@@ -58,6 +86,11 @@ export default class RenderStack
 	}
 	
 	
+    /**
+     * Enter into a component, alias of push(value) on the stack.
+     * @param {string} arg_value - instance name of Component class.
+     * @returns {object} this.
+     */
 	enter(arg_value)
 	{
 		let current_component = this.current()
@@ -86,6 +119,11 @@ export default class RenderStack
 		return this
 	}
 	
+    
+    /**
+     * Leave a component, alias of pop().
+     * @returns {object} this.
+     */
 	leave()
 	{
 		this.pop()
@@ -93,6 +131,10 @@ export default class RenderStack
 	}
 	
 	
+    /**
+     * Get the top component on the stack.
+     * @returns {object|null} instance of a Component class on top of the stack.
+     */
 	current()
 	{
 		return this.stack.length > 0 ? this.stack[this.stack.length -1] : null

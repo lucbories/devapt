@@ -14,14 +14,30 @@ let context = 'common/executables/executable_route_model_crud'
 let ForbiddenError = epilogue.Errors.ForbiddenError;
 
 
+
+/**
+ * CRUD operations route registering class.
+ */
 export default class ExecutableRouteModelCrud extends ExecutableRoute
 {
+    /**
+     *  Create a route registration executable for CRUD operations
+     */
 	constructor()
 	{
 		super(context)
 	}
 	
-	
+    
+	/**
+     * Process a route registering.
+     * @override
+     * @param {object} arg_server - Server instance.
+     * @param {object} arg_application - Application instance.
+     * @param {object} arg_cfg_route - plain object route configuration.
+     * @param {object} arg_data - plain object contextual datas.
+     * @returns {object} promise with a boolean resolved value (true:success, false: failure).
+     */
 	process_route(arg_server, arg_application, arg_cfg_route, arg_data)
 	{
 		let self = this
@@ -29,7 +45,7 @@ export default class ExecutableRouteModelCrud extends ExecutableRoute
 		
 		
 		// EPILOGUE CALLBACK FUNCTION TO CHECK AUTHENTICATION AND AUTHORIZATION
-		/*var security_epilogue_cb = function(arg_model_name, arg_role, arg_action_name)
+		/*var security_epilogue_cb2 = function(arg_model_name, arg_role, arg_action_name)
 		{
 			return function(arg_req, arg_res, arg_context)
 			{

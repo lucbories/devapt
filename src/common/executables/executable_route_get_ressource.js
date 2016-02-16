@@ -13,8 +13,15 @@ let context = 'common/executables/executable_route_get_resources'
 
 
 
+/**
+ * Get resource route registering class.
+ * @todo check resources accesses
+ */
 export default class ExecutableRouteGetResources extends ExecutableRoute
 {
+    /**
+     * Create a ExecutableRouteGetResources instance.
+     */
 	constructor()
 	{
 		super(context)
@@ -22,6 +29,13 @@ export default class ExecutableRouteGetResources extends ExecutableRoute
 	
 	
 	
+    /**
+     * Get a collection resources list.
+     * @param {object} res - response instance
+     * @param {object} arg_application - Application instance.
+     * @param {object} arg_cfg_route - plain object route configuration.
+     * @returns {nothing}
+     */
 	send_resources_list(res, arg_application, arg_cfg_route)
 	{
 		this.info('LIST resources')
@@ -35,14 +49,14 @@ export default class ExecutableRouteGetResources extends ExecutableRoute
 	}
 	
 	
-	
-	// send_resource_item(res, arg_application, arg_cfg_route)
-	// {
-		
-	// }
-	
-	
-	
+	/**
+     * Callback for route handling.
+     * @override
+     * @param {object} arg_application - Application instance.
+     * @param {object} arg_cfg_route - plain object route configuration.
+     * @param {object} arg_data - plain object contextual datas.
+     * @param {function} route handler.
+     */
 	get_route_cb(arg_application, arg_cfg_route, arg_data)
 	{
 		let self = this
@@ -174,6 +188,13 @@ export default class ExecutableRouteGetResources extends ExecutableRoute
 	}
 	
 	
+    /**
+     * Load an asset file for a resource
+     * @param {object} self - this class instance
+     * @param {string} arg_resource_name - resource name
+     * @param {string} arg_file_path_name - file path name
+     * @returns {string} file content
+     */
 	include_file(self, arg_resource_name, arg_file_path_name)
 	{
 		const file_path = path.join(get_base_dir(), arg_file_path_name)

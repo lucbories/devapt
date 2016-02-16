@@ -11,15 +11,17 @@ const context = 'common/rendering/base/component'
 
 /**
  * Base class for all Rendered class.
+ * @author Luc BORIES
+ * @license Apache-2.0
  */
 export default class Component extends Instance
 {
     /**
      * Create a component
-     * {string} arg_name - component name
-     * {object} arg_settings - component configuration
-     * {string} arg_context - logging context
-     * {return} a component object
+     * @param {string} arg_name - component name
+     * @param {object} arg_settings - component configuration
+     * @param {string} arg_context - logging context
+     * @returns {object} a component object
      */
 	constructor(arg_name, arg_settings, arg_context)
 	{
@@ -47,8 +49,8 @@ export default class Component extends Instance
 	
     /**
      * Add a child component
-     * {object} arg_child - component
-     * {return} this object
+     * @param {object} arg_child - component
+     * @returns {object} this object
      */
 	add_child(arg_child)
 	{
@@ -68,8 +70,8 @@ export default class Component extends Instance
     
 	/**
      * Set component initial settings
-     * {object} arg_settings - settings plain object
-     * {return} this object
+     * @param {object} arg_settings - settings plain object
+     * @returns {object} this object
      */
 	set_settings(arg_settings)
 	{
@@ -86,8 +88,8 @@ export default class Component extends Instance
 	
 	/**
      * Update component initial settings
-     * {object} arg_settings - settings plain object
-     * {return} this object
+     * @param {object} arg_settings - settings plain object
+     * @returns {object} this object
      */
 	update_settings(arg_settings)
 	{
@@ -107,13 +109,21 @@ export default class Component extends Instance
     
 	/**
      * Get component settings
-     * {return} settings plain object
+     * @returns {object} settings plain object
      */
 	get_settings()
 	{
 		return this.$settings
 	}
-	
+    
+    
+	/**
+     * Get default component settings (only implemented in child classes)
+     * @abstract
+     * @method
+     * @name get_default_settings
+     * @returns {object} intiial settings plain object
+     */
     // FOR CHILD CLASS ONLY
 	// get_default_settings()
 	// {
@@ -126,8 +136,8 @@ export default class Component extends Instance
 	
 	/**
      * Replace current state with new state and update the UI
-     * {object} arg_settings - state plain object
-     * {return} this object
+     * @param {object} arg_settings - state plain object
+     * @returns {object} this object
      */
 	set_state(arg_new_state)
 	{
@@ -139,8 +149,8 @@ export default class Component extends Instance
 	
     /**
      * Update current state with new state and update the UI
-     * {object} arg_settings - state plain object
-     * {return} this object
+     * @param {object} arg_settings - state plain object
+     * @returns {object} this object
      */
 	update_state(arg_new_state)
 	{
@@ -153,7 +163,7 @@ export default class Component extends Instance
     
     /**
      * Get current state
-     * {return} state plain object
+     * @returns {object} state plain object
      */
 	get_state()
 	{
@@ -161,6 +171,13 @@ export default class Component extends Instance
 	}
 	
     
+	/**
+     * Get default component state (only implemented in child classes)
+     * @abstract
+     * @method
+     * @name get_initial_state
+     * @returns {object} intiial state plain object
+     */
     // FOR CHILD CLASS ONLY
 	// get_initial_state()
 	// {
@@ -172,7 +189,7 @@ export default class Component extends Instance
     
     /**
      * Render children component
-     * {return} rendered html string
+     * @returns {object} rendered html string
      */
 	render_children()
 	{
@@ -192,7 +209,7 @@ export default class Component extends Instance
     
     /**
      * Render component
-     * {return} rendered html string
+     * @returns {object} rendered html string
      */
 	render()
 	{
@@ -202,7 +219,7 @@ export default class Component extends Instance
     
     /**
      * Get DOM element on which this component is attached
-     * {return} DOM element object
+     * @returns {object} DOM element object
      */
 	get_dom_node()
 	{
@@ -212,7 +229,7 @@ export default class Component extends Instance
     
     /**
      * Get DOM element id string on which this component is attached
-     * {return} DOM element id string
+     * @returns {object} DOM element id string
      */
 	get_dom_id()
 	{
@@ -222,7 +239,7 @@ export default class Component extends Instance
     
     /**
      * Is this component rendered and attached to a DOM element ?
-     * {return} is attached to a DOM element boolean
+     * @returns {object} is attached to a DOM element boolean
      */
 	is_rendered_on_dom()
 	{
@@ -232,7 +249,7 @@ export default class Component extends Instance
     
     /**
      * Get consolidated headers
-     * {return} headers tags strings array
+     * @returns {object} headers tags strings array
      */
 	get_headers()
 	{
@@ -255,7 +272,7 @@ export default class Component extends Instance
     
     /**
      * Get consolidated styles
-     * {return} headers styles strings array
+     * @returns {object} headers styles strings array
      */
 	get_styles()
 	{
@@ -278,7 +295,7 @@ export default class Component extends Instance
     
     /**
      * Get consolidated scripts codes
-     * {return} body scripts codes strings array
+     * @returns {object} body scripts codes strings array
      */
 	get_scripts()
 	{
@@ -301,7 +318,7 @@ export default class Component extends Instance
     
     /**
      * Get consolidated scripts URL
-     * {return} body scripts URL strings array
+     * @returns {object} body scripts URL strings array
      */
 	get_scripts_urls()
 	{

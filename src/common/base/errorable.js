@@ -32,4 +32,10 @@ export default class Errorable extends Loggable
 	{
 		return this.$error_msg
 	}
+    
+    
+    error_not_implemented()
+    {
+        this.error('should be implemented')
+    }
 }

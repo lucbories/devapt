@@ -1,5 +1,7 @@
 
 import runtime from '../common/base/runtime'
+import {SOURCE_LOCAL_FILE, SOURCE_MSG_BUS, SOURCE_REMOTE_URL, SOURCE_SQL_DATABASE, SOURCE_NOSQL_DATABASE} from '../common/datas/providers/provider'
+
 
 
 const optional_trace_settings = {
@@ -80,7 +82,10 @@ const runtime_settings = {
 		'port':5000
 	},
 	
-	'apps_settings_file': 'apps/world.json',
+    "settings_provider": {
+        'source':SOURCE_LOCAL_FILE,
+        "relative_path":"apps/world.json"
+    },
 	
 	'trace': optional_trace_settings
 }

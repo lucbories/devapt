@@ -12,15 +12,29 @@ let context = 'common/executables/executable_route_assets'
 
 
 
+/**
+ * Assets route registering class.
+ */
 export default class ExecutableRouteAssets extends ExecutableRoute
 {
+    /**
+     * Create an assets route registering executable.
+     */
 	constructor()
 	{
 		super(context)
 	}
 	
 	
-	get_route_cb(arg_application, arg_cfg_route)
+    /**
+     * Callback for route handling.
+     * @override
+     * @param {object} arg_application - Application instance.
+     * @param {object} arg_cfg_route - plain object route configuration.
+     * @param {object} arg_data - plain object contextual datas.
+     * @param {function} route handler.
+     */
+	get_route_cb(arg_application, arg_cfg_route, arg_data)
 	{
 		assert(T.isString(arg_cfg_route.directory), context + ':bad directory string')
 		
