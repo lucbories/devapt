@@ -27,7 +27,8 @@ function load_config_security(arg_security_config, arg_base_dir)
 {
 	logs.info(context, 'loading config.security')
 	
-	try{
+	try
+    {
 		// CHECK SECURITY
 		assert(T.isObject(arg_security_config), error_msg_bad_config)
 		assert(T.isBoolean(arg_security_config.is_readonly), error_msg_bad_is_readonly)

@@ -1,0 +1,126 @@
+
+import Plugin from '../base/plugin'
+import crypto from 'crypto'
+
+
+
+let context = 'common/base/authentication'
+
+
+
+/**
+ * Authentication plugin base class.
+ * @abstract
+ * @author Luc BORIES
+ * @license Apache-2.0
+ */
+export default class Authentication extends Plugin
+{
+    /**
+     * Create an Authentication base class.
+     * @param {string|undefined} arg_log_context - optional.
+     * @returns {nothing}
+     */
+	constructor(arg_log_context)
+	{
+		super(arg_log_context ? arg_log_context : context)
+		
+		this.is_authentication = true
+	}
+	
+    
+	/**
+     * Enable authentication plugin with contextual informations.
+     * @abstract
+     * @param {object|undefined} arg_settings - optional contextual settings.
+     * @returns {object} - a promise object of a boolean result (success:true, failure:false)
+     */
+	enable(arg_settings)
+	{
+        self.info('enable')
+        
+        this.$is_enabled = true
+        return Promise.resolved(true)
+	}
+	
+    
+	/**
+     * Disable authentication plugin with contextual informations.
+     * @abstract
+     * @param {object|undefined} arg_settings - optional contextual settings.
+     * @returns {object} - a promise object of a boolean result (success:true, failure:false)
+     */
+	disable(arg_settings)
+	{
+        self.info('disable')
+        
+        this.$is_enabled = true
+        return Promise.resolved(true)
+	}
+    
+    
+    /**
+     * Authenticate a user with request credentials.
+     * @param {object|undefined} arg_credentials - request credentials object
+     * @returns {object} - a promise of boolean
+     */
+    authenticate(arg_credentials)
+    {
+        return Promise.resolved(false)
+    }
+    
+	
+    /**
+     * Login current request (alias of authenticate).
+     * @abstract
+     * @returns {object} - a promise of boolean
+     */
+	login()
+	{
+        return Promise.resolved(false)
+	}
+	
+    
+    /**
+     * Logout current authenticated user.
+     * @abstract
+     * @returns {object} - a promise of boolean
+     */
+	logout()
+	{
+        return Promise.resolved(false)
+	}
+	
+    
+    /**
+     * Get credentials token of authenticated user.
+     * @abstract
+     * @returns {string} - credentials token
+     */
+	get_token()
+	{
+        return null
+	}
+	
+    
+    /**
+     * Create a new credentials token for authenticated user.
+     * @abstract
+     * @returns {string} - credentials token
+     */
+	renew_token()
+	{
+        return null
+	}
+	
+    
+    /**
+     * Check a credentials token.
+     * @abstract
+     * @returns {boolean} - request token is valid
+     */
+	check_token()
+	{
+        return false
+	}
+}

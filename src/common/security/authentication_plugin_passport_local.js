@@ -1,6 +1,7 @@
 
 import passport_local from 'passport-local'
 
+import AuthenticationPassport from './authentication_passport'
 
 
 let context = 'common/security/authentication_passport_local'
@@ -25,30 +26,48 @@ export default class AuthenticationPassportLocal extends AuthenticationPassport
 		
 		this.is_authentication_passport_local = true
 	}
-	
     
-	/**
-     * Prepare an authentication with contextual informations.
-     * @param {object} arg_settings - execution settings.
-     * @returns {nothing}
+    
+    /**
+     * Authenticate a user with request credentials.
+     * @param {object|undefined} arg_credentials - request credentials object
+     * @returns {object} - a promise of boolean
      */
-	init(arg_settings)
-	{
-        const local_strategy = this.get_passport_strategy()
-        passport.use(local_strategy)
-	}
-    
-    
-    authenticate(arg_identifier, arg_password)
+    authenticate(arg_credentials)
     {
-        return new Promise()
+        /*
+        User.findOne({ username: arg_username },
+                    function(err, user)
+                    {
+                        if (err) { return arg_done_cb(err); }
+                        
+                        if (!user)
+                        {
+                            return arg_done_cb(null, false, { message: 'Incorrect username.' });
+                        }
+                        
+                        if (!user.validPassword(arg_password))
+                        {
+                            return arg_done_cb(null, false, { message: 'Incorrect password.' });
+                        }
+                        
+                        return arg_done_cb(null, user);
+                    }
+                )
+        */
+        let resolved_promise = Promise.resolved(true)
+        if (arg_credentials.done_cb)
+        {
+            resolved_promise.then(arg_credentials.done_cb)
+        }
+        return resolved_promise
     }
     
     
     get_middleware()
     {
-        return passport.authenticate('local', 
-        )
+        // return passport.authenticate('local', 
+        // )
     }
     
     
@@ -85,24 +104,8 @@ export default class AuthenticationPassportLocal extends AuthenticationPassport
             settings,
             function(arg_username, arg_password, arg_done_cb)
             {
-                User.findOne({ username: arg_username },
-                    function(err, user)
-                    {
-                        if (err) { return arg_done_cb(err); }
-                        
-                        if (!user)
-                        {
-                            return arg_done_cb(null, false, { message: 'Incorrect username.' });
-                        }
-                        
-                        if (!user.validPassword(arg_password))
-                        {
-                            return arg_done_cb(null, false, { message: 'Incorrect password.' });
-                        }
-                        
-                        return arg_done_cb(null, user);
-                    }
-                )
+                const credentials = { 'user':arg_username, 'password':arg_password, 'done_cb':arg_done_cb }
+                this.authenticate(credentials)
             }
         )
     }

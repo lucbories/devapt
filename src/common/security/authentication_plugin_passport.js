@@ -30,14 +30,13 @@ export default class AuthenticationPassport extends Authentication
 	
     
 	/**
-     * Prepare an authentication with contextual informations.
-     * @abstract
-     * @param {object} arg_settings - execution settings.
-     * @returns {nothing}
+     * Enable authentication plugin with contextual informations.
+     * @param {object|undefined} arg_settings - optional contextual settings.
+     * @returns {object} - a promise object of a boolean result (success:true, failure:false)
      */
-	init(arg_settings)
+	enable(arg_settings)
 	{
-        super.init(arg_settings)
+        const resolved_promise = super.enable(arg_settings)
         
         // SET FIELD NAMES FOR USER NAME
         if (arg_settings && arg_settings.username_fieldname)
@@ -65,6 +64,20 @@ export default class AuthenticationPassport extends Authentication
         
         const local_strategy = this.get_passport_strategy()
         passport.use(local_strategy)
+        
+        return resolved_promise
+	}
+    
+    
+	/**
+     * Disable authentication plugin with contextual informations.
+     * @param {object|undefined} arg_settings - optional contextual settings.
+     * @returns {object} - a promise object of a boolean result (success:true, failure:false)
+     */
+	disable(arg_settings)
+	{
+        const resolved_promise = super.disable(arg_settings)
+        return resolved_promise
 	}
     
     

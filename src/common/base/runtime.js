@@ -86,7 +86,7 @@ class Runtime extends Settingsable
 	
     
 	/**
-     * Load runtime settings 
+     * Load runtime settings.
      * @param {object} arg_settings - runtime settings
      * @returns {object} promise
      */

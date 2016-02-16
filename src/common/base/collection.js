@@ -107,23 +107,23 @@ export default class Collection
 	// GET FIRST ITEM
 	get_first()
     {
-        if ( ! this.$weak_map )
+        if ( ! this.$weight_map )
         {
             return this.$items.length > 0 ? this.$items[0] : null
         }
         
-        return this.$weak_map.first() // TO FIX
+        return this.$weight_map.first() // TO FIX
     }
     
 	// GET FIRST ITEM
 	get_last()
     {
-        if ( ! this.$weak_map )
+        if ( ! this.$weight_map )
         {
             return this.$items.length > 0 ? this.$items[ this.$items.length - 1 ] : null
         }
         
-        return this.$weak_map.last() // TO FIX
+        return this.$weight_map.last() // TO FIX
     }
 	
 	
@@ -136,15 +136,15 @@ export default class Collection
 			{
 				this.$items.push(arg_item)
                 
-                // CLASS USES WEAK ?
-                if (arg_item.is_weaked)
-                {
-                    if ( ! T.isObject(this.$weak_map) )
-                    {
-                        this.$weak_map = new WeakMap()
-                        this.$weak_map.push(arg_item.get_weak(), arg_item)
-                    }
-                }
+                // CLASS USES weight ?
+                // if (arg_item.is_weighted)
+                // {
+                //     if ( ! T.isObject(this.$weight_map) )
+                //     {
+                //         this.$weight_map = new ???() // TODO
+                //         this.$weight_map.push(arg_item.get_weight(), arg_item)
+                //     }
+                // }
                 
 				return
 			}
@@ -157,6 +157,33 @@ export default class Collection
 	}
 	
 	
+	
+	// REMOVE AN ITEM
+	remove(arg_item)
+	{
+		if ( T.isObject(arg_item) && arg_item instanceof Instance )
+		{
+			const index = this.$items.indexOf(arg_item)
+            if (index > -1)
+            {
+                this.$items.splice(index, 1)
+            }
+        }
+    }
+	
+	
+	
+	// TEST IF AN ITEM IS PRESENT
+	has(arg_item)
+	{
+		if ( T.isObject(arg_item) && arg_item instanceof Instance )
+		{
+			return this.find_by_name(arg_item.get_name()) ? true : false
+        }
+        return false
+    }
+	
+    
 	// FIND AN ITEM BY NAME: TODO optimize with a map index
 	find_by_name(arg_name) { return this.$items.find( item => { return item.$name == arg_name } ) }
     

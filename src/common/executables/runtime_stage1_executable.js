@@ -20,6 +20,7 @@ let context = 'common/executables/runtime_stage1_executable'
 /**
  * Runtime Stage 1 consists of:
  * 		- load master apps settings
+ *      - load security settings
 */
 export default class RuntimeStage1Executable extends RuntimeExecutable
 {
@@ -41,11 +42,12 @@ export default class RuntimeStage1Executable extends RuntimeExecutable
 		this.enter_group('execute')
 		
         let promise = null
-		if (this.runtime.is_master)
+        const runtime = this.runtime
+		if (runtime.is_master)
 		{
 			this.info('Node is master')
 			
-            const settings_provider = this.runtime.get_setting('settings_provider', null)
+            const settings_provider = runtime.get_setting('settings_provider', null)
             // console.log(settings_provider, 'settings_provider')
             
             if ( T.isObject(settings_provider) )
@@ -83,6 +85,15 @@ export default class RuntimeStage1Executable extends RuntimeExecutable
 			this.info('Node is not master')
             promise = Promise.resolve(true)
 		}
+        
+        // LOAD SECURITY SETTINGS
+        promise.then(
+            function()
+            {
+                const security_settings = config().get('security')
+                runtime.security.load(security_settings)
+            }
+        )
 		
 		this.leave_group('execute')
 		this.separate_level_1()
