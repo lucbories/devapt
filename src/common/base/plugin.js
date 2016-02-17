@@ -44,6 +44,7 @@ export default class Plugin extends Instance
     enable(arg_context)
     {
         this.$is_enabled = true
+        this.manager.enabled_plugins.add(this)
         return Promise.resolved(true)
     }
     
@@ -57,6 +58,7 @@ export default class Plugin extends Instance
     disable(arg_context)
     {
         this.$is_enabled = false
+        this.manager.enabled_plugins.remove(this)
         return Promise.resolved(true)
     }
 }

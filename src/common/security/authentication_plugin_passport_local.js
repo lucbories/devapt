@@ -1,10 +1,12 @@
 
+import T from 'typr'
+import assert from 'assert'
 import passport_local from 'passport-local'
 
-import AuthenticationPassport from './authentication_passport'
+import AuthenticationPluginPassport from './authentication_plugin_passport'
 
 
-let context = 'common/security/authentication_passport_local'
+let context = 'common/security/authentication_plugin_passport_local'
 
 
 
@@ -13,10 +15,10 @@ let context = 'common/security/authentication_passport_local'
  * @author Luc BORIES
  * @license Apache-2.0
  */
-export default class AuthenticationPassportLocal extends AuthenticationPassport
+export default class AuthenticationPluginPassportLocal extends AuthenticationPluginPassport
 {
     /**
-     * Create an Authentication base class.
+     * Create an Authentication plugin class based on passport local strategy.
      * @param {string|undefined} arg_log_context - optional.
      * @returns {nothing}
      */
@@ -26,49 +28,6 @@ export default class AuthenticationPassportLocal extends AuthenticationPassport
 		
 		this.is_authentication_passport_local = true
 	}
-    
-    
-    /**
-     * Authenticate a user with request credentials.
-     * @param {object|undefined} arg_credentials - request credentials object
-     * @returns {object} - a promise of boolean
-     */
-    authenticate(arg_credentials)
-    {
-        /*
-        User.findOne({ username: arg_username },
-                    function(err, user)
-                    {
-                        if (err) { return arg_done_cb(err); }
-                        
-                        if (!user)
-                        {
-                            return arg_done_cb(null, false, { message: 'Incorrect username.' });
-                        }
-                        
-                        if (!user.validPassword(arg_password))
-                        {
-                            return arg_done_cb(null, false, { message: 'Incorrect password.' });
-                        }
-                        
-                        return arg_done_cb(null, user);
-                    }
-                )
-        */
-        let resolved_promise = Promise.resolved(true)
-        if (arg_credentials.done_cb)
-        {
-            resolved_promise.then(arg_credentials.done_cb)
-        }
-        return resolved_promise
-    }
-    
-    
-    get_middleware()
-    {
-        // return passport.authenticate('local', 
-        // )
-    }
     
     
     /**

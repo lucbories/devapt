@@ -1,10 +1,13 @@
 
-import Plugin from '../base/plugin'
+import T from 'typr'
+import assert from 'assert'
 import crypto from 'crypto'
 
+import Plugin from '../base/plugin'
 
 
-let context = 'common/base/authentication'
+
+let context = 'common/security/authentication_plugin'
 
 
 
@@ -14,7 +17,7 @@ let context = 'common/base/authentication'
  * @author Luc BORIES
  * @license Apache-2.0
  */
-export default class Authentication extends Plugin
+export default class AuthenticationPlugin extends Plugin
 {
     /**
      * Create an Authentication base class.
@@ -39,8 +42,8 @@ export default class Authentication extends Plugin
 	{
         self.info('enable')
         
-        this.$is_enabled = true
-        return Promise.resolved(true)
+        const resolved_promise = super.enable(arg_settings)
+        return resolved_promise
 	}
 	
     
@@ -54,13 +57,25 @@ export default class Authentication extends Plugin
 	{
         self.info('disable')
         
-        this.$is_enabled = true
-        return Promise.resolved(true)
+        const resolved_promise = super.disable(arg_settings)
+        return resolved_promise
 	}
     
     
     /**
+     * Apply authentication plugin io given server. Use a middleware.
+     * @abstract
+     * @param {object} arg_server - Runtime server (Express/Restify server for example)
+     * @returns {nothing}
+     */
+    apply_on_server(arg_server)
+    {
+    }
+    
+    
+    /**
      * Authenticate a user with request credentials.
+     * @abstract
      * @param {object|undefined} arg_credentials - request credentials object
      * @returns {object} - a promise of boolean
      */

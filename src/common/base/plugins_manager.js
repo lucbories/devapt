@@ -28,6 +28,7 @@ export default class PluginsManager extends Errorable
 		this.is_plugins_manager = true
 		
 		this.registered_plugins = new Collection()
+		this.enabled_plugins = new Collection()
 	}
     
     
@@ -68,7 +69,9 @@ export default class PluginsManager extends Errorable
             return Promise.resolved(true)
         }
 		
-        this.error_already_registered.add(arg_plugin)
+        this.registered_plugins.add(arg_plugin)
+        arg_plugin.manager = this
+        
         return Promise.resolved(false)
 	}
 	
@@ -102,6 +105,8 @@ export default class PluginsManager extends Errorable
         
         // UNREGISTER
         this.registered_plugins.remove(arg_plugin)
+        arg_plugin.manager = null
+        delete arg_plugin.manager
         
         return disable_promise
 	}

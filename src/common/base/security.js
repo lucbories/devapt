@@ -196,5 +196,8 @@ export default class Security extends Errorable
                 username:mandatory
                 password:mandatory
             jsonfile:
+                file:mandatory
+                username:mandatory
+                password:mandatory
         
 */

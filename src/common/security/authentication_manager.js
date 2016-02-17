@@ -4,7 +4,7 @@ import assert from 'assert'
 import forge from 'node-forge'
 
 import PluginsManager from '../base/plugins_manager'
-import AuthenticationPluginPassportLocal from './authentication_plugin_passport_local'
+import AuthenticationPluginPassportLocalDb from './authentication_plugin_passport_local_db'
 
 
 let context = 'common/security/authentication_manager'
@@ -55,7 +55,8 @@ export default class AuthenticationManager extends PluginsManager
         {
             case 'database':
             {
-                const plugin = new AuthenticationPluginPassportLocal()
+                const plugin = new AuthenticationPluginPassportLocalDb()
+                this.register_plugin(plugin)
             }
             case 'none':
             default:
