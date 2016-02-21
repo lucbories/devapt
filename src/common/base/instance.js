@@ -89,6 +89,10 @@ export default class Instance extends Settingsable
 	}
 	
 	
+    /**
+     * Get instance description: {$type:..., $class:..., $id:..., $name:...}.
+     * @returns {object} - instance object description
+     */
 	get_descriptor()
 	{
 		return { $type:this.$type, $class:this.$class, $id:this.$id, $name:this.$name }

@@ -127,14 +127,14 @@ export default class AuthenticationPluginPassportLocalFile extends Authenticatio
                 {
                     arg_credentials.done_cb(first_user)
                 }
-                return Promise.resolved(true)
+                return Promise.resolve(true)
             }
         }
         catch(e)
         {
         }
         
-        return Promise.resolved(false)
+        return Promise.resolve(false)
     }
     
     

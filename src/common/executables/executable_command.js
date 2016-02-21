@@ -54,6 +54,6 @@ export default class ExecutableCommand extends Executable
 		// assert(T.isObject(server_instance.server), context + ':bad server_instance.server object')
 		assert(T.isObject(server_instance.server) || T.isFunction(server_instance.server), context + ':bad server_instance.server object or function')
 		
-        return Promise.resolved()
+        return Promise.resolve()
 	}
 }

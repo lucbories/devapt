@@ -39,7 +39,10 @@ export default class Security extends Errorable
         // this.authorization_is_enabled = true
         // this.authorization_mode = null
         
-        this.load(arg_settings)
+        if (arg_settings)
+        {
+            this.load(arg_settings)
+        }
 	}
     
     
@@ -62,6 +65,13 @@ export default class Security extends Errorable
         this.is_readonly = arg_settings.get('is_readonly')
         this.authentication_manager.load(authentication)
         this.authorization_manager.load(authorization)
+        /*
+        
+            TODO
+            https://gist.github.com/danwit/e0a7c5ad57c9ce5659d2
+            https://github.com/OptimalBits/node_acl
+            http://www.hamiltonchapman.com/blog/2014/3/25/user-accounts-using-sequelize-and-passport-in-nodejs
+        */
     }
     
     

@@ -142,7 +142,7 @@ export default class ExecutableRoute extends Executable
                 // TODO Restify route should be: an app assets/ with a route /js/.* and folder should be ./public to serve a file in ./public/assets/js/test.js
                 
                 arg_server.server.get(arg_cfg_route.full_route, route_cb)
-                return Promise.resolved(true)
+                return Promise.resolve(true)
             }
             
             // EXPRESS SERVER
@@ -153,7 +153,7 @@ export default class ExecutableRoute extends Executable
                 // TODO Restify route should be: an app assets/ with a route /js and folder should be ./public/assets/js to serve a file in ./public/assets/js/test.js
                 
                 arg_server.server.use(arg_cfg_route.full_route, route_cb)
-                return Promise.resolved(true)
+                return Promise.resolve(true)
             }
 		}
 		catch(e)

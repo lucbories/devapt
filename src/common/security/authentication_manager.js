@@ -5,6 +5,7 @@ import forge from 'node-forge'
 
 import PluginsManager from '../base/plugins_manager'
 import AuthenticationPluginPassportLocalDb from './authentication_plugin_passport_local_db'
+import AuthenticationPluginPassportLocalFile from './authentication_plugin_passport_local_file'
 
 
 let context = 'common/security/authentication_manager'
@@ -51,16 +52,49 @@ export default class AuthenticationManager extends PluginsManager
         this.authentication_mode = arg_settings.get('mode')
         
         // LOAD PLUGIN
-        switch(this.authentication_mode.toLocaleLowerCase())
+        const result = this.load_plugin(arg_settings)
+        if (! result)
+        {
+            this.error_bad_plugin(this.authentication_mode)
+        }
+        
+        // TODO: default security plugin ?
+        // TODO: alt plugin settings ?
+    }
+    
+    
+    /**
+     * Load security plugin from settings
+     * @param {object} arg_settings - authentication settings (Immutable object)
+     * @returns {boolean}
+     */
+    load_plugin(arg_settings)
+    {
+        assert(T.isObject(arg_settings), context + ':bad settings object')
+        assert(T.isFunction(arg_settings.has), context + ':bad settings immutable')
+        assert(arg_settings.has('mode'), context + ':bad settings.mode')
+        
+        // LOAD PLUGIN
+        const mode = arg_settings.get('mode').toLocaleLowerCase()
+        switch(mode)
         {
             case 'database':
             {
-                const plugin = new AuthenticationPluginPassportLocalDb()
+                const plugin = new AuthenticationPluginPassportLocalDb(context)
                 this.register_plugin(plugin)
+                plugin.enable(arg_settings)
+                return true
             }
-            case 'none':
-            default:
+            case 'jsonfile':
+            {
+                const plugin = new AuthenticationPluginPassportLocalFile(context)
+                this.register_plugin(plugin)
+                plugin.enable(arg_settings)
+                return true
+            }
         }
+        
+        return false
     }
     
     
@@ -71,7 +105,7 @@ export default class AuthenticationManager extends PluginsManager
      */
     authenticate(arg_credentials)
     {
-        return Promise.resolved(false)
+        return Promise.resolve(false)
     }
     
 	
@@ -82,7 +116,7 @@ export default class AuthenticationManager extends PluginsManager
      */
 	login()
 	{
-        return Promise.resolved(false)
+        return Promise.resolve(false)
 	}
 	
     
@@ -93,7 +127,7 @@ export default class AuthenticationManager extends PluginsManager
      */
 	logout()
 	{
-        return Promise.resolved(false)
+        return Promise.resolve(false)
 	}
 	
     
@@ -204,7 +238,7 @@ export default class AuthenticationManager extends PluginsManager
     {
         if ( !this.authentication_is_enabled )
         {
-            return Promise.resolved(true)
+            return Promise.resolve(true)
         }
         
         const credentials = this.get_credentials(arg_request);
@@ -212,7 +246,7 @@ export default class AuthenticationManager extends PluginsManager
         
         if (!credentials.user || !credentials.password)
         {
-            return Promise.resolved(false)
+            return Promise.resolve(false)
         }
 
         return this.authenticate(credentials);
@@ -267,6 +301,17 @@ export default class AuthenticationManager extends PluginsManager
 
         this.error_bad_credentials_format()
         return credentials
+    }
+    
+    
+    /**
+	 * Error wrapper - error during plugin loading.
+	 * @param {string} arg_plugin_mode - plugin mode
+	 * @returns {nothing}
+	 */
+    error_bad_plugin(arg_plugin_mode)
+    {
+        this.error('bad plugin [' + arg_plugin_mode + ']')
     }
     
     

@@ -73,6 +73,7 @@ Main features:
 * Epilogue: https://github.com/dchester/epilogue
 * Sequelize: http://sequelizejs.com
 * Passport: http://passportjs.org
+* Node ACL: https://github.com/OptimalBits/node_acl
 * Express
 * SimpleBus
 * Socket.io

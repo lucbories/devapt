@@ -3,11 +3,11 @@ import T from 'typr'
 import assert from 'assert'
 
 import { store, config } from '../store/index'
-import MiddlewareService from '../services/mw_service'
 import Service from '../base/service'
+import * as exec from '../executables/index'
+import MiddlewareService from '../services/mw_service'
 
 import RuntimeExecutable from './runtime_executable'
-import * as exec from './index'
 
 
 let context = 'common/executables/runtime_stage2_executable'
@@ -50,7 +50,7 @@ export default class RuntimeStage2Executable extends RuntimeExecutable
 		this.leave_group('execute')
 		this.separate_level_1()
 		this.set_trace(saved_trace)
-        return Promise.resolved()
+        return Promise.resolve()
 	}
 	
 	

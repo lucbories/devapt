@@ -66,13 +66,13 @@ export default class PluginsManager extends Errorable
         if (this.registered_plugins.find_by_name(plugin_name) )
         {
             this.error_already_registered(plugin_name)
-            return Promise.resolved(true)
+            return Promise.resolve(true)
         }
 		
         this.registered_plugins.add(arg_plugin)
         arg_plugin.manager = this
         
-        return Promise.resolved(false)
+        return Promise.resolve(false)
 	}
 	
 	
@@ -91,10 +91,10 @@ export default class PluginsManager extends Errorable
         if ( ! this.registered_plugins.has(arg_plugin) )
         {
             this.error_not_registered(plugin_name)
-            return Promise.resolved(false)
+            return Promise.resolve(false)
         }
         
-        let disable_promise = Promise.resolved(true)
+        let disable_promise = Promise.resolve(true)
         
         // PLUGIN IS ENABLED ?
         if (this.enabled_plugins.has(arg_plugin) )

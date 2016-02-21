@@ -56,6 +56,10 @@ export default class AuthenticationPluginPassportLocalDb extends AuthenticationP
      */
     authenticate(arg_credentials)
     {
+        assert( T.isObject(this.model), context + ':authenticate:bad model object')
+        assert( T.isObject(arg_credentials), context + ':authenticate:bad credentials object')
+        assert( T.isString(arg_credentials.username), context + ':authenticate:bad credentials.username string')
+        assert( T.isString(arg_credentials.password), context + ':authenticate:bad credentials.password string')
         /*
         User.findOne({ username: arg_username },
                     function(err, user)
@@ -77,7 +81,7 @@ export default class AuthenticationPluginPassportLocalDb extends AuthenticationP
                 )
         */
         
-        let resolved_promise = Promise.resolved(true)
+        let resolved_promise = Promise.resolve(true)
         if (arg_credentials.done_cb)
         {
             resolved_promise.then(arg_credentials.done_cb)

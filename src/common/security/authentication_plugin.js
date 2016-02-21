@@ -81,7 +81,7 @@ export default class AuthenticationPlugin extends Plugin
      */
     authenticate(arg_credentials)
     {
-        return Promise.resolved(false)
+        return Promise.resolve(false)
     }
     
 	
@@ -92,7 +92,7 @@ export default class AuthenticationPlugin extends Plugin
      */
 	login()
 	{
-        return Promise.resolved(false)
+        return Promise.resolve(false)
 	}
 	
     
@@ -103,7 +103,7 @@ export default class AuthenticationPlugin extends Plugin
      */
 	logout()
 	{
-        return Promise.resolved(false)
+        return Promise.resolve(false)
 	}
 	
     

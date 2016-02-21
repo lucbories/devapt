@@ -385,7 +385,7 @@ export default class Model extends Resource
         assert( T.isObject(this.sequelize_model), context + ':find_record_by_id:bad model object')
         // TODO
         
-        return Promise.resolved(null)
+        return Promise.resolve(null)
     }
 }
 
