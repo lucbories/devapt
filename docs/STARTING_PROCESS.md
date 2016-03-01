@@ -114,7 +114,7 @@ AuthenticationManager.load
 !!! AuthenticationPluginPassportLocalDb needs users Model which is defined in stage 3
 
 
-### Runtime loading stage 2 - RuntimeStage1Executable
+### Runtime loading stage 2 - RuntimeStage2Executable
 * create node servers (for master node only)
 * create services (for master node only)
 
@@ -154,7 +154,7 @@ for each service config of node settings services
 
 
 
-### Runtime loading stage 3 - RuntimeStage1Executable
+### Runtime loading stage 3 - RuntimeStage3Executable
 * create Database instances (connexions), call db.load, call runtime.resources.add(db)
 * create Module instances, call module.load, call runtime.modules.add(module)
 * loop on modules resources and call runtime.resources.add(res_obj) for each one
@@ -166,7 +166,7 @@ loop on resources settings and create Resource instances (Model, View, Menu, Men
 
 
 
-### Runtime loading stage 4 - RuntimeStage1Executable
+### Runtime loading stage 4 - RuntimeStage4Executable
 If node is master
 * create Application instances from runtime settings
 * call application.load
@@ -181,7 +181,7 @@ Application.load
 
 
 
-### Runtime loading stage 5 - RuntimeStage1Executable
+### Runtime loading stage 5 - RuntimeStage5Executable
 * enable servers (for master node only)
 
 if node is master node, call runtime.node.start()
