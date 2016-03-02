@@ -2,15 +2,20 @@
 
 ## Description
 Applications optimization and analyze need some metrics.
+
 Usefull libraries offer builin metrics support but each one with its own format.
+
 Devapt provides a unique metrics format per server domain: http request, messaging request...
+
 
 
 ## Status
 The metrics collector is finished for HTTP servers.
+
 The metrics server is operational.
 
 Need Test, Optimization and code review.
+
 
 
 ## For Devapt users:
@@ -59,6 +64,7 @@ Need Test, Optimization and code review.
         http_metrics.response_status_counters: a map of response status counters (plain object)
     */
 ```
+
 
 
 ## For Devapt contributers:

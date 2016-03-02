@@ -6,7 +6,9 @@
 .project
 .buildpath
 npm-debug.log
+jsconfig.json
 
+.vscode
 dist
 tmp
 unused

@@ -99,6 +99,22 @@ export default class AuthenticationManager extends PluginsManager
     
     
     /**
+     * Apply all authentication plugins on given server. Use a middleware.
+     * @param {object} arg_server - Runtime server (Express/Restify server for example)
+     * @returns {nothing}
+     */
+    apply_on_server(arg_server)
+    {
+        this.get_plugins().forEach(
+            function(value, index, arr)
+            {
+                value.apply_on_server(arg_server)
+            }
+        )
+    }
+    
+    
+    /**
      * Authenticate a user with request credentials.
      * @param {object|undefined} arg_credentials - request credentials object
      * @returns {object} - a promise of boolean

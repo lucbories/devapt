@@ -3,7 +3,8 @@ import T from 'typr'
 import assert from 'assert'
 
 import Errorable from './errorable'
-import PluginsManager from './plugins_manager'
+import AuthenticationManager from '../security/authentication_manager'
+import AuthorizationManager from '../security/authorization_manager'
 
 
 
@@ -30,8 +31,8 @@ export default class Security extends Errorable
 		
 		this.is_security = true
         
-        this.authentication_manager = new PluginsManager(context + '.authentication')
-        this.authorization_manager = new PluginsManager(context + '.authorization')
+        this.authentication_manager = new AuthenticationManager(context + '.authentication')
+        this.authorization_manager = new AuthorizationManager(context + '.authorization')
         
         // this.authentication_is_enabled = true
         // this.authentication_mode = null

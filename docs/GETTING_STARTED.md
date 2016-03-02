@@ -4,6 +4,7 @@
 Dynamic, reactive, configurable application builder for Node.js.
 
 
+
 ## Installation
 
 Via npm on Node:
@@ -13,8 +14,8 @@ npm install devapt
 ```
 
 
-## Usage
 
+## Usage
 
 Reference in your program:
 
@@ -40,18 +41,24 @@ runtime.load(runtime_settings)
 ```
 
 
+
 ## Development
 
 ```
 git clone git://github.com/lucbories/Devapt.git
-cd Devapt
+cd devapt
 npm install
 npm test
 ```
 
+
+
 ## Samples and tutorials
 
+Coming soon.
 - [...](https://github.com/lucbories/Devapt/tree/master/samples/XXXX)
+
+
 
 ## Versions
 

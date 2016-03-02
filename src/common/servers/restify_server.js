@@ -4,6 +4,7 @@ import assert from 'assert'
 import restify from 'restify'
 import bunyan from 'bunyan'
 
+import runtime from '../base/runtime'
 import Server from '../base/server'
 import MetricsMiddleware from '../metrics/metric_http'
 
@@ -34,19 +35,21 @@ export default class RestifyServer extends Server
 		let server = this.server
 		
 		
-		// SET MIDDLEWARES
+        // USE AUTHENTICATION MIDDLEWARE
+        const authentication_mgr = runtime.security.get_authentication_manager()
+        console.log(authentication_mgr)
+        authentication_mgr.apply_on_server(this)
+        
+        
+        // TODO: USE AUTHORIZATION MIDDLEWARE
+        // AuthorizationManager.apply_on_server(this)
+        
+        
 		
 		// TODO: LOAD MIDDLEWARES FROM SETTINGS
 		
-		const audit_settings = {
-			log: bunyan.createLogger(
-				{
-					name: 'audit',
-					stream: process.stdout
-				}
-			)
-		}
 		
+		// SET MIDDLEWARES
 		const throttle_settings = {
 			burst: 100,
 			rate: 50,
@@ -73,6 +76,7 @@ export default class RestifyServer extends Server
 		server.use( restify.requestLogger() )
 		server.use( restify.throttle(throttle_settings) )
 		
+        
 		// ERROR HANDLING
 		server.on('InternalServerError',
 			function (req, res, err, cb)
@@ -83,7 +87,16 @@ export default class RestifyServer extends Server
 			}
 		)
 		
+        
 		// ENABLE / DISABLE AUDIT LOGS
+		// const audit_settings = {
+		// 	log: bunyan.createLogger(
+		// 		{
+		// 			name: 'audit',
+		// 			stream: process.stdout
+		// 		}
+		// 	)
+		// }
 		// server.on('after', restify.auditLogger(audit_settings) )
 		
 		

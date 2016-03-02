@@ -1,6 +1,11 @@
 # Devapt
 
-Current version: 1.0.0 beta (do not use in production environment)
+Current version: 0.9.0 (do not use in production environment)
+
+NPM module isn't available yet, please download devapt source insteed.
+
+Module would be available before version 1.0.0 final.
+
 
 
 ## What is it?
@@ -16,6 +21,9 @@ The principle is simple: you write some configuration files for distributed node
 The framework will automatically generates the RESTfull server.
 Simply launch index.html and your application is up a rich user interface and many features.
 
+See [FEATURES](https://github.com/lucbories/Devapt/tree/master/docs/FEATURES.md)
+
+
 
 ## USAGE
 
@@ -29,14 +37,19 @@ Devapt library offers a "runtime" instance which delivers this features:
 * main logging wrapper
 
 
+
 ## LICENCE
 
+Apache Version 2 license.
+
 See [LICENSE](https://github.com/lucbories/Devapt/tree/master/LICENSE)
+
 
 
 ## BUGS
 
 See [LICENSE](https://github.com/lucbories/Devapt/issues) TO CHECK
+
 
 
 ## Technical details
@@ -61,34 +74,50 @@ Or many services on many servers on many nodes.
 * security: defines authentication and authorization rules.
 
 The rendering engines are plugins and rendering classes are stateless: state is stored in a Redux store.
-See []() for flow concepts.
+See [Getting Started with Redux](https://egghead.io/series/getting-started-with-redux) for flow concepts.
 
 
-## Devapt is a glue for many usefull projects
+
+## Devapt is a glue between many usefull projects
 Thanks for all projects leaders and contributers.
+
 The given list is an extract of all used or inspired projects.
 
-Main features:
+
+Main dependancies:
+
+NodeJS: https://nodejs.org
+
+Servers and datas access:
+* Express: http://expressjs.com/
 * Restify: http://restify.com/
 * Epilogue: https://github.com/dchester/epilogue
 * Sequelize: http://sequelizejs.com
+* Socket.io: http://socket.io/
+
+Security:
 * Passport: http://passportjs.org
 * Node ACL: https://github.com/OptimalBits/node_acl
-* Express
-* SimpleBus
-* Socket.io
-* jQuery: https://jquery.com
-* Mustache: https://github.com/janl/mustache.js
-* Immutable
-* Redux
-* React
-* Mysql
-* Moment
-* Vantage
-* Bunyan
-* Winston
 
-Dev and build features:
+Foundations
+* SimpleBus: https://github.com/ajlopez/SimpleBus
+* jQuery: https://jquery.com
+* Immutable: https://facebook.github.io/immutable-js/docs/#/
+* Redux: http://redux.js.org/docs/introduction/Motivation.html
+* Moment: http://momentjs.com/
+* Vantage: https://github.com/dthree/vantage
+* Bunyan: https://github.com/trentm/node-bunyan
+* Winston: https://github.com/winstonjs/winston
+* Circuit breaker: https://www.npmjs.com/package/circuit-breaker or https://github.com/yammer/circuit-breaker-js
+
+Rendering:
+* Foundation by ZURB: http://foundation.zurb.com/sites.html
+* Mustache: https://github.com/janl/mustache.js
+* React: http://facebook.github.io/react/docs/tutorial.html
+
+
+
+Dev and build dependancies: (coming soon.)
 * Babel:
 * Chai:
 * Gulp

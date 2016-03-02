@@ -16,7 +16,7 @@ let context = 'common/executables/runtime_stage2_executable'
 
 /**
  * Runtime Stage 2 consists of:
- * 		- create node servers
+ * 		- create master node servers
  * 		- create services
 */
 export default class RuntimeStage2Executable extends RuntimeExecutable
@@ -38,12 +38,11 @@ export default class RuntimeStage2Executable extends RuntimeExecutable
 		
 		if (this.runtime.is_master)
 		{
-			// BUILD MASTER RESOURCES
-			this.info('Load master')
-			
+			this.info('Create master node servers')
 			const node_settings = config.get_collection_item('nodes', this.runtime.node.get_name())
 			this.runtime.node.load_master_settings(node_settings)
 			
+			this.info('Create services for all master node servers')
 			this.make_services()
 		}
 		

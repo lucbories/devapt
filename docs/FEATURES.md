@@ -86,37 +86,25 @@ Devapt provides builtin servers for common usages (Restify, Express, SocketIO).
 
 But you can code your own server.
 
+A server is attached to a node (a couple of hostname and port).
+
 [SERVERS](https://github.com/lucbories/Devapt/tree/master/docs/features/SERVERS.md)
 
 
 =================
 
 ## Services
-Restify provides a builtin Restfull API server.
+Devapt enables features for applications with services.
 
-Express provides a builtin web pages server.
+A service is enabled on a server on a node.
 
+A service is provided and consumed.
 
-Application features
-* security server: authentication (for example with login/password), authorization (permissions for roles on resources)
-* views abstraction layer (switch on backends to render the application)
+Builin services:
+* static assets router
+* resources definitions router
+* CRUD operations router
+* middleware router for functions as f(request,response,next)
 
+[SERVICES](https://github.com/lucbories/Devapt/tree/master/docs/features/SERVICES.md)
 
-Developper features
-* JSON configuration files to describe application, models, views and all others resources
-* datas abstraction layer
-* UI patterns take the best of MVC and MVVC
-* template engine
-* Foundation 5 renderer engine
-* fully asynchronous processing with promises
-* standard client/server communication: Restfull with JSONP exchanges
-* fully documented classes
-* JS library introspection
-* authoring tools (app builder, events spy, objects inspectors)
-* server Mysql data store
-* server MongoDB data store (coming soon)
-* client browser data store
-* AMD loader
-* QUnit tests
-* jQuery UI renderer engine (coming soon)
-* ExtJS renderer engine (coming soon)

@@ -1,6 +1,9 @@
 # Devapt - Features - Messaging
 
 ## Description
+A distributed application needs to provide a communication between its nodes.
+
+Devapt provides a messages bus to ensure JSON messages exchange.
 
 
 
@@ -13,11 +16,17 @@ To finish: push configuration.
 Need Test, Optimization and code review.
 
 
+
 ## For Devapt users:
+Coming soon.
 ```
 ```
 
+
+
 ## For Devapt contributers:
+Coming soon.
+
 
 
 ## Thanks

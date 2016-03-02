@@ -8,6 +8,7 @@ Why write code for REST api, metrics, role based security, database access...
 It is best to concentrate on the business code.
 
 
+
 ## Status
 Configuration Redux store: 1.0
 
@@ -23,9 +24,12 @@ Distributed configuration loading: 1.1
 Need Test, Optimization and code review.
 
 
+
 ## For Devapt users:
+Coming soon.
 ```
 ```
+
 
 ## For Devapt contributers:
-
+Coming soon.

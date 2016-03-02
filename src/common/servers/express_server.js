@@ -2,8 +2,8 @@
 import T from 'typr'
 import assert from 'assert'
 import express from 'express'
-// import browsersync from "browser-sync"
 
+import runtime from '../base/runtime'
 import Server from '../base/server'
 import MetricsMiddleware from '../metrics/metric_http'
 
@@ -31,20 +31,21 @@ export default class ExpressServer extends Server
 		
 		// CREATE SERVER
 		this.server = express();
-		// browsersync.create().init(
-		// 	{
-		// 		server:'../..',
-		// 		middleware:[this.server]
-		// 	}
-		// )
 		
+        
+        // USE METRICS MIDDLEWARE
 		this.server.use( MetricsMiddleware.create_middleware(this) )
         
-		// this.server.use(
-        //     '/hello',
-        //     express.static('public/assets')
-        // )
+		
+        // USE AUTHENTICATION MIDDLEWARE
+        runtime.security.get_authentication_manager().apply_on_server(this)
         
+        
+        // TODO: USE AUTHORIZATION MIDDLEWARE
+        // AuthorizationManager.apply_on_server(this)
+        
+        
+        // USE BAD REQUEST MIDDLEWARE
 		this.server.use(
             function(err, req, res, next)
             {
@@ -59,6 +60,8 @@ export default class ExpressServer extends Server
             }
         )
         
+        
+        // USE ERROR MIDDLEWARE
 		this.server.use(
             function(err, req, res, next)
             {
@@ -68,6 +71,7 @@ export default class ExpressServer extends Server
             }
         )
 		
+        
         this.leave_group('build_server')
 	}
 }
