@@ -40,7 +40,7 @@ export default class AuthenticationPlugin extends Plugin
      */
 	enable(arg_settings)
 	{
-        self.info('enable')
+        this.info('enable')
         
         const resolved_promise = super.enable(arg_settings)
         return resolved_promise
@@ -55,7 +55,7 @@ export default class AuthenticationPlugin extends Plugin
      */
 	disable(arg_settings)
 	{
-        self.info('disable')
+        this.info('disable')
         
         const resolved_promise = super.disable(arg_settings)
         return resolved_promise

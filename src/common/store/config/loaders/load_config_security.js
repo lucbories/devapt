@@ -25,8 +25,9 @@ let error_msg_bad_cx_config = context + ':security.connexions.*.* should be a va
 
 function load_config_security(arg_security_config, arg_base_dir)
 {
+	// console.log('LOADING CONFIG SECURITY', arg_security_config)
 	logs.info(context, 'loading config.security')
-	
+    
 	try
     {
 		// CHECK SECURITY

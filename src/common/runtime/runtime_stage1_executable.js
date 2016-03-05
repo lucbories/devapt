@@ -48,7 +48,7 @@ export default class RuntimeStage1Executable extends RuntimeExecutable
 			this.info('Node is master')
 			
             const settings_provider = runtime.get_setting('settings_provider', null)
-            // console.log(settings_provider, 'settings_provider')
+            console.log(settings_provider, 'settings_provider')
             
             if ( T.isObject(settings_provider) )
             {
@@ -60,7 +60,8 @@ export default class RuntimeStage1Executable extends RuntimeExecutable
                     // SUCCESS
                     function(arg_json)
                     {
-                        // console.log(arg_json, 'arg_json')
+                        self.info('Dispatching master settings into store')
+                        console.log(arg_json, 'arg_json')
                         dispatch_store_config_set_all(store, arg_json)
                         return true
                     }
@@ -69,7 +70,7 @@ export default class RuntimeStage1Executable extends RuntimeExecutable
                     // FAILURE
                     function(arg_reason)
                     {
-                        self.error(context + ':settings loading failure')
+                        self.error(context + ':Master settings loading failure:' + arg_reason)
                         return false
                     }
                 )
@@ -86,12 +87,32 @@ export default class RuntimeStage1Executable extends RuntimeExecutable
             promise = Promise.resolve(true)
 		}
         
+        
+        promise.catch(
+            function(arg_reason)
+            {
+                self.error(context + ':Master settings loading failure 2:' + arg_reason)
+                return false
+            }
+        )
+        
         // LOAD SECURITY SETTINGS
-        promise.then(
+       this.info('LOAD SECURITY SETTINGS')
+        promise = promise.then(
             function()
             {
+                self.info('Loading Security settings')
                 const security_settings = config().get('security')
                 runtime.security.load(security_settings)
+                return true
+            }
+        )
+        .catch(
+            // FAILURE
+            function(arg_reason)
+            {
+                self.error(context + ':Security settings loading failure:' + arg_reason)
+                return false
             }
         )
 		

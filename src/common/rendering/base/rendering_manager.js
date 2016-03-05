@@ -35,6 +35,8 @@ export default class RenderingManager
 		{
 			this.load( [default_plugin_path] )
 		}
+        
+        // console.log('RenderingManager.plugins_ordered', this.plugins_ordered)
 	}
 	
     
@@ -102,11 +104,19 @@ export default class RenderingManager
 			{
                 const plugin_dir = plugin != default_plugin_path ? base_dir : __dirname
                 
-                const file_path_name = path.join(plugin_dir, plugin)
-				console.info('loading plugin at [' + plugin + '] at [' + file_path_name + ']')
+                const file_path_name = path.isAbsolute(plugin) ? plugin : path.join(plugin_dir, plugin)
+				// console.info('loading plugin at [' + plugin + '] at [' + file_path_name + ']')
 				
-                const PluginClass = require(file_path_name)
-				plugin = new PluginClass()
+                try
+                {
+                    const PluginClass = require(file_path_name).default
+                    // console.log('loading rendering plugin class', PluginClass)
+                    plugin = new PluginClass()
+                }
+                catch(e)
+                {
+                    console.error(context + '.load:' + plugin + 'failed', e)
+                }
 			}
 			
             // GIVEN PLUGIN IS A PLUGIN CLASS INSTANCE

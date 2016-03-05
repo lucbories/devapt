@@ -50,7 +50,7 @@ export default class Provider
     provide_json()
     {
         const self = this
-        logs.debug(context + ':enter')
+        logs.debug(context, 'enter')
         
         let promise = new Promise(
             function(resolve, reject)
@@ -59,7 +59,7 @@ export default class Provider
             }
         )
         
-        logs.debug(context + ':leave')
+        logs.debug(context, 'leave')
         return promise
     }
     
@@ -72,7 +72,7 @@ export default class Provider
      */
     provide_json_self(resolve, reject)
     {
-        logs.debug(context + ':' + this.source)
+        logs.debug(context + ':provide_json_self', this.source)
         
         switch(this.source)
         {
@@ -88,11 +88,13 @@ export default class Provider
                 
                 if ( T.isString(file_path) && T.isString(base_dir) )
                 {
-                    logs.debug('Node is master: load settings file [' + file_path + ']')
+                    logs.debug('Node is master: load settings file', file_path)
                     
                     const json = require( path.join(base_dir, file_path) )
                     
-                    logs.debug(context + ':leave')
+                    // console.log(context + '.json', json)
+                    
+                    logs.debug(context, 'leave')
                     resolve(json)
                     return
                 }

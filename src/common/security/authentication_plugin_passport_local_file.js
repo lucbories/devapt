@@ -105,6 +105,8 @@ export default class AuthenticationPluginPassportLocalFile extends Authenticatio
      */
     authenticate(arg_credentials)
     {
+        this.debug('authenticate')
+        
         assert( T.isObject(this.db), context + ':authenticate:bad db object')
         assert( T.isObject(arg_credentials), context + ':authenticate:bad credentials object')
         assert( T.isString(arg_credentials.username), context + ':authenticate:bad credentials.username string')
@@ -127,6 +129,8 @@ export default class AuthenticationPluginPassportLocalFile extends Authenticatio
                 {
                     arg_credentials.done_cb(first_user)
                 }
+                
+                this.debug('authenticate:success')
                 return Promise.resolve(true)
             }
         }
@@ -134,6 +138,7 @@ export default class AuthenticationPluginPassportLocalFile extends Authenticatio
         {
         }
         
+        this.debug('authenticate:failure')
         return Promise.resolve(false)
     }
     

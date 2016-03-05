@@ -50,6 +50,16 @@ export default class Loggable
 	// FORMAT MESSAGE
 	static format(args)
 	{
+        if (args == undefined)
+		{
+			return ''
+		}
+        
+        if (args == null)
+		{
+			return 'null'
+		}
+        
 		if ( T.isString(args) )
 		{
 			return args

@@ -46,6 +46,15 @@ See [LICENSE](https://github.com/lucbories/Devapt/tree/master/LICENSE)
 
 
 
+## ROADMAP
+0.9.0   initial release (not ready for production)
+1.0.0   first stable release
+1.1.0   add features and tests
+
+See [ROADMAP](https://github.com/lucbories/Devapt/tree/master/docs/ROADMAP.md)
+
+
+
 ## BUGS
 
 See [LICENSE](https://github.com/lucbories/Devapt/issues) TO CHECK
@@ -129,6 +138,7 @@ Installation
 ------------
 
 Please see the file called INSTALL.md.
+
 
 
 Contacts

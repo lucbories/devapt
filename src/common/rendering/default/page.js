@@ -29,10 +29,15 @@ export default class Page extends Component
 		return {
 			charset:'utf-8',
 			headers:[],
+            
 			styles:[],
-			children:[],
+			styles_urls:[],
+            
 			scripts:[],
 			scripts_urls:[],
+            
+			children:[],
+            
 			label:"no label"
 		}
 	}
@@ -54,6 +59,7 @@ export default class Page extends Component
 		assert( T.isObject(this.$settings), context + ':bad state object')
 		assert( T.isArray(this.$settings.headers), context + ':bad state headers array')
 		assert( T.isArray(this.$settings.styles), context + ':bad state styles array')
+		assert( T.isArray(this.$settings.styles_urls), context + ':bad state styles urls array')
 		assert( T.isArray(this.$settings.children), context + ':bad state children array')
 		assert( T.isArray(this.$settings.scripts), context + ':bad state scripts array')
 		assert( T.isArray(this.$settings.scripts_urls), context + ':bad state scripts urls array')
@@ -65,7 +71,10 @@ export default class Page extends Component
 			// console.log(child.state, 'child.state')
 			// console.log(child.settings, 'child.settings')
 			const child_headers = child.get_headers()
+            
 			const child_styles = child.get_styles()
+			const child_styles_urls = child.get_styles_urls()
+            
 			const child_scripts = child.get_scripts()
 			const child_scripts_urls = child.get_scripts_urls()
 			
@@ -73,10 +82,16 @@ export default class Page extends Component
 			{
 				this.$settings.headers = Array.concat(this.$settings.headers, child_headers)
 			}
+            
 			if (child_styles && child_styles.length > 0)
 			{
 				this.$settings.styles = Array.concat(this.$settings.styles, child_styles)
 			}
+			if (child_styles_urls && child_styles_urls.length > 0)
+			{
+				this.$settings.styles_urls = Array.concat(this.$settings.styles_urls, child_styles_urls)
+			}
+            
 			if (child_scripts && child_scripts.length > 0)
 			{
 				this.$settings.scripts = Array.concat(this.$settings.scripts, child_scripts)
@@ -99,11 +114,25 @@ export default class Page extends Component
 		const html_styles = this.$settings.styles.join('\n')
 		const html_headers = this.$settings.headers.join('\n')
 		
+        // STYLES URLS
+        let css_headers = ''
+        if (this.$settings.styles_urls.length > 0)
+		{
+			css_headers += this.$settings.styles_urls.map(
+                url => {
+                    // console.log(url, 'url')
+                    const absolute_url = this.renderer.get_assets_style_url(url)
+                    return `<link href="${absolute_url}" media="all" rel="stylesheet"/>`
+                }
+            ).join('\n') + '\n'
+		}
+        
 		return `<head>
 			<meta charSet="${this.$settings.charset}"/>
 			<title>${this.$settings.label}</title>
 			
 			${html_headers}
+            ${css_headers}
 			
 			<style type='text/css'>
 				${html_styles}
@@ -116,8 +145,8 @@ export default class Page extends Component
 		let html = '<body>\n' + this.render_body_header()
 		html += '<div id="content">\n' + this.render_body_children() + '</div>\n'
 		
-		// console.log(this.$settings.scripts, 'scripts')
-		// console.log(this.$settings.scripts_urls, 'scripts_urls')
+        
+		// SCRIPTS URLS
 		if (this.$settings.scripts_urls.length > 0)
 		{
 			html += this.$settings.scripts_urls.map(
@@ -128,7 +157,8 @@ export default class Page extends Component
                 }
             ).join('\n') + '\n'
 		}
-		
+        
+        // INLINE SCRIPT AND FOOTER
 		html += this.render_body_script()
 		html += this.render_body_footter()
 		

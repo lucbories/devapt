@@ -29,7 +29,7 @@ function load_config(arg_state, arg_initial_config, arg_base_dir)
 	logs.info(context, 'loading config')
 	
     const base_dir = arg_base_dir
-    console.log(base_dir, 'load_config:base_dir')
+    // console.log(base_dir, 'load_config:base_dir')
 	
 	// LOAD APPS.JSON
 	try{
@@ -42,6 +42,7 @@ function load_config(arg_state, arg_initial_config, arg_base_dir)
 		let config = arg_initial_config
 		config.resources = config.resources || {}
 		// config.changes_history = config.changes_history || [{ ts: Date.now(), }]
+        // console.log(config, 'load_config:config')
 		
 		// LOAD OTHERS FILES
 		if (T.isString(config.nodes))
@@ -75,6 +76,7 @@ function load_config(arg_state, arg_initial_config, arg_base_dir)
 			config.security = require(file_path_name).security
 		}
 		
+        
 		// CHECK CONFIG PARTS
 		assert(T.isObject(config), 'apps.json should be a plain object')
 		assert(T.isObject(config.nodes), 'apps.json:nodes should be a plain object')

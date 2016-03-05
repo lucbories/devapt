@@ -36,7 +36,8 @@ export default class AuthenticationPluginPassportLocal extends AuthenticationPlu
      */
     get_passport_strategy()
     {
-        var LocalStrategy = passport_local.Strategy
+        const self = this
+        const LocalStrategy = passport_local.Strategy
         
         // BUILD LOCAL STRATEGY SETTINGS
         const settings = {}
@@ -63,6 +64,7 @@ export default class AuthenticationPluginPassportLocal extends AuthenticationPlu
             settings,
             function(arg_username, arg_password, arg_done_cb)
             {
+                self.debug('LocalStrategy.authenticate')
                 const credentials = { 'user':arg_username, 'password':arg_password, 'done_cb':arg_done_cb }
                 this.authenticate(credentials)
             }

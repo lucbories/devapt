@@ -22,7 +22,7 @@ var logger = new (winston.Logger)(
 		transports: [
 			new (winston.transports.Console)(
 				{
-					level:'info',
+					level:'debug',
 					
 					timestamp: function()
                     {
@@ -41,8 +41,9 @@ var logger = new (winston.Logger)(
 			),
 			new (winston.transports.File)(
 				{
-					filename: './tmp/debug.log',
 					level: 'debug',
+                    
+					filename: './tmp/debug.log',
 					maxsize:100000,
 					maxFiles:2
 				}

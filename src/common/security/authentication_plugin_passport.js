@@ -101,21 +101,39 @@ export default class AuthenticationPluginPassport extends AuthenticationPlugin
      */
     apply_on_server(arg_server)
     {
+        this.info('apply authentication on ' + arg_server.get_name())
+        
         assert(T.isObject(arg_server), context + ':apply_on_server:bad server object')
         assert(arg_server.is_server, context + ':apply_on_server:bad server instance')
         
         // USE PASSPORT STRATEGY
         const strategy = this.get_passport_strategy()
-        assert(T.isFunction(strategy), context + ':apply_on_server:bad strategy function')
+        assert(T.isObject(strategy), context + ':apply_on_server:bad strategy object')
         this.passport.use(strategy)
         
-        const mw = this.passport.initialize()
+        // ROUTE MW: f(req,res)
+        const mw = passport.authenticate('local')
+        // console.log(mw.toString(), 'mw')
         assert(T.isFunction(mw), context + ':apply_on_server:bad middleware function')
-        arg_server.server.use(mw)
+        arg_server.server.use(
+            function(req, res, next)
+            {
+                if (mw(req, res))
+                {
+                    return next()
+                }
+                
+                next('bad authentication')
+            }
+        )
         
         // ENABLE PASSPORT SESSION
         if (this.use_session)
         {
+            const mw_init = this.passport.initialize()
+            assert(T.isFunction(mw_init), context + ':apply_on_server:bad middleware session init function')
+            arg_server.server.use(mw_init)
+            
             const mw_session = this.passport.session()
             assert(T.isFunction(mw_session), context + ':apply_on_server:bad middleware session function')
             arg_server.server.use(mw_session)
@@ -128,9 +146,9 @@ export default class AuthenticationPluginPassport extends AuthenticationPlugin
      * @abstract
      * @returns {object} - Passport strategy instance
      */
-    get_passport_strategy()
-    {
-        this.error_not_implemented()
-        return null
-    }
+    // get_passport_strategy()
+    // {
+    //     this.error_not_implemented()
+    //     return null
+    // }
 }

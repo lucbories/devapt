@@ -1,6 +1,7 @@
 
 import T from 'typr'
 import assert from 'assert'
+import path from 'path'
 
 import Loggable from '../base/loggable'
 import runtime from '../base/runtime'
@@ -29,15 +30,20 @@ export default class Render extends Loggable
         this.is_render = true
         
 		this.stack = new RenderStack()
-		this.rendering_manager = new RenderingManager()
+        
+        // const plugins = undefined
+        const plugins = [ path.join(__dirname, '../../plugins/backend-foundation6/plugin/rendering_plugin') ]
+		this.rendering_manager = new RenderingManager(plugins)
         
         this.assets_images_service_name = arg_assets_img ? arg_assets_img : null
         this.assets_html_service_name = arg_assets_html ? arg_assets_html : null
         this.assets_scripts_service_name = arg_assets_scripts ? arg_assets_scripts : null
+        this.assets_styles_service_name = arg_assets_scripts ? arg_assets_scripts : null
         
         this.assets_images_service_consumer = null
         this.assets_html_service_consumer = null
         this.assets_scripts_service_consumer = null
+        this.assets_styles_service_consumer = null
 	}
 	
     
@@ -88,6 +94,23 @@ export default class Render extends Loggable
         const url = this.get_assets_url(this.assets_scripts_service_consumer, name, arg_url)
         
         this.leave_group('get_assets_script_url')
+        return url
+    }
+	
+    
+    /**
+     * Get an url to server the given style asset.
+     * @param {string} arg_url - script asset relative url.
+     * @returns {string} absolute script asset url.
+     */
+    get_assets_style_url(arg_url)
+    {
+        this.enter_group('get_assets_style_url')
+        
+        const name = this.assets_styles_service_name
+        const url = this.get_assets_url(this.assets_styles_service_consumer, name, arg_url)
+        
+        this.leave_group('get_assets_style_url')
         return url
     }
 	

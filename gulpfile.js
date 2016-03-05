@@ -3,11 +3,13 @@
 
 // var del = require('del');
 var gulp = require('gulp');
+var del = require('del');
 var sourcemaps = require('gulp-sourcemaps');
 var babel = require('gulp-babel');
 var concat = require('gulp-concat');
 var changed = require('gulp-changed');
 var browserSync = require('browser-sync').create();
+var runseq = require('run-sequence');
 
 
 
@@ -24,6 +26,14 @@ var DST_BROWSER = 'dist/browser/**/*.js';
 var DST_COMMON  = 'dist/common/**/*.js';
 var DST_SERVER  = 'dist/server/**/*.js';
 
+
+
+/*
+    CLEAN DIST DIRECTORY
+*/
+gulp.task('clean', () => {
+  return del(DST);
+});
 
 
 /*
@@ -148,11 +158,13 @@ gulp.task('build_bundle_server', () => {
 /*
     DEFINE MAIN GULP TASKS
 */
+gulp.task('default', ['build_all_js', 'build_all_json']);
+
+gulp.task('build_clean', (cb) => runseq('clean', ['build_all_js', 'build_all_json'], cb) );
+
 gulp.task('build_bundles', ['build_bundle_browser', 'build_bundle_common', 'build_bundle_server']);
 
-gulp.task('release', ['build_all_files', 'build_bundles']);
-
-gulp.task('default', ['build_all_js', 'build_all_json']);
+gulp.task('release', ['default', 'build_bundles']);
 
 
 

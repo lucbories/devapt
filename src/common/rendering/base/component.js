@@ -10,7 +10,58 @@ const context = 'common/rendering/base/component'
 
 
 /**
- * Base class for all Rendered class.
+ * Base class for all rendered components class.
+ *  A component is a stateless object which has a render() method.
+ *  UI items should preserve their states through a central store, not into components instances.
+ *  Components could have children components and so provide trees of components.
+ * 
+ *  Constructor
+ *      let component = new ComponentClass(name, settings, context)
+ *      with    name: unique name of the component.
+ *              settings: plain text object with attributes to configure component rendering.
+ *                  settings can provide component initial state through settings.state
+ *              context: contextual text string for logs
+ * 
+ *  Settings methods
+ *      ->set_settings(settings): replace all existing settings
+ *      ->update_settings(settings): set or replace provided settings
+ *      ->get_settings(): get all settings
+ *      ->get_default_settings(settings): get default settings
+ * 
+ *  State methods
+ *      ->set_state(state): replace existing state
+ *      ->update_state(state): update given key/value on existing state
+ *      ->get_state(): get existing state
+ *      ->get_initial_state(): get default state at the begining of component life
+ * 
+ *  Children methods
+ *      add_child()
+ * 
+ *  Rendering methods
+ *      ->render_children()
+ *      ->render()
+ * 
+ *  HTML dom methods
+ *      ->get_dom_node()
+ *      ->get_dom_id()
+ *      ->is_rendered_on_dom()
+ * 
+ *  HTML page methods
+ *      ->get_headers()
+ * 
+ *      ->get_styles()
+ *      ->get_styles_urls()
+ *      ->add_styles_urls(urls)
+ * 
+ *      ->get_scripts()
+ *      ->get_scripts_urls()
+ *      ->add_scripts_url(urls)
+ * 
+ *  HTML tags methods
+ *      ->get_html_tag_begin(arg_tag, arg_tag_id, arg_tag_classes)
+ *      ->set_css_classes_for_tag(arg_tag, arg_classes_str, arg_replace)
+ *      ->get_css_classes_for_tag(tag)
+ * 
  * @author Luc BORIES
  * @license Apache-2.0
  */
@@ -75,7 +126,7 @@ export default class Component extends Instance
      */
 	set_settings(arg_settings)
 	{
-		this.$settings = arg_settings
+		this.$settings = T.isObject(arg_settings) ? arg_settings : {}
 		
 		if ( T.isObject(this.$settings) && T.isObject(this.$settings.state) )
 		{
@@ -294,6 +345,47 @@ export default class Component extends Instance
 	
     
     /**
+     * Get consolidated styles URLS
+     * @returns {object} headers styles strings array
+     */
+	get_styles_urls()
+	{
+		let styles_urls = T.isArray(this.$settings.page_styles_urls) ? this.$settings.page_styles_urls : []
+        
+        if ( T.isArray(this.$settings.children) && this.$settings.children.length > 0 )
+        {
+            for(let component of this.$settings.children)
+            {
+               const component_styles_urls = component.get_styles_urls()
+               
+               styles_urls = Array.concat(styles_urls, component_styles_urls)
+            }
+        }
+        
+		return styles_urls
+	}
+	
+    
+    /**
+     * Add styles URL
+     * @param {string|array} arg_urls - URL string or string arrays
+     * @returns {nothing}
+     */
+	add_styles_urls(arg_urls)
+	{
+        assert( T.isObject(this.$settings), context + ':add_styles_urls:bad settings object')
+        arg_urls = T.isArray(arg_urls) ? arg_urls : [arg_urls]
+        
+        if ( ! T.isArray(this.$settings.page_styles_urls) )
+        {
+            this.$settings.page_styles_urls = []
+        }
+        
+        this.$settings.page_styles_urls = this.$settings.page_styles_urls.concat(arg_urls)
+    }
+	
+    
+    /**
      * Get consolidated scripts codes
      * @returns {object} body scripts codes strings array
      */
@@ -338,4 +430,107 @@ export default class Component extends Instance
         // console.log(scripts_urls, 'scripts_urls')
 		return scripts_urls
 	}
+	
+    
+    /**
+     * Add scripts URL
+     * @param {string|array} arg_urls - URL string or string arrays
+     * @returns {nothing}
+     */
+	add_scripts_urls(arg_urls)
+	{
+        assert( T.isObject(this.$settings), context + ':add_scripts_urls:bad settings object')
+        arg_urls = T.isArray(arg_urls) ? arg_urls : [arg_urls]
+        
+        if ( ! T.isArray(this.$settings.page_scripts_urls) )
+        {
+            this.$settings.page_scripts_urls = []
+        }
+        
+        this.$settings.page_scripts_urls = this.$settings.page_scripts_urls.concat(arg_urls)
+    }
+    
+    
+    /**
+     * Set or update CSS classes for given tag name
+     * @param {string} arg_tag - HTML tag
+     * @param {string} arg_tag_id - HTML tag id
+     * @param {string} arg_tag_classes - CSS classes string
+     * @returns {string} - HTML tag string
+     */
+    get_html_tag_begin(arg_tag, arg_tag_id, arg_tag_classes)
+    {
+        assert( T.isObject(arg_tag), context + ':get_html_tag_begin:bad settings object')
+        
+        const id_str =( T.isString(arg_tag_id) && arg_tag_id != '' ) ? ' id="' + arg_tag_id + '"' : ''
+        const classes_str =( T.isString(arg_tag_classes) && arg_tag_classes != '' ) ? ' class="' + arg_tag_classes + '"' : ''
+        
+        return '<' + arg_tag + id_str + classes_str + '>'
+    }
+    
+    
+    /**
+     * Set or update CSS classes for given tag name
+     * @param {string} arg_tag - HTML tag name
+     * @param {string} arg_classes_str - CSS classes string
+     * @param {boolean} arg_replace - replace existing CSS classes string (optinonal, default is false)
+     * @returns {string|undefined} - CSS classes string
+     */
+    set_css_classes_for_tag(arg_tag, arg_classes_str, arg_replace)
+    {
+        assert( T.isObject(this.$settings), context + ':set_css_classes_for_tag:bad settings object')
+        assert( T.isString(arg_tag), context + ':set_css_classes_for_tag:bad tag string')
+        
+        
+        if ( ! T.isBoolean(arg_replace) )
+        {
+            arg_replace = false
+        }
+        
+        if ( ! T.isObject(this.$settings.css) )
+        {
+            this.$settings.css = {}
+        }
+        
+        if ( ! T.isObject(this.$settings.css.classes_by_tag) )
+        {
+            this.$settings.css.classes_by_tag = {}
+        }
+        
+        if (arg_replace ||  ! (arg_tag in this.$settings.css.classes_by_tag) )
+        {
+            this.$settings.css.classes_by_tag[arg_tag] = ''
+        }
+        
+        this.$settings.css.classes_by_tag[arg_tag] += arg_classes_str
+    }
+    
+    
+    /**
+     * Get CSS classes for given tag name if available
+     * @param {string} arg_tag - HTML tag name
+     * @returns {string|undefined} - CSS classes string
+     */
+    get_css_classes_for_tag(arg_tag)
+    {
+        assert( T.isObject(this.$settings), context + ':get_css_classes_for_tag:bad settings object')
+        
+        if ( T.isObject(this.$settings.css) )
+        {
+             if ( T.isObject(this.$settings.css.classes_by_tag) )
+             {
+                 if ( arg_tag in this.$settings.css.classes_by_tag )
+                 {
+                     const tag_css_classes = this.$settings.css.classes_by_tag[arg_tag]
+                     
+                     if ( T.isString(tag_css_classes) )
+                     {
+                         return tag_css_classes
+                     }
+                 }
+             }
+        }
+        
+        return undefined
+    }
 }

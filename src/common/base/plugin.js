@@ -26,7 +26,7 @@ export default class Plugin extends Instance
      */
 	constructor(arg_name, arg_settings)
 	{
-		assert( T.isObject(arg_settings), context + ':bad settings object')
+		// assert( T.isObject(arg_settings), context + ':bad settings object')
 		
 		super('plugins', 'Plugin', arg_name, arg_settings)
 		
