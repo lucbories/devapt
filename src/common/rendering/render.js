@@ -52,6 +52,23 @@ export default class Render extends Loggable
      * @param {string} arg_url - image asset relative url.
      * @returns {string} absolute image asset url.
      */
+    get_url_with_credentials(arg_url)
+    {
+        this.enter_group('get_url_with_credentials')
+        
+        // TODO: credentials
+        const url = arg_url + '?username=demo&password=6c5ac7b4d3bd3311f033f971196cfa75'
+        
+        this.leave_group('get_url_with_credentials')
+        return url
+    }
+	
+    
+    /**
+     * Get an url to server the given image asset.
+     * @param {string} arg_url - image asset relative url.
+     * @returns {string} absolute image asset url.
+     */
     get_assets_image_url(arg_url)
     {
         this.enter_group('get_assets_image_url')
@@ -154,7 +171,7 @@ export default class Render extends Loggable
         const url = this.assets_scripts_service_consumer.get_url_for(provider, { url: arg_url})
         
         this.leave_group('get_assets_url')
-        return url
+        return this.get_url_with_credentials(url)
     }
     
 	

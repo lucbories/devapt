@@ -15,7 +15,9 @@
   "homepage": "https://github.com/lucbories/devapt#readme.md",
   "main": "dist/index.js",
   "engines": [],
-  "directories": ["dist"],
+  "directories": [
+    "dist"
+  ],
   "scripts": {
     "build": "gulp",
     "test": "npm run test",
@@ -40,6 +42,7 @@
     "epilogue": "^0.5.2",
     "express": "^4.13.3",
     "fbemitter": "~2.0.0",
+    "helmet": "^1.3.0",
     "immutable": "^3.7.5",
     "immutable-js": "~0.3.1-6",
     "ini": "^1.3.4",

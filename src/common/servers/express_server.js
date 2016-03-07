@@ -2,6 +2,7 @@
 import T from 'typr'
 import assert from 'assert'
 import express from 'express'
+import helmet from 'helmet'
 
 import runtime from '../base/runtime'
 import Server from '../base/server'
@@ -33,12 +34,18 @@ export default class ExpressServer extends Server
 		this.server = express();
 		
         
+        // USE SECURITY MIDDLEWARE (https://www.npmjs.com/package/helmet)
+        // this.server.use(helmet)
+        
+         
         // USE METRICS MIDDLEWARE
 		this.server.use( MetricsMiddleware.create_middleware(this) )
         
 		
         // USE AUTHENTICATION MIDDLEWARE
-        runtime.security.get_authentication_manager().apply_on_server(this)
+        // runtime.security.get_authentication_manager().apply_on_server(this)
+		this.server.use( runtime.security.get_authentication_manager().create_middleware(this) )
+		// this.server.use( runtime.security.get_authentication_manager().create_auth_middleware(this) )
         
         
         // TODO: USE AUTHORIZATION MIDDLEWARE

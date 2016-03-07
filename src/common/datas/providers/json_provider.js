@@ -21,11 +21,11 @@ const SOURCES = [SOURCE_LOCAL_FILE, SOURCE_MSG_BUS, SOURCE_REMOTE_URL, SOURCE_SQ
 
 
 /**
- * Datas providing class settings.
+ * Json providier class.
  * @author Luc BORIES
  * @license Apache-2.0
  */
-export default class Provider
+export default class JsonProvider
 {
     /**
      * Create a Provider instance

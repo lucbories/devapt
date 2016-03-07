@@ -30,6 +30,8 @@ export default class AuthenticationPluginPassport extends AuthenticationPlugin
 		
 		this.is_authentication = true
         this.passport = passport
+        this.strategies = {}
+        this.strategies_names = []
 	}
 	
     
@@ -106,38 +108,64 @@ export default class AuthenticationPluginPassport extends AuthenticationPlugin
         assert(T.isObject(arg_server), context + ':apply_on_server:bad server object')
         assert(arg_server.is_server, context + ':apply_on_server:bad server instance')
         
-        // USE PASSPORT STRATEGY
-        const strategy = this.get_passport_strategy()
-        assert(T.isObject(strategy), context + ':apply_on_server:bad strategy object')
-        this.passport.use(strategy)
-        
-        // ROUTE MW: f(req,res)
-        const mw = passport.authenticate('local')
-        // console.log(mw.toString(), 'mw')
-        assert(T.isFunction(mw), context + ':apply_on_server:bad middleware function')
-        arg_server.server.use(
-            function(req, res, next)
-            {
-                if (mw(req, res))
-                {
-                    return next()
-                }
-                
-                next('bad authentication')
-            }
-        )
+        // SERVER INIT MW: f(req,res,next)
+        const mw_init = this.passport.initialize()
+        assert(T.isFunction(mw_init), context + ':apply_on_server:bad middleware init function')
+        arg_server.server.use(mw_init)
         
         // ENABLE PASSPORT SESSION
         if (this.use_session)
         {
-            const mw_init = this.passport.initialize()
-            assert(T.isFunction(mw_init), context + ':apply_on_server:bad middleware session init function')
-            arg_server.server.use(mw_init)
-            
             const mw_session = this.passport.session()
             assert(T.isFunction(mw_session), context + ':apply_on_server:bad middleware session function')
             arg_server.server.use(mw_session)
         }
+    }
+    
+    
+    /**
+     * Get a authentication middleware to use on servers (see Connect/Express middleware signature).
+     * @returns {function} - function(request,response,next){...}
+     */
+    create_middleware()
+    {
+        // USE PASSPORT STRATEGY
+        const strategy = this.get_passport_strategy()
+        assert(T.isObject(strategy), context + ':create_middleware:bad strategy object')
+        this.passport.use(strategy)
+        
+        // STRATEGY NAME
+        assert(T.isFunction(this.get_passport_strategy_name), context + ':create_middleware:bad strategy name function')
+        const strategy_name = this.get_passport_strategy_name()
+        assert(T.isString(strategy_name), context + ':create_middleware:bad stragegy name')
+        
+        const mw = passport.authenticate(strategy_name, { session: this.use_session })
+        assert(T.isFunction(mw), context + ':create_middleware:bad middleware function')
+        return mw
+    }
+    
+    
+    /**
+     * Get a authentication route middleware to use on servers (see Connect/Express middleware signature).
+     * @returns {function} - function(request,response){...}
+     */
+    create_route_middleware()
+    {
+        // USE PASSPORT STRATEGY
+        const strategy = this.get_passport_strategy()
+        assert(T.isObject(strategy), context + ':create_middleware:bad strategy object')
+        this.passport.use(strategy)
+        
+        // STRATEGY NAME
+        assert(T.isFunction(this.get_passport_strategy_name), context + ':create_middleware:bad strategy name function')
+        const strategy_name = this.get_passport_strategy_name()
+        assert(T.isString(strategy_name), context + ':create_middleware:bad stragegy name')
+        
+        // ROUTE MW: f(req,res)
+        const mw = passport.authenticate(strategy_name, { session: this.use_session })
+        assert(T.isFunction(mw), context + ':create_middleware:bad middleware function')
+        
+        return mw
     }
     
     
@@ -151,4 +179,54 @@ export default class AuthenticationPluginPassport extends AuthenticationPlugin
     //     this.error_not_implemented()
     //     return null
     // }
+    
+    add_strategy(arg_name, arg_instance)
+    {
+        this.strategies_names.push('local')
+    }
+    
+    
+    add_local_strategy()
+    {
+        const self = this
+        
+        const LocalStrategy = passport_local.Strategy
+        // const LocalStrategy = passport_local.BasicStrategy
+        
+        // BUILD LOCAL STRATEGY SETTINGS
+        const settings = {}
+        if (this.username_fieldname)
+        {
+            settings.usernameField = this.username_fieldname
+        }
+        if (this.password_fieldname)
+        {
+            settings.passwordField = this.password_fieldname
+        }
+        if (this.success_redirect)
+        {
+            settings.successRedirect = this.success_redirect
+        }
+        if (this.failure_redirect)
+        {
+            settings.failureRedirect = this.failure_redirect
+        }
+        settings.failureFlash = true
+        
+        // CREATE AND RETURN A LOCAL STRATEGY INSTANCE
+        const strategy = new LocalStrategy(
+            settings,
+            function(arg_username, arg_password, arg_done_cb)
+            {
+                self.debug('LocalStrategy.authenticate')
+                console.log(context + '.LocalStrategy:mw')
+                
+                const credentials = { 'user':arg_username, 'password':arg_password, 'done_cb':arg_done_cb }
+                this.authenticate(credentials)
+            }
+        )
+        
+        
+        this.add_strategy('local', strategy)
+    }
 }

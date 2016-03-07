@@ -2,6 +2,7 @@
 import T from 'typr'
 import assert from 'assert'
 import passport_local from 'passport-local'
+// import passport_local from 'passport-http'
 
 import AuthenticationPluginPassport from './authentication_plugin_passport'
 
@@ -31,6 +32,16 @@ export default class AuthenticationPluginPassportLocal extends AuthenticationPlu
     
     
     /**
+     * Get Passport strategy name provided by this class.
+     * @returns {string} - Passport strategy name
+     */
+    get_passport_strategy_name()
+    {
+        return 'local'
+    }
+    
+    
+    /**
      * Get Passport strategy provided by this class.
      * @returns {object} - Passport strategy instance
      */
@@ -38,6 +49,7 @@ export default class AuthenticationPluginPassportLocal extends AuthenticationPlu
     {
         const self = this
         const LocalStrategy = passport_local.Strategy
+        // const LocalStrategy = passport_local.BasicStrategy
         
         // BUILD LOCAL STRATEGY SETTINGS
         const settings = {}
@@ -65,6 +77,8 @@ export default class AuthenticationPluginPassportLocal extends AuthenticationPlu
             function(arg_username, arg_password, arg_done_cb)
             {
                 self.debug('LocalStrategy.authenticate')
+                console.log(context + '.LocalStrategy:mw')
+                
                 const credentials = { 'user':arg_username, 'password':arg_password, 'done_cb':arg_done_cb }
                 this.authenticate(credentials)
             }

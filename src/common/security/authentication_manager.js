@@ -4,8 +4,9 @@ import assert from 'assert'
 import forge from 'node-forge'
 
 import PluginsManager from '../base/plugins_manager'
-import AuthenticationPluginPassportLocalDb from './authentication_plugin_passport_local_db'
-import AuthenticationPluginPassportLocalFile from './authentication_plugin_passport_local_file'
+// import AuthenticationPluginPassportLocalDb from './authentication_plugin_passport_local_db'
+// import AuthenticationPluginPassportLocalFile from './authentication_plugin_passport_local_file'
+import AuthenticationPluginURL from './authentication_plugin_url'
 
 
 let context = 'common/security/authentication_manager'
@@ -79,15 +80,22 @@ export default class AuthenticationManager extends PluginsManager
         switch(mode)
         {
             case 'database':
-            {
-                const plugin = new AuthenticationPluginPassportLocalDb(context)
-                this.register_plugin(plugin)
-                plugin.enable(arg_settings)
-                return true
-            }
+            // {
+            //     const plugin = new AuthenticationPluginPassportLocalDb(context)
+            //     this.register_plugin(plugin)
+            //     plugin.enable(arg_settings)
+            //     return true
+            // }
             case 'jsonfile':
+            // {
+            //     const plugin = new AuthenticationPluginPassportLocalFile(context)
+            //     this.register_plugin(plugin)
+            //     plugin.enable(arg_settings)
+            //     return true
+            // }
+            // default:
             {
-                const plugin = new AuthenticationPluginPassportLocalFile(context)
+                const plugin = new AuthenticationPluginURL(context)
                 this.register_plugin(plugin)
                 plugin.enable(arg_settings)
                 return true
@@ -111,6 +119,74 @@ export default class AuthenticationManager extends PluginsManager
                 value.apply_on_server(arg_server)
             }
         )
+    }
+    
+    
+    /**
+     * Get a authentication middleware to use on servers (see Connect/Express middleware signature).
+     * @returns {function} - function(request,response,next){...}
+     */
+    create_middleware()
+    {
+        const plugins = this.get_plugins()
+        
+        const plugin = plugins[0]
+        if ( T.isFunction(plugin.create_middleware) )
+        {
+            const mw = plugin.create_middleware()
+            console.log(context + '.create_middleware:found')
+            return mw
+        }
+        
+        return (req, res, next) => {
+            console.log(context + '.create_middleware:empty')
+            next()
+            // ONLY ONE PLUGIN
+            // if ( T.isArray(plugins) & plugins.length == 1 )
+            // {
+                // return undefined
+            // }
+            /*
+            // MANY CHAINED PLUGINS
+            if ( T.isArray(plugins) & plugins.length > 1 )
+            {
+                let index = 0
+                
+                const next_plugin = (arg_plugins, arg_index) => {
+                    return () => {
+                        const plugins_count = arg_plugins.length
+                        if (arg_index + 1 == plugins_count)
+                        {
+                            return
+                        }
+                        const plugin = arg_plugins[arg_index]
+                    
+                        if ( T.isFunction(plugin.create_middleware) )
+                        {
+                            const mw = plugin.create_middleware()
+                            mw(req, res, next_plugin(arg_plugins, index + 1))
+                        }
+                    }
+                }
+                
+                
+                
+                
+                while(index < plugins_count)
+                {
+                    const plugin = plugins[index]
+                    
+                    
+                    
+                    index++
+                }
+                    if ( T.isFunction(value.create_middleware) )
+                    {
+                        value.create_middleware(req, res, next)
+                    }
+                }*/
+            // )
+        }
     }
     
     
@@ -286,22 +362,82 @@ export default class AuthenticationManager extends PluginsManager
      */
     get_credentials(arg_request)
     {
-        let credentials = { 'user':null, 'password':null }
+        // console.log(arg_request, 'arg_request')
+        console.log(arg_request.queries, 'arg_request.queries')
+        // console.log(arg_request.password, 'arg_request')
+        console.log(arg_request.query(), 'arg_request.query')
+        console.log(arg_request.params, 'arg_request.params')
+        
+        let credentials = { 'username':null, 'password':null }
+        let query_str = null
         if (!arg_request)
         {
             return credentials
         }
         
+        // EXPRESS REQUEST
+        if (arg_request && arg_request.query && arg_request.query.username && arg_request.query.password)
+        {
+            this.info('authentication with query map')
+            
+            credentials.username = arg_request.query.username
+            credentials.password = arg_request.query.password
+            return credentials;
+        }
+        
+        // RESTIFY
+        if (arg_request && T.isString(arg_request.query) )
+        {
+            this.info('authentication with query string')
+            query_str = arg_request.query
+        }
+        if (arg_request && T.isFunction(arg_request.query) )
+        {
+            this.info('authentication with query function')
+            query_str = arg_request.query()
+        }
+        if ( T.isString(query_str) )
+        {
+            const queries = query_str.split('&')
+            queries.forEach(
+                (item, index, arr) => {
+                    const parts = item.split('=')
+                    if ( T.isArray(parts) && parts.length == 2 )
+                    {
+                        const key = parts[0]
+                        const value = parts[1]
+                        if (key == 'username')
+                        {
+                            credentials.username = value
+                            return
+                        }
+                        if (key == 'password')
+                        {
+                            credentials.password = value
+                            return
+                        }
+                    }
+                }
+            )
+            
+            if (credentials.username && credentials.password)
+            {
+                return credentials;
+            }
+        }
+        
+        // RESTIFY QUERY PARSER PLUGIN (NO WORKING)
         if (arg_request && arg_request.params && arg_request.params.username && arg_request.params.password)
         {
             this.info('authentication with params args')
             
-            credentials.user = arg_request.params.username
+            credentials.username = arg_request.params.username
             credentials.password = arg_request.params.password
             return credentials;
         }
-
-        if (arg_request.authorization)
+        
+        // RESTIFY AUTHORIZATION PLUGIN
+        if (arg_request && arg_request.authorization)
         {
             this.info('authentication with basic auth header args')
             
@@ -310,7 +446,7 @@ export default class AuthenticationManager extends PluginsManager
                 return credentials
             }
             
-            credentials.user = arg_request.authorization.basic.username
+            credentials.username = arg_request.authorization.basic.username
             credentials.password = arg_request.authorization.basic.password
             return credentials
         }

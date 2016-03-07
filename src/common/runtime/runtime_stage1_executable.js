@@ -87,15 +87,6 @@ export default class RuntimeStage1Executable extends RuntimeExecutable
             promise = Promise.resolve(true)
 		}
         
-        
-        promise.catch(
-            function(arg_reason)
-            {
-                self.error(context + ':Master settings loading failure 2:' + arg_reason)
-                return false
-            }
-        )
-        
         // LOAD SECURITY SETTINGS
        this.info('LOAD SECURITY SETTINGS')
         promise = promise.then(

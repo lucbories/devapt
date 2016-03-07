@@ -74,6 +74,16 @@ export default class AuthenticationPlugin extends Plugin
     
     
     /**
+     * Get a authentication middleware to use on servers (see Connect/Express middleware signature).
+     * @returns {function} - function(request,response,next){...}
+     */
+    create_middleware()
+    {
+        return undefined
+    }
+    
+    
+    /**
      * Authenticate a user with request credentials.
      * @abstract
      * @param {object|undefined} arg_credentials - request credentials object

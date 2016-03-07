@@ -8,7 +8,7 @@ import Instance from './instance'
 import Collection from './collection'
 import Resource from './resource'
 import Database from '../resources/database'
-import Model from '../resources/model'
+import ModelSequelize from '../resources/model_sequelize'
 import View from '../resources/view'
 import Menu from '../resources/menu'
 import Menubar from '../resources/menubar'
@@ -68,7 +68,7 @@ export default class Module extends Instance
 		{
 			case 'connexions': return new Database(arg_name, arg_settings)
 			case 'views': return new View(arg_name, arg_settings)
-			case 'models': return new Model(arg_name, arg_settings)
+			case 'models': return new ModelSequelize(arg_name, arg_settings)
 			case 'menus': return new Menu(arg_name, arg_settings)
 			case 'menubars': return new Menubar(arg_name, arg_settings)
 		}
