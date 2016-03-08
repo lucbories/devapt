@@ -1,7 +1,7 @@
 
 import T from 'typr'
 import assert from 'assert'
-import path from 'path'
+// import path from 'path'
 
 import Loggable from '../base/loggable'
 import runtime from '../base/runtime'
@@ -32,7 +32,9 @@ export default class Render extends Loggable
 		this.stack = new RenderStack()
         
         // const plugins = undefined
-        const plugins = [ path.join(__dirname, '../../plugins/backend-foundation6/plugin/rendering_plugin') ]
+        const f6_plugin_path = runtime.context.get_rendering_plugin_path('backend-foundation6', 'plugin/rendering_plugin')
+        const plugins = [f6_plugin_path]
+        // const plugins = [ path.join(__dirname, '../../plugins/backend-foundation6/plugin/rendering_plugin') ]
 		this.rendering_manager = new RenderingManager(plugins)
         
         this.assets_images_service_name = arg_assets_img ? arg_assets_img : null
@@ -52,7 +54,7 @@ export default class Render extends Loggable
      * @param {string} arg_url - image asset relative url.
      * @returns {string} absolute image asset url.
      */
-    get_url_with_credentials(arg_url)
+    /*get_url_with_credentials(arg_url)
     {
         this.enter_group('get_url_with_credentials')
         
@@ -61,7 +63,7 @@ export default class Render extends Loggable
         
         this.leave_group('get_url_with_credentials')
         return url
-    }
+    }*/
 	
     
     /**
@@ -168,10 +170,11 @@ export default class Render extends Loggable
         
         const strategy = null
         const provider = service.get_a_provider(strategy)
-        const url = this.assets_scripts_service_consumer.get_url_for(provider, { url: arg_url})
+        let url = this.assets_scripts_service_consumer.get_url_for(provider, { url: arg_url})
+        url = runtime.context.get_url_with_credentials(url)
         
         this.leave_group('get_assets_url')
-        return this.get_url_with_credentials(url)
+        return url
     }
     
 	

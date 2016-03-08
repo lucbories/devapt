@@ -36,6 +36,7 @@ export default class Executable extends Errorable
      */
 	prepare(arg_settings)
 	{
+		arg_settings = arg_settings ? arg_settings : undefined // for ESLint unused variable error
 	}
 	
     
@@ -47,7 +48,8 @@ export default class Executable extends Errorable
      */
 	execute(arg_data)
 	{
-        return Promise.reject('not implemented')
+		arg_data = arg_data ? arg_data : undefined // for ESLint unused variable error
+		return Promise.reject('not implemented')
 	}
     
 	

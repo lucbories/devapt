@@ -1,7 +1,7 @@
 
 import T from 'typr'
 import assert from 'assert'
-import path from 'path'
+// import path from 'path'
 
 import logs from '../../utils/logs'
 import runtime from '../../base/runtime'
@@ -30,37 +30,37 @@ export default class JsonProvider
     /**
      * Create a Provider instance
      */
-    constructor(arg_settings)
+	constructor(arg_settings)
     {
-        // CHECK SETTINGS
-        assert( T.isObject(arg_settings), context + ':bad settings object')
-        this.$settings = arg_settings.toJS()
-        
-        // GET PROVIDER SOURCE
-        assert( T.isString(this.$settings.source), context + ':bad settings.source string')
-        this.source = this.$settings.source
-        assert( SOURCES.indexOf(this.source) > -1, context + ':bad source string, should be part of [' + SOURCES + ']')
-    }
+		// CHECK SETTINGS
+		assert( T.isObject(arg_settings), context + ':bad settings object')
+		this.$settings = arg_settings.toJS()
+
+		// GET PROVIDER SOURCE
+		assert( T.isString(this.$settings.source), context + ':bad settings.source string')
+		this.source = this.$settings.source
+		assert( SOURCES.indexOf(this.source) > -1, context + ':bad source string, should be part of [' + SOURCES + ']')
+	}
     
     
     /**
      * Provide JSON datas
      * @returns {object} JSON datas Promise
      */
-    provide_json()
-    {
-        const self = this
-        logs.debug(context, 'enter')
-        
-        let promise = new Promise(
-            function(resolve, reject)
-            {
-                self.provide_json_self(resolve, reject)
-            }
-        )
-        
-        logs.debug(context, 'leave')
-        return promise
+	provide_json()
+	{
+		const self = this
+		logs.debug(context, 'enter')
+
+		let promise = new Promise(
+			function(resolve, reject)
+			{
+				self.provide_json_self(resolve, reject)
+			}
+		)
+
+		logs.debug(context, 'leave')
+		return promise
     }
     
     
@@ -70,27 +70,28 @@ export default class JsonProvider
      * @param {function} reject - a promise should be rejected
      * @returns {nothing}
      */
-    provide_json_self(resolve, reject)
-    {
-        logs.debug(context + ':provide_json_self', this.source)
-        
-        switch(this.source)
-        {
-            case SOURCE_LOCAL_FILE:
-            {
+	provide_json_self(resolve, reject)
+	{
+		logs.debug(context + ':provide_json_self', this.source)
+
+		switch(this.source)
+		{
+			case SOURCE_LOCAL_FILE:
+			{
                 assert( T.isString(this.$settings.relative_path), context + ':bad settings.relative_path string')
                 
                 const file_path = this.$settings.relative_path
                 logs.debug('file_path', file_path)
                 
-                const base_dir = runtime.get_setting('base_dir', null)
-                logs.debug('base_dir', base_dir)
+                // const base_dir = runtime.get_setting('base_dir', null)
+                // logs.debug('base_dir', base_dir)
                 
-                if ( T.isString(file_path) && T.isString(base_dir) )
+                if ( T.isString(file_path) )
                 {
                     logs.debug('Node is master: load settings file', file_path)
                     
-                    const json = require( path.join(base_dir, file_path) )
+					const absolute_file_path = runtime.get_absolute_path(file_path)
+                    const json = require(absolute_file_path)
                     
                     // console.log(context + '.json', json)
                     
@@ -128,9 +129,9 @@ export default class JsonProvider
             default:{
                 logs.error(context + ':bad provider source string [' + this.source + ']')
             }
-        }
-        
-        reject('bad source')
-        logs.debug(context + ':leave')
-    }
+		}
+
+		reject('bad source')
+		logs.debug(context + ':leave')
+	}
 }

@@ -1,13 +1,8 @@
 
 import T from 'typr'
 import assert from 'assert'
-import restify from 'restify'
-import express from 'express'
-import fs from 'fs'
-import path from 'path'
-import bunyan from 'bunyan'
 
-import { store, config } from '../store/index'
+import { config } from '../store/index'
 
 import BusClientInstance from './bus_client_instance'
 

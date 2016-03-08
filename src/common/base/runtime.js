@@ -1,12 +1,13 @@
 import T from 'typr'
 import assert from 'assert'
-import path from 'path'
-import { Map, fromJS } from 'immutable'
+// import path from 'path'
+import { fromJS } from 'immutable'
 
-import { store, config } from '../store/index'
+// import { store, config } from '../store/index'
 import * as exec from '../runtime/index'
 import {SOURCE_LOCAL_FILE} from '../datas/providers/provider'
 
+import Context from './context'
 import Transaction from './transaction'
 import Collection from './collection'
 import Security from './security'
@@ -27,7 +28,7 @@ const default_settings = {
 	
 	'master':{
 		'name': null,
-		'host':"localhost",
+		'host':'localhost',
 		'port':5000
 	},
 	
@@ -37,10 +38,10 @@ const default_settings = {
 		'port':5001*/
 	},
 	
-    "settings_provider": {
-        'source':SOURCE_LOCAL_FILE,
-        "relative_path":"apps/world.json"
-    }
+	'settings_provider': {
+		'source':SOURCE_LOCAL_FILE,
+		'relative_path':'apps/world.json'
+	}
 }
 
 
@@ -66,6 +67,8 @@ class Runtime extends Settingsable
 		
 		this.node = null
 		
+		this.context = new Context()
+        
 		this.nodes = new Collection()
 		this.servers = new Collection()
 		this.services = new Collection()
@@ -78,7 +81,7 @@ class Runtime extends Settingsable
 		this.transactions = new Collection()
 		this.applications = new Collection()
 		
-        this.security = new Security()
+		this.security = new Security()
         
 		this.info('Runtime is created')
 	}
@@ -91,7 +94,7 @@ class Runtime extends Settingsable
      */
 	load(arg_settings)
 	{
-        this.separate_level_1()
+		this.separate_level_1()
 		this.enter_group('load')
 		
 		this.$settings = fromJS( Object.assign(default_settings, arg_settings) )
@@ -99,18 +102,18 @@ class Runtime extends Settingsable
 		
 		const stage0 = new exec.RuntimeStage0Executable()
 		const stage1 = new exec.RuntimeStage1Executable()
-        const stage2 = new exec.RuntimeStage2Executable()
-        const stage3 = new exec.RuntimeStage3Executable()
-        const stage4 = new exec.RuntimeStage4Executable()
-        const stage5 = new exec.RuntimeStage5Executable()
-        const execs = [stage0, stage1, stage2, stage3, stage4, stage5]
-        const tx = new Transaction('runtime', 'startup', 'loading', {}, execs, Transaction.SEQUENCE)
-        tx.prepare({runtime:this})
-        const tx_promise = tx.execute(null)
-        
+		const stage2 = new exec.RuntimeStage2Executable()
+		const stage3 = new exec.RuntimeStage3Executable()
+		const stage4 = new exec.RuntimeStage4Executable()
+		const stage5 = new exec.RuntimeStage5Executable()
+		const execs = [stage0, stage1, stage2, stage3, stage4, stage5]
+		const tx = new Transaction('runtime', 'startup', 'loading', {}, execs, Transaction.SEQUENCE)
+		tx.prepare({runtime:this})
+		const tx_promise = tx.execute(null)
+
 		this.leave_group('load')
 		this.separate_level_1()
-        return tx_promise
+		return tx_promise
 	}
 	
 	
@@ -122,11 +125,11 @@ class Runtime extends Settingsable
 		assert( T.isString(arg_svc_name), context + ':register_service:bad service name string')
 		
 		const cfg = {
-			"node_name":arg_node_name,
-			"service_name":arg_svc_name,
-			"server_name":arg_server_name,
-			"server_host":arg_server_host,
-			"server_port":arg_server_port
+			'node_name':arg_node_name,
+			'service_name':arg_svc_name,
+			'server_name':arg_server_name,
+			'server_host':arg_server_host,
+			'server_port':arg_server_port
 		}
 		const svc = new RegisteredService(cfg)
 		this.register_services.add(svc)
