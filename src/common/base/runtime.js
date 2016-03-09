@@ -1,9 +1,7 @@
 import T from 'typr'
 import assert from 'assert'
-// import path from 'path'
 import { fromJS } from 'immutable'
 
-// import { store, config } from '../store/index'
 import * as exec from '../runtime/index'
 import {SOURCE_LOCAL_FILE} from '../datas/providers/provider'
 
@@ -67,7 +65,7 @@ class Runtime extends Settingsable
 		
 		this.node = null
 		
-		this.context = new Context()
+		this.context = new Context(this)
         
 		this.nodes = new Collection()
 		this.servers = new Collection()

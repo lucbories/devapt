@@ -1,10 +1,8 @@
 
 import T from 'typr'
 import assert from 'assert'
-import path from 'path'
 
 import logs from '../../utils/logs'
-import runtime from '../../base/runtime'
 
 
 
@@ -23,11 +21,11 @@ export default class RecordProvider
     /**
      * Create a record provider instance
      */
-    constructor(arg_settings)
-    {
-        assert( T.isObject(arg_settings), context + ':bad settings object')
-        this.$settings = T.isFunction(arg_settings.toJS) ? arg_settings.toJS() : arg_settings
-    }
+	constructor(arg_settings)
+	{
+		assert( T.isObject(arg_settings), context + ':bad settings object')
+		this.$settings = T.isFunction(arg_settings.toJS) ? arg_settings.toJS() : arg_settings
+	}
     
     
     /**
@@ -35,12 +33,12 @@ export default class RecordProvider
      * @param {object|undefined} arg_query - optional query context
      * @returns {Promise} datas record promise
      */
-    build_query(arg_query)
-    {
-        logs.debug(context, 'build_query:not implemented')
-        
-        return arg_query
-    }
+	build_query(arg_query)
+	{
+		logs.debug(context, 'build_query:not implemented')
+
+		return arg_query
+	}
     
     
     /**
@@ -49,11 +47,11 @@ export default class RecordProvider
      * @param {object|undefined} arg_query - optional query context
      * @returns {Promise} datas record promise
      */
-    find_all_records(arg_query)
-    {
-        logs.debug(context, 'find_all_records:not implemented')
-        return Promise.resolve(null)
-    }
+	find_all_records(arg_query)
+	{
+		logs.debug(context, 'find_all_records:not implemented')
+		return Promise.resolve(null)
+	}
     
     
     /**
@@ -63,15 +61,15 @@ export default class RecordProvider
      * @param {object|undefined} arg_query - optional query context
      * @returns {Promise} - promise of found record or null
      */
-    find_records_by_id(arg_id, arg_query)
-    {
-        logs.debug(context, 'find_records_by_id:not implemented')
-        assert( T.isString(arg_id) || T.isNumber(arg_id), context + ':find_records_by_id:bad id string or number')
-        
-        // TO IMPLEMENT IN SUBCLASSES
-        
-        return Promise.resolve(null)
-    }
+	find_records_by_id(arg_id, arg_query)
+	{
+		logs.debug(context, 'find_records_by_id:not implemented')
+		assert( T.isString(arg_id) || T.isNumber(arg_id), context + ':find_records_by_id:bad id string or number')
+
+		// TO IMPLEMENT IN SUBCLASSES
+
+		return Promise.resolve(null)
+	}
     
     
     /**
@@ -81,13 +79,13 @@ export default class RecordProvider
      * @param {object|undefined} arg_query - optional query context
      * @returns {Promise} - promise of found record or null
      */
-    find_records_by_values(arg_values_map, arg_query)
-    {
-        logs.debug(context, 'find_records_by_values:not implemented')
-        assert( T.isObject(arg_values_map), context + ':find_records_by_id:bad values object')
-        
-        // TO IMPLEMENT IN SUBCLASSES
-        
-        return Promise.resolve(null)
-    }
+	find_records_by_values(arg_values_map, arg_query)
+	{
+		logs.debug(context, 'find_records_by_values:not implemented')
+		assert( T.isObject(arg_values_map), context + ':find_records_by_id:bad values object')
+
+		// TO IMPLEMENT IN SUBCLASSES
+
+		return Promise.resolve(null)
+	}
 }

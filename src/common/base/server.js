@@ -95,6 +95,12 @@ export default class Server extends BusClientInstance
 		
 		let should_listen = true
 		
+		// ENABLE ERROR HANDLING
+		if (this.finaly)
+		{
+			this.finaly()
+		}
+		
 		// LISTENER
 		if (should_listen)
 		{

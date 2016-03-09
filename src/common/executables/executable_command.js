@@ -1,11 +1,7 @@
 import T from 'typr'
 import assert from 'assert'
-import fs from 'fs'
-import path from 'path'
-import restify from 'restify'
 
 import Executable from '../base/executable'
-import runtime from '../base/runtime'
 
 
 let context = 'common/executables/executable_command'

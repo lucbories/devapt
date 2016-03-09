@@ -1,12 +1,6 @@
 
-import T from 'typr'
+// import T from 'typr'
 import assert from 'assert'
-import fs from 'fs'
-import path from 'path'
-import immutable from 'immutable'
-
-import { store, config } from '../store/index'
-import { dispatch_store_config_set_all } from '../store/config/actions'
 
 import Node from '../base/node'
 import RuntimeExecutable from './runtime_executable'
@@ -63,6 +57,6 @@ export default class RuntimeStage0Executable extends RuntimeExecutable
 		this.leave_group('execute')
 		this.separate_level_1()
 		this.set_trace(saved_trace)
-        return Promise.resolve()
+		return Promise.resolve()
 	}
 }

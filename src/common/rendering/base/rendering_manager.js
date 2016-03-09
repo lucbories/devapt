@@ -1,13 +1,12 @@
 
 import T from 'typr'
 import assert from 'assert'
-import path from 'path'
 
-import { get_base_dir } from '../../utils/paths'
+import runtime from '../../base/runtime'
 
 
 const context = 'common/rendering/base/rendering_manager'
-const default_plugin_path = '../default/rendering_plugin'
+const default_plugin_path = runtime.context.get_absolute_path(__dirname, '../default/rendering_plugin')
 
 
 /**
@@ -95,31 +94,32 @@ export default class RenderingManager
 	load(arg_plugins)
 	{
 		// console.log(arg_plugins, 'arg_plugins')
-		const base_dir = get_base_dir()
+		// const base_dir = get_base_dir()
         
 		for(let plugin of arg_plugins)
 		{
-            // GIVEN PLUGIN IS A RELATIVE FILE PATH NAME
+			// GIVEN PLUGIN IS A RELATIVE FILE PATH NAME
 			if ( T.isString(plugin) )
 			{
-                const plugin_dir = plugin != default_plugin_path ? base_dir : __dirname
-                
-                const file_path_name = path.isAbsolute(plugin) ? plugin : path.join(plugin_dir, plugin)
-				// console.info('loading plugin at [' + plugin + '] at [' + file_path_name + ']')
-				
-                try
-                {
-                    const PluginClass = require(file_path_name).default
-                    // console.log('loading rendering plugin class', PluginClass)
-                    plugin = new PluginClass()
-                }
-                catch(e)
-                {
-                    console.error(context + '.load:' + plugin + 'failed', e)
-                }
+				// const plugin_dir = plugin != default_plugin_path ? base_dir : __dirname
+
+				// const file_path_name = path.isAbsolute(plugin) ? plugin : path.join(plugin_dir, plugin)
+				const file_path_name = runtime.context.get_absolute_plugin_path(plugin)
+				console.info('loading plugin at [' + plugin + '] at [' + file_path_name + ']')
+
+				try
+				{
+					const PluginClass = require(file_path_name).default
+					// console.log('loading rendering plugin class', PluginClass)
+					plugin = new PluginClass()
+				}
+				catch(e)
+				{
+					console.error(context + '.load:' + plugin + 'failed', e)
+				}
 			}
-			
-            // GIVEN PLUGIN IS A PLUGIN CLASS INSTANCE
+
+			// GIVEN PLUGIN IS A PLUGIN CLASS INSTANCE
 			if ( T.isObject(plugin) && plugin.is_rendering_plugin )
 			{
 				const plugin_name = plugin.get_name()
@@ -130,8 +130,8 @@ export default class RenderingManager
 					continue
 				}
 			}
-			
-            // UNKNOW PLUGIN TYPE
+
+			// UNKNOW PLUGIN TYPE
 			console.error(plugin, 'plugin')
 			assert(false, context + ':bad plugin')
 		}

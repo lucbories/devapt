@@ -1,10 +1,8 @@
 import T from 'typr'
 import assert from 'assert'
 import fs from 'fs'
-import path from 'path'
 
-import { store, config } from '../store/index'
-import { get_base_dir } from '../utils/paths'
+import runtime from '../base/runtime'
 
 import ExecutableRoute from './executable_route'
 
@@ -197,7 +195,7 @@ export default class ExecutableRouteGetResources extends ExecutableRoute
      */
 	include_file(self, arg_resource_name, arg_file_path_name)
 	{
-		const file_path = path.join(get_base_dir(), arg_file_path_name)
+		const file_path = runtime.context.get_absolute_path(arg_file_path_name)
 		self.debug('Process file_path [%s]', file_path)
 		
 		

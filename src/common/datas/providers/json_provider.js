@@ -1,7 +1,6 @@
 
 import T from 'typr'
 import assert from 'assert'
-// import path from 'path'
 
 import logs from '../../utils/logs'
 import runtime from '../../base/runtime'
@@ -78,57 +77,53 @@ export default class JsonProvider
 		{
 			case SOURCE_LOCAL_FILE:
 			{
-                assert( T.isString(this.$settings.relative_path), context + ':bad settings.relative_path string')
-                
-                const file_path = this.$settings.relative_path
-                logs.debug('file_path', file_path)
-                
-                // const base_dir = runtime.get_setting('base_dir', null)
-                // logs.debug('base_dir', base_dir)
-                
-                if ( T.isString(file_path) )
-                {
-                    logs.debug('Node is master: load settings file', file_path)
-                    
+				assert( T.isString(this.$settings.relative_path), context + ':bad settings.relative_path string')
+
+				const file_path = this.$settings.relative_path
+				logs.debug('file_path', file_path)
+
+				if ( T.isString(file_path) )
+				{
+					logs.debug('Node is master: load settings file', file_path)
+
 					const absolute_file_path = runtime.get_absolute_path(file_path)
-                    const json = require(absolute_file_path)
-                    
-                    // console.log(context + '.json', json)
-                    
-                    logs.debug(context, 'leave')
-                    resolve(json)
-                    return
-                }
-                
-                logs.debug('base_dir', base_dir)
-                logs.debug('file_path', file_path)
-                logs.error(context + ':bad file path string')
-                break
-            }
-            
-            case SOURCE_MSG_BUS:
-            {
-                
-            }
-            
-            case SOURCE_REMOTE_URL:
-            {
-                
-            }
-            
-            case SOURCE_SQL_DATABASE:
-            {
-                
-            }
-            
-            case SOURCE_NOSQL_DATABASE:
-            {
-                
-            }
-            
-            default:{
-                logs.error(context + ':bad provider source string [' + this.source + ']')
-            }
+					const json = require(absolute_file_path)
+
+					// console.log(context + '.json', json)
+
+					logs.debug(context, 'leave')
+					resolve(json)
+					return
+				}
+
+				logs.debug('file_path', file_path)
+				logs.error(context + ':bad file path string')
+				break
+			}
+			
+			case SOURCE_MSG_BUS:
+			{
+
+			}
+
+			case SOURCE_REMOTE_URL:
+			{
+
+			}
+
+			case SOURCE_SQL_DATABASE:
+			{
+
+			}
+
+			case SOURCE_NOSQL_DATABASE:
+			{
+
+			}
+
+			default:{
+				logs.error(context + ':bad provider source string [' + this.source + ']')
+			}
 		}
 
 		reject('bad source')
