@@ -143,11 +143,11 @@ export default class AuthenticationPluginURL extends AuthenticationPlugin
 	create_middleware()
 	{
 		return (req, res, next) => {
-			if (req.param == '/favicon.ico' || req.param == '/favicon.png')
-			{
-				next()
-				return
-			}
+			// if (req.param == '/favicon.ico' || req.param == '/favicon.png')
+			// {
+			// 	next()
+			// 	return
+			// }
 			
 			const credentials = runtime.security.get_authentication_manager().get_credentials(req)
 			// console.log('auth plugin.create_middleware')
@@ -199,8 +199,15 @@ export default class AuthenticationPluginURL extends AuthenticationPlugin
 		
 		assert( T.isFunction(this.file_db), context + ':authenticate:bad db object')
 		assert( T.isObject(arg_credentials), context + ':authenticate:bad credentials object')
-		assert( T.isString(arg_credentials.username), context + ':authenticate:bad credentials.username string')
-		assert( T.isString(arg_credentials.password), context + ':authenticate:bad credentials.password string')
+		
+		// HAS AUTHENTICATION INFORMATIONS
+		if ( !(T.isString(arg_credentials.username) && T.isString(arg_credentials.password)) )
+		{
+			this.debug('authenticate:failure:no credentials')
+			return Promise.resolve(false)
+		}
+		// assert( T.isString(arg_credentials.username), context + ':authenticate:bad credentials.username string')
+		// assert( T.isString(arg_credentials.password), context + ':authenticate:bad credentials.password string')
 		
 		// CREATE QUERY
 		const username_field = this.username_fieldname ? this.username_fieldname : 'username'

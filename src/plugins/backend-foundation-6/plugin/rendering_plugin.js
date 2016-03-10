@@ -22,7 +22,7 @@ export default class Foundation6Plugin extends RenderingPlugin
 {
 	constructor()
 	{
-		super('Foundation6', '1.0.0')
+		super('Foundation-6', '1.0.0')
         // console.log('Foundation6Plugin')
 	}
 	

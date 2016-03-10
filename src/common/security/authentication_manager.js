@@ -362,7 +362,7 @@ export default class AuthenticationManager extends PluginsManager
 	 */
 	get_credentials(arg_request)
 	{
-		// console.log(arg_request, 'arg_request')
+		console.log(arg_request.url, 'arg_request.url')
 		console.log(arg_request.queries, 'arg_request.queries')
 		// console.log(arg_request.password, 'arg_request')
 		console.log(arg_request.query(), 'arg_request.query')
@@ -399,6 +399,7 @@ export default class AuthenticationManager extends PluginsManager
 		if ( T.isString(query_str) )
 		{
 			const queries = query_str.split('&')
+			console.log(queries, 'queries part')
 			queries.forEach(
 				(item/*, index, arr*/) => {
 					const parts = item.split('=')

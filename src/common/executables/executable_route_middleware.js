@@ -102,7 +102,7 @@ export default class ExecutableRouteMiddleware extends ExecutableRoute
 			
 			
 			self.leave_group('ExecutableRouteMiddleware.exec_http')
-			return next()
+			return
 		}
 	}
 }

@@ -110,12 +110,25 @@ export default class Context
      * @param {string} arg_url - image asset relative url.
      * @returns {string} absolute image asset url.
      */
-	get_url_with_credentials(arg_url)
+	get_url_with_credentials(arg_url, arg_request)
 	{
 		// logs.debug('get_url_with_credentials')
 
 		// TODO: credentials
-		const url = arg_url + '?username=demo&password=6c5ac7b4d3bd3311f033f971196cfa75'
+		const auth_mgr = this.$runtime ? this.$runtime.security.get_authentication_manager() : null
+		if (! auth_mgr)
+		{
+			return arg_url
+		}
+		
+		const credentials = auth_mgr.get_credentials(arg_request)
+		if (! credentials)
+		{
+			return arg_url
+		}
+		
+		const url = arg_url + '?username=' + credentials.username + '&password=' + credentials.password
+		// const url = arg_url + '?username=demo&password=6c5ac7b4d3bd3311f033f971196cfa75'
 		
 		return url
 	}

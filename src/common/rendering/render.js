@@ -22,14 +22,16 @@ export default class Render extends Loggable
     /**
      * Create a rendering wrapper class.
      */
-	constructor(arg_assets_img, arg_assets_html, arg_assets_scripts)
+	constructor(arg_assets_img, arg_assets_html, arg_assets_scripts, arg_request)
 	{
 		super(context)
 
 		this.is_render = true
 
 		this.stack = new RenderStack()
-
+		
+		this.request = arg_request ? arg_request : undefined
+		
 		// const plugins = undefined
 		// const f6_plugin_path = runtime.context.get_absolute_plugin_path('backend-foundation-6', 'plugin/rendering_plugin')
 		const f6_plugin_path = runtime.context.get_absolute_plugin_path(__dirname, '../../plugins/backend-foundation-6/plugin/rendering_plugin')
@@ -54,16 +56,15 @@ export default class Render extends Loggable
      * @param {string} arg_url - image asset relative url.
      * @returns {string} absolute image asset url.
      */
-    /*get_url_with_credentials(arg_url)
-    {
-        this.enter_group('get_url_with_credentials')
-        
-        // TODO: credentials
-        const url = arg_url + '?username=demo&password=6c5ac7b4d3bd3311f033f971196cfa75'
-        
-        this.leave_group('get_url_with_credentials')
-        return url
-    }*/
+	get_url_with_credentials(arg_url, arg_request)
+	{
+		this.enter_group('get_url_with_credentials')
+
+		const url = runtime.context.get_url_with_credentials(arg_url, arg_request)
+
+		this.leave_group('get_url_with_credentials')
+		return url
+	}
 	
     
     /**
@@ -71,16 +72,16 @@ export default class Render extends Loggable
      * @param {string} arg_url - image asset relative url.
      * @returns {string} absolute image asset url.
      */
-    get_assets_image_url(arg_url)
-    {
-        this.enter_group('get_assets_image_url')
-        
-        const name = this.assets_images_service_name
-        const url = this.get_assets_url(this.assets_images_service_consumer, name, arg_url)
-        
-        this.leave_group('get_assets_image_url')
-        return url
-    }
+	get_assets_image_url(arg_url)
+	{
+		this.enter_group('get_assets_image_url')
+
+		const name = this.assets_images_service_name
+		const url = this.get_assets_url(this.assets_images_service_consumer, name, arg_url)
+
+		this.leave_group('get_assets_image_url')
+		return url
+	}
 	
     
     /**
@@ -88,16 +89,16 @@ export default class Render extends Loggable
      * @param {string} arg_url - html asset relative url.
      * @returns {string} absolute html asset url.
      */
-    get_assets_html_url(arg_url)
-    {
-        this.enter_group('get_assets_html_url')
-        
-        const name = this.assets_html_service_name
-        const url = this.get_assets_url(this.assets_html_service_consumer, name, arg_url)
-        
-        this.leave_group('get_assets_html_url')
-        return url
-    }
+	get_assets_html_url(arg_url)
+	{
+		this.enter_group('get_assets_html_url')
+
+		const name = this.assets_html_service_name
+		const url = this.get_assets_url(this.assets_html_service_consumer, name, arg_url)
+
+		this.leave_group('get_assets_html_url')
+		return url
+	}
 	
     
     /**
@@ -105,16 +106,16 @@ export default class Render extends Loggable
      * @param {string} arg_url - script asset relative url.
      * @returns {string} absolute script asset url.
      */
-    get_assets_script_url(arg_url)
-    {
-        this.enter_group('get_assets_script_url')
-        
-        const name = this.assets_scripts_service_name
-        const url = this.get_assets_url(this.assets_scripts_service_consumer, name, arg_url)
-        
-        this.leave_group('get_assets_script_url')
-        return url
-    }
+	get_assets_script_url(arg_url)
+	{
+		this.enter_group('get_assets_script_url')
+
+		const name = this.assets_scripts_service_name
+		const url = this.get_assets_url(this.assets_scripts_service_consumer, name, arg_url)
+
+		this.leave_group('get_assets_script_url')
+		return url
+	}
 	
     
     /**
@@ -122,16 +123,16 @@ export default class Render extends Loggable
      * @param {string} arg_url - script asset relative url.
      * @returns {string} absolute script asset url.
      */
-    get_assets_style_url(arg_url)
-    {
-        this.enter_group('get_assets_style_url')
-        
-        const name = this.assets_styles_service_name
-        const url = this.get_assets_url(this.assets_styles_service_consumer, name, arg_url)
-        
-        this.leave_group('get_assets_style_url')
-        return url
-    }
+	get_assets_style_url(arg_url)
+	{
+		this.enter_group('get_assets_style_url')
+
+		const name = this.assets_styles_service_name
+		const url = this.get_assets_url(this.assets_styles_service_consumer, name, arg_url)
+
+		this.leave_group('get_assets_style_url')
+		return url
+	}
 	
     
     /**
@@ -141,41 +142,41 @@ export default class Render extends Loggable
      * @param {string} arg_url - image asset relative url.
      * @returns {string} absolute image asset url.
      */
-    get_assets_url(arg_consumer, arg_svc_name, arg_url)
-    {
-        this.enter_group('get_assets_url')
-        
-        console.log(typeof arg_url, 'arg_url', arg_url)
-        assert( T.isString(arg_url), context + ':get_assets_url:bad url string for svc [' + arg_svc_name + '] for url [' + arg_url + ']')
-        
-        const has_consumer = T.isObject(arg_consumer) && arg_consumer.is_service_consumer
-        if (! has_consumer)
-        {
-            assert( T.isString(arg_svc_name), context + ':get_assets_url:bad svc name string')
-            
-            const service = runtime.services.find_by_name(arg_svc_name)
-            assert( T.isObject(service) && service.is_service, context + ':get_assets_script_url:bad service object')
-            
-            this.assets_scripts_service_consumer = service.create_consumer()
-        }
-         assert( T.isObject(this.assets_scripts_service_consumer) && this.assets_scripts_service_consumer.is_service_consumer, context + ':get_assets_script_url:bad consumer object')
-        
-        const service = this.assets_scripts_service_consumer.get_service()
-        if (! service)
-        {
-            this.error('no service found for images assets')
-            this.leave_group('get_assets_url')
-            return null
-        }
-        
-        const strategy = null
-        const provider = service.get_a_provider(strategy)
-        let url = this.assets_scripts_service_consumer.get_url_for(provider, { url: arg_url})
-        url = runtime.context.get_url_with_credentials(url)
-        
-        this.leave_group('get_assets_url')
-        return url
-    }
+	get_assets_url(arg_consumer, arg_svc_name, arg_url)
+	{
+		this.enter_group('get_assets_url')
+
+		console.log(typeof arg_url, 'arg_url', arg_url)
+		assert( T.isString(arg_url), context + ':get_assets_url:bad url string for svc [' + arg_svc_name + '] for url [' + arg_url + ']')
+
+		const has_consumer = T.isObject(arg_consumer) && arg_consumer.is_service_consumer
+		if (! has_consumer)
+		{
+			assert( T.isString(arg_svc_name), context + ':get_assets_url:bad svc name string')
+
+			const service = runtime.services.find_by_name(arg_svc_name)
+			assert( T.isObject(service) && service.is_service, context + ':get_assets_script_url:bad service object')
+
+			this.assets_scripts_service_consumer = service.create_consumer()
+		}
+		assert( T.isObject(this.assets_scripts_service_consumer) && this.assets_scripts_service_consumer.is_service_consumer, context + ':get_assets_script_url:bad consumer object')
+
+		const service = this.assets_scripts_service_consumer.get_service()
+		if (! service)
+		{
+			this.error('no service found for images assets')
+			this.leave_group('get_assets_url')
+			return null
+		}
+
+		const strategy = null
+		const provider = service.get_a_provider(strategy)
+		let url = this.assets_scripts_service_consumer.get_url_for(provider, { url: arg_url})
+		url = runtime.context.get_url_with_credentials(url, this.request)
+
+		this.leave_group('get_assets_url')
+		return url
+	}
     
 	
     /**
