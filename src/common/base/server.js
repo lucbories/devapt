@@ -4,6 +4,7 @@ import assert from 'assert'
 
 import { config } from '../store/index'
 
+import Collection from './collection'
 import BusClientInstance from './bus_client_instance'
 
 
@@ -31,6 +32,9 @@ export default class Server extends BusClientInstance
 		this.server_port = null
 		this.server_protocole = null
 		this.server_type = null
+		
+		this.services_without_security = new Collection()
+		this.services_with_security = new Collection()
 	}
 	
 	

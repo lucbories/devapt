@@ -2,10 +2,12 @@
 import T from 'typr'
 import assert from 'assert'
 
-import { store, config } from '../store/index'
+import { config } from '../store/index'
 import Service from '../base/service'
 import * as exec from '../executables/index'
-import MiddlewareService from '../services/mw_service'
+import MiddlewareService from '../services/middleware/mw_service'
+import CrudService from '../services/crud/crud_service'
+import ResourcesService from '../services/resources/resources_service'
 
 import RuntimeExecutable from './runtime_executable'
 
@@ -49,7 +51,7 @@ export default class RuntimeStage2Executable extends RuntimeExecutable
 		this.leave_group('execute')
 		this.separate_level_1()
 		this.set_trace(saved_trace)
-        return Promise.resolve()
+		return Promise.resolve()
 	}
 	
 	
@@ -73,41 +75,35 @@ export default class RuntimeStage2Executable extends RuntimeExecutable
 				
 				switch( cfg_service.get('type') )
 				{
-					case "middleware":{
+					case 'middleware':{
 						service = new MiddlewareService(service_name, cfg_service)
 						break
 					}
-					case "rest_api_models_query":{
-						let locale_exec = new exec.ExecutableRouteModelCrud()
-						let remote_exec = locale_exec
-						service = new Service(service_name, locale_exec, remote_exec) // TODO: create Real service
+					case 'rest_api_models_query':{
+						service = new CrudService(service_name, cfg_service)
 						break
 					}
-					case "rest_api_models_modifier":{
-						let locale_exec = new exec.ExecutableRouteModelCrud()
-						let remote_exec = locale_exec
-						service = new Service(service_name, locale_exec, remote_exec) // TODO: create Real service
+					case 'rest_api_models_modifier':{
+						service = new CrudService(service_name, cfg_service)
 						break
 					}
-					case "rest_api_resources_query":{
-						let locale_exec = new exec.ExecutableRouteGetResource()
-						let remote_exec = locale_exec
-						service = new Service(service_name, locale_exec, remote_exec)
+					case 'rest_api_resources_query':{
+						service = new ResourcesService(service_name, cfg_service)
 						break
 					}
-					case "rest_api_resources_modifier":{
+					case 'rest_api_resources_modifier':{
 						// let locale_exec = null
 						// let remote_exec = null
 						// service = new Service(service_name, locale_exec, remote_exec) // TODO: create Real service
 						break
 					}
-					case "html_assets":{
+					case 'html_assets':{
 						let locale_exec = new exec.ExecutableRouteAssets()
 						let remote_exec = locale_exec
 						service = new Service(service_name, locale_exec, remote_exec)
 						break
 					}
-					case "html_app":{
+					case 'html_app':{
 						// let locale_exec = null
 						// let remote_exec = null
 						// service = new Service(service_name, locale_exec, remote_exec) // TODO: create Real service

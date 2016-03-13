@@ -6,7 +6,11 @@
 .project
 .buildpath
 npm-debug.log
+
 jsconfig.json
+.vscode/launch.json
+.vscode/settings.json
+.vscode/taskss.json
 
 .vscode
 dist
