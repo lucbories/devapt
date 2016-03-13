@@ -1,0 +1,118 @@
+TODO
+
+SECURITY PAGE LOCKED ON EXPIRATION
+SECURITY DATAS CRYPT
+
+do not remove all items of a form for a fields_iterator: reset inputs
+records: do not create a new record on each request: lookup a map !
+records: cache with expiration
+backend security: add a create and a delete button
+
+
+FOSRest
+JMSSerializer
+NelmioAPIDoc
+JSON-LD
+HYDRA
+
+Features
+	Billing
+		Server: counters on requests, logins, records, errors
+		Client: stats on counters, billings
+	event logs appender
+	transactions
+		client
+		server
+		=>dashboard of failures analysis (root cause)
+	micro services ?
+	api server ?
+		Portal: security, billing, repository
+		Gateway: in/out
+		Analysis: stats, load
+
+
+
+tutorial-1
+	access
+		ajouter/supprimer un utilisateur
+	appbuilder
+		crud api backend
+			HBOX
+				VBOX
+					INPUT (search)
+					LIST (models crud api)
+				VBOX
+					TABLE (read only)
+						action,method,url,format
+						URL CREATE
+						URL READ
+						URL UPDATE
+						URL DELETE
+						METHOD CREATE
+						METHOD READ
+						METHOD UPDATE
+						METHOD DELETE
+				VBOX
+					FORM (test)
+						API FORMAT
+						PANEL (messages)
+						PANEL (results)
+						BUTTON SEND
+					FORM (query)
+						INPUT (id)
+						INPUT (datas)
+						INPUT (filters)
+						INPUT (orders)
+						INPUT (groups)
+						INPUT (slice offset)
+						INPUT (slice length)
+					
+		api backend : tables of datas, forms of datas, dashboard
+
+
+views
+.	form
+.	editors
+	window
+	progress bar
+	progress window
+	contextual menu
+	toolbar
+	titlebar
+	settings
+
+others
+.	i18n
+.	plugin
+	actions: import/export/crud/pager
+.	login/logout/mdp
+	crypt
+	
+plugins
+	flot
+	dygraph
+	pivot
+	cleditor
+	datatables
+
+	
+	
+
+save
+x	auto en quittant un input
+-	par formulaire
+-	par user
+
+users lists
+	pas de liste par défaut et attente saisie dans search
+	pagination par lettres
+	prévoir ascenseur dans liste
+
+user_inspector
+
+perfs
+	Demo Home +24h							RAM 61000 DT RAM 25500
+	Demo Home								RAM 38500 DT RAM 27000
+	Demo Home	v2							RAM 37600 DT RAM 27600
+	Demo Access (Users onglet unique) +24h	RAM 34000 DT RAM 25700
+	Demo Access (Users onglet unique) v2	RAM 64000 DT RAM 39000

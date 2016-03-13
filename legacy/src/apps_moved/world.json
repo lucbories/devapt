@@ -1,0 +1,143 @@
+{
+	"nodes":"nodes.json",
+	
+	"services":"services.json",
+	
+	"applications":"applications.json",
+	
+	"modules":{
+		"home":{
+			"base_dir":"home",
+			"resources":[
+				"home_views.ini.json",
+				"home_menubars.ini.json"
+			],
+			"templates":["template/layouts.default.footer.html.template", "template/layouts.default.header.html.template"],
+			"includes":["VIEW_CONTENT_1.html.include", "VIEW_CONTENT_2.html.include", "VIEW_HOME.html.include"]
+		},
+		
+		"security":{
+			"base_dir":"security",
+			"resources":[
+				"security_views.ini.json",
+				"users/auth_models_many_users_groups.ini.json",
+				"users/auth_models_many_users_profiles.ini.json",
+				"users/auth_models_many_users_roles.ini.json",
+				"users/auth_models_users.ini.json",
+				"users/auth_models_users_groups.ini.json",
+				"users/auth_models_users_roles.ini.json",
+				"users/auth_models_users_profiles.ini.json",
+				
+				"groups/auth_models_groups.ini.json",
+				"groups/auth_models_groups_users.ini.json",
+				
+				"profiles/auth_models_profiles.ini.json",
+				"profiles/auth_models_profiles_users.ini.json",
+				
+				"roles/auth_models_roles.ini.json",
+				"roles/auth_models_roles_users.ini.json"
+			],
+			"templates":[],
+			"includes":[]
+		},
+		
+		"appbuilder":{
+			"base_dir":"appbuilder",
+			"resources":[
+				"appbuilder_views.ini.json",
+				"appbuilder_menubars.ini.json"
+			],
+			"templates":[],
+			"includes":["app_builder_welcome.html.include"]
+		},
+		
+		"demo_views":{
+			"base_dir":"demo_views",
+			"resources":[
+				"demo_views.ini.json",
+				"demo_containers.ini.json",
+				"demo_menus.ini.json",
+				"demo_menubars.ini.json"
+			],
+			"templates":["view_demo_simple.html.template"],
+			"includes":["VIEW_TU_MODELS.html.include"]
+		},
+		
+		"backend_security":{
+			"base_dir":"backend_security",
+			"resources":[
+				"demo_access_views_users.ini.json",
+				"demo_access_views_user_inspector.ini.json",
+				"demo_access_views_groups.ini.json",
+				"demo_access_menus.ini.json"
+			],
+			"templates":[],
+			"includes":[]
+		}
+	},
+	
+	
+	"plugins":{
+		"backend-foundation5":{
+			"js":"backend-foundation5/plugin",
+			"css":["/assets/css/normalize.css", "/assets/css/foundation.css"],
+			"autoload":true
+		},
+		"backend-jquery-ui":{
+			"js":"backend-jquery-ui/plugin",
+			"css":[],
+			"autoload":true
+		}
+	},
+	
+	"security":{
+		"is_readonly":false,
+		
+		"connexions":["connexions.json"],
+		
+		"authentication": {
+			"enabled":true,
+			
+			"expiration":60,
+			"secret":"APPPPPPP449++((éç(à",
+			
+			"mode":"database",
+			"model":"MODEL_AUTH_USERS",
+			"username":"login",
+			"password":"password",
+			
+			"alt": {
+				"mode":"jsonfile",
+				"file":"users.json",
+				
+				"login":"demo",
+				"password":"demo"
+			}
+		},
+		
+		"authorization": {
+			"enabled":true,
+			"mode":"database",
+			
+			"model":"MODEL_AUTH_USERS_ROLES",
+			"role":"label",
+			"username":"users_login",
+			
+			"alt": {
+				"mode":"jsonfile",
+				"file":"users.json"
+			},
+			
+			"roles":{
+				"*": {
+					"list_resources":"ROLE_RESOURCES_LIST",
+					"get_resource":"ROLE_RESOURCE_GET"
+				},
+				"views": {
+					"list_resources":"ROLE_RESOURCES_LIST",
+					"get_resource":"ROLE_RESOURCE_GET"
+				}
+			}
+		}
+	}
+}
