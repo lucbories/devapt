@@ -3,7 +3,6 @@ import T from 'typr'
 import assert from 'assert'
 import path from 'path'
 
-import logs from '../utils/logs'
 
 
 let context = 'common/base/context'
@@ -11,7 +10,7 @@ let context = 'common/base/context'
 
 
 /**
- * Context class: provides contextual mathods (browser/server, locales, i18n).
+ * @file Context class: provides contextual mathods (browser/server, locales, i18n).
  * @author Luc BORIES
  * @license Apache-2.0
  */
@@ -108,6 +107,7 @@ export default class Context
     /**
      * Get an url to server the given image asset.
      * @param {string} arg_url - image asset relative url.
+     * @param {object} arg_request - request object.
      * @returns {string} absolute image asset url.
      */
 	get_url_with_credentials(arg_url, arg_request)
@@ -127,32 +127,28 @@ export default class Context
 			return arg_url
 		}
 		
+		// TODO: use security token
 		const url = arg_url + '?username=' + credentials.username + '&password=' + credentials.password
-		// const url = arg_url + '?username=demo&password=6c5ac7b4d3bd3311f033f971196cfa75'
 		
 		return url
 	}
     
     
-    /**
-     * ...
-     * @param {ostring} arg_url - url
-     * @returns {string} - partial URL
-     */
-	get_relative_url(arg_url)
-    {
-		return arg_url
-	}
+	// TODO:TO CLEAN OR IMPLEMENT
+	// get_relative_url(arg_url)
+    // {
+	// 	return arg_url
+	// }
     
     
-	get_absolute_url(arg_url)
-	{
-		return arg_url
-	}
+	// get_absolute_url(arg_url)
+	// {
+	// 	return arg_url
+	// }
 
 
-	get_absolute_plugin_url(arg_plugin)
-	{
-		return arg_plugin
-	}
+	// get_absolute_plugin_url(arg_plugin)
+	// {
+	// 	return arg_plugin
+	// }
 }

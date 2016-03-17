@@ -10,13 +10,15 @@ let context = 'common/executables/executable_route'
 
 
 /**
- * Route registering base class.
- * @abstract
+ * @file Route registering base class.
+ * @author Luc BORIES
+ * @license Apache-2.0
  */
 export default class ExecutableRoute extends Executable
 {
     /**
      * Create a ExecutableRoute instance.
+	 * @extends Executable
      * @abstract
      */
 	constructor()

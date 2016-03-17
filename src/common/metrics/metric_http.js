@@ -7,14 +7,18 @@ import Metric from '../base/metric'
 
 
 /**
- * Metric class for HTTP servers
+ * Metric class for HTTP servers.
+ * @author Luc BORIES
+ * @license Apache-2.0
  */
 export default class MetricHttp extends Metric
 {
     /**
-     * MetricHttp constructor
-     * {object}  Http request object (Request class instance)
-     * {object}  Http response object (Response class instance)
+     * MetricHttp constructor.
+	 * @extends Metric
+     * @param {object}  Http request object (Request class instance)
+     * @param {object}  Http response object (Response class instance)
+	 * @returns {nothing}
      */
 	constructor(arg_request, arg_response)
 	{

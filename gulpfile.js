@@ -1,31 +1,58 @@
 
-'use strict';
+'use strict'
 
-// var del = require('del');
+// var del = require('del')
 var gulp = require('gulp');
-var del = require('del');
-var sourcemaps = require('gulp-sourcemaps');
-var babel = require('gulp-babel');
-var concat = require('gulp-concat');
-var changed = require('gulp-changed');
-var browserSync = require('browser-sync').create();
-var runseq = require('run-sequence');
+var del = require('del')
+var sourcemaps = require('gulp-sourcemaps')
+var babel = require('gulp-babel')
+var concat = require('gulp-concat')
+var changed = require('gulp-changed')
+var browserSync = require('browser-sync').create()
+var runseq = require('run-sequence')
+var jsdoc = require('gulp-jsdoc3')
 
 
 
-var SRC_ALL_JS = 'src/**/*.js';
-var SRC_ALL_JSON = 'src/**/*.json';
-var SRC_APPS = 'src/apps/**/*.js';
-var SRC_BROWSER = 'src/browser/**/*.js';
-var SRC_COMMON  = 'src/common/**/*.js';
-var SRC_SERVER  = 'src/server/**/*.js';
+var SRC_ALL_JS = 'src/**/*.js'
+var SRC_ALL_JSON = 'src/**/*.json'
+var SRC_APPS = 'src/apps/**/*.js'
+// var SRC_BROWSER = 'src/browser/**/*.js'
+var SRC_COMMON  = 'src/common/**/*.js'
+var SRC_SERVER  = 'src/server/**/*.js'
 
-var DST = 'dist';
-var DST_APPS = 'dist/apps/**/*.js';
-var DST_BROWSER = 'dist/browser/**/*.js';
-var DST_COMMON  = 'dist/common/**/*.js';
-var DST_SERVER  = 'dist/server/**/*.js';
+var DST = 'dist'
+var DST_APPS = 'dist/apps'
+var DST_BROWSER = 'dist/browser'
+var DST_COMMON  = 'dist/common'
+var DST_SERVER  = 'dist/server'
+var DOCS_API  = 'docs/api/'
 
+
+const jsconfig = {
+	"tags": {
+		"allowUnknownTags": true
+	},
+	"source": {
+		"excludePattern": "(^|\\/|\\\\)_"
+	},
+	"opts": {
+		"destination": "./docs/api"
+	},
+	"plugins": [
+		"plugins/markdown"
+	],
+	"templates": {
+		"cleverLinks": false,
+		"monospaceLinks": false,
+		"outputSourceFiles": true,
+		"path": "ink-docstrap",
+		"theme": "cerulean",
+		"navType": "inline",
+		"linenums": true,
+		"dateFormat": "MMMM Do YYYY, h:mm:ss a"
+	}
+}
 
 
 /*
@@ -114,7 +141,7 @@ gulp.task('build_all_server', () => {
         )
         .pipe(sourcemaps.write('.'))
         .pipe(gulp.dest(DST));
-});
+})
 
 
 
@@ -143,7 +170,7 @@ gulp.task('build_bundle_common', () => {
         .pipe(sourcemaps.init())
         .pipe(sourcemaps.write('.'))
         .pipe(gulp.dest(DST));
-});
+})
 
 gulp.task('build_bundle_server', () => {
     return gulp.src(DST_SERVER)
@@ -153,6 +180,18 @@ gulp.task('build_bundle_server', () => {
         .pipe(gulp.dest(DST));
 });
 
+
+
+/*
+	GENERATE DOCS API
+*/
+gulp.task('docs_api',
+	function(cb)
+	{
+		gulp.src([SRC_COMMON, SRC_SERVER])
+			.pipe( jsdoc(jsconfig, cb) )
+	}
+)
 
 
 /*

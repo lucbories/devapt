@@ -12,13 +12,17 @@ let context = 'common/executables/executable_route_get_resources'
 
 
 /**
- * Get resource route registering class.
+ * @file Get resource route registering class.
  * @todo check resources accesses
+ * @author Luc BORIES
+ * @license Apache-2.0
  */
 export default class ExecutableRouteGetResources extends ExecutableRoute
 {
     /**
      * Create a ExecutableRouteGetResources instance.
+	 * @extends ExecutableRoute
+	 * @returns {nothing}
      */
 	constructor()
 	{

@@ -11,12 +11,16 @@ let context = 'common/executables/executable_route_middleware'
 
 
 /**
- * Middleware route registering class.
+ * @file Middleware route registering class.
+ * @author Luc BORIES
+ * @license Apache-2.0
  */
 export default class ExecutableRouteMiddleware extends ExecutableRoute
 {
     /**
-     *  Create a route middleware executable
+     * Create a route middleware executable
+	 * @extends ExecutableRoute
+	 * @returns {nothing}
      */
 	constructor()
 	{

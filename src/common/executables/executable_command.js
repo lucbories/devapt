@@ -7,7 +7,11 @@ import Executable from '../base/executable'
 let context = 'common/executables/executable_command'
 
 
-
+/**
+ *  @file todo Executable command class.
+ * @author Luc BORIES
+ * @license Apache-2.0
+ */
 export default class ExecutableCommand extends Executable
 {
 	constructor()

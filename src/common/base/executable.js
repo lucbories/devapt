@@ -8,8 +8,7 @@ let context = 'common/base/executable'
 
 
 /**
- * Executable base class.
- * @abstract
+ * @file Executable base class.
  * @author Luc BORIES
  * @license Apache-2.0
  */
@@ -17,6 +16,8 @@ export default class Executable extends Errorable
 {
     /**
      * Create an Executable base class.
+	 * @extends Errorable
+	 * @abstract
      * @param {string|undefined} arg_log_context - optional.
      * @returns {nothing}
      */

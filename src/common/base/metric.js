@@ -1,6 +1,6 @@
 
 /**
- * Metric base class
+ * @file Metric base class.
  * 
  * Attributes:
  *  is_metric:true (boolean, invariant)
@@ -11,11 +11,14 @@
  *  iteration
  *  get_values
  * 
+ * @author Luc BORIES
+ * @license Apache-2.0
  */
 export default class Metric
 {
     /**
-     * Metric constructor (base class for all metric classes)
+     * Metric constructor (base class for all metric classes).
+	 * @returns {nothing}
      */
 	constructor()
 	{
@@ -24,7 +27,8 @@ export default class Metric
 	
 	
 	/**
-     * Executed before request processing
+     * Executed before request processing.
+	 * @returns {nothing}
      */
 	before()
 	{
@@ -32,7 +36,8 @@ export default class Metric
 	
     
 	/**
-     * Executed at each request processing iteration
+     * Executed at each request processing iteration.
+	 * @returns {nothing}
      */
 	iteration()
 	{
@@ -40,7 +45,8 @@ export default class Metric
 	
     
 	/**
-     * Executed after request processing
+     * Executed after request processing.
+	 * @returns {nothing}
      */
 	after()
 	{
@@ -48,7 +54,8 @@ export default class Metric
 	
     
 	/**
-     * Returns metrics values plain object
+     * Returns metrics values plain object.
+	 * @returns {array}
      */
 	get_values()
 	{

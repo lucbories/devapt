@@ -2,10 +2,17 @@
 import Metric from '../base/metric'
 
 
+/**
+ * @file Host information metric class.
+ * @author Luc BORIES
+ * @license Apache-2.0
+ */
 export default class MetricHost extends Metric
 {
     /**
-     * MetricHost constructor
+     * MetricHost constructor.
+	 * @extends Metric
+	 * @returns {nothing}
      */
 	constructor()
 	{

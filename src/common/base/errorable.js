@@ -6,8 +6,20 @@ import Loggable from './loggable'
 let context = 'common/base/errorable'
 
 
+
+/**
+ * @file Base class to deal with errors.
+ * @author Luc BORIES
+ * @license Apache-2.0
+ */
 export default class Errorable extends Loggable
 {
+	/**
+	 * Create an Errorable instance.
+	 * @extends Loggable
+	 * @param {string} arg_log_context - trace context.
+	 * @returns {nothing}
+	 */
 	constructor(arg_log_context)
 	{
 		super(arg_log_context ? arg_log_context : context)
@@ -17,25 +29,43 @@ export default class Errorable extends Loggable
 	}
 	
 	
+	/**
+	 * Set an error.
+	 * @param {string} arg_msg - error message
+	 * @returns {nothing}
+	 */
 	error(arg_msg)
 	{
 		this.$has_error = true
 		this.$error_msg = arg_msg
 	}
 	
+	
+	/**
+	 * Test is an error is set.
+	 * @returns {boolean}
+	 */
 	has_error()
 	{
 		return this.$has_error
 	}
 	
+	
+	/**
+	 * Get error message.
+	 * @returns {string}
+	 */
 	get_error_msg()
 	{
 		return this.$error_msg
 	}
     
     
-    error_not_implemented()
-    {
-        this.error('should be implemented')
-    }
+	/**
+	 * Default helper for "not implemented" error.
+	 */
+	error_not_implemented()
+	{
+		this.error('should be implemented')
+	}
 }

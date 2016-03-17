@@ -2,10 +2,17 @@
 import Metric from '../base/metric'
 
 
+/**
+ * @file Duration metric class.
+ * @author Luc BORIES
+ * @license Apache-2.0
+ */
 export default class MetricDuration extends Metric
 {
     /**
-     * MetricDuration constructor
+     * MetricDuration constructor.
+	 * @extends Metric
+	 * @returns {nothing}
      */
 	constructor()
 	{

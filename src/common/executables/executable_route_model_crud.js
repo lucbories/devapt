@@ -11,12 +11,16 @@ let context = 'common/executables/executable_route_model_crud'
 
 
 /**
- * CRUD operations route registering class.
+ * @file CRUD operations route registering class.
+ * @author Luc BORIES
+ * @license Apache-2.0
  */
 export default class ExecutableRouteModelCrud extends ExecutableRoute
 {
     /**
-     *  Create a route registration executable for CRUD operations
+     * Create a route registration executable for CRUD operations
+	 * @extends ExecutableRoute
+	 * @returns {nothing}
      */
 	constructor()
 	{

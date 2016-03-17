@@ -10,8 +10,17 @@ const context = 'common/metrics/metric_hhtp_reducer'
 
 
 
+/**
+ * @file Reducer class for HTTP metrics collect.
+ * @author Luc BORIES
+ * @license Apache-2.0
+ */
 export default class MetricHttpReducer
 {
+	/**
+	 * Reducer for HTTP metric class.
+	 * @returns {nothing}
+	*/
 	constructor()
 	{
 	}

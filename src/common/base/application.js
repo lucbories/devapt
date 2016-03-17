@@ -2,7 +2,7 @@
 import T from 'typr'
 import assert from 'assert'
 
-import { store, config } from '../store/index'
+import { config } from '../store/index'
 
 import Instance from './instance'
 import Collection from './collection'
@@ -46,13 +46,17 @@ let context = 'common/base/application'
 */
 
 /**
- * Application class
+ * @file Application class.
+ * @author Luc BORIES
+ * @license Apache-2.0
  */
 export default class Application extends Instance
 {
     /**
-     * Application constructor
-     * {string} Application name
+     * Application constructor.
+	 * @extends Instance
+     * @param {string} arg_name - Application name
+	 * @returns {nothing}
      */
 	constructor(arg_name)
 	{
@@ -81,7 +85,8 @@ export default class Application extends Instance
 	
     
 	/**
-     * Load configuration and build application
+     * Load configuration and build application.
+	 * @returns {nothing}
      */
 	load()
 	{
@@ -188,8 +193,8 @@ export default class Application extends Instance
 	
 	
     /**
-     * Get all application models names
-     * return Array of String
+     * Get all application models names.
+     * @{returns} - Array of String
      */
 	get_models_names()
 	{
@@ -198,8 +203,8 @@ export default class Application extends Instance
 	
 	
     /**
-     * Get all application views names
-     * return Array of String
+     * Get all application views names.
+     * @{returns} - Array of String
      */
 	get_views_names()
 	{
@@ -208,8 +213,8 @@ export default class Application extends Instance
 	
 	
     /**
-     * Get all application menubars names
-     * return Array of String
+     * Get all application menubars names.
+     * @{returns} - Array of String
      */
 	get_menubars_names()
 	{
@@ -218,8 +223,8 @@ export default class Application extends Instance
 	
 	
     /**
-     * Get all application menus names
-     * return Array of String
+     * Get all application menus names.
+     * @{returns} - Array of String
      */
 	get_menus_names()
 	{
@@ -228,9 +233,9 @@ export default class Application extends Instance
 	
 	
     /**
-     * Get all application resources of given type names
-     * {string} Resource type
-     * return Array of String
+     * Get all application resources of given type names.
+     * @param {string} arg_type - Resource type
+     * @{returns} - Array of String
      */
 	get_resources_names(arg_type)
 	{

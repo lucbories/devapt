@@ -11,12 +11,16 @@ let context = 'common/executables/executable_route_assets'
 
 
 /**
- * Assets route registering class.
+ * @file Assets route registering class.
+ * @author Luc BORIES
+ * @license Apache-2.0
  */
 export default class ExecutableRouteAssets extends ExecutableRoute
 {
 	/**
 	 * Create an assets route registering executable.
+	 * @extends ExecutableRoute
+	 * @returns {nothing}
 	 */
 	constructor()
 	{

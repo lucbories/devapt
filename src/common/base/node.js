@@ -1,18 +1,15 @@
 
 import T from 'typr'
 import assert from 'assert'
-import { Map as IMap, fromJS } from 'immutable'
-
-import { store, config, runtime } from '../store/index'
+import { fromJS } from 'immutable'
 
 import BusServerInstance from './bus_server_instance'
-import Server from './server'
 import { ServerTypes } from './server'
 import Collection from './collection'
 import RestifyServer from '../servers/restify_server'
 import ExpressServer from '../servers/express_server'
-import VantageServer from '../servers/vantage_server'
-import BusServer from '../servers/bus_server'
+// import VantageServer from '../servers/vantage_server'
+// import BusServer from '../servers/bus_server'
 import MetricsServer from '../servers/metrics_server'
 
 
@@ -31,8 +28,20 @@ const STATE_UNREGISTERING = 'NODE_IS_UNREGISTERING_TO_MASTER'
 
 
 
+/**
+ * @file Node class: node is an item of a topology and manages a set of servers.
+ * @author Luc BORIES
+ * @license Apache-2.0
+ */
 export default class Node extends BusServerInstance
 {
+	/**
+	 * Create a Node instance.
+	 * @extends BusServerInstance
+	 * @param {string} arg_name - resource name.
+	 * @param {object} arg_settings - resource settings.
+	 * @returns {nothing}
+	 */
 	constructor(arg_name, arg_settings)
 	{
 		assert( T.isObject(arg_settings), context + ':bad settings object')
@@ -49,6 +58,10 @@ export default class Node extends BusServerInstance
 	}
 	
 	
+	/**
+	 * Load Node settings.
+	 * @returns {nothing}
+	 */
 	load()
 	{
 		this.enter_group('load()')
@@ -66,8 +79,8 @@ export default class Node extends BusServerInstance
 			
 			this.init_bus_server(host, port)
 			this.bus_server.node = this
-            
-            this.init_metrics_server(host, port)
+			
+			this.init_metrics_server(host, port)
 		}
 		
 		// CONNECT TO MASTER MESSAGE BUS
@@ -82,6 +95,11 @@ export default class Node extends BusServerInstance
 	}
 	
 	
+	/**
+	 * Switch Node state.
+	 * @param {string} arg_state - target state.
+	 * @returns {nothing}
+	 */
 	switch_state(arg_state)
 	{
 		this.state = arg_state
@@ -89,51 +107,74 @@ export default class Node extends BusServerInstance
 	}
 	
     
-    init_metrics_server(arg_host, arg_port)
-    {
-        const metrics_settings = {
-            "protocole":"bus",
-            "host":arg_host,
-            "port":arg_port,
-            "type":"metrics"
-        }
-        this.metrics_server = new MetricsServer('metrics_server', fromJS(metrics_settings) )
-        this.metrics_server.load()
-        this.metrics_server.node = this
-        this.metrics_server.init_bus_client(arg_host, arg_port)
-    }
-    
-    get_metrics_server()
-    {
-        return this.metrics_server
-    }
-    
+	/**
+	 * Init node metrics server.
+	 * @param {string} arg_host - metrics server host.
+	 * @param {string} arg_port - metrics server port.
+	 * @returns {nothing}
+	 */
+	init_metrics_server(arg_host, arg_port)
+	{
+		const metrics_settings = {
+			'protocole':'bus',
+			'host':arg_host,
+			'port':arg_port,
+			'type':'metrics'
+		}
+		this.metrics_server = new MetricsServer('metrics_server', fromJS(metrics_settings) )
+		this.metrics_server.load()
+		this.metrics_server.node = this
+		this.metrics_server.init_bus_client(arg_host, arg_port)
+	}
 	
+	
+	/**
+	 * Get metrics server instance.
+	 * @returns {Server} - Metrics server.
+	 */
+	get_metrics_server()
+	{
+		return this.metrics_server
+	}
+	
+	
+	/**
+	 * Send a message to master node through a bus.
+	 * @param {object} arg_payload - content of the message to send.
+	 * @returns {nothing}
+	 */
 	send_msg_to_master(arg_payload)
 	{
 		this.send_msg(this.master_name, arg_payload)
 		console.log('send a msg to master [%s]', this.master_name, arg_payload)
 	}
+
 	
-	
-	// REGISTER NODE TO MASTER
+	/**
+	 * Register this node to master node.
+	 * @returns {nothing}
+	 */
 	register_to_master()
 	{
 		console.log('send a msg to master')
 		this.switch_state(STATE_REGISTERING)
 		
 		const msg_payload = {
-			"action":"NODE_ACTION_REGISTERING",
-			"node":this.get_settings().toJS()
+			'action':'NODE_ACTION_REGISTERING',
+			'node':this.get_settings().toJS()
 		}
 		
-        this.send_msg_to_master(msg_payload)
+		this.send_msg_to_master(msg_payload)
 		
 		this.switch_state(STATE_WAITING)
 	}
 	
 	
-	// NODE IS LOADING ITS SETTINGS
+	/**
+	 * Load settings on master node.
+	 * @param {object} arg_settings - master node settings.
+	 * @returns {nothing}
+	 */
 	load_master_settings(arg_settings)
 	{
 		this.enter_group('loading_master_settings')
@@ -155,7 +196,10 @@ export default class Node extends BusServerInstance
 	}
 	
 	
-	// NODE IS STARTING
+	/**
+	 * Starts node servers.
+	 * @returns {nothing}
+	 */
 	start()
 	{
 		this.enter_group('start')
@@ -180,7 +224,10 @@ export default class Node extends BusServerInstance
 	}
 	
 	
-	// NODE IS STOPPING
+	/**
+	 * Stops node servers.
+	 * @returns {nothing}
+	 */
 	stop()
 	{
 		this.enter_group('stop')
@@ -205,47 +252,59 @@ export default class Node extends BusServerInstance
 	}
 	
 	
-	// REGISTER NODE TO MASTER
+	/**
+	 * Unegister this node from master node. (TODO)
+	 * @returns {nothing}
+	 */
 	unregister_to_master()
 	{
 		this.switch_state(STATE_UNREGISTERING)
 		
-		if (this.is_master)
-		{
+		// if (this.is_master)
+		// {
 			
-		} else{
+		// } else{
 			
-		}
+		// }
 		
 		this.switch_state(STATE_CREATED)
 	}
 	
 	
-	// MASTER METHODS
+	/**
+	 * Find master node. (TODO)
+	 * @returns {Node} - master node instance.
+	 */
 	find_master()
 	{
 		
 	}
 	
 	
+	/**
+	 * Promote this node to master node.
+	 * @returns {Promise} - Promise of boolean: success or failure
+	 */
 	promote_master()
 	{
 		
 	}
 	
 	
+	/**
+	 * Revoke this node from master node.
+	 * @returns {Promise} - Promise of boolean: success or failure
+	 */
 	revoke_master()
 	{
 		
 	}
 	
 	
-	get_assets_file(arg_file_name)
-	{
-		return new Promise()
-	}
-	
-	
+	/**
+	 * Load node servers from master node settings.
+	 * @returns {nothing}
+	 */
 	load_servers()
 	{
 		this.enter_group('load_servers')
@@ -279,6 +338,13 @@ export default class Node extends BusServerInstance
 	}
 	
 	
+	/**
+	 * Create a server instance on this node.
+	 * @param {string} arg_type - server type string
+	 * @param {string} arg_name - server name string
+	 * @param {object} arg_settings - server settings object
+	 * @returns {Server} - a new Server instance
+	 */
 	create_server(arg_type, arg_name, arg_settings)
 	{
 		// BUILD SERVER

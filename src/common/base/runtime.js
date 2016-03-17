@@ -45,15 +45,17 @@ const default_settings = {
 
 
 /**
- * Runtime class - main library interface.
+ * @file Runtime class - main library interface.
  * @author Luc BORIES
  * @license Apache-2.0
  */
 class Runtime extends Settingsable
 {
-    /**
-     * Create a Runtime instance
-     */
+	/**
+	 * Create a Runtime instance.
+	 * @extends Settingsable
+	 * @returns {nothing}
+	 */
 	constructor()
 	{
 		super( fromJS( default_settings ), context)
@@ -66,7 +68,7 @@ class Runtime extends Settingsable
 		this.node = null
 		
 		this.context = new Context(this)
-        
+		
 		this.nodes = new Collection()
 		this.servers = new Collection()
 		this.services = new Collection()
@@ -80,16 +82,16 @@ class Runtime extends Settingsable
 		this.applications = new Collection()
 		
 		this.security = new Security()
-        
+		
 		this.info('Runtime is created')
 	}
 	
-    
+	
 	/**
-     * Load runtime settings.
-     * @param {object} arg_settings - runtime settings
-     * @returns {object} promise
-     */
+	 * Load runtime settings.
+	 * @param {object} arg_settings - runtime settings
+	 * @returns {object} promise
+	 */
 	load(arg_settings)
 	{
 		this.separate_level_1()
@@ -115,6 +117,15 @@ class Runtime extends Settingsable
 	}
 	
 	
+	/**
+	 * Register a running service.
+	 * @param {string} arg_node_name - node name
+	 * @param {string} arg_svc_name - service name
+	 * @param {string} arg_server_name - server name
+	 * @param {string} arg_server_host - server host name
+	 * @param {string|number} arg_server_port - server host port
+	 * @returns {nothing}
+	 */
 	register_service(arg_node_name, arg_svc_name, arg_server_name, arg_server_host, arg_server_port)
 	{
 		this.enter_group('register_service')
@@ -135,9 +146,9 @@ class Runtime extends Settingsable
 		this.leave_group('register_service')
 	}
 	
-	
-	watch_files()
-	{
+	// TODO: TO CLEAN
+	// watch_files()
+	// {
 		/*let self = this
 		const dir_to_watch = path.join(base_idr, '../../apps/private/devtools/lib/')
 		fs.watch(dir_to_watch,
@@ -151,7 +162,7 @@ class Runtime extends Settingsable
 				require(file_path_name)
 			}
 		)*/
-	}
+	// }
 }
 
 

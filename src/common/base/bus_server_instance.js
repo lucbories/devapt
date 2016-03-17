@@ -3,7 +3,6 @@ import T from 'typr'
 import assert from 'assert'
 import { Map as IMap } from 'immutable'
 
-// import { store, config, runtime } from '../store/index'
 import BusClientInstance from './bus_client_instance'
 
 
@@ -12,8 +11,24 @@ let context = 'common/base/bus_server_instance'
 
 
 
+/**
+ * @file Base class for message bus server instances.
+ * 
+ * @author Luc BORIES
+ * @license Apache-2.0
+ */
 export default class BusServerInstance extends BusClientInstance
 {
+	/**
+	 * Create a bus server instance.
+	 * @extends BusClientInstance
+	 * @param {string} arg_collection - collection name.
+	 * @param {string} arg_class - class name.
+	 * @param {string} arg_name - instance name.
+	 * @param {object} arg_settings - settings plain object
+	 * @param {string} arg_context - log context.
+	 * @returns {nothing}
+	 */
 	constructor(arg_collection, arg_class, arg_name, arg_settings, arg_context)
 	{
 		assert( T.isObject(arg_settings), context + ':bad settings object')
@@ -24,6 +39,12 @@ export default class BusServerInstance extends BusClientInstance
 	}
 	
 	
+	/**
+	 * Initialize bus server.
+	 * @param {string} arg_host - bus server host.
+	 * @param {string} arg_port - bus server port.
+	 * @returns {nothing}
+	 */
 	init_bus_server(arg_host, arg_port)
 	{
 		this.enter_group('init_bus_server')
@@ -33,17 +54,17 @@ export default class BusServerInstance extends BusClientInstance
 
 		const self = this
 		const node_server_cfg = {
-			"type":"bus",
-			"host":arg_host,
-			"port":arg_port,
-			"protocole":"msg",
-			"middlewares":[]
+			'type':'bus',
+			'host':arg_host,
+			'port':arg_port,
+			'protocole':'msg',
+			'middlewares':[]
 		}
 		
 		this.bus_server = new BusServer(this.get_name() + '_bus_server', new IMap(node_server_cfg) )
 		this.bus_server.load()
 		this.bus_server.enable()
-		this.bus_server.bus.subscribe( { "target": this.get_name() },
+		this.bus_server.bus.subscribe( { 'target': this.get_name() },
 			function(arg_msg)
 			{
 				assert( T.isObject(arg_msg) && T.isObject(arg_msg.payload), context + ':subscribe:bad payload object')

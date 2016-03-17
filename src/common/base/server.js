@@ -18,12 +18,24 @@ export const ServerTypes = {
 }
 
 
-
+/**
+ * @file Server base class.
+ * @author Luc BORIES
+ * @license Apache-2.0
+ */
 export default class Server extends BusClientInstance
 {
-	constructor(arg_name, arg_settings, arg_context)
+	/**
+	 * Create a server instance.
+	 * @extends BusClientInstance
+	 * @param {string} arg_name - plugin name
+	 * @param {object} arg_settings - plugin settings map
+	 * @param {string} arg_log_context - trace context string.
+	 * @returns {nothing}
+	 */
+	constructor(arg_name, arg_settings, arg_log_context)
 	{
-		super('servers', 'Server', arg_name, arg_settings, arg_context ? arg_context : context)
+		super('servers', 'Server', arg_name, arg_settings, arg_log_context ? arg_log_context : context)
 		
 		this.is_server = true
 		this.is_build = false
@@ -38,6 +50,10 @@ export default class Server extends BusClientInstance
 	}
 	
 	
+	/**
+	 * Load server settings.
+	 * @returns {nothing}
+	 */
 	load()
 	{
 		this.enter_group('load')
@@ -91,6 +107,10 @@ export default class Server extends BusClientInstance
 	}
 	
 	
+	/**
+	 * Enable server (start it).
+	 * @returns {nothing}
+	 */
 	enable()
 	{
 		const name = this.$name
@@ -113,13 +133,17 @@ export default class Server extends BusClientInstance
 				{
 					// let host = listener.address().address;
 					// let port = listener.address().port;
-					console.info('%s listening at %s : %s', name, host, port);
+					console.info('%s listening at %s : %s', name, host, port)
 				}
 			)
 		}
 	}
 	
 	
+	/**
+	 * Disable server (stop it).
+	 * @returns {nothing}
+	 */
 	disable()
 	{
 		
