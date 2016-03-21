@@ -85,12 +85,12 @@ export default class Collection
 	/**
 	 * Default iterator operator.
 	 */
-	* [Symbol.iterator]() {
-		for (let item of this.$items)
-		{
-			yield item
-		}
-	}
+	// * [Symbol.iterator]() {
+	// 	for (let item of this.$items)
+	// 	{
+	// 		yield item
+	// 	}
+	// }
 	
 	
 	/**

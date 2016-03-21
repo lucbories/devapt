@@ -131,7 +131,7 @@ export default class Application extends Instance
 				this.modules.add(module_obj)
 				
 				// LOOP ON MODULE RESOURCES
-				for(let res_obj of module_obj.resources)
+				for(let res_obj of module_obj.resources.get_all() )
 				{
 					this.resources.add(res_obj)
 				}

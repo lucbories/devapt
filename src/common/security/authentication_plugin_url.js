@@ -24,9 +24,9 @@ export default class AuthenticationPluginURL extends AuthenticationPlugin
 	 * @param {string|undefined} arg_log_context - optional.
 	 * @returns {nothing}
 	 */
-	constructor(arg_log_context)
+	constructor(arg_name, arg_log_context)
 	{
-		super(arg_log_context ? arg_log_context : context)
+		super(arg_name, arg_log_context ? arg_log_context : context)
 		
 		this.is_authentication_url = true
 	}

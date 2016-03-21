@@ -19,133 +19,133 @@ let context = 'common/security/authentication_plugin'
  */
 export default class AuthenticationPlugin extends Plugin
 {
-    /**
-     * Create an Authentication base class.
-     * @param {string|undefined} arg_log_context - optional.
-     * @returns {nothing}
-     */
-	constructor(arg_log_context)
+	/**
+	 * Create an Authentication base class.
+	 * @param {string|undefined} arg_log_context - optional.
+	 * @returns {nothing}
+	 */
+	constructor(arg_name, arg_log_context)
 	{
-		super(arg_log_context ? arg_log_context : context)
+		super(arg_name, undefined, arg_log_context ? arg_log_context : context)
 		
 		this.is_authentication = true
 	}
 	
-    
+	
 	/**
-     * Enable authentication plugin with contextual informations.
-     * @abstract
-     * @param {object|undefined} arg_settings - optional contextual settings.
-     * @returns {object} - a promise object of a boolean result (success:true, failure:false)
-     */
+	 * Enable authentication plugin with contextual informations.
+	 * @abstract
+	 * @param {object|undefined} arg_settings - optional contextual settings.
+	 * @returns {object} - a promise object of a boolean result (success:true, failure:false)
+	 */
 	enable(arg_settings)
 	{
-        this.info('enable')
-        
-        const resolved_promise = super.enable(arg_settings)
-        return resolved_promise
+		this.info('enable')
+		
+		const resolved_promise = super.enable(arg_settings)
+		return resolved_promise
 	}
 	
-    
+	
 	/**
-     * Disable authentication plugin with contextual informations.
-     * @abstract
-     * @param {object|undefined} arg_settings - optional contextual settings.
-     * @returns {object} - a promise object of a boolean result (success:true, failure:false)
-     */
+	 * Disable authentication plugin with contextual informations.
+	 * @abstract
+	 * @param {object|undefined} arg_settings - optional contextual settings.
+	 * @returns {object} - a promise object of a boolean result (success:true, failure:false)
+	 */
 	disable(arg_settings)
 	{
-        this.info('disable')
-        
-        const resolved_promise = super.disable(arg_settings)
-        return resolved_promise
+		this.info('disable')
+		
+		const resolved_promise = super.disable(arg_settings)
+		return resolved_promise
 	}
-    
-    
-    /**
-     * Apply authentication plugin io given server. Use a middleware.
-     * @abstract
-     * @param {object} arg_server - Runtime server (Express/Restify server for example)
-     * @returns {nothing}
-     */
-    apply_on_server(arg_server)
-    {
-    }
-    
-    
-    /**
-     * Get a authentication middleware to use on servers (see Connect/Express middleware signature).
-     * @returns {function} - function(request,response,next){...}
-     */
-    create_middleware()
-    {
-        return undefined
-    }
-    
-    
-    /**
-     * Authenticate a user with request credentials.
-     * @abstract
-     * @param {object|undefined} arg_credentials - request credentials object
-     * @returns {object} - a promise of boolean
-     */
-    authenticate(arg_credentials)
-    {
-        return Promise.resolve(false)
-    }
-    
 	
-    /**
-     * Login current request (alias of authenticate).
-     * @abstract
-     * @returns {object} - a promise of boolean
-     */
+	
+	/**
+	 * Apply authentication plugin io given server. Use a middleware.
+	 * @abstract
+	 * @param {object} arg_server - Runtime server (Express/Restify server for example)
+	 * @returns {nothing}
+	 */
+	apply_on_server(arg_server)
+	{
+	}
+	
+	
+	/**
+	 * Get a authentication middleware to use on servers (see Connect/Express middleware signature).
+	 * @returns {function} - function(request,response,next){...}
+	 */
+	create_middleware()
+	{
+		return undefined
+	}
+	
+	
+	/**
+	 * Authenticate a user with request credentials.
+	 * @abstract
+	 * @param {object|undefined} arg_credentials - request credentials object
+	 * @returns {object} - a promise of boolean
+	 */
+	authenticate(arg_credentials)
+	{
+		return Promise.resolve(false)
+	}
+	
+	
+	/**
+	 * Login current request (alias of authenticate).
+	 * @abstract
+	 * @returns {object} - a promise of boolean
+	 */
 	login()
 	{
-        return Promise.resolve(false)
+		return Promise.resolve(false)
 	}
 	
-    
-    /**
-     * Logout current authenticated user.
-     * @abstract
-     * @returns {object} - a promise of boolean
-     */
+	
+	/**
+	 * Logout current authenticated user.
+	 * @abstract
+	 * @returns {object} - a promise of boolean
+	 */
 	logout()
 	{
-        return Promise.resolve(false)
+		return Promise.resolve(false)
 	}
 	
-    
-    /**
-     * Get credentials token of authenticated user.
-     * @abstract
-     * @returns {string} - credentials token
-     */
+	
+	/**
+	 * Get credentials token of authenticated user.
+	 * @abstract
+	 * @returns {string} - credentials token
+	 */
 	get_token()
 	{
-        return null
+		return null
 	}
 	
-    
-    /**
-     * Create a new credentials token for authenticated user.
-     * @abstract
-     * @returns {string} - credentials token
-     */
+	
+	/**
+	 * Create a new credentials token for authenticated user.
+	 * @abstract
+	 * @returns {string} - credentials token
+	 */
 	renew_token()
 	{
-        return null
+		return null
 	}
 	
-    
-    /**
-     * Check a credentials token.
-     * @abstract
-     * @returns {boolean} - request token is valid
-     */
+	
+	/**
+	 * Check a credentials token.
+	 * @abstract
+	 * @returns {boolean} - request token is valid
+	 */
 	check_token()
 	{
-        return false
+		return false
 	}
 }

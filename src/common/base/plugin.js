@@ -21,13 +21,14 @@ export default class Plugin extends Instance
 	 * @extends Instance
 	 * @param {string} arg_name - plugin name
 	 * @param {object} arg_settings - plugin settings map
+	 * @param {string|undefined} arg_log_context - optional.
 	 * @returns {nothing}
 	 */
-	constructor(arg_name, arg_settings)
+	constructor(arg_name, arg_settings, arg_log_context)
 	{
 		// assert( T.isObject(arg_settings), context + ':bad settings object')
 		
-		super('plugins', 'Plugin', arg_name, arg_settings)
+		super('plugins', 'Plugin', arg_name, arg_settings, arg_log_context)
 		
 		this.is_plugin = true
 		this.$is_enabled = false

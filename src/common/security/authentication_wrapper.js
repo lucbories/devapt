@@ -1,30 +1,25 @@
 
 import T from 'typr'
 import assert from 'assert'
-import forge from 'node-forge'
 
-import PluginsManager from '../base/plugins_manager'
-
-// import AuthenticationPluginPassportLocalDb from './authentication_plugin_passport_local_db'
-// import AuthenticationPluginPassportLocalFile from './authentication_plugin_passport_local_file'
-import AuthenticationPluginURL from './authentication_plugin_url'
+import Settingsable from '../base/settingsable'
+import runtime from '../base/runtime'
 
 
-let context = 'common/security/authentication_manager'
+let context = 'common/security/authentication_wrapper'
 
 
 
 /**
- * Authentication class to manage authentication plugins.
+ * @file Authentication wrapper class to interact with authentication plugins.
  * @author Luc BORIES
  * @license Apache-2.0
  */
-export default class AuthenticationManager extends PluginsManager
+export default class AuthenticationWrapper extends Settingsable
 {
 	/**
-	 * Create an Authentication manager class: load and create all authentication plugins.
-	 * AuthenticationWrapper use created plugins.
-	 * @extends PluginsManager
+	 * Create an Authentication wrapper class to interact with authentication plugins.
+	 * @extends Settingsable
 	 * @param {string|undefined} arg_log_context - optional.
 	 * @returns {nothing}
 	 */
@@ -32,10 +27,9 @@ export default class AuthenticationManager extends PluginsManager
 	{
 		super(arg_log_context ? arg_log_context : context)
 		
-		this.is_authentication_manager = true
-		
+		this.is_authentication_wrapper = true
 		this.authentication_is_enabled = true
-		this.authentication_mode = null
+		this.authentication_plugins = []
 	}
 	
 	
@@ -46,100 +40,162 @@ export default class AuthenticationManager extends PluginsManager
 	 */
 	load(arg_settings)
 	{
-		assert(T.isObject(arg_settings), context + ':load:bad settings object')
-		assert(T.isFunction(arg_settings.has), context + ':load:bad settings immutable')
-		assert(arg_settings.has('enabled'), context + ':load:bad settings.enabled')
-		assert(arg_settings.has('plugins'), context + ':load:bad settings.plugins')
-		assert(arg_settings.has('default_plugins'), context + ':load:bad settings.default_plugins')
+		const self = this
+		assert(T.isObject(arg_settings), context + ':bad settings object')
+		assert(T.isFunction(arg_settings.has), context + ':bad settings immutable')
+		assert(arg_settings.has('enabled'), context + ':bad settings.enabled')
+		assert(arg_settings.has('plugins'), context + ':bad settings.plugins')
+		
+		const auth_mgr = runtime.security.get_authentication_manager()
+		
 		
 		// LOAD AUTHENTICATION SETTINGS
 		this.authentication_is_enabled = arg_settings.get('enabled')
-		this.authentication_plugins = arg_settings.get('plugins')
-		this.authentication_default_plugins = arg_settings.get('default_plugins')
+		this.authentication_plugins = []
+		const plugins = arg_settings.get('plugins').toArray()
 		
-		// LOAD PLUGINS
-		const keys = this.authentication_plugins.toMap().keySeq().toArray()
-		keys.forEach(
-			(key) => {
-				const plugin_cfg = this.authentication_plugins.get(key)
-				plugin_cfg.name = key
-				const result = this.load_plugin(plugin_cfg)
-				if (! result)
+		// SEARCH PLUGINS
+		plugins.forEach(
+			(plugin_name) => {
+				const plugin = auth_mgr.registered_plugins.find_by_name(plugin_name)
+				if ( T.isObject(plugin) && plugin.is_authentication_plugin )
 				{
-					this.error_bad_plugin(this.authentication_mode)
+					self.authentication_plugins.push(plugin)
+					return
 				}
+				self.info('bad plugin name [' + plugin_name + ']')
 			}
 		)
-		
-		
-		// TODO: default security plugin ?
-		// TODO: alt plugin settings ?
 	}
 	
 	
 	/**
-	 * Load security plugin from settings
-	 * @param {object} arg_settings - authentication settings (Immutable object)
-	 * @returns {boolean}
+	 * Get a authentication middleware to use on servers (see Connect/Express middleware signature).
+	 * @returns {function} - function(request,response,next){...}
 	 */
-	load_plugin(arg_settings)
+	create_middleware()
 	{
 		const self = this
+		const plugins = this.authentication_plugins
 		
-		assert( T.isObject(arg_settings), context + ':load_plugin:bad settings object')
-		assert( T.isFunction(arg_settings.has), context + ':load_plugin:bad settings immutable')
-		assert( arg_settings.has('mode'), context + ':load_plugin:bad settings.mode')
-		assert( T.isString(arg_settings.name) && arg_settings.name.length > 0, context + ':load_plugin:bad settings.name')
-		
-		// console.log(arg_settings.name, context + ':load_plugin:arg_settings.name')
-		
-		// LOAD PLUGIN
-		const mode = arg_settings.get('mode').toLocaleLowerCase()
-		switch(mode)
-		{
-			case 'database':
-			// {
-			//	 const plugin = new AuthenticationPluginPassportLocalDb(context)
-			//	 this.register_plugin(plugin)
-			//	 plugin.enable(arg_settings)
-			//	 return true
-			// }
-			case 'jsonfile':
-			// {
-			//	 const plugin = new AuthenticationPluginPassportLocalFile(context)
-			//	 this.register_plugin(plugin)
-			//	 plugin.enable(arg_settings)
-			//	 return true
-			// }
-			// default:
+		const get_mw = (plugin) => {
+			if ( T.isFunction(plugin.create_middleware) )
 			{
-				const plugin = new AuthenticationPluginURL(arg_settings.name, context)
-				// self.info(context + ':load_plugin:create plugin for mode [' + mode + '] for name [' + plugin.get_name() + ']')
-				
-				this.register_plugin(plugin)
-				.then(
-					(result) => {
-						if (result)
-						{
-							plugin.enable(arg_settings)
-							self.info(context + ':load_plugin:success for mode [' + mode + '] for name [' + plugin.get_name() + ']')
-						}
-						else
-						{
-							self.error(context + ':load_plugin:failure for mode [' + mode + '] for name [' + plugin.get_name() + ']')
-						}
-					}
-				)
-				.catch(
-					(reason) => {
-						self.error(context + ':load_plugin:failure for mode [' + mode + '] for name [' + plugin.get_name() + ']:' + reason)
-					}
-				)
-				return true
+				return plugin.create_middleware()
 			}
-			case 'token': return true // TODO: plugin auth token
+			
+			return (req, res, next) => {
+				next('no middleware found for plugin [' + plugin.get_name() + ']')
+			}
 		}
 		
+		// ONE PLUGIN FOUND
+		if ( T.isArray(plugins) && plugins.length == 1)
+		{
+			const plugin = plugins[0]
+			return get_mw(plugin)
+		}
+		
+		// MANY PLUGINS FOUND
+		if ( T.isArray(plugins) && plugins.length > 1)
+		{
+			let index = 0
+			const plugins_count = plugins.length
+			
+			const next_plugin = (arg_next, arg_plugins, arg_index) => {
+				if (arg_index + 1 == plugins_count)
+				{
+					arg_next()
+					return
+				}
+				
+				const plugin = arg_plugins[arg_index]
+				const mw = get_mw(plugin)
+				if (mw)
+				{
+					return (req, res, next) => {
+						mw(req, res, next_plugin(next, arg_plugins, index + 1))
+					}
+				}
+				
+				arg_next()
+			}
+			
+			return (req, res, next) => {
+				return next_plugin(next, plugins, 0)
+			}
+		}
+		
+		// NO PLUGINS FOUND
+		return (req, res, next) => {
+			self.error(context + '.create_middleware:empty plugins')
+			next()
+		}
+	}
+	
+	
+	/**
+	 * Authenticate a user with request credentials.
+	 * @param {object|undefined} arg_credentials - request credentials object
+	 * @returns {object} - a promise of boolean
+	 */
+	authenticate(/*arg_credentials*/)
+	{
+		return Promise.resolve(false)
+	}
+	
+	
+	/**
+	 * Login current request (alias of authenticate).
+	 * @abstract
+	 * @returns {object} - a promise of boolean
+	 */
+	login()
+	{
+		return Promise.resolve(false)
+	}
+	
+	
+	/**
+	 * Logout current authenticated user.
+	 * @abstract
+	 * @returns {object} - a promise of boolean
+	 */
+	logout()
+	{
+		return Promise.resolve(false)
+	}
+	
+	
+	/**
+	 * Get credentials token of authenticated user.
+	 * @abstract
+	 * @returns {string} - credentials token
+	 */
+	get_token()
+	{
+		return null
+	}
+	
+	
+	/**
+	 * Create a new credentials token for authenticated user.
+	 * @abstract
+	 * @returns {string} - credentials token
+	 */
+	renew_token()
+	{
+		return null
+	}
+	
+	
+	/**
+	 * Check a credentials token.
+	 * @abstract
+	 * @returns {boolean} - request token is valid
+	 */
+	check_token()
+	{
 		return false
 	}
 	
@@ -250,11 +306,11 @@ export default class AuthenticationManager extends PluginsManager
 	 */
 	get_credentials(arg_request)
 	{
-		// console.log(arg_request.url, 'arg_request.url')
-		// console.log(arg_request.queries, 'arg_request.queries')
+		console.log(arg_request.url, 'arg_request.url')
+		console.log(arg_request.queries, 'arg_request.queries')
 		// console.log(arg_request.password, 'arg_request')
-		// console.log(arg_request.query(), 'arg_request.query')
-		// console.log(arg_request.params, 'arg_request.params')
+		console.log(arg_request.query(), 'arg_request.query')
+		console.log(arg_request.params, 'arg_request.params')
 		
 		let credentials = { 'username':null, 'password':null }
 		let query_str = null

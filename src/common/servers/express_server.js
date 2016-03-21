@@ -50,13 +50,11 @@ export default class ExpressServer extends Server
 		
 		
 		// USE AUTHENTICATION MIDDLEWARE
-		// runtime.security.get_authentication_manager().apply_on_server(this)
-		this.server.use( runtime.security.get_authentication_manager().create_middleware(this) )
-		// this.server.use( runtime.security.get_authentication_manager().create_auth_middleware(this) )
+		this.server.use( this.authentication.create_middleware() )
 		
 		
 		// TODO: USE AUTHORIZATION MIDDLEWARE
-		// AuthorizationManager.apply_on_server(this)
+		// this.server.use( this.authorization.create_middleware() )
 		
 		
 		// DEFAULT VIEW ENGINE

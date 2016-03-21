@@ -57,6 +57,7 @@ export default class Instance extends Settingsable
         // INSTANCE ATTRIBUTES
 		this.is_loaded = false
 		this.$id = my_uid
+		this.$name = arg_name
 		this.$type = arg_collection
 		this.$class = arg_class
 		this.$weight = 1

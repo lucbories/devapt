@@ -1,9 +1,9 @@
-import T from 'typr'
+// import T from 'typr'
 
-import { store, config, runtime } from './store';
+import { store, config/*, runtime*/ } from './store'
 
 import { dispatch_store_config_update_value, dispatch_store_config_remove_value } from './config/actions'
-import { dispatch_store_runtime_update_value, dispatch_store_runtime_remove_value } from './runtime/actions'
+// import { dispatch_store_runtime_update_value, dispatch_store_runtime_remove_value } from './runtime/actions'
 
 
 

@@ -80,25 +80,25 @@ export default class Page extends Component
 			
 			if (child_headers && child_headers.length > 0)
 			{
-				this.$settings.headers = Array.concat(this.$settings.headers, child_headers)
+				this.$settings.headers = this.$settings.headers.concat(child_headers)
 			}
 			
 			if (child_styles && child_styles.length > 0)
 			{
-				this.$settings.styles = Array.concat(this.$settings.styles, child_styles)
+				this.$settings.styles = this.$settings.styles.concat(child_styles)
 			}
 			if (child_styles_urls && child_styles_urls.length > 0)
 			{
-				this.$settings.styles_urls = Array.concat(this.$settings.styles_urls, child_styles_urls)
+				this.$settings.styles_urls = this.$settings.styles_urls.concat(child_styles_urls)
 			}
 			
 			if (child_scripts && child_scripts.length > 0)
 			{
-				this.$settings.scripts = Array.concat(this.$settings.scripts, child_scripts)
+				this.$settings.scripts = this.$settings.scripts.concat(child_scripts)
 			}
 			if (child_scripts_urls && child_scripts_urls.length > 0)
 			{
-				this.$settings.scripts_urls = Array.concat(this.$settings.scripts_urls, child_scripts_urls)
+				this.$settings.scripts_urls = this.$settings.scripts_urls.concat(child_scripts_urls)
 			}
 		}
 		

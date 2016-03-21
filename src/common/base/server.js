@@ -7,9 +7,12 @@ import { config } from '../store/index'
 import Collection from './collection'
 import BusClientInstance from './bus_client_instance'
 
+import AuthenticationWrapper from '../security/authentication_wrapper'
+// import AuthorizationWrapper from '../security/authorization_wrapper'
 
 
-let context = 'common/base/server'
+
+const context = 'common/base/server'
 
 export const ServerTypes = {
 	SERVER_TYPE_EXPRESS : 'express',
@@ -47,6 +50,9 @@ export default class Server extends BusClientInstance
 		
 		this.services_without_security = new Collection()
 		this.services_with_security = new Collection()
+		
+		this.authentication = new AuthenticationWrapper(arg_log_context ? arg_log_context : context)
+		// this.authorization = new AuthorizationWrapper(arg_log_context ? arg_log_context : context)
 	}
 	
 	
@@ -94,9 +100,21 @@ export default class Server extends BusClientInstance
 		}
 		assert( T.isString(this.server_type), context + ':bad server type string')
 		
+		// AUTHENTICATION
+		if ( cfg.hasIn(['security', 'authentication']) )
+		{
+			const auth_cfg = cfg.getIn(['security', 'authentication'])
+			this.authentication.load(auth_cfg)
+		}
+		
+		// AUTHORIZATION
+		// if ( cfg.hasIn(['security', 'authorization']) )
+		// {
+		// 	const auth_cfg = cfg.getIn(['security', 'authorization'])
+		// 	this.authorization.load(auth_cfg)
+		// }
+		
 		// BUILD SERVER
-		// console.log(this.build_server)
-		// console.log(typeof (this.build_server) )
 		assert( T.isFunction(this.build_server), context + ':bad build_server function')
 		this.build_server()
 		this.is_build = true

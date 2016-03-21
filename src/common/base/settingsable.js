@@ -1,6 +1,6 @@
 
 import T from 'typr'
-import assert from 'assert'
+// import assert from 'assert'
 
 import Loggable from './loggable'
 

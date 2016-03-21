@@ -1,10 +1,10 @@
 
-import T from 'typr'
+// import T from 'typr'
 import assert from 'assert'
 import restify from 'restify'
-import bunyan from 'bunyan'
+// import bunyan from 'bunyan'
 
-import runtime from '../base/runtime'
+// import runtime from '../base/runtime'
 import Server from '../base/server'
 import MetricsMiddleware from '../metrics/metric_http'
 
@@ -35,11 +35,21 @@ export default class RestifyServer extends Server
 		let server = this.server
 		
 		
+		
+		
+		// USE AUTHENTICATION MIDDLEWARE
+		this.server.use( this.authentication.create_middleware() )
+		
+		
+		// TODO: USE AUTHORIZATION MIDDLEWARE
+		// this.server.use( this.authorization.create_middleware() )
+		
+		
         // USE AUTHENTICATION MIDDLEWARE
-        // const authentication_mgr = runtime.security.get_authentication_manager()
-        // console.log(authentication_mgr)
-        // authentication_mgr.apply_on_server(this)
-        this.server.use( runtime.security.get_authentication_manager().create_middleware(this) )
+			// const authentication_mgr = runtime.security.get_authentication_manager()
+			// console.log(authentication_mgr)
+			// authentication_mgr.apply_on_server(this)
+        // this.server.use( runtime.security.get_authentication_manager().create_middleware(this) )
         
         // TODO: USE AUTHORIZATION MIDDLEWARE
         // AuthorizationManager.apply_on_server(this)

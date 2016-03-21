@@ -28,7 +28,7 @@ export default class Resource extends Instance
 	 */
 	constructor(arg_name, arg_settings, arg_class, arg_log_context)
 	{
-		assert( T.isObject(arg_log_context), context + ':bad settings object')
+		assert( T.isObject(arg_settings), arg_settings, (arg_log_context ? arg_log_context : context) + ':bad settings object')
 		
 		super('resources', arg_class ? arg_class : 'Resource', arg_name, arg_settings, arg_log_context ? arg_log_context : context)
 		

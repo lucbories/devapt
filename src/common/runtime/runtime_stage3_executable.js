@@ -101,16 +101,16 @@ export default class RuntimeStage3Executable extends RuntimeExecutable
 		
 		
 		// LOOP MODULES RESOURCES AND LOAD MODELS ASSOCIATIONS AFTER ALL MODELS ARE CREATED
-		for(let module_obj of this.runtime.modules)
+		for(let module_obj of this.runtime.modules.get_all())
 		{
 			this.info('make_modules for [' + module_obj.$name + ']')
 			
-			for(let res_obj of module_obj.resources)
+			for(let res_obj of module_obj.resources.get_all() )
 			{
 				this.runtime.resources.add(res_obj)
 			}
 			
-			for(let res_obj of module_obj.resources)
+			for(let res_obj of module_obj.resources.get_all() )
 			{
 				if (res_obj.is_model)
 				{

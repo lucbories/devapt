@@ -7,7 +7,7 @@ import Service from '../base/service'
 import * as exec from '../executables/index'
 import MiddlewareService from '../services/middleware/mw_service'
 import CrudService from '../services/crud/crud_service'
-import ResourcesService from '../services/resources/resources_service'
+import ResourcesService from '../services/resource/resources_service'
 
 import RuntimeExecutable from './runtime_executable'
 
