@@ -99,7 +99,7 @@ export default class Transaction extends Instance
 		switch(arg_type)
 		{
 			case TYPE_EVERY:	this.tx_type = TYPE_EVERY; return
-			case TYPE_ONE:	  this.tx_type = TYPE_ONE; return
+			case TYPE_ONE:	    this.tx_type = TYPE_ONE; return
 			case TYPE_SEQUENCE: this.tx_type = TYPE_SEQUENCE; return
 		}
 		

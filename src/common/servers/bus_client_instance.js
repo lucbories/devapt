@@ -2,11 +2,11 @@
 import T from 'typr'
 import assert from 'assert'
 
-import Instance from './instance'
+import Instance from '../base/instance'
 
 
 
-let context = 'common/base/bus_client_instance'
+let context = 'common/servers/bus_client_instance'
 
 
 

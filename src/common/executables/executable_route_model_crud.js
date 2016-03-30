@@ -91,11 +91,11 @@ export default class ExecutableRouteModelCrud extends ExecutableRoute
 		}*/
 		
 		
-		var security_epilogue_cb = function(arg_model_name, arg_role, arg_action_name)
+		var security_epilogue_cb = function(/*arg_model_name, arg_role, arg_action_name*/)
 		{
 			return function(arg_req, arg_res, arg_context)
 			{
-				return arg_context.continue();
+				return arg_context.continue()
 			}
 		}
 		

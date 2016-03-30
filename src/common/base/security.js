@@ -1,6 +1,7 @@
 
 import T from 'typr'
 import assert from 'assert'
+import { fromJS } from 'immutable'
 
 import Errorable from './errorable'
 import AuthenticationManager from '../security/authentication_manager'
@@ -28,16 +29,25 @@ export default class Security extends Errorable
 	 */
 	constructor(arg_log_context, arg_settings)
 	{
-		super(arg_log_context ? arg_log_context : context)
+		const logger_manager = (arg_settings && arg_settings.logger_manager) ? arg_settings.logger_manager : undefined
+		super(arg_log_context ? arg_log_context : context, logger_manager)
 		
 		this.is_security = true
 		
-		this.authentication_manager = new AuthenticationManager(context + '.authentication')
-		this.authorization_manager = new AuthorizationManager(context + '.authorization')
+		this.authentication_manager = new AuthenticationManager(context + '.authentication', logger_manager)
+		this.authorization_manager = new AuthorizationManager(context + '.authorization', logger_manager)
 		
 		if (arg_settings)
 		{
-			this.load(arg_settings)
+			const logger_manager_only = Object.keys(arg_settings).length == 1 && arg_settings.logger_manager
+			if ( ! logger_manager_only)
+			{
+				if ( ! arg_settings.has )
+				{
+					arg_settings = fromJS(arg_settings)
+				}
+				this.load(arg_settings)
+			}
 		}
 	}
 	
@@ -89,6 +99,28 @@ export default class Security extends Errorable
 	 */
 	get_authorization_manager()
 	{
+		return this.authorization_manager
+	}
+	
+	
+	/**
+	 * Get authentication plugins manager
+	 * @returns {object} - a PluginsManager instance
+	 */
+	authentication()
+	{
+		assert( T.isObject(this.authentication_manager) && this.authentication_manager.is_authentication_manager, context + ':bad authentication_manager object')
+		return this.authentication_manager
+	}
+	
+	
+	/**
+	 * Get authorization plugins manager
+	 * @returns {object} - a PluginsManager instance
+	 */
+	authorization()
+	{
+		assert( T.isObject(this.authorization_manager) && this.authorization_manager.is_authorization_manager, context + ':bad authorization_manager object')
 		return this.authorization_manager
 	}
 	

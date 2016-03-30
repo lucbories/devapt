@@ -1,10 +1,10 @@
 
 import T from 'typr'
 import assert from 'assert'
+import { fromJS } from 'immutable'
 
 import { config } from '../store/index'
-
-import Collection from './collection'
+import Collection from '../base/collection'
 import BusClientInstance from './bus_client_instance'
 
 import AuthenticationWrapper from '../security/authentication_wrapper'
@@ -57,6 +57,135 @@ export default class Server extends BusClientInstance
 	
 	
 	/**
+	 * Get security settings object into the server.
+	 * @returns {object} - security settings
+	 */
+	get_server_security_settings()
+	{
+		this.enter_group('get_security_settings')
+		
+		const security_settings = this.get_setting('security', null)
+		
+		this.leave_group('get_security_settings')
+		return security_settings
+	}
+	
+	
+	/**
+	 * Get security settings from server or runtime.
+	 * @returns {Immutable.Map} - security settings
+	 */
+	get_security_settings()
+	{
+		const self = this
+		self.enter_group('get_security_settings')
+		
+		// DEFAULT SECURITY SETTINGS
+		const default_security = {
+			'authentication': {
+				'enabled': true,
+				'plugins': []
+			},
+			'authorization': {
+				'enabled': true,
+				'plugins': []
+			}
+		}
+		
+		// TARGET SECURITY SETTINGS
+		let security_settings = fromJS(default_security)
+		
+		// GET SERVER SECURITY SETTINGS
+		const srv_security_settings = self.get_setting('security', null)
+		if (srv_security_settings && srv_security_settings.has('authentication'))
+		{
+			// AUTHENTICATION IS ENABLED ?
+			if ( srv_security_settings.hasIn(['authentication', 'enabled']) )
+			{
+				const enabled = srv_security_settings.getIn(['authentication', 'enabled'])
+				security_settings = security_settings.set('enabled', enabled)
+			}
+			else
+			{
+				self.error('get_security_settings:bad server.settings.security.authentication.enabled')
+				self.leave_group('get_security_settings:from server with error')
+				return security_settings
+			}
+			
+			// AUTHENTICATION PLUGINS
+			if ( srv_security_settings.hasIn(['authentication', 'plugins']) )
+			{
+				const plugins = srv_security_settings.getIn(['authentication', 'plugins'])
+				security_settings = security_settings.set('plugins', plugins.toArray())
+				if (plugins.size == 0)
+				{
+					self.error('bad server.settings.security.authentication.plugins.size')
+					self.leave_group('get_security_settings:from server with error')
+					return security_settings
+				}
+			}
+			else
+			{
+				self.error('get_security_settings:bad server.settings.security.authentication.plugins')
+				self.leave_group('get_security_settings:from server with error')
+				return security_settings
+			}
+			
+			self.leave_group('get_security_settings:from server')
+			return security_settings
+		}
+		
+		
+		
+		// GET RUNTIME SECURITY SETTINGS
+		const rt_security_settings = config().get('security')
+		if (rt_security_settings && rt_security_settings.has('authentication'))
+		{
+			// AUTHENTICATION IS ENABLED ?
+			if ( rt_security_settings.hasIn(['authentication', 'enabled']) )
+			{
+				const enabled = rt_security_settings.getIn(['authentication', 'enabled'])
+				security_settings = security_settings.set('enabled', enabled)
+			}
+			else
+			{
+				self.error('get_security_settings:bad runtime.settings.security.authentication.enabled')
+				self.leave_group('get_security_settings:from runtime with error')
+				return security_settings
+			}
+			
+			// AUTHENTICATION PLUGINS
+			if ( rt_security_settings.hasIn(['authentication', 'default_plugins']) )
+			{
+				const plugins = rt_security_settings.getIn(['authentication', 'default_plugins'])
+				security_settings = security_settings.set('plugins', plugins.toArray())
+				if (plugins.size == 0)
+				{
+					self.error('bad runtime.settings.security.authentication.plugins.size')
+					self.leave_group('get_security_settings:from runtime with error')
+					return security_settings
+				}
+			}
+			else
+			{
+				self.error('get_security_settings:bad runtime.settings.security.authentication.default_plugins')
+				self.leave_group('get_security_settings:from runtime with error')
+				return security_settings
+			}
+			
+			self.leave_group('get_security_settings:from runtime')
+			return security_settings
+		}
+		
+		
+		// console.error(context + ':no security settings found')
+		self.error(context + ':no security settings found')
+		self.leave_group('get_security_settings:not found')
+		return null
+	}
+	
+	
+	/**
 	 * Load server settings.
 	 * @returns {nothing}
 	 */
@@ -100,19 +229,18 @@ export default class Server extends BusClientInstance
 		}
 		assert( T.isString(this.server_type), context + ':bad server type string')
 		
+		// SECURITY (could be null for Bus Server...)
+		const security_settings = this.get_security_settings()
+		
 		// AUTHENTICATION
-		if ( cfg.hasIn(['security', 'authentication']) )
+		if ( security_settings && security_settings.hasIn(['authentication', 'enabled']) && security_settings.hasIn(['authentication', 'plugins']) )
 		{
-			const auth_cfg = cfg.getIn(['security', 'authentication'])
-			this.authentication.load(auth_cfg)
+			this.authentication.load(security_settings)
 		}
 		
 		// AUTHORIZATION
-		// if ( cfg.hasIn(['security', 'authorization']) )
-		// {
-		// 	const auth_cfg = cfg.getIn(['security', 'authorization'])
-		// 	this.authorization.load(auth_cfg)
-		// }
+		// TODO
+		
 		
 		// BUILD SERVER
 		assert( T.isFunction(this.build_server), context + ':bad build_server function')

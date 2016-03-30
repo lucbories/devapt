@@ -40,6 +40,8 @@ Devapt library offers a "runtime" instance which delivers this features:
 
 ## LICENCE
 
+Copyright Luc BORIES 2015-2016
+
 Apache Version 2 license.
 
 See [LICENSE](https://github.com/lucbories/Devapt/tree/master/LICENSE)

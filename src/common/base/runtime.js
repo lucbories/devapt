@@ -11,7 +11,7 @@ import Collection from './collection'
 import Security from './security'
 import Settingsable from './settingsable'
 import RegisteredService from './registered_service'
-
+import LoggerManager from '../loggers/logger_manager'
 
 
 let context = 'common/base/runtime'
@@ -58,7 +58,9 @@ class Runtime extends Settingsable
 	 */
 	constructor()
 	{
-		super( fromJS( default_settings ), context)
+		const settings = fromJS( default_settings )
+		settings.logger_manager = new LoggerManager()
+		super(settings, context)
 		
 		// this.$settings = fromJS( default_settings )
 		
@@ -81,7 +83,9 @@ class Runtime extends Settingsable
 		this.transactions = new Collection()
 		this.applications = new Collection()
 		
-		this.security = new Security()
+		this.security_mgr = new Security(context, { 'logger_manager':this.logger_manager } )
+		
+		// this.logger_manager = new LoggerManager()
 		
 		this.info('Runtime is created')
 	}
@@ -97,17 +101,19 @@ class Runtime extends Settingsable
 		this.separate_level_1()
 		this.enter_group('load')
 		
-		this.$settings = fromJS( Object.assign(default_settings, arg_settings) )
+		const runtime_settings = Object.assign(default_settings, arg_settings)
+		runtime_settings.logger_manager = this.logger_manager
+		this.$settings = fromJS(runtime_settings)
 		this.is_master = this.get_setting('is_master', false)
 		
-		const stage0 = new exec.RuntimeStage0Executable()
-		const stage1 = new exec.RuntimeStage1Executable()
-		const stage2 = new exec.RuntimeStage2Executable()
-		const stage3 = new exec.RuntimeStage3Executable()
-		const stage4 = new exec.RuntimeStage4Executable()
-		const stage5 = new exec.RuntimeStage5Executable()
+		const stage0 = new exec.RuntimeStage0Executable(this.logger_manager)
+		const stage1 = new exec.RuntimeStage1Executable(this.logger_manager)
+		const stage2 = new exec.RuntimeStage2Executable(this.logger_manager)
+		const stage3 = new exec.RuntimeStage3Executable(this.logger_manager)
+		const stage4 = new exec.RuntimeStage4Executable(this.logger_manager)
+		const stage5 = new exec.RuntimeStage5Executable(this.logger_manager)
 		const execs = [stage0, stage1, stage2, stage3, stage4, stage5]
-		const tx = new Transaction('runtime', 'startup', 'loading', {}, execs, Transaction.SEQUENCE)
+		const tx = new Transaction('runtime', 'startup', 'loading', { logger_manager:this.logger_manager }, execs, Transaction.SEQUENCE)
 		tx.prepare({runtime:this})
 		const tx_promise = tx.execute(null)
 
@@ -146,23 +152,115 @@ class Runtime extends Settingsable
 		this.leave_group('register_service')
 	}
 	
-	// TODO: TO CLEAN
-	// watch_files()
-	// {
-		/*let self = this
-		const dir_to_watch = path.join(base_idr, '../../apps/private/devtools/lib/')
-		fs.watch(dir_to_watch,
-			function(event, target_file)
-			{
-				self.info('Reloading apps/private/devtools/lib/ file [' + target_file + ']')
-				console.log(target_file, 'is', event)
-				
-				const file_path_name = path.join(dir_to_watch, target_file)
-				delete require.cache[file_path_name]
-				require(file_path_name)
-			}
-		)*/
-	// }
+	
+	/**
+	 * Get a node by its name.
+	 * @param {string} arg_name - node name
+	 * @returns {Node}
+	 */
+	node(arg_name)
+	{
+		return this.nodes.item(arg_name)
+	}
+	
+	
+	/**
+	 * Get a server by its name.
+	 * @param {string} arg_name - server name
+	 * @returns {Server}
+	 */
+	server(arg_name)
+	{
+		return this.servers.item(arg_name)
+	}
+	
+	
+	/**
+	 * Get a service by its name.
+	 * @param {string} arg_name - service name
+	 * @returns {Service}
+	 */
+	service(arg_name)
+	{
+		return this.services.item(arg_name)
+	}
+	
+	
+	/**
+	 * Get a registered service by its name.
+	 * @param {string} arg_name - registered service name
+	 * @returns {Service}
+	 */
+	registered_service(arg_name)
+	{
+		return this.registered_services.item(arg_name)
+	}
+	
+	
+	/**
+	 * Get a module by its name.
+	 * @param {string} arg_name - module name
+	 * @returns {Module}
+	 */
+	module(arg_name)
+	{
+		return this.modules.item(arg_name)
+	}
+	
+	
+	/**
+	 * Get a plugin by its name.
+	 * @param {string} arg_name - plugin name
+	 * @returns {Plugin}
+	 */
+	plugin(arg_name)
+	{
+		return this.plugins.item(arg_name)
+	}
+	
+	
+	/**
+	 * Get a resource by its name.
+	 * @param {string} arg_name - resource name
+	 * @returns {Resource}
+	 */
+	resource(arg_name)
+	{
+		return this.resources.item(arg_name)
+	}
+	
+	
+	/**
+	 * Get a transaction by its name.
+	 * @param {string} arg_name - transaction name
+	 * @returns {Transaction}
+	 */
+	transaction(arg_name)
+	{
+		return this.transactions.item(arg_name)
+	}
+	
+	
+	/**
+	 * Get a application by its name.
+	 * @param {string} arg_name - application name
+	 * @returns {Application}
+	 */
+	application(arg_name)
+	{
+		return this.applications.item(arg_name)
+	}
+	
+	
+	/**
+	 * Get security object.
+	 * @returns {Security}
+	 */
+	security()
+	{
+		assert( T.isObject(this.security_mgr) && this.security_mgr.is_security, context + ':bad security object')
+		return this.security_mgr
+	}
 }
 
 

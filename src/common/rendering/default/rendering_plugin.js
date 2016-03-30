@@ -12,6 +12,7 @@ import List from './list'
 import Table from './table'
 import Page from './page'
 import Script from './script'
+import Menubar from './menubar'
 
 
 const context = 'common/rendering/default/rendering_plugin'
@@ -40,6 +41,7 @@ export default class DefaultPlugin extends RenderingPlugin
 			case 'Table':  return new Table(arg_name, arg_settings, arg_state)
 			case 'Page':   return new Page(arg_name, arg_settings, arg_state)
 			case 'Script': return new Script(arg_name, arg_settings, arg_state)
+			case 'Menubar': return new Menubar(arg_name, arg_settings, arg_state)
 		}
 		
 		assert(false, context + ':bad class name')
@@ -59,6 +61,7 @@ export default class DefaultPlugin extends RenderingPlugin
 			case 'Table':
 			case 'Page':
 			case 'Script':
+			case 'Menubar':
 				return true
 		}
 		

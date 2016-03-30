@@ -28,7 +28,7 @@ export default class AuthenticationPlugin extends Plugin
 	{
 		super(arg_name, undefined, arg_log_context ? arg_log_context : context)
 		
-		this.is_authentication = true
+		this.is_authentication_plugin = true
 	}
 	
 	
@@ -75,9 +75,12 @@ export default class AuthenticationPlugin extends Plugin
 	
 	/**
 	 * Get a authentication middleware to use on servers (see Connect/Express middleware signature).
-	 * @returns {function} - function(request,response,next){...}
+	 * @abstract
+	 * @param {boolean} arg_should_401 - should send an 401 error on authentication failure.
+	 * @param {Function} arg_next_auth_mw - next authentication middleware.
+	 * @returns {Function} - function(request,response,next){...}
 	 */
-	create_middleware()
+	create_middleware(/*arg_should_401, arg_next_auth_mw*/)
 	{
 		return undefined
 	}

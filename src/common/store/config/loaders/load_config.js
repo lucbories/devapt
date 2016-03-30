@@ -14,7 +14,7 @@ import load_config_nodes from './load_config_nodes'
 
 
 let context = 'common/store/config/loaders/load_config'
-let error_msg_bad_config = context + ':bad config'
+// let error_msg_bad_config = context + ':bad config'
 
 // const base_dir = '../../../..'
 
@@ -28,7 +28,9 @@ function load_config(arg_state, arg_initial_config, arg_base_dir)
 {
 	logs.info(context, 'loading config')
 	
-    const base_dir = arg_base_dir
+	// console.log(logs.should_trace('ttt'), context + ':logs.should_trace()')
+	
+	const base_dir = arg_base_dir
     // console.log(base_dir, 'load_config:base_dir')
 	
 	// LOAD APPS.JSON
@@ -41,8 +43,6 @@ function load_config(arg_state, arg_initial_config, arg_base_dir)
 		
 		let config = arg_initial_config
 		config.resources = config.resources || {}
-		// config.changes_history = config.changes_history || [{ ts: Date.now(), }]
-        // console.log(config, 'load_config:config')
 		
 		// LOAD OTHERS FILES
 		if (T.isString(config.nodes))
@@ -75,6 +75,16 @@ function load_config(arg_state, arg_initial_config, arg_base_dir)
 			const file_path_name = path.join(base_dir, 'resources', config.security)
 			config.security = require(file_path_name).security
 		}
+		if (T.isString(config.loggers))
+		{
+			const file_path_name = path.join(base_dir, 'resources', config.loggers)
+			config.loggers = require(file_path_name).loggers
+		}
+		if (T.isString(config.traces))
+		{
+			const file_path_name = path.join(base_dir, 'resources', config.traces)
+			config.traces = require(file_path_name).traces
+		}
 		
         
 		// CHECK CONFIG PARTS
@@ -85,6 +95,8 @@ function load_config(arg_state, arg_initial_config, arg_base_dir)
 		assert(T.isObject(config.modules), 'apps.json:modules should be a plain object')
 		assert(T.isObject(config.plugins), 'apps.json:plugins should be a plain object')
 		assert(T.isObject(config.security), 'apps.json:security should be a plain object')
+		assert(T.isObject(config.loggers), 'apps.json:loggers should be a plain object')
+		assert(T.isObject(config.traces), 'apps.json:traces should be a plain object')
 		
 		
 		// LOAD CONFIG PARTS

@@ -16,9 +16,9 @@ let context = 'common/executables/runtime_stage5_executable'
 */
 export default class RuntimeStage5Executable extends RuntimeExecutable
 {
-	constructor()
+	constructor(arg_logger_manager)
 	{
-		super(context)
+		super(context, arg_logger_manager)
 	}
 	
 	
@@ -42,6 +42,6 @@ export default class RuntimeStage5Executable extends RuntimeExecutable
 		this.leave_group('execute')
 		this.separate_level_1()
 		this.set_trace(saved_trace)
-        return Promise.resolve()
+		return Promise.resolve()
 	}
 }

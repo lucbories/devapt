@@ -115,7 +115,7 @@ export default class Context
 		// logs.debug('get_url_with_credentials')
 
 		// TODO: credentials
-		const auth_mgr = this.$runtime ? this.$runtime.security.get_authentication_manager() : null
+		const auth_mgr = this.$runtime ? this.$runtime.security().authentication() : null
 		if (! auth_mgr)
 		{
 			return arg_url

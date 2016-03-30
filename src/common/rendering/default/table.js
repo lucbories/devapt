@@ -95,7 +95,10 @@ export default class Table extends Component
 		
 		
 		// BUILD HTML TABLE
-		let html_table = '<table id="' + this.get_dom_id() + '"><thead><tr><th>' + this.state.label + '</th></tr><tr>' + html_head + '</tr></thead>'
+		let css_classes_table = this.get_css_classes_for_tag('table')
+		css_classes_table = (css_classes_table ? ' class="' + css_classes_table + '"': '')
+		
+		let html_table = '<table id="' + this.get_dom_id() + '"' + css_classes_table + '><thead><tr><th>' + this.state.label + '</th></tr><tr>' + html_head + '</tr></thead>'
 		html_table += '<tbody>' + html_rows + '</tbody>'
 		html_table += '<tfoot></tfoot></table>'
 		

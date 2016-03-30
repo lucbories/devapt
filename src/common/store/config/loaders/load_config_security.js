@@ -80,7 +80,7 @@ function load_config_security(arg_security_config, arg_base_dir)
 		
 		// CHECK AUTHENTICATION
 		arg_security_config.authentication = load_config_security_authentication(arg_security_config.authentication, arg_base_dir)
-		
+
 		// CHECK AUTHORIZATION
 		arg_security_config.authorization = load_config_security_authorization(arg_security_config.authorization, arg_base_dir)
 	}

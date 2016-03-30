@@ -20,11 +20,12 @@ export default class PluginsManager extends Errorable
 	 * Create a plugins manager instance.
 	 * @extends Errorable
 	 * @param {string|undefined} arg_log_context - optional.
+	 * @param {LoggerManager} arg_logger_manager - logger manager object (optional).
 	 * @returns {nothing}
 	 */
-	constructor(arg_log_context)
+	constructor(arg_log_context, arg_logger_manager)
 	{
-		super(arg_log_context ? arg_log_context : context)
+		super(arg_log_context ? arg_log_context : context, arg_logger_manager)
 		
 		this.is_plugins_manager = true
 		
@@ -110,6 +111,44 @@ export default class PluginsManager extends Errorable
 		delete arg_plugin.manager
 		
 		return disable_promise
+	}
+	
+	
+	/**
+	 * Get a registered plugin by its name and its enabled flag.
+	 * @param {string} arg_name - registered plugin name
+	 * @param {boolean} arg_enabled - plugin is enabled ?
+	 * @returns {Plugin}
+	 */
+	plugin(arg_name, arg_enabled)
+	{
+		if (arg_enabled)
+		{
+			return this.enabled_plugins.item(arg_name)
+		}
+		return this.registered_plugins.item(arg_name)
+	}
+	
+	
+	/**
+	 * Get a registered plugin by its name.
+	 * @param {string} arg_name - registered plugin name
+	 * @returns {Plugin}
+	 */
+	registered_plugin(arg_name)
+	{
+		return this.registered_plugins.item(arg_name)
+	}
+	
+	
+	/**
+	 * Get a enabled plugin by its name.
+	 * @param {string} arg_name - enabled plugin name
+	 * @returns {Plugin}
+	 */
+	enabled_plugin(arg_name)
+	{
+		return this.enabled_plugins.item(arg_name)
 	}
 	
 	

@@ -2,7 +2,7 @@
 // import T from 'typr'
 import assert from 'assert'
 
-import Node from '../base/node'
+import Node from '../servers/node'
 import RuntimeExecutable from './runtime_executable'
 
 
@@ -17,9 +17,9 @@ let context = 'common/executables/runtime_stage0_executable'
 */
 export default class RuntimeStage0Executable extends RuntimeExecutable
 {
-	constructor()
+	constructor(arg_logger_manager)
 	{
-		super(context)
+		super(context, arg_logger_manager)
 	}
 	
 	

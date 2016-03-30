@@ -1,9 +1,8 @@
 
 import T from 'typr'
 import assert from 'assert'
-import socketio from 'socket.io'
 
-import Server from '../base/server'
+import Server from './server'
 import MetricHttpReducer from '../metrics/metric_http_reducer'
 
 

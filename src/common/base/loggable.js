@@ -1,12 +1,10 @@
 
 import T from 'typr'
-// import assert from 'assert'
-
-import logs from '../utils/logs'
+import assert from 'assert'
 
 
 
-// let context = 'common/base/loggable'
+let context = 'common/base/loggable'
 
 
 /**
@@ -21,11 +19,34 @@ export default class Loggable
 	 * @param {string} arg_context - trace context.
 	 * @returns {nothing}
 	 */
-	constructor(arg_context)
+	constructor(arg_context, arg_logger_manager)
 	{
 		this.is_loggable = true
 		this.$context = arg_context
 		this.is_trace_enabled = true
+		
+		if ( T.isObject(arg_logger_manager) && arg_logger_manager.is_logger_manager )
+		{
+			this.logger_manager = arg_logger_manager
+		}
+	}
+	
+	
+	/**
+	 * Get logger manager.
+	 * @returns {LoggerManager}
+	 */
+	get_logger_manager()
+	{
+		if (! this.logger_manager)
+		{
+			const runtime = require('./runtime').default
+			this.logger_manager = runtime.logger_manager
+			
+		}
+		assert( T.isObject(this.logger_manager) && this.logger_manager.is_logger_manager, context + ':get_logger_manager:bad logger manager object')
+		
+		return this.logger_manager
 	}
 	
 	
@@ -35,7 +56,7 @@ export default class Loggable
 	 */
 	enable_trace()
 	{
-		logs.enable_trace()
+		this.get_logger_manager().enable_trace()
 	}
 	
 	
@@ -45,7 +66,7 @@ export default class Loggable
 	 */
 	disable_trace()
 	{
-		logs.disable_trace()
+		this.get_logger_manager().disable_trace()
 	}
 	
 	
@@ -55,7 +76,7 @@ export default class Loggable
 	 */
 	get_trace()
 	{
-		return logs.get_trace()
+		return this.get_logger_manager().get_trace()
 	}
 	
 	
@@ -66,7 +87,7 @@ export default class Loggable
 	 */
 	set_trace(arg_value)
 	{
-		logs.set_trace(arg_value)
+		this.get_logger_manager().set_trace(arg_value)
 	}
 	
 	
@@ -76,72 +97,7 @@ export default class Loggable
 	 */
 	toggle_trace()
 	{
-		logs.toggle_trace()
-	}
-	
-	
-	/**
-	 * Get formatted trace message.
-	 * @static
-	 * @param {string|array} args - messages to format.
-	 * @returns {string} - formatted trace message.
-	 */
-	static format(args)
-	{
-		if (args == undefined)
-		{
-			return ''
-		}
-
-		if (args == null)
-		{
-			return 'null'
-		}
-
-		if ( T.isString(args) )
-		{
-			return args
-		}
-
-		if (T.isArray(args) && args.length > 0)
-		{
-			let str = ''
-
-			const arg_0 = args[0] ? args[0].toString() : ''
-			const parts = arg_0.split('%s', args.length)
-			let arg_index = 0
-
-			if (parts.length > 1 && args.length > 1)
-			{
-				while(arg_index < parts.length && (arg_index + 1) < args.length)
-				{
-					// console.log(str, 'i:' + i)
-					str += parts[arg_index]
-					str += args[arg_index + 1]
-					arg_index++
-				}
-
-				if ( arg_index < parts.length )
-				{
-					str += parts[arg_index]
-				}
-
-				arg_index++
-			}
-
-			const args_count = Math.min(args.length, 4)
-			for( ; arg_index < args_count ; arg_index++)
-			{
-				if ( args[arg_index] )
-				{
-					str += ':' + args[arg_index].toString()
-				}
-			}
-
-			return str
-		}
-
-		return args
+		this.get_logger_manager().toggle_trace()
 	}
 	
 	
@@ -154,7 +110,7 @@ export default class Loggable
 	{
 		if(this.is_trace_enabled)
 		{
-			logs.debug(this.$context, Loggable.format(args))
+			this.get_logger_manager().debug(this.$context, args)
 		}
 	}
 	
@@ -168,7 +124,21 @@ export default class Loggable
 	{
 		if(this.is_trace_enabled)
 		{
-			logs.info(this.$context, Loggable.format(args))
+			this.get_logger_manager().info(this.$context, args)
+		}
+	}
+	
+	
+	/**
+	 * Trace WARN formatted message.
+	 * @param {string|array} args - variadic messages to format.
+	 * @returns {nothing}
+	 */
+	warn(...args)
+	{
+		if(this.is_trace_enabled)
+		{
+			this.get_logger_manager().warn(this.$context, args)
 		}
 	}
 	
@@ -178,11 +148,11 @@ export default class Loggable
 	 * @param {string|array} args - variadic messages to format.
 	 * @returns {nothing}
 	 */
-	error(...arg_msg)
+	error(...args)
 	{
 		if(this.is_trace_enabled)
 		{
-			logs.error(this.$context, Loggable.format(arg_msg))
+			this.get_logger_manager().error(this.$context, args)
 		}
 	}
 	
@@ -196,7 +166,7 @@ export default class Loggable
 	{
 		if(this.is_trace_enabled)
 		{
-			logs.info(this.$context, '[' + arg_group + '] ------- ENTER -------')
+			this.get_logger_manager().info(this.$context, '[' + arg_group + '] ------- ENTER -------')
 		}
 	}
 	
@@ -210,7 +180,7 @@ export default class Loggable
 	{
 		if(this.is_trace_enabled)
 		{
-			logs.info(this.$context, '[' + arg_group + '] ------- LEAVE -------')
+			this.get_logger_manager().info(this.$context, '[' + arg_group + '] ------- LEAVE -------')
 		}
 	}
 	
@@ -223,7 +193,7 @@ export default class Loggable
 	{
 		if(this.is_trace_enabled)
 		{
-			logs.info(this.$context, '==========================================================================================================================')
+			this.get_logger_manager().info(this.$context, '==========================================================================================================================')
 		}
 	}
 	
@@ -236,7 +206,7 @@ export default class Loggable
 	{
 		if(this.is_trace_enabled)
 		{
-			logs.info(this.$context, '--------------------------------------------------------------------------------------------------------------------------')
+			this.get_logger_manager().info(this.$context, '--------------------------------------------------------------------------------------------------------------------------')
 		}
 	}
 	
@@ -249,7 +219,7 @@ export default class Loggable
 	{
 		if(this.is_trace_enabled)
 		{
-			logs.info(this.$context, '*************************************************************************************************************************')
+			this.get_logger_manager().info(this.$context, '*************************************************************************************************************************')
 		}
 	}
 	
@@ -264,10 +234,10 @@ export default class Loggable
 	 * @param {string|array} args - variadic messages to format.
 	 * @returns {nothing}
 	 */
-	static static_debug(arg_context, ...arg_msg)
-	{
-		logs.debug(arg_context, Loggable.format(arg_msg))
-	}
+	// static static_debug(arg_context, ...arg_msg)
+	// {
+	// 	this.get_logger_manager().debug(arg_context, Loggable.format(arg_msg))
+	// }
 	
 	
 	/**
@@ -277,10 +247,10 @@ export default class Loggable
 	 * @param {string|array} args - variadic messages to format.
 	 * @returns {nothing}
 	 */
-	static static_info(arg_context, ...arg_msg)
-	{
-		logs.info(arg_context, Loggable.format(arg_msg))
-	}
+	// static static_info(arg_context, ...arg_msg)
+	// {
+	// 	this.get_logger_manager().info(arg_context, Loggable.format(arg_msg))
+	// }
 	
 	
 	/**
@@ -290,10 +260,10 @@ export default class Loggable
 	 * @param {string|array} args - variadic messages to format.
 	 * @returns {nothing}
 	 */
-	static static_error(arg_context, ...arg_msg)
-	{
-		logs.error(arg_context, Loggable.format(arg_msg))
-	}
+	// static static_error(arg_context, ...arg_msg)
+	// {
+	// 	this.get_logger_manager().error(arg_context, Loggable.format(arg_msg))
+	// }
 	
 	
 	/**
@@ -303,10 +273,10 @@ export default class Loggable
 	 * @param {string|array} args - variadic messages to format.
 	 * @returns {nothing}
 	 */
-	static static_enter_group(arg_context, arg_group)
-	{
-		logs.info(arg_context, '[' + arg_group + '] ------- ENTER -------')
-	}
+	// static static_enter_group(arg_context, arg_group)
+	// {
+	// 	this.get_logger_manager().info(arg_context, '[' + arg_group + '] ------- ENTER -------')
+	// }
 	
 	
 	/**
@@ -316,8 +286,8 @@ export default class Loggable
 	 * @param {string|array} args - variadic messages to format.
 	 * @returns {nothing}
 	 */
-	static static_leave_group(arg_context, arg_group)
-	{
-		logs.info(arg_context, '[' + arg_group + '] ------- LEAVE -------')
-	}
+	// static static_leave_group(arg_context, arg_group)
+	// {
+	// 	this.get_logger_manager().info(arg_context, '[' + arg_group + '] ------- LEAVE -------')
+	// }
 }

@@ -3,8 +3,8 @@ import T from 'typr'
 import assert from 'assert'
 import simplebus from 'simplebus'
 
-import { store, config } from '../store/index'
-import runtime from '../base/runtime'
+// import { store, config } from '../store/index'
+// import runtime from '../base/runtime'
 import Server from '../base/server'
 
 

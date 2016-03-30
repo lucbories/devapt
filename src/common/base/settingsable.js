@@ -26,8 +26,8 @@ export default class Settingsable extends Loggable
 	constructor(arg_settings, arg_log_context)
 	{
 		const my_context = arg_log_context ? arg_log_context : context
-		
-		super(my_context)
+		const logger_manager = (arg_settings && arg_settings.logger_manager) ? arg_settings.logger_manager : undefined
+		super(my_context, logger_manager)
 		
 		this.set_settings(arg_settings)
 	}

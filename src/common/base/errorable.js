@@ -18,11 +18,13 @@ export default class Errorable extends Loggable
 	 * Create an Errorable instance.
 	 * @extends Loggable
 	 * @param {string} arg_log_context - trace context.
+	 * @param {LoggerManager} arg_logger_manager - logger manager object (optional).
 	 * @returns {nothing}
 	 */
-	constructor(arg_log_context)
+	constructor(arg_log_context, arg_logger_manager)
 	{
-		super(arg_log_context ? arg_log_context : context)
+		const my_context = arg_log_context ? arg_log_context : context
+		super(my_context, arg_logger_manager)
 		
 		this.$has_error = false
 		this.$error_msg = null

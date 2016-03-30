@@ -40,19 +40,21 @@ export default class AuthenticationWrapper extends Settingsable
 	 */
 	load(arg_settings)
 	{
+		// console.log(arg_settings, context + ':load:arg_settings')
+		
 		const self = this
 		assert(T.isObject(arg_settings), context + ':bad settings object')
 		assert(T.isFunction(arg_settings.has), context + ':bad settings immutable')
 		assert(arg_settings.has('enabled'), context + ':bad settings.enabled')
 		assert(arg_settings.has('plugins'), context + ':bad settings.plugins')
 		
-		const auth_mgr = runtime.security.get_authentication_manager()
+		const auth_mgr = runtime.security().get_authentication_manager()
 		
 		
 		// LOAD AUTHENTICATION SETTINGS
 		this.authentication_is_enabled = arg_settings.get('enabled')
 		this.authentication_plugins = []
-		const plugins = arg_settings.get('plugins').toArray()
+		const plugins = arg_settings.get('plugins')
 		
 		// SEARCH PLUGINS
 		plugins.forEach(
@@ -63,383 +65,68 @@ export default class AuthenticationWrapper extends Settingsable
 					self.authentication_plugins.push(plugin)
 					return
 				}
-				self.info('bad plugin name [' + plugin_name + ']')
+				self.info('plugin not found for name [' + plugin_name + ']')
 			}
 		)
 	}
 	
 	
 	/**
-	 * Get a authentication middleware to use on servers (see Connect/Express middleware signature).
-	 * @returns {function} - function(request,response,next){...}
+	 * Apply all plugins authentication middleware on a Server instance.
+	 * @param {Server} arg_server - server instance
+	 * @returns {boolean}
 	 */
-	create_middleware()
+	apply_middlewares(arg_server)
 	{
-		const self = this
-		const plugins = this.authentication_plugins
+		this.enter_group('apply_middlewares')
 		
-		const get_mw = (plugin) => {
+		
+		// CHECK SERVER
+		if (! arg_server.server || ! T.isFunction(arg_server.server.use) )
+		{
+			this.leave_group('apply_middlewares:bad server')
+			return false
+		}
+		
+		const plugins = this.authentication_plugins
+		const auth_mgr = runtime.security().get_authentication_manager()
+		
+		// LAST MIDDLEWARE
+		const last_mw = (req, res, next) => {
+			// AUTHENTICATION IS VALID
+			if ( auth_mgr.check_request_authentication(req) )
+			{
+				// console.log('apply_middlewares:last_mw:auth success')
+				next()
+				return
+			}
+			
+			// SEND ERROR OUTPUT
+			res.status(401)
+			res.contentType = 'json'
+			res.send({ message: 'Authentication failure' })
+			
+			// console.log('apply_middlewares:last_mw:auth failure')
+			next('Authentication failure')
+		}
+		
+		
+		// LOOP ON PLUGINS
+		const should_send_error_on_failure = false
+		for(let plugin of plugins)
+		{
 			if ( T.isFunction(plugin.create_middleware) )
 			{
-				return plugin.create_middleware()
-			}
-			
-			return (req, res, next) => {
-				next('no middleware found for plugin [' + plugin.get_name() + ']')
-			}
-		}
-		
-		// ONE PLUGIN FOUND
-		if ( T.isArray(plugins) && plugins.length == 1)
-		{
-			const plugin = plugins[0]
-			return get_mw(plugin)
-		}
-		
-		// MANY PLUGINS FOUND
-		if ( T.isArray(plugins) && plugins.length > 1)
-		{
-			let index = 0
-			const plugins_count = plugins.length
-			
-			const next_plugin = (arg_next, arg_plugins, arg_index) => {
-				if (arg_index + 1 == plugins_count)
-				{
-					arg_next()
-					return
-				}
+				// self.debug('apply_middlewares:get_mw:call plugin.create_middleware()')
+				// console.log('apply_middlewares:loop on plugin:' + plugin.get_name())
 				
-				const plugin = arg_plugins[arg_index]
-				const mw = get_mw(plugin)
-				if (mw)
-				{
-					return (req, res, next) => {
-						mw(req, res, next_plugin(next, arg_plugins, index + 1))
-					}
-				}
-				
-				arg_next()
-			}
-			
-			return (req, res, next) => {
-				return next_plugin(next, plugins, 0)
+				const mw = plugin.create_middleware(should_send_error_on_failure)
+				arg_server.server.use(mw)
 			}
 		}
 		
-		// NO PLUGINS FOUND
-		return (req, res, next) => {
-			self.error(context + '.create_middleware:empty plugins')
-			next()
-		}
-	}
-	
-	
-	/**
-	 * Authenticate a user with request credentials.
-	 * @param {object|undefined} arg_credentials - request credentials object
-	 * @returns {object} - a promise of boolean
-	 */
-	authenticate(/*arg_credentials*/)
-	{
-		return Promise.resolve(false)
-	}
-	
-	
-	/**
-	 * Login current request (alias of authenticate).
-	 * @abstract
-	 * @returns {object} - a promise of boolean
-	 */
-	login()
-	{
-		return Promise.resolve(false)
-	}
-	
-	
-	/**
-	 * Logout current authenticated user.
-	 * @abstract
-	 * @returns {object} - a promise of boolean
-	 */
-	logout()
-	{
-		return Promise.resolve(false)
-	}
-	
-	
-	/**
-	 * Get credentials token of authenticated user.
-	 * @abstract
-	 * @returns {string} - credentials token
-	 */
-	get_token()
-	{
-		return null
-	}
-	
-	
-	/**
-	 * Create a new credentials token for authenticated user.
-	 * @abstract
-	 * @returns {string} - credentials token
-	 */
-	renew_token()
-	{
-		return null
-	}
-	
-	
-	/**
-	 * Check a credentials token.
-	 * @abstract
-	 * @returns {boolean} - request token is valid
-	 */
-	check_token()
-	{
-		return false
-	}
-	
-	
-	/**
-	 * Hash a password.
-	 * @param {string} arg_password - password to hash
-	 * @param {string|undefined} arg_digest_method - digest method name (sha1,sha256,sha384,sha512,md5)
-	 * @param {string|undefined} arg_encoding_method - encoding method name (hex,utf8,utf16,binary,base64,hexstr)
-	 * @returns {string} - hashed password
-	 */
-	hash_password(arg_password, arg_digest_method, arg_encoding_method)
-	{
-		assert(T.isString(arg_password), context + ':bad password string')
-		arg_digest_method = T.isString(arg_digest_method) ? arg_digest_method : 'sha1'
-		arg_encoding_method = T.isString(arg_encoding_method) ? arg_encoding_method : 'hex'
-		
-		// GET MESSAGE DIGEST FUNCTION
-		let md = null
-		switch(arg_digest_method.toLocaleLowerCase())
-		{
-			case 'sha1':   md = forge.md.sha1.create(); break
-			case 'sha256': md = forge.md.sha256.create(); break
-			case 'sha384': md = forge.md.sha384.create(); break
-			case 'sha512': md = forge.md.sha512.create(); break
-			case 'md5':	md = forge.md.md5.create(); break
-			default: this.error_bad_digest_method(arg_digest_method); return null
-		}
-		assert(md, context + ':bad message digest object')
-		md.update(arg_password)
-		
-		// GET ENCODED MESSAGE
-		let encoded = null
-		switch(arg_encoding_method.toLocaleLowerCase())
-		{
-			case 'hex':
-				encoded = md.digest().toHex(); break
-			case 'utf8':
-			case 'utf-8':
-				encoded = md.digest().toString('utf8'); break
-			case 'utf16':
-			case 'utf-16':
-				encoded = md.digest().toString('utf16'); break
-			case 'binary':
-				encoded = md.digest().toString('binary'); break
-			case 'base64':
-				encoded = md.digest().toString('base64'); break
-			case 'hexstr':
-				encoded = md.digest().toString('hex'); break
-			default: this.error_bad_encoding_method(arg_encoding_method); return null
-		}
-		assert(encoded, context + ':bad message encoding result')
-		
-		return encoded
-	}
-	
-	
-	
-	
-	/**
-	 * Check request credentials authentication.
-	 *	Request format:
-	 *		req.username=...
-	 *		req.authorization={
-	 *			scheme: <Basic|Signature|...>,
-	 *			credentials: <Undecoded value of header>,
-	 *			basic: {
-	 *				username: $user
-	 *				password: $password
-	 *			}
-	 *		}
-	 * @param {object} arg_request - request object
-	 * @returns {object} - plain object as { 'user':..., 'password':... }
-	 */
-	check_request(arg_request)
-	{
-		if ( !this.authentication_is_enabled )
-		{
-			return Promise.resolve(true)
-		}
-		
-		const credentials = this.get_credentials(arg_request);
-		
-		
-		if (!credentials.user || !credentials.password)
-		{
-			return Promise.resolve(false)
-		}
-
-		return this.authenticate(credentials);
-	}
-	
-	
-	/**
-	 * Get request credentials from headers.
-	 *	Request format:
-	 *		req.username=...
-	 *		req.authorization={
-	 *			scheme: <Basic|Signature|...>,
-	 *			credentials: <Undecoded value of header>,
-	 *			basic: {
-	 *				username: $user
-	 *				password: $password
-	 *			}
-	 *		}
-	 * @param {object} arg_request - request object
-	 * @returns {object} - plain object as { 'user':..., 'password':... }
-	 */
-	get_credentials(arg_request)
-	{
-		console.log(arg_request.url, 'arg_request.url')
-		console.log(arg_request.queries, 'arg_request.queries')
-		// console.log(arg_request.password, 'arg_request')
-		console.log(arg_request.query(), 'arg_request.query')
-		console.log(arg_request.params, 'arg_request.params')
-		
-		let credentials = { 'username':null, 'password':null }
-		let query_str = null
-		if (!arg_request)
-		{
-			return credentials
-		}
-		
-		// EXPRESS REQUEST
-		if (arg_request && arg_request.query && arg_request.query.username && arg_request.query.password)
-		{
-			this.info('authentication with query map')
-			
-			credentials.username = arg_request.query.username
-			credentials.password = arg_request.query.password
-			return credentials
-		}
-		
-		// RESTIFY
-		if (arg_request && T.isString(arg_request.query) )
-		{
-			this.info('authentication with query string')
-			query_str = arg_request.query
-		}
-		if (arg_request && T.isFunction(arg_request.query) )
-		{
-			this.info('authentication with query function')
-			query_str = arg_request.query()
-		}
-		if ( T.isString(query_str) )
-		{
-			const queries = query_str.split('&')
-			console.log(queries, 'queries part')
-			queries.forEach(
-				(item/*, index, arr*/) => {
-					const parts = item.split('=')
-					if ( T.isArray(parts) && parts.length == 2 )
-					{
-						const key = parts[0]
-						const value = parts[1]
-						if (key == 'username')
-						{
-							credentials.username = value
-							return
-						}
-						if (key == 'password')
-						{
-							credentials.password = value
-							return
-						}
-					}
-				}
-			)
-			
-			if (credentials.username && credentials.password)
-			{
-				return credentials
-			}
-		}
-		
-		// RESTIFY QUERY PARSER PLUGIN (NO WORKING)
-		if (arg_request && arg_request.params && arg_request.params.username && arg_request.params.password)
-		{
-			this.info('authentication with params args')
-			
-			credentials.username = arg_request.params.username
-			credentials.password = arg_request.params.password
-			return credentials
-		}
-		
-		// RESTIFY AUTHORIZATION PLUGIN
-		if (arg_request && arg_request.authorization)
-		{
-			this.info('authentication with basic auth header args')
-			
-			if (!arg_request.authorization.basic)
-			{
-				return credentials
-			}
-			
-			credentials.username = arg_request.authorization.basic.username
-			credentials.password = arg_request.authorization.basic.password
-			return credentials
-		}
-
-		this.error_bad_credentials_format()
-		return credentials
-	}
-	
-	
-	/**
-	 * Error wrapper - error during plugin loading.
-	 * @param {string} arg_plugin_mode - plugin mode
-	 * @returns {nothing}
-	 */
-	error_bad_plugin(arg_plugin_mode)
-	{
-		this.error('bad plugin [' + arg_plugin_mode + ']')
-	}
-	
-	
-	/**
-	 * Error wrapper - unknow digest method
-	 * @param {string} arg_digest_method - digest method name
-	 * @returns {nothing}
-	 */
-	error_bad_digest_method(arg_digest_method)
-	{
-		this.error('bad digest method [' + arg_digest_method + ']')
-	}
-	
-	
-	/**
-	 * Error wrapper - unknow encoding method
-	 * @param {string} arg_encoding_method - encoding method name
-	 * @returns {nothing}
-	 */
-	error_bad_encoding_method(arg_encoding_method)
-	{
-		this.error('bad encoding method [' + arg_encoding_method + ']')
-	}
-	
-	
-	/**
-	 * Error wrapper - unknow request credentials format
-	 * @returns {nothing}
-	 */
-	error_bad_credentials_format()
-	{
-		this.error('bad request credentials format')
+		// ADD LAST MIDDLEWARE
+		arg_server.server.use(last_mw)
+		return true
 	}
 }

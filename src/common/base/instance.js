@@ -6,7 +6,6 @@ import { is_browser, is_server } from '../utils/is_browser'
 import { store } from '../store/index'
 import { dispatch_store_config_create_value } from '../store/config/actions'
 
-import Loggable from './loggable'
 import Settingsable from './settingsable'
 
 
@@ -36,8 +35,8 @@ export default class Instance extends Settingsable
 	 */
 	constructor(arg_collection, arg_class, arg_name, arg_settings, arg_log_context)
 	{
-		Loggable.static_debug(context, 'Instance.constructor(%s,%s,%s)', arg_collection, arg_class, arg_name)
-		Loggable.static_info(context, 'Instance.constructor(%s,%s,%s)', arg_collection, arg_class, arg_name)
+		// Loggable.static_debug(context, 'Instance.constructor(%s,%s,%s)', arg_collection, arg_class, arg_name)
+		// Loggable.static_info(context, 'Instance.constructor(%s,%s,%s)', arg_collection, arg_class, arg_name)
 		
 		assert( T.isString(arg_collection) && arg_collection.length > 0, context + ':bad collection string')
 		assert( (NOT_STORED_COLLECTIONS.indexOf(arg_collection) > -1) || store.has_collection(arg_collection), context + ':bad collection')

@@ -83,8 +83,17 @@ export default class Collection
 	
 	
 	/**
+	 * Get an item by its name
+	 */
+	item(arg_name)
+	{
+		return this.find_by_name(arg_name)
+	}
+	
+	/**
 	 * Default iterator operator.
 	 */
+	
 	// * [Symbol.iterator]() {
 	// 	for (let item of this.$items)
 	// 	{
@@ -92,6 +101,32 @@ export default class Collection
 	// 	}
 	// }
 	
+	// [Symbol.iterator]()
+	// {
+	// 	let step = 0
+	// 	const count = this.$items.length
+		
+	// 	const iterator = {
+	// 		next()
+	// 		{
+	// 			if (step < count)
+	// 			{
+	// 				const item = this.$items[step]
+	// 				step++
+	// 				return { value:item, done:false }
+	// 			}
+				
+	// 			return { value:undefined, done:true }
+	// 		}
+	// 	}
+		
+	// 	return iterator
+	// }
+	
+	[Symbol.iterator]()
+	{
+		return this.$items.iterator()
+	}
 	
 	/**
 	 * Get all items names with or without a filter on items types.
@@ -241,8 +276,16 @@ export default class Collection
 	 * @param {string} arg_name - instance name.
 	 * @returns {Instance|undefined}
 	 */
-	find_by_name(arg_name) { return this.$items.find( item => { return item.$name == arg_name } ) }
-    
+	find_by_name(arg_name)
+	{
+		return this.$items.find(
+			item => {
+				// console.log('collection.find_by_name.item for[' + arg_name + ']', item.$name)
+				return item.$name == arg_name
+			}
+		)
+	}
+	
 	
 	/**
 	 * Find an item by its id into the collection.

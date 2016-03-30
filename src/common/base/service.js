@@ -10,7 +10,7 @@ import Collection from './collection'
 import runtime from './runtime'
 
 import ServiceConsumer from '../services/service_consumer'
-import ProducerConsumer from '../services/service_provider'
+import ServiceProvider from '../services/service_provider'
 
 
 
@@ -66,7 +66,7 @@ export default class Service extends Instance
 		this.is_service = true
 		
 		this.status = Service.STATUS_CREATED
-		this.registered_nodes = new Collection()
+		// this.registered_nodes = new Collection()
 		
 		this.locale_exec = arg_locale_exec
 		this.remote_exec = arg_remote_exec
@@ -255,7 +255,7 @@ export default class Service extends Instance
 	create_provider(arg_name, arg_service)
 	{
 		// this.error('create_provider is not implemented')
-		return new ProducerConsumer(arg_name, arg_service)
+		return new ServiceProvider(arg_name, arg_service)
 	}
 	
 	
@@ -267,6 +267,17 @@ export default class Service extends Instance
 	{
 		// this.error('create_consumer is not implemented')
 		return new ServiceConsumer(this.get_name() + '_consumer_' + this.get_id(), this)
+	}
+	
+	
+	/**
+	 * Get a service provider by its name.
+	 * @param {string} arg_name - service provider name
+	 * @returns {ServiceProvider}
+	 */
+	provider(arg_name)
+	{
+		return this.providers.item(arg_name)
 	}
 }
 

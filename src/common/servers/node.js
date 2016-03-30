@@ -3,9 +3,10 @@ import T from 'typr'
 import assert from 'assert'
 import { fromJS } from 'immutable'
 
-import BusServerInstance from './bus_server_instance'
-import { ServerTypes } from './server'
-import Collection from './collection'
+import Collection from '../base/collection'
+
+import { ServerTypes } from '../servers/server'
+import BusServerInstance from '../servers/bus_server_instance'
 import RestifyServer from '../servers/restify_server'
 import ExpressServer from '../servers/express_server'
 // import VantageServer from '../servers/vantage_server'
@@ -14,7 +15,7 @@ import MetricsServer from '../servers/metrics_server'
 
 
 
-let context = 'common/base/node'
+let context = 'common/servers/node'
 const STATE_CREATED = 'NODE_IS_CREATED'
 const STATE_REGISTERING = 'NODE_IS_REGISTERING_TO_MASTER'
 const STATE_WAITING = 'NODE_IS_WAITING_ITS_SETTINGS'

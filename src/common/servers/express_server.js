@@ -6,7 +6,7 @@ import express from 'express'
 import favicon from 'express-favicon'
 
 import runtime from '../base/runtime'
-import Server from '../base/server'
+import Server from './server'
 import MetricsMiddleware from '../metrics/metric_http'
 
 
@@ -49,8 +49,8 @@ export default class ExpressServer extends Server
 		this.server.use( favicon(favicon_path) )
 		
 		
-		// USE AUTHENTICATION MIDDLEWARE
-		this.server.use( this.authentication.create_middleware() )
+		// USE AUTHENTICATION MIDDLEWARES
+		this.authentication.apply_middlewares(this)
 		
 		
 		// TODO: USE AUTHORIZATION MIDDLEWARE

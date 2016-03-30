@@ -20,9 +20,9 @@ let context = 'common/executables/runtime_stage3_executable'
 */
 export default class RuntimeStage3Executable extends RuntimeExecutable
 {
-	constructor()
+	constructor(arg_logger_manager)
 	{
-		super(context)
+		super(context, arg_logger_manager)
 	}
 	
 	

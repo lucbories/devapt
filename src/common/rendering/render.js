@@ -359,6 +359,28 @@ export default class Render extends Loggable
 	
 	
     /**
+     * Create a Menubar component instance and push it on the rendering stack.
+     * @param {string} arg_name - component name.
+     * @param {object} arg_settings - component settings plain object.
+     * @param {object} arg_state - component initial state plain object.
+     * @returns {object} this.
+     */
+	menubar(arg_name, arg_settings, arg_state)
+	{
+		arg_settings = arg_settings ? arg_settings : {}
+		arg_settings.state = arg_state
+		
+		let component = this.rendering_manager.create('Menubar', arg_name, arg_settings)
+		assert( T.isObject(component) && component.is_component, context + ':bad Menubar component object')
+		
+		this.current().add_child(component)
+		this.push(component)
+		
+		return this
+	}
+	
+	
+    /**
      * Create a Table component instance and push it on the rendering stack.
      * @param {string} arg_name - component name.
      * @param {object} arg_settings - component settings plain object.

@@ -26,11 +26,12 @@ export default class AuthenticationManager extends PluginsManager
 	 * AuthenticationWrapper use created plugins.
 	 * @extends PluginsManager
 	 * @param {string|undefined} arg_log_context - optional.
+	 * @param {LoggerManager} arg_logger_manager - logger manager object (optional).
 	 * @returns {nothing}
 	 */
-	constructor(arg_log_context)
+	constructor(arg_log_context, arg_logger_manager)
 	{
-		super(arg_log_context ? arg_log_context : context)
+		super(arg_log_context ? arg_log_context : context, arg_logger_manager)
 		
 		this.is_authentication_manager = true
 		
@@ -46,6 +47,8 @@ export default class AuthenticationManager extends PluginsManager
 	 */
 	load(arg_settings)
 	{
+		this.enter_group('load')
+		
 		assert(T.isObject(arg_settings), context + ':load:bad settings object')
 		assert(T.isFunction(arg_settings.has), context + ':load:bad settings immutable')
 		assert(arg_settings.has('enabled'), context + ':load:bad settings.enabled')
@@ -74,6 +77,8 @@ export default class AuthenticationManager extends PluginsManager
 		
 		// TODO: default security plugin ?
 		// TODO: alt plugin settings ?
+		
+		this.leave_group('load')
 	}
 	
 	
@@ -84,6 +89,8 @@ export default class AuthenticationManager extends PluginsManager
 	 */
 	load_plugin(arg_settings)
 	{
+		this.enter_group('load_plugin')
+		
 		const self = this
 		
 		assert( T.isObject(arg_settings), context + ':load_plugin:bad settings object')
@@ -135,11 +142,18 @@ export default class AuthenticationManager extends PluginsManager
 						self.error(context + ':load_plugin:failure for mode [' + mode + '] for name [' + plugin.get_name() + ']:' + reason)
 					}
 				)
+				
+				this.leave_group('load:jsonfile or database')
 				return true
 			}
-			case 'token': return true // TODO: plugin auth token
+			case 'token':
+			{
+				this.leave_group('load:token')
+				return true // TODO: plugin auth token
+			}
 		}
 		
+		this.leave_group('load_plugin:error')
 		return false
 	}
 	
@@ -212,24 +226,23 @@ export default class AuthenticationManager extends PluginsManager
 	 *			}
 	 *		}
 	 * @param {object} arg_request - request object
-	 * @returns {object} - plain object as { 'user':..., 'password':... }
+	 * @returns {boolean}
 	 */
-	check_request(arg_request)
+	check_request_authentication(arg_request)
 	{
 		if ( !this.authentication_is_enabled )
 		{
-			return Promise.resolve(true)
+			return true
 		}
 		
-		const credentials = this.get_credentials(arg_request);
+		const credentials = this.get_credentials(arg_request)
 		
-		
-		if (!credentials.user || !credentials.password)
+		if (arg_request.is_authenticated && credentials.username && credentials.password)
 		{
-			return Promise.resolve(false)
+			return true
 		}
-
-		return this.authenticate(credentials);
+		
+		return false
 	}
 	
 	

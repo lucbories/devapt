@@ -15,7 +15,7 @@ export default class Table extends DefaultTable
 	{
 		super(arg_name, arg_settings)
 		
-        // this.set_css_classes_for_tag('table', 'f6_table', false)
+        this.set_css_classes_for_tag('table', 'f6_table', false)
 	}
 	
 	

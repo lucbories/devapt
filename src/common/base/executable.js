@@ -18,12 +18,13 @@ export default class Executable extends Errorable
      * Create an Executable base class.
 	 * @extends Errorable
 	 * @abstract
-     * @param {string|undefined} arg_log_context - optional.
+     * @param {string|undefined} arg_log_context - (optional).
+	 * @param {LoggerManager} arg_logger_manager - logger manager object (optional).
      * @returns {nothing}
      */
-	constructor(arg_log_context)
+	constructor(arg_log_context, arg_logger_manager)
 	{
-		super(arg_log_context ? arg_log_context : context)
+		super(arg_log_context ? arg_log_context : context, arg_logger_manager)
 		
 		this.is_executable = true
 	}

@@ -7,7 +7,7 @@ import BusClientInstance from './bus_client_instance'
 
 
 
-let context = 'common/base/bus_server_instance'
+let context = 'common/servers/bus_server_instance'
 
 
 
@@ -49,7 +49,7 @@ export default class BusServerInstance extends BusClientInstance
 	{
 		this.enter_group('init_bus_server')
 		
-		let BusServer = require('../servers/bus_server').default
+		let BusServer = require('./bus_server').default
 		// console.log(BusServer)
 
 		const self = this

@@ -28,7 +28,7 @@ export default class AuthenticationPluginURL extends AuthenticationPlugin
 	{
 		super(arg_name, arg_log_context ? arg_log_context : context)
 		
-		this.is_authentication_url = true
+		this.is_authentication_url_plugin = true
 	}
 	
 	
@@ -138,42 +138,73 @@ export default class AuthenticationPluginURL extends AuthenticationPlugin
 	
 	/**
 	 * Get a authentication middleware to use on servers (see Connect/Express middleware signature).
-	 * @returns {function} - function(request,response,next){...}
+	 * @param {boolean} arg_should_401 - should send an 401 error on authentication failure.
+	 * @param {Function} arg_next_auth_mw - next authentication middleware.
+	 * @returns {Function} - function(request,response,next){...}
 	 */
-	create_middleware()
+	create_middleware(arg_should_401, arg_next_auth_mw)
 	{
+		// console.log('auth_plugin_url.create_middleware')
+		
+		const auth_mgr = runtime.security().get_authentication_manager()
+		
 		return (req, res, next) => {
-			// if (req.param == '/favicon.ico' || req.param == '/favicon.png')
-			// {
-			// 	next()
-			// 	return
-			// }
+			const credentials = auth_mgr.get_credentials(req)
+			// console.log('auth_plugin_url.create_middleware', credentials)
 			
-			const credentials = runtime.security.get_authentication_manager().get_credentials(req)
-			// console.log('auth plugin.create_middleware')
+			if ( auth_mgr.check_request_authentication(req) )
+			{
+				console.log('auth_plugin_url.create_middleware.request is already authenticated')
+				next()
+				return
+			}
+			else
+			{
+				console.log('auth_plugin_url.create_middleware:not authenticated with credentials', credentials)
+			}
+			
 			
 			this.authenticate(credentials)
 			.then(
 				(result) => {
-					// console.log('auth plugin.create_middleware.authenticate then')
+					console.log('auth_plugin_url.create_middleware.authenticate then')
 					
+					// SUCCESS
 					if (result)
 					{
+						console.log('auth_plugin_url.create_middleware.authenticate then:next')
+						req.is_authenticated = true
 						next()
 						return
 					}
 					
-					// SEND OUTPUT
-					res.status(401)
-					res.contentType = 'json'
-					res.send({ message: 'Authentication failure' })
+					// FAILURE WITH ERROR
+					if (arg_should_401)
+					{
+						// SEND OUTPUT
+						res.status(401)
+						res.contentType = 'json'
+						res.send({ message: 'Authentication failure' })
+						
+						console.log('auth_plugin_url.create_middleware.authenticate then:auth failure')
+						next('Authentication failure')
+						return
+					}
 					
-					next('Authentication failure')
+					// FAILURE WITHOUT ERROR
+					console.log('auth_plugin_url.create_middleware.authenticate failure without error:next')
+					if (arg_next_auth_mw)
+					{
+						arg_next_auth_mw(req, res, next)
+						return
+					}
+					next()
+					return
 				}
 			)
 			.catch(
 				(reason) => {
-					// console.log('auth plugin.create_middleware.authenticate failure')
+					console.log('auth_plugin_url.create_middleware.authenticate exception', reason)
 					
 					// SEND OUTPUT
 					res.status(401)
@@ -197,13 +228,13 @@ export default class AuthenticationPluginURL extends AuthenticationPlugin
 		this.debug('authenticate')
 		// console.log(arg_credentials, 'arg_credentials')
 		
-		assert( T.isFunction(this.file_db), context + ':authenticate:bad db object')
+		// assert( T.isFunction(this.file_db), context + ':authenticate:bad db object')
 		assert( T.isObject(arg_credentials), context + ':authenticate:bad credentials object')
 		
 		// HAS AUTHENTICATION INFORMATIONS
 		if ( !(T.isString(arg_credentials.username) && T.isString(arg_credentials.password)) )
 		{
-			this.debug('authenticate:failure:no credentials')
+			this.debug('authenticate:failure:no credentials', arg_credentials)
 			return Promise.resolve(false)
 		}
 		// assert( T.isString(arg_credentials.username), context + ':authenticate:bad credentials.username string')
