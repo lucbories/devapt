@@ -2,15 +2,13 @@
 import assert from 'assert'
 import T from 'typr'
 
-import logs from '../../../utils/logs'
-
 
 
 let context = 'common/store/config/loaders/load_config_node'
 let error_msg_bad_config = context + ':bad config'
-let error_msg_bad_node = context + ':nodes.* should be an object'
+// let error_msg_bad_node = context + ':nodes.* should be an object'
 let error_msg_bad_node_host = context + ':nodes.*.host should be a string'
-let error_msg_bad_node_port = context + ':nodes.*.port should be an integer'
+// let error_msg_bad_node_port = context + ':nodes.*.port should be an integer'
 let error_msg_bad_node_is_master = context + ':nodes.*.is_master should be a boolean'
 let error_msg_bad_node_servers = context + ':nodes.*.servers should be an object'
 let error_msg_bad_node_servers_server = context + ':nodes.*.servers.* should be an object'
@@ -20,7 +18,7 @@ let error_msg_bad_node_servers_server_protocole = context + ':nodes.*.servers.*.
 
 
 
-function load_config_nodes(arg_nodes_config, arg_base_dir)
+function load_config_nodes(logs, arg_nodes_config, arg_base_dir)
 {
 	logs.info(context, 'loading config.nodes')
 	
@@ -40,7 +38,7 @@ function load_config_nodes(arg_nodes_config, arg_base_dir)
 				assert(T.isBoolean(node_obj.is_master), error_msg_bad_node_is_master)
 				assert(T.isObject(node_obj.servers), error_msg_bad_node_servers)
 				
-				load_config_node_servers(node_obj.servers, node_name, node_obj.host, arg_base_dir)
+				load_config_node_servers(logs, node_obj.servers, node_name, node_obj.host, arg_base_dir)
 			}
 		)
 	}
@@ -53,7 +51,7 @@ function load_config_nodes(arg_nodes_config, arg_base_dir)
 }
 
 
-function load_config_node_servers(arg_servers_config, arg_node_name, arg_host, arg_base_dir)
+function load_config_node_servers(logs, arg_servers_config, arg_node_name, arg_host/*, arg_base_dir*/)
 {
 	logs.info(context, 'loading config.nodes.*.servers')
 	

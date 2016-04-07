@@ -2,20 +2,18 @@
 import assert from 'assert'
 import T from 'typr'
 
-import logs from '../../../utils/logs'
-
 
 
 let context = 'common/store/config/loaders/load_config_plugins'
 let error_msg_bad_config = context + ':bad config'
-let error_msg_bad_plugin = context + ':plugins.* should be an object'
+// let error_msg_bad_plugin = context + ':plugins.* should be an object'
 let error_msg_bad_js = context + ':plugins.*.js should be a string'
 let error_msg_bad_css = context + ':plugins.*.css should be an array'
 let error_msg_bad_autoload = context + ':plugins.*.autoload should be a boolean'
 
 
 
-function load_config_plugins(arg_plugins_config, arg_base_dir)
+function load_config_plugins(logs, arg_plugins_config/*, arg_base_dir*/)
 {
 	logs.info(context, 'loading config.plugins')
 	

@@ -1,6 +1,12 @@
 
-// import LoggerConsole from './logger_console'
+import T from 'typr'
+
+import LoggerConsole from './logger_console'
 import LoggerWinston from './logger_winston'
+
+
+// const context = 'common/loggers/logger_manager'
+
 
 
 /**
@@ -12,16 +18,42 @@ export default class LoggerManager
 {
 	/**
 	 * Create a Logger manager instance.
+	 * @param {object} arg_settings - loggers settings
 	 * @returns {nothing}
 	 */
-	constructor()
+	constructor(arg_settings)
 	{
 		this.is_logger_manager = true
 		this.loggers = []
 		
-		// TODO: load from settings
-		// this.loggers.push( new LoggerConsole(true) )
-		this.loggers.push( new LoggerWinston(true) )
+		if (arg_settings)
+		{
+			this.load(arg_settings)
+		}
+	}
+	
+	
+	/**
+	 * Load settings.
+	 * @param {object} arg_settings - loggers settings
+	 * @returns {nothing}
+	 */
+	load(arg_settings)
+	{
+		// console.log(arg_settings, context + ':arg_settings')
+		
+		if ( T.isObject(arg_settings) && ("console" in arg_settings) )
+		{
+			// console.log('add console logger')
+			this.loggers.push( new LoggerConsole(true, arg_settings["console"]) )
+		}
+		if ( T.isObject(arg_settings) && ("winston" in arg_settings) )
+		{
+			// console.log('add winston logger')
+			this.loggers.push( new LoggerWinston(true, arg_settings["winston"]) )
+		}
+		
+		this.$settings = arg_settings
 	}
 	
 	

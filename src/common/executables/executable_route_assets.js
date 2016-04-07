@@ -61,7 +61,11 @@ export default class ExecutableRouteAssets extends ExecutableRoute
 		{
 			// TODO: use default static file
 			// console.log('express static route', arg_cfg_route.directory)
-			return express.static(arg_cfg_route.directory)
+			const one_day = 86400000
+			const static_cfg = {
+				maxAge:one_day
+			}
+			return express.static(arg_cfg_route.directory, static_cfg)
 		}
 
 		// UNKNOW SERVER TO SERVE STATIC FILES

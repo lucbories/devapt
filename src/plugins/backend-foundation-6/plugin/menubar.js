@@ -60,35 +60,47 @@ export default class Menubar extends Component
 			if ( T.isArray(row.items) )
 			{
 				let html_row = '<a href="#">' + row.label + '</a>'
-				html_row += '<ul class="menu vertical">'
+				html_row += '<ul class="submenu menu vertical" data-submenu>'
 				for(let j = 0 ; j < row.items.length ; j++)
 				{
 					const sub_row = row.items[j]
 					const url = runtime.context.get_url_with_credentials(state.app_url + sub_row.url, state.request)
 					const sub_html_row =  '<a href="/' + url + '">' + sub_row.label + '</a>\n'
-					html_row += '<li>' + sub_html_row + '</li>'
+					html_row += '<li role="menuitem">\n' + sub_html_row + '</li>\n'
 				}
-				html_row += '</ul>'
+				html_row += '</ul>\n'
 				
-				html_left_menus += '<li>' + html_row + '</li>'
+				html_left_menus += '<li>\n' + html_row + '</li>\n'
 			}
 			else
 			{
 				const url = runtime.context.get_url_with_credentials(state.app_url + row.url, state.request)
 				const html_row = '<a href="/' + url + '">' + row.label + '</a>\n'
-				html_left_menus += '<li>' + html_row + '</li>'
+				html_left_menus += '<li>\n' + html_row + '</li>\n'
 			}
 		}
 		
 		
 		// BUILD HTML TABLE
-		let html = '<div id="' + this.get_dom_id() + '" class="top-bar">'
-		html += '<div class="top-bar-left">'
-		html += 	'<ul class="dropdown menu" data-dropdown-menu>'
-		html += 		'<li class="menu-text">' + this.state.label + '</li>'
-		html += 		html_left_menus
-		html += 	'</ul>'
-		html += '</div></div>'
+		let html = ''
+		html += '<div class="" id="' + this.get_dom_id() + '">'
+		html += '<nav class="top-bar">\n'
+		
+		html += '	<div class="top-bar-title">\n'
+		html += '		<ul class="dropdown menu">'
+		html += '			<li role="menuitem">\n'
+		html += '				<strong>' + this.state.label + ' HELLO !!</strong>\n'
+		html += 			'</li>\n'
+		html += 		'</ul>\n'
+		html += '	</div>\n'
+		
+		html += 	'<div class="top-bar-left">\n'
+		html += 		'<ul class="dropdown menu" data-dropdown-menu>\n'
+		html += 			html_left_menus
+		html += 		'</ul>\n'
+		html += 	'</div>\n'
+		html += '</div>\n'
+		html += '</nav>\n'
 		
 		return html
 	}

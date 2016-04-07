@@ -2,7 +2,6 @@
 import T from 'typr'
 import assert from 'assert'
 
-import logs from '../../utils/logs'
 import runtime from '../../base/runtime'
 
 
@@ -49,7 +48,7 @@ export default class JsonProvider
 	provide_json()
 	{
 		const self = this
-		logs.debug(context, 'enter')
+		// logs.debug(context, 'enter')
 
 		let promise = new Promise(
 			function(resolve, reject)
@@ -58,7 +57,7 @@ export default class JsonProvider
 			}
 		)
 
-		logs.debug(context, 'leave')
+		// logs.debug(context, 'leave')
 		return promise
     }
     
@@ -71,7 +70,7 @@ export default class JsonProvider
      */
 	provide_json_self(resolve, reject)
 	{
-		logs.debug(context + ':provide_json_self', this.source)
+		// logs.debug(context + ':provide_json_self', this.source)
 
 		switch(this.source)
 		{
@@ -80,24 +79,24 @@ export default class JsonProvider
 				assert( T.isString(this.$settings.relative_path), context + ':bad settings.relative_path string')
 
 				const file_path = this.$settings.relative_path
-				logs.debug('file_path', file_path)
+				// logs.debug('file_path', file_path)
 
 				if ( T.isString(file_path) )
 				{
-					logs.debug('Node is master: load settings file', file_path)
+					// logs.debug('Node is master: load settings file', file_path)
 
-					const absolute_file_path = runtime.get_absolute_path(file_path)
+					const absolute_file_path = runtime.context.get_absolute_path(file_path)
 					const json = require(absolute_file_path)
 
 					// console.log(context + '.json', json)
 
-					logs.debug(context, 'leave')
+					// logs.debug(context, 'leave')
 					resolve(json)
 					return
 				}
 
-				logs.debug('file_path', file_path)
-				logs.error(context + ':bad file path string')
+				// logs.debug('file_path', file_path)
+				// logs.error(context + ':bad file path string')
 				break
 			}
 			
@@ -122,11 +121,11 @@ export default class JsonProvider
 			}
 
 			default:{
-				logs.error(context + ':bad provider source string [' + this.source + ']')
+				console.error(context + ':bad provider source string [' + this.source + ']')
 			}
 		}
 
 		reject('bad source')
-		logs.debug(context + ':leave')
+		// logs.debug(context + ':leave')
 	}
 }

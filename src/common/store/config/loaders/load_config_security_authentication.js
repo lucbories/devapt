@@ -2,14 +2,12 @@
 // import assert from 'assert'
 // import T from 'typr'
 
-import logs from '../../../utils/logs'
-
 
 
 let context = 'common/store/config/loaders/load_config_security_authentication'
-let error_msg_bad_config = context + ':bad config'
-let error_msg_bad_enabled = context + ':authentication.enabled should be a boolean'
-let error_msg_bad_plugins = context + ':authentication.plugins should be an array'
+// let error_msg_bad_config = context + ':bad config'
+// let error_msg_bad_enabled = context + ':authentication.enabled should be a boolean'
+// let error_msg_bad_plugins = context + ':authentication.plugins should be an array'
 // let error_msg_bad_mode = context + ':authentication.mode should be a string in [database]'
 // let error_msg_bad_alt = context + ':authentication.alt should be an object'
 
@@ -17,9 +15,9 @@ let error_msg_bad_plugins = context + ':authentication.plugins should be an arra
 
 
 
-function load_config_security_authentication(arg_auth_config, arg_base_dir)
+function load_config_security_authentication(logs, arg_auth_config/*, arg_base_dir*/)
 {
-	logs.info(context, 'loading config.security')
+	logs.info(context, 'loading config.security.load_config_security_authentication')
 	
 	try{
 		// CHECK SECURITY

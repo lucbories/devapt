@@ -21,12 +21,14 @@ export default class AuthenticationPlugin extends Plugin
 {
 	/**
 	 * Create an Authentication base class.
+	 * @param {string} arg_name - plugin name.
+	 * @param {string} arg_class - plugin class name.
 	 * @param {string|undefined} arg_log_context - optional.
 	 * @returns {nothing}
 	 */
-	constructor(arg_name, arg_log_context)
+	constructor(arg_name, arg_class, arg_log_context)
 	{
-		super(arg_name, undefined, arg_log_context ? arg_log_context : context)
+		super(arg_name, (arg_class ? arg_class.toString() : 'AuthenticationPlugin'), undefined, arg_log_context ? arg_log_context : context)
 		
 		this.is_authentication_plugin = true
 	}
@@ -68,7 +70,7 @@ export default class AuthenticationPlugin extends Plugin
 	 * @param {object} arg_server - Runtime server (Express/Restify server for example)
 	 * @returns {nothing}
 	 */
-	apply_on_server(arg_server)
+	apply_on_server(/*arg_server*/)
 	{
 	}
 	
@@ -92,7 +94,7 @@ export default class AuthenticationPlugin extends Plugin
 	 * @param {object|undefined} arg_credentials - request credentials object
 	 * @returns {object} - a promise of boolean
 	 */
-	authenticate(arg_credentials)
+	authenticate(/*arg_credentials*/)
 	{
 		return Promise.resolve(false)
 	}

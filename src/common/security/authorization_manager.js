@@ -46,18 +46,18 @@ export default class AuthorizationManager extends PluginsManager
         assert(T.isObject(arg_settings), context + ':bad settings object')
         assert(T.isFunction(arg_settings.has), context + ':bad settings immutable')
         assert(arg_settings.has('enabled'), context + ':bad settings.enabled')
-        assert(arg_settings.has('mode'), context + ':bad settings.mode')
+        // assert(arg_settings.has('mode'), context + ':bad settings.mode')
         
         // LOAD AUTHORIZATION SETTINGS
         this.authorization_is_enabled = arg_settings.get('enabled')
-        this.authorization_mode = arg_settings.get('mode')
+        // this.authorization_mode = arg_settings.get('mode')
         
         // LOAD PLUGIN
-        const result = this.load_plugin(arg_settings)
-        if (! result)
-        {
-            this.error_bad_plugin(this.authorization_mode)
-        }
+        // const result = this.load_plugin(arg_settings)
+        // if (! result)
+        // {
+        //     this.error_bad_plugin(this.authorization_mode)
+        // }
         
         // TODO: default security plugin ?
         // TODO: alt plugin settings ?

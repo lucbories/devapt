@@ -1,6 +1,6 @@
-import { createStore, compose, applyMiddleware } from 'redux'
-import thunk from 'redux-thunk'
-import promise from 'redux-promise'
+import { createStore/*, compose, applyMiddleware*/ } from 'redux'
+// import thunk from 'redux-thunk'
+// import promise from 'redux-promise'
 import createLogger from 'redux-logger'
 
 import store_reducers from './reducers'
@@ -9,7 +9,7 @@ import store_reducers from './reducers'
 let logger_settings = {
   logger:console,
   level:'log',
-  transformer: (state) => {
+  stateTransformer: (state) => {
     return {
       present:'hidden',
       config_past:state.config_reducer.past.length,

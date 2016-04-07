@@ -2,8 +2,6 @@
 import T from 'typr'
 import assert from 'assert'
 
-import logs from '../../utils/logs'
-
 
 
 const context = 'common/datas/providers/record_provider'
@@ -35,7 +33,7 @@ export default class RecordProvider
      */
 	build_query(arg_query)
 	{
-		logs.debug(context, 'build_query:not implemented')
+		// logs.debug(context, 'build_query:not implemented')
 
 		return arg_query
 	}
@@ -47,9 +45,9 @@ export default class RecordProvider
      * @param {object|undefined} arg_query - optional query context
      * @returns {Promise} datas record promise
      */
-	find_all_records(arg_query)
+	find_all_records(/*arg_query*/)
 	{
-		logs.debug(context, 'find_all_records:not implemented')
+		// logs.debug(context, 'find_all_records:not implemented')
 		return Promise.resolve(null)
 	}
     
@@ -63,7 +61,7 @@ export default class RecordProvider
      */
 	find_records_by_id(arg_id, arg_query)
 	{
-		logs.debug(context, 'find_records_by_id:not implemented')
+		// logs.debug(context, 'find_records_by_id:not implemented')
 		assert( T.isString(arg_id) || T.isNumber(arg_id), context + ':find_records_by_id:bad id string or number')
 
 		// TO IMPLEMENT IN SUBCLASSES
@@ -79,9 +77,9 @@ export default class RecordProvider
      * @param {object|undefined} arg_query - optional query context
      * @returns {Promise} - promise of found record or null
      */
-	find_records_by_values(arg_values_map, arg_query)
+	find_records_by_values(arg_values_map/*, arg_query*/)
 	{
-		logs.debug(context, 'find_records_by_values:not implemented')
+		// logs.debug(context, 'find_records_by_values:not implemented')
 		assert( T.isObject(arg_values_map), context + ':find_records_by_id:bad values object')
 
 		// TO IMPLEMENT IN SUBCLASSES

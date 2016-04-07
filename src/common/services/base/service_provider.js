@@ -56,7 +56,7 @@ export default class ServiceProvider extends Instance
 	 * @param {object} arg_app_svc_cfg - service configuration for activation on application (unused)
 	 * @returns {nothing}
 	 */
-	activate(arg_application, arg_server/*, arg_app_svc_cfg*/)
+	activate(arg_application, arg_server, arg_app_svc_cfg)
 	{
 		assert(T.isObject(arg_application), context + ':bad application object')
 		assert(T.isObject(arg_server) && arg_server.is_server, context + ':bad server object')
@@ -67,13 +67,33 @@ export default class ServiceProvider extends Instance
 		
 		assert( is_server(), context + ':service activation is only available on server')
 		
-		const exec_cfg = { 'routes':this.get_setting('routes').toJS(), 'server': arg_server }
-		this.exec.prepare(exec_cfg)
-		this.exec.execute(arg_application)
+		if ( T.isFunction(this.activate_self) )
+		{
+			this.activate_self(arg_application, arg_server, arg_app_svc_cfg)
+		}
 		
 		this.server = arg_server
 		this.application = arg_application
 		this.application_server = arg_application.get_name() + '-' + arg_server.get_name()
+	}
+	
+	
+	/**
+	 * Activate a service feature for an application for a specific provider.
+	 * @param {Application} arg_application - application instance
+	 * @param {Server} arg_server - server instance to bind the service
+	 * @param {object} arg_app_svc_cfg - service configuration for activation on application (unused)
+	 * @returns {nothing}
+	 */
+	activate_self(arg_application, arg_server, arg_app_svc_cfg)
+	{
+		const exec_cfg = { 'routes':this.get_setting('routes').toJS(), 'server': arg_server, 'unused':arg_app_svc_cfg }
+		
+		if ( T.isObject(this.exec) )
+		{
+			this.exec.prepare(exec_cfg)
+			this.exec.execute(arg_application)
+		}
 	}
 	
 	

@@ -16,6 +16,7 @@ export default class Page extends Component
 		super(arg_name, arg_settings)
 		
 		this.$type = 'Page'
+		this.$page_id = 'content'
 		
 		const render = arg_settings.render ? arg_settings.render : null
 		assert( T.isObject(render) && render.is_render, context + ':bad render object')
@@ -143,7 +144,7 @@ export default class Page extends Component
 	render_body()
 	{
 		let html = '<body>\n' + this.render_body_header()
-		html += '<div id="content">\n' + this.render_body_children() + '</div>\n'
+		html += '<div id="' + this.$page_id + '" style="display:\'none\';">\n' + this.render_body_children() + '</div>\n'
 		
 		
 		// SCRIPTS URLS
@@ -178,7 +179,10 @@ export default class Page extends Component
 	render_body_script()
 	{
 		const html_scripts = this.$settings.scripts.join('\n')
-		return `<script type="text/babel">${html_scripts}</script>\n`
+		const show_content = '\n document.getElementById("' + this.$page_id + '").style.display="block";\n'
+		const handler_1 = 'function(e){ ' + show_content + '}'
+		const on_ready = '\n document.addEventListener("DOMContentLoaded", ' + handler_1 + ', false);\n'
+		return `<script type="text/babel">${html_scripts} ${on_ready}</script>\n`
 	}
 	
 	render_body_footter()

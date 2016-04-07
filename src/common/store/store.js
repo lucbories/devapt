@@ -1,5 +1,5 @@
 
-import T from 'typr'
+// import T from 'typr'
 
 import create_store from './create_store'
 

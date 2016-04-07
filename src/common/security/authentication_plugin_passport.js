@@ -21,17 +21,20 @@ export default class AuthenticationPluginPassport extends AuthenticationPlugin
 {
     /**
      * Create an Authentication class for all Passport strategies.
+	 * @param {string} arg_name - plugin name.
+	 * @param {string} arg_class - plugin class name.
      * @param {string|undefined} arg_log_context - optional.
      * @returns {nothing}
      */
-	constructor(arg_log_context)
+	constructor(arg_name, arg_class, arg_log_context)
 	{
-		super(arg_log_context ? arg_log_context : context)
+		super(arg_name, 'AuthenticationPluginPassport', arg_log_context ? arg_log_context : context)
 		
 		this.is_authentication = true
-        this.passport = passport
-        this.strategies = {}
-        this.strategies_names = []
+		
+		this.passport = passport
+		this.strategies = {}
+		this.strategies_names = []
 	}
 	
     

@@ -5,6 +5,9 @@ import winston from 'winston'
 import Logger from './logger'
 
 
+// const context = 'common/loggers/logger_winston'
+
+
 
 const customLevels = {
 	levels: {
@@ -28,10 +31,10 @@ const customLevels = {
  * @author Luc BORIES
  * @license Apache-2.0
  */
-export default class LoggerConsole extends Logger
+export default class LoggerWinston extends Logger
 {
 	/**
-	 * Create a Console Logger instance.
+	 * Create a Winston Logger instance.
 	 * @param {string} arg_context - trace context.
 	 * @returns {nothing}
 	 */
@@ -39,26 +42,56 @@ export default class LoggerConsole extends Logger
 	{
 		super(arg_enabled)
 		
-		this.is_logger_console = true
+		this.is_logger_winston = true
 		
+		let transports = []
+		
+		// console.log(arg_settings, context + ':' + arg_settings)
 		if ( T.isObject(arg_settings) )
 		{
-			if ( T.isObject(arg_settings.loggers.transports) )
+			if ( T.isObject(arg_settings.transports) )
 			{
-				// TODO: load from settings
+				// console.log(context + ':transport config found', arg_settings.transports)
+				const transports_names = Object.keys(arg_settings.transports)
+				transports_names.forEach(
+					(transport_name) => {
+						const transport_cfg = arg_settings.transports[transport_name]
+						
+						if ( ! T.isString(transport_cfg.type) )
+						{
+							return
+						}
+						
+						switch(transport_cfg.type)
+						{
+							case 'file': {
+								const transport = this.create_file_transport(transport_cfg)
+								transports.push(transport)
+								break;
+							}
+							case 'console': {
+								const transport = this.create_console_transport(transport_cfg)
+								transports.push(transport)
+								break;
+							}
+						}
+					}
+				)
 			}
 		}
 		
-		
-		const console_transport = this.create_console_transport(undefined)
-		const file_transport = this.create_file_transport(undefined)
+		if ( transports.length == 0 )
+		{
+			// console.log(context + ':no transport config found')
+			const console_transport = this.create_console_transport(undefined)
+			const file_transport = this.create_file_transport(undefined)
+			transports.push(console_transport)
+			transports.push(file_transport)
+		}
 		
 		const logger_cfg = {
 			levels: customLevels.levels,
-			transports: [
-				console_transport,
-				file_transport
-			]
+			transports: transports
 		}
 		
 		this.logger = new (winston.Logger)(logger_cfg)
@@ -73,9 +106,12 @@ export default class LoggerConsole extends Logger
 	 * @param {object} arg_transport_cfg - console transport settings.
 	 * @returns {winston.transports.Console}
 	 */
-	create_console_transport(/*arg_transport_cfg*/)
+	create_console_transport(arg_transport_cfg)
 	{
-		const transport_console_cfg = {
+		arg_transport_cfg = T.isObject(arg_transport_cfg) ? arg_transport_cfg : {}
+		
+		// DEFAULT CONFIGURATION
+		const default_transport_cfg = {
 			level:'debug',
 			
 			timestamp: function()
@@ -85,15 +121,28 @@ export default class LoggerConsole extends Logger
 			
 			formatter: function(options)
 			{
-				// Return string will be passed to logger.
 				return options.timestamp().toString().substr(-6) +' '+ process.pid +' '+ options.level.toUpperCase() +' '+ (undefined !== options.message ? options.message : '') +
-				(options.meta && Object.keys(options.meta).length ? '\n\t'+ JSON.stringify(options.meta) : '' )
+					(options.meta && Object.keys(options.meta).length ? '\n\t'+ JSON.stringify(options.meta) : '' )
 			},
 			
 			colorize:true
 		}
 		
-		return new (winston.transports.Console)(transport_console_cfg)
+		// CHECK CONFIGURATION
+		if ( ! T.isString(arg_transport_cfg.level) || ! (arg_transport_cfg.level in customLevels.levels) )
+		{
+			arg_transport_cfg.level = default_transport_cfg.level
+		}
+		if ( ! T.isFunction(arg_transport_cfg.timestamp) )
+		{
+			arg_transport_cfg.timestamp = default_transport_cfg.timestamp
+		}
+		if ( ! T.isFunction(arg_transport_cfg.formatter) )
+		{
+			arg_transport_cfg.formatter = default_transport_cfg.formatter
+		}
+		
+		return new (winston.transports.Console)(arg_transport_cfg)
 	}
 	
 	
@@ -102,17 +151,61 @@ export default class LoggerConsole extends Logger
 	 * @param {object} arg_transport_cfg - file transport settings.
 	 * @returns {winston.transports.File}
 	 */
-	create_file_transport(/*arg_transport_cfg*/)
+	create_file_transport(arg_transport_cfg)
 	{
-		const transport_file_cfg = {
+		arg_transport_cfg = T.isObject(arg_transport_cfg) ? arg_transport_cfg : {}
+		
+		// DEFAULT CONFIGURATION
+		const default_transport_cfg = {
 			level: 'debug',
+			
+			timestamp: function()
+			{
+				return Date.now()
+			},
+			
+			formatter: function(options)
+			{
+				return options.timestamp().toString().substr(-6) +' '+ process.pid +' '+ options.level.toUpperCase() +' '+ (undefined !== options.message ? options.message : '') +
+					(options.meta && Object.keys(options.meta).length ? '\n\t'+ JSON.stringify(options.meta) : '' )
+			},
 			
 			filename: './tmp/debug.log',
 			maxsize:100000,
 			maxFiles:2
 		}
+		const max_size = 100000000
+		const max_files = 100
 		
-		return new (winston.transports.File)(transport_file_cfg)
+		// CHECK CONFIGURATION
+		if ( ! T.isString(arg_transport_cfg.level) || ! (arg_transport_cfg.level in customLevels.levels) )
+		{
+			arg_transport_cfg.level = default_transport_cfg.level
+		}
+		if ( ! T.isFunction(arg_transport_cfg.timestamp) )
+		{
+			arg_transport_cfg.timestamp = default_transport_cfg.timestamp
+		}
+		if ( ! T.isFunction(arg_transport_cfg.formatter) )
+		{
+			arg_transport_cfg.formatter = default_transport_cfg.formatter
+		}
+		if ( ! T.isString(arg_transport_cfg.filename) )
+		{
+			arg_transport_cfg.filename = default_transport_cfg.filename
+		}
+		if ( ! T.isNumber(arg_transport_cfg.maxsize) )
+		{
+			arg_transport_cfg.maxsize = default_transport_cfg.maxsize
+		}
+		if ( ! T.isNumber(arg_transport_cfg.maxFiles) )
+		{
+			arg_transport_cfg.maxFiles = default_transport_cfg.maxFiles
+		}
+		arg_transport_cfg.maxsize = Math.min(arg_transport_cfg.maxsize, max_size)
+		arg_transport_cfg.maxFiles = Math.min(arg_transport_cfg.maxFiles, max_files)
+		
+		return new (winston.transports.File)(arg_transport_cfg)
 	}
 	
 	

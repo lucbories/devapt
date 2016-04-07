@@ -3,7 +3,6 @@ import assert from 'assert'
 import T from 'typr'
 import path from 'path'
 
-import logs from '../../../utils/logs'
 import parser from '../../../parser/parser'
 
 import load_config_security_authorization from './load_config_security_authorization'
@@ -23,7 +22,7 @@ let error_msg_bad_cx_config = context + ':security.connexions.*.* should be a va
 // const apps_dir = '../../../../apps/'
 	
 
-function load_config_security(arg_security_config, arg_base_dir)
+function load_config_security(logs, arg_security_config, arg_base_dir)
 {
 	// console.log('LOADING CONFIG SECURITY', arg_security_config)
 	logs.info(context, 'loading config.security')
@@ -36,7 +35,7 @@ function load_config_security(arg_security_config, arg_base_dir)
 		assert(T.isArray(arg_security_config.connexions), error_msg_bad_connexions)
 		assert(T.isObject(arg_security_config.authentication), error_msg_bad_authentication)
 		assert(T.isObject(arg_security_config.authorization), error_msg_bad_authorization)
-		
+
 		// LOAD CONNEXIONS
 		arg_security_config.files = {}
 		arg_security_config.resources_by_name = {}
@@ -79,10 +78,10 @@ function load_config_security(arg_security_config, arg_base_dir)
 		)
 		
 		// CHECK AUTHENTICATION
-		arg_security_config.authentication = load_config_security_authentication(arg_security_config.authentication, arg_base_dir)
+		arg_security_config.authentication = load_config_security_authentication(logs, arg_security_config.authentication, arg_base_dir)
 
 		// CHECK AUTHORIZATION
-		arg_security_config.authorization = load_config_security_authorization(arg_security_config.authorization, arg_base_dir)
+		arg_security_config.authorization = load_config_security_authorization(logs, arg_security_config.authorization, arg_base_dir)
 	}
 	catch(e)
 	{

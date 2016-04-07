@@ -90,6 +90,7 @@ export default class AuthenticationManager extends PluginsManager
 	load_plugin(arg_settings)
 	{
 		this.enter_group('load_plugin')
+		// console.log(arg_settings, context + ':load_plugin:arg_settings')
 		
 		const self = this
 		
@@ -263,11 +264,19 @@ export default class AuthenticationManager extends PluginsManager
 	 */
 	get_credentials(arg_request)
 	{
+		this.info('get_credentials')
+		
 		// console.log(arg_request.url, 'arg_request.url')
 		// console.log(arg_request.queries, 'arg_request.queries')
 		// console.log(arg_request.password, 'arg_request')
 		// console.log(arg_request.query(), 'arg_request.query')
 		// console.log(arg_request.params, 'arg_request.params')
+		
+		if ( T.isObject(arg_request.devapt_credentials) )
+		{
+			this.info('get_credentials:authentication from cache')
+			return arg_request.devapt_credentials
+		}
 		
 		let credentials = { 'username':null, 'password':null }
 		let query_str = null
@@ -279,28 +288,31 @@ export default class AuthenticationManager extends PluginsManager
 		// EXPRESS REQUEST
 		if (arg_request && arg_request.query && arg_request.query.username && arg_request.query.password)
 		{
-			this.info('authentication with query map')
+			this.info('get_credentials:authentication with query map')
 			
 			credentials.username = arg_request.query.username
 			credentials.password = arg_request.query.password
+			arg_request.devapt_credentials = credentials
+			
 			return credentials
 		}
 		
 		// RESTIFY
 		if (arg_request && T.isString(arg_request.query) )
 		{
-			this.info('authentication with query string')
+			this.info('get_credentials:authentication with query string')
 			query_str = arg_request.query
 		}
 		if (arg_request && T.isFunction(arg_request.query) )
 		{
-			this.info('authentication with query function')
+			this.info('get_credentials:authentication with query function')
 			query_str = arg_request.query()
 		}
 		if ( T.isString(query_str) )
 		{
 			const queries = query_str.split('&')
-			console.log(queries, 'queries part')
+			// console.log(queries, 'queries part')
+			
 			queries.forEach(
 				(item/*, index, arr*/) => {
 					const parts = item.split('=')
@@ -324,6 +336,7 @@ export default class AuthenticationManager extends PluginsManager
 			
 			if (credentials.username && credentials.password)
 			{
+				arg_request.devapt_credentials = credentials
 				return credentials
 			}
 		}
@@ -331,17 +344,19 @@ export default class AuthenticationManager extends PluginsManager
 		// RESTIFY QUERY PARSER PLUGIN (NO WORKING)
 		if (arg_request && arg_request.params && arg_request.params.username && arg_request.params.password)
 		{
-			this.info('authentication with params args')
+			this.info('get_credentials:authentication with params args')
 			
 			credentials.username = arg_request.params.username
 			credentials.password = arg_request.params.password
+			arg_request.devapt_credentials = credentials
+			
 			return credentials
 		}
 		
 		// RESTIFY AUTHORIZATION PLUGIN
 		if (arg_request && arg_request.authorization)
 		{
-			this.info('authentication with basic auth header args')
+			this.info('get_credentials:authentication with basic auth header args')
 			
 			if (!arg_request.authorization.basic)
 			{
@@ -350,6 +365,8 @@ export default class AuthenticationManager extends PluginsManager
 			
 			credentials.username = arg_request.authorization.basic.username
 			credentials.password = arg_request.authorization.basic.password
+			arg_request.devapt_credentials = credentials
+			
 			return credentials
 		}
 

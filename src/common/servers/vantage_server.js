@@ -5,9 +5,9 @@ import Express from 'express'
 import Vantage from 'vantage'
 import repl from 'vantage-repl-sandboxed'
 
-import { store, config } from '../store/index'
+import { config } from '../store/index'
 import runtime from '../base/runtime'
-import Server from '../base/server'
+import Server from './server'
 import node_cmd from '../commands/node_cmd'
 import master_cmd from '../commands/master_cmd'
 
@@ -20,7 +20,7 @@ export default class VantageServer extends Server
 {
 	constructor(arg_name, arg_settings, arg_context)
 	{
-		super(arg_name, arg_settings, arg_context ? arg_context : context)
+		super(arg_name, 'VantageServer', arg_settings, arg_context ? arg_context : context)
 		
 		this.is_vantage_server = true
 	}

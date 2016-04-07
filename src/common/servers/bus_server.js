@@ -3,9 +3,7 @@ import T from 'typr'
 import assert from 'assert'
 import simplebus from 'simplebus'
 
-// import { store, config } from '../store/index'
-// import runtime from '../base/runtime'
-import Server from '../base/server'
+import Server from './server'
 
 
 
@@ -16,7 +14,7 @@ export default class BusServer extends Server
 {
 	constructor(arg_name, arg_settings, arg_context)
 	{
-		super(arg_name, arg_settings, arg_context ? arg_context : context)
+		super(arg_name, 'BusServer', arg_settings, arg_context ? arg_context : context)
 		
 		this.is_bus_server = true
 	}

@@ -1,10 +1,10 @@
 
-import T from 'typr'
+// import T from 'typr'
 import assert from 'assert'
 
 import ExecutableRouteMiddleware from '../../executables/executable_route_middleware'
 
-import ServiceProvider from '../base/service_provider'
+import ServiceExecProvider from '../base/service_exec_provider'
 
 
 let context = 'common/services/middleware/mw_svc_provider'
@@ -16,7 +16,7 @@ let context = 'common/services/middleware/mw_svc_provider'
  * @author Luc BORIES
  * @license Apache-2.0
  */
-export default class MiddlewareSvcProvider extends ServiceProvider
+export default class MiddlewareSvcProvider extends ServiceExecProvider
 {
 	/**
 	 * Create a middleware service provider.

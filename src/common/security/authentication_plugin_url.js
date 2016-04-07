@@ -21,14 +21,17 @@ export default class AuthenticationPluginURL extends AuthenticationPlugin
 {
 	/**
 	 * Create an Authentication plugin class based on query parameters.
+	 * @param {string} arg_name - plugin name.
 	 * @param {string|undefined} arg_log_context - optional.
 	 * @returns {nothing}
 	 */
 	constructor(arg_name, arg_log_context)
 	{
-		super(arg_name, arg_log_context ? arg_log_context : context)
+		super(arg_name, 'AuthenticationPluginURL', arg_log_context ? arg_log_context : context)
 		
 		this.is_authentication_url_plugin = true
+		
+		this.is_trace_enabled = true
 	}
 	
 	
@@ -39,6 +42,8 @@ export default class AuthenticationPluginURL extends AuthenticationPlugin
 	 */
 	enable(arg_settings)
 	{
+		this.enter_group('enable')
+		
 		const self = this
 		
 		// console.log(arg_settings, 'arg_settings')
@@ -104,22 +109,33 @@ export default class AuthenticationPluginURL extends AuthenticationPlugin
 					// console.log(json_full_path, 'json_full_path')
 					
 					// OPEN DATABASE
-					const db_settings = {
-						autosave:true,
-						async:true
-					}
-					self.file_db = lowdb(json_full_path, db_settings)
-					// console.log(self.file_db, 'self.file_db')
+					// const db_settings = {
+					// 	autosave:true,
+					// 	async:true
+					// }
+					
+					// TODO
+					const storage = require('lowdb/file-sync')
+					
+					self.file_db = lowdb(json_full_path, {storage})
+					// self.file_db = lowdb(json_full_path, db_settings)
+					
+					// console.log(self.file_db.object, 'self.file_db.object')
+					// console.log( require(json_full_path), 'self.file_db JSON file')
+					
+					self.leave_group('enable (async:resolved)')
 				}
 			)
 			resolved_promise.catch(
 				(reason) => {
+					self.leave_group('enable (async:error)')
 					self.error('failed to load db file:' + reason)
 					// console.log('failed to load db file:' + reason)
 				}
 			)
 		}
 		
+		this.leave_group('enable (async:waiting)')
 		return resolved_promise
 	}
 	
@@ -144,6 +160,8 @@ export default class AuthenticationPluginURL extends AuthenticationPlugin
 	 */
 	create_middleware(arg_should_401, arg_next_auth_mw)
 	{
+		const self = this
+		self.debug('create_middleware')
 		// console.log('auth_plugin_url.create_middleware')
 		
 		const auth_mgr = runtime.security().get_authentication_manager()
@@ -154,25 +172,30 @@ export default class AuthenticationPluginURL extends AuthenticationPlugin
 			
 			if ( auth_mgr.check_request_authentication(req) )
 			{
-				console.log('auth_plugin_url.create_middleware.request is already authenticated')
+				// console.log(context + ':auth_plugin_url.create_middleware.request is already authenticated')
+				self.debug('auth_plugin_url.create_middleware.request is already authenticated')
 				next()
 				return
 			}
 			else
 			{
-				console.log('auth_plugin_url.create_middleware:not authenticated with credentials', credentials)
+				// console.log(context + ':auth_plugin_url.create_middleware:not authenticated with credentials'/*, credentials*/)
+				self.debug('auth_plugin_url.create_middleware:not authenticated with credentials'/*, credentials*/)
 			}
 			
 			
 			this.authenticate(credentials)
 			.then(
 				(result) => {
-					console.log('auth_plugin_url.create_middleware.authenticate then')
+					// console.log(context + ':auth_plugin_url.create_middleware.authenticate then')
+					self.debug('auth_plugin_url.create_middleware.authenticate then')
 					
 					// SUCCESS
 					if (result)
 					{
-						console.log('auth_plugin_url.create_middleware.authenticate then:next')
+						// console.log(context + ':auth_plugin_url.create_middleware.authenticate then:next')
+						self.debug('auth_plugin_url.create_middleware.authenticate then:next')
+						
 						req.is_authenticated = true
 						next()
 						return
@@ -186,13 +209,17 @@ export default class AuthenticationPluginURL extends AuthenticationPlugin
 						res.contentType = 'json'
 						res.send({ message: 'Authentication failure' })
 						
-						console.log('auth_plugin_url.create_middleware.authenticate then:auth failure')
+						// console.log(context + ':auth_plugin_url.create_middleware.authenticate then:auth failure')
+						self.debug('auth_plugin_url.create_middleware.authenticate then:auth failure')
+						
 						next('Authentication failure')
 						return
 					}
 					
 					// FAILURE WITHOUT ERROR
-					console.log('auth_plugin_url.create_middleware.authenticate failure without error:next')
+					// console.log(context + ':auth_plugin_url.create_middleware.authenticate failure without error:next')
+					self.debug('auth_plugin_url.create_middleware.authenticate failure without error:next')
+					
 					if (arg_next_auth_mw)
 					{
 						arg_next_auth_mw(req, res, next)
@@ -204,7 +231,8 @@ export default class AuthenticationPluginURL extends AuthenticationPlugin
 			)
 			.catch(
 				(reason) => {
-					console.log('auth_plugin_url.create_middleware.authenticate exception', reason)
+					// console.log(context + ':auth_plugin_url.create_middleware.authenticate exception', reason)
+					self.debug('auth_plugin_url.create_middleware.authenticate exception', reason)
 					
 					// SEND OUTPUT
 					res.status(401)
@@ -226,7 +254,7 @@ export default class AuthenticationPluginURL extends AuthenticationPlugin
 	authenticate(arg_credentials)
 	{
 		this.debug('authenticate')
-		// console.log(arg_credentials, 'arg_credentials')
+		// console.log(arg_credentials, context + ':authenticate:arg_credentials')
 		
 		// assert( T.isFunction(this.file_db), context + ':authenticate:bad db object')
 		assert( T.isObject(arg_credentials), context + ':authenticate:bad credentials object')
@@ -249,7 +277,8 @@ export default class AuthenticationPluginURL extends AuthenticationPlugin
 		
 		// EXECUTE QUERY
 		try{
-			// console.log(context + '.authenticate:db', this.file_db.object.users)
+			// console.log(context + '.authenticate:db', this.file_db)
+			// console.log(context + '.authenticate:db', this.file_db.object)
 			// console.log(context + '.authenticate:query', query)
 			
 			const users = this.file_db('users').find(query)
@@ -268,7 +297,7 @@ export default class AuthenticationPluginURL extends AuthenticationPlugin
 		}
 		catch(e)
 		{
-			//  console.log('authenticate user error', e)
+			console.error('authenticate user error', e)
 		}
 		
 		// console.log('authenticate user NOT found')

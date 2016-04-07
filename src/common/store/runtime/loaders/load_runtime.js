@@ -2,12 +2,13 @@
 import assert from 'assert'
 import T from 'typr'
 
-import logs from '../../../utils/logs'
+import LoggerConsole from '../../../loggers/logger_console'
+
 import default_runtime from './default_runtime'
 
 
 let context = 'common/store/runtime/loaders/load_runtime'
-let error_msg_bad_config = context + ':bad config'
+// let error_msg_bad_config = context + ':bad config'
 
 
 
@@ -15,9 +16,10 @@ let error_msg_bad_config = context + ':bad config'
  * Load the 'runtime' key of the final state
  * Pure function: (Plain Object) => (new Plain Object)
  */
-function load_runtime(arg_state, arg_initial_config)
+function load_runtime(arg_state, arg_initial_config, arg_trace)
 {
-	logs.info(context, 'loading runtime');
+	const logs = new LoggerConsole(arg_trace ? arg_trace : false)
+	logs.info(context, 'loading runtime')
 	
 	
 	// CHECK RUNTIME
@@ -27,7 +29,7 @@ function load_runtime(arg_state, arg_initial_config)
 		
 		// CHECK CONFIG PARTS
 		assert(T.isObject(config), 'runtime config should be a plain object')
-		arg_state.runtime = config;
+		arg_state.runtime = config
 	}
 	catch(e)
 	{

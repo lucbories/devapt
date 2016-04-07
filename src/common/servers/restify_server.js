@@ -15,7 +15,7 @@ export default class RestifyServer extends Server
 {
 	constructor(arg_name, arg_settings, arg_context)
 	{
-		super(arg_name, arg_settings, arg_context ? arg_context : context)
+		super(arg_name, 'RestifyServer', arg_settings, arg_context ? arg_context : context)
 		
 		this.is_restify_server = true
 	}

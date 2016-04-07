@@ -1,8 +1,8 @@
 
-import T from 'typr'
-import assert from 'assert'
+// import T from 'typr'
+// import assert from 'assert'
 
-import { store, config } from '../store/index'
+import { config } from '../store/index'
 import Application from '../base/application'
 
 import RuntimeExecutable from './runtime_executable'

@@ -182,7 +182,7 @@ export default class Node extends BusServerInstance
 		this.switch_state(STATE_LOADING)
 		
 		// GET NODE SERVERS SETTINGS
-		assert( T.isObject(arg_settings), context + ':bad settings object')
+		assert( T.isObject(arg_settings), context + ':bad master settings object')
 		assert( arg_settings.has('servers'), context + ':unknow settings.servers')
 		const servers = arg_settings.get('servers')
 		assert( T.isObject(servers), context + ':bad settings.servers object')

@@ -8,7 +8,7 @@ var sourcemaps = require('gulp-sourcemaps')
 var babel = require('gulp-babel')
 var concat = require('gulp-concat')
 var changed = require('gulp-changed')
-var browserSync = require('browser-sync').create()
+// var browserSync = require('browser-sync').create()
 var runseq = require('run-sequence')
 var jsdoc = require('gulp-jsdoc3')
 
@@ -26,7 +26,7 @@ var DST_APPS = 'dist/apps'
 var DST_BROWSER = 'dist/browser'
 var DST_COMMON  = 'dist/common'
 var DST_SERVER  = 'dist/server'
-var DOCS_API  = 'docs/api/'
+// var DOCS_API  = 'docs/api/'
 
 
 const jsconfig = {
@@ -213,7 +213,7 @@ gulp.task('release', ['default', 'build_bundles']);
 // watcher.on('change', function(event) {
 //   console.log('File ' + event.path + ' was ' + event.type + ', running tasks...');
 // });
-
+/*
 gulp.task('js-watch', ['build_all_js'], browserSync.reload);
 gulp.task('serve', ['build_all_js'],
     function ()
@@ -235,4 +235,4 @@ gulp.task('serve', ['build_all_js'],
             }
         );
     }
-);
+);*/

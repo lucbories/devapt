@@ -9,8 +9,8 @@ import Instance from './instance'
 import Collection from './collection'
 import runtime from './runtime'
 
-import ServiceConsumer from '../services/service_consumer'
-import ServiceProvider from '../services/service_provider'
+import ServiceConsumer from '../services/base/service_consumer'
+import ServiceProvider from '../services/base/service_provider'
 
 
 
@@ -170,13 +170,19 @@ export default class Service extends Instance
 		
 		if (is_browser())
 		{
-			this.locale_exec.prepare(exec_cfg)
-			this.locale_exec.execute(arg_application)
+			if ( T.isObject(this.locale_exec) )
+			{
+				this.locale_exec.prepare(exec_cfg)
+				this.locale_exec.execute(arg_application)
+			}
 		}
 		else if (is_server())
 		{
-			this.remote_exec.prepare(exec_cfg)
-			this.remote_exec.execute(arg_application)
+			if ( T.isObject(this.remote_exec) )
+			{
+				this.remote_exec.prepare(exec_cfg)
+				this.remote_exec.execute(arg_application)
+			}
 		}
 		
 		let provider = this.get_provider_by_app_server(arg_application.get_name(), arg_server.get_name())

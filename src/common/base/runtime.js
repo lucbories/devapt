@@ -3,7 +3,7 @@ import assert from 'assert'
 import { fromJS } from 'immutable'
 
 import * as exec from '../runtime/index'
-import {SOURCE_LOCAL_FILE} from '../datas/providers/provider'
+import {SOURCE_LOCAL_FILE} from '../datas/providers/json_provider'
 
 import Context from './context'
 import Transaction from './transaction'
@@ -59,7 +59,8 @@ class Runtime extends Settingsable
 	constructor()
 	{
 		const settings = fromJS( default_settings )
-		settings.logger_manager = new LoggerManager()
+		const loggers_settings = undefined
+		settings.logger_manager = new LoggerManager(loggers_settings)
 		super(settings, context)
 		
 		// this.$settings = fromJS( default_settings )
@@ -102,6 +103,7 @@ class Runtime extends Settingsable
 		this.enter_group('load')
 		
 		const runtime_settings = Object.assign(default_settings, arg_settings)
+		
 		runtime_settings.logger_manager = this.logger_manager
 		this.$settings = fromJS(runtime_settings)
 		this.is_master = this.get_setting('is_master', false)
@@ -116,7 +118,7 @@ class Runtime extends Settingsable
 		const tx = new Transaction('runtime', 'startup', 'loading', { logger_manager:this.logger_manager }, execs, Transaction.SEQUENCE)
 		tx.prepare({runtime:this})
 		const tx_promise = tx.execute(null)
-
+		
 		this.leave_group('load')
 		this.separate_level_1()
 		return tx_promise

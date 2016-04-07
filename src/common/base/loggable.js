@@ -23,12 +23,92 @@ export default class Loggable
 	{
 		this.is_loggable = true
 		this.$context = arg_context
+		
 		this.is_trace_enabled = true
 		
 		if ( T.isObject(arg_logger_manager) && arg_logger_manager.is_logger_manager )
 		{
 			this.logger_manager = arg_logger_manager
 		}
+		
+		// TO SET IN SUB CLASSES
+		// if ( ! this.is_runtime )
+		// {
+		// 	const logger = this.get_logger_manager()
+		// 	const traces = logger.get_setting('traces')
+		// 	this.is_trace_enabled = this.should_trace(traces)
+		// }
+	}
+	
+	
+	/**
+	 * Should trace flag.
+	 * @param {object} arg_traces_cfg - traces settings object as { modules:{}, classes:{}, instances:{} }
+	 * @returns {boolean} - trace flag.
+	 */
+	should_trace(arg_traces_cfg)
+	{
+		if ( ! T.isObject(arg_traces_cfg) )
+		{
+			console.error(context + ':should_trace:no traces cfg')
+			return false
+		}
+		
+		let should_trace = false
+		
+		// TRACES MODULE ?
+		should_trace = should_trace || this.should_trace_module(arg_traces_cfg)
+		// console.log(context + ':should_trace:value=' + should_trace)
+		
+		return should_trace
+	}
+	
+	
+	/**
+	 * Should trace flag for modules.
+	 * @param {object} arg_traces_cfg - traces settings object as { modules:{}, classes:{}, instances:{} }
+	 * @returns {boolean} - trace flag.
+	 */
+	should_trace_module(arg_traces_cfg)
+	{
+		if ( ! T.isObject(arg_traces_cfg) )
+		{
+			return false
+		}
+		
+		let should_trace = false
+		
+		// TRACES MODULE ?
+		if ( T.isObject(arg_traces_cfg.modules) )
+		{
+			if ( (context in arg_traces_cfg.modules) )
+			{
+				should_trace = arg_traces_cfg.modules[context]
+			}
+			else
+			{
+				Object.keys(arg_traces_cfg.modules).forEach(
+					function(arg_module_name)
+					{
+						const loop_module = arg_traces_cfg.modules[arg_module_name]
+						
+						// REGEX
+						if (arg_module_name.indexOf('*') > -1 || arg_module_name.indexOf('.') > -1 || arg_module_name.indexOf('[') > -1 || arg_module_name.indexOf('{') > -1)
+						{
+							const re = new RegExp(arg_module_name, 'gi')
+							const found = re.test(context)
+							if (found)
+							{
+								should_trace = loop_module ? true : false
+								return
+							}
+						}
+					}
+				)
+			}
+		}
+		
+		return should_trace
 	}
 	
 	
@@ -38,7 +118,7 @@ export default class Loggable
 	 */
 	get_logger_manager()
 	{
-		if (! this.logger_manager)
+		if (! this.logger_manager && ! this.is_runtime)
 		{
 			const runtime = require('./runtime').default
 			this.logger_manager = runtime.logger_manager

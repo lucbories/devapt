@@ -2,6 +2,7 @@
 // import T from 'typr'
 import assert from 'assert'
 import express from 'express'
+import compression from 'compression'
 // import helmet from 'helmet'
 import favicon from 'express-favicon'
 
@@ -18,7 +19,7 @@ export default class ExpressServer extends Server
 {
 	constructor(arg_name, arg_settings, arg_context)
 	{
-		super(arg_name, arg_settings, arg_context ? arg_context : context)
+		super(arg_name, 'ExpressServer', arg_settings, arg_context ? arg_context : context)
 		
 		this.is_express_server = true
 	}
@@ -34,6 +35,8 @@ export default class ExpressServer extends Server
 		// CREATE SERVER
 		this.server = express()
 		
+		// USE COMPRESSED RESPONSE WITH GZIP
+		this.server.use(compression())
 		
 		// USE SECURITY MIDDLEWARE (https://www.npmjs.com/package/helmet)
 		// this.server.use(helmet)

@@ -4,7 +4,7 @@ import assert from 'assert'
 
 import ExecutableRouteResources from '../../executables/executable_route_get_resource'
 
-import ServiceProvider from '../base/service_provider'
+import ServiceExecProvider from '../base/service_exec_provider'
 
 
 let context = 'common/services/resources/resources_svc_provider'
@@ -16,7 +16,7 @@ let context = 'common/services/resources/resources_svc_provider'
  * @author Luc BORIES
  * @license Apache-2.0
  */
-export default class ResourcesSvcProvider extends ServiceProvider
+export default class ResourcesSvcProvider extends ServiceExecProvider
 {
 	/**
 	 * Create a resources service provider.

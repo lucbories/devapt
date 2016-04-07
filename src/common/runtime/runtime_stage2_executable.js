@@ -41,7 +41,22 @@ export default class RuntimeStage2Executable extends RuntimeExecutable
 		if (this.runtime.is_master)
 		{
 			this.info('Create master node servers')
+			
+			const nodes_cfg = config().get('nodes')
+			if ( nodes_cfg.has('error') )
+			{
+				this.info('master settings loading failure', nodes_cfg.get('error'))
+				this.error('master settings loading failure')
+				
+				this.leave_group('execute:error')
+				this.separate_level_1()
+				this.set_trace(saved_trace)
+				return Promise.reject('master settings loading failure')
+			}
+			
 			const node_settings = config.get_collection_item('nodes', this.runtime.node.get_name())
+			// console.log(context + ':config', config().get('nodes'))
+			
 			this.runtime.node.load_master_settings(node_settings)
 			
 			this.info('Create services for all master node servers')

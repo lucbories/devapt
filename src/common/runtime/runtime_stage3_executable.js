@@ -1,8 +1,8 @@
 
-import T from 'typr'
+// import T from 'typr'
 import assert from 'assert'
 
-import { store, config } from '../store/index'
+import { config } from '../store/index'
 import Module from '../base/module'
 import Plugin from '../base/plugin'
 import Database from '../resources/database'

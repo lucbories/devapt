@@ -1,9 +1,9 @@
 
-import T from 'typr'
+// import T from 'typr'
 import assert from 'assert'
-import socketio from 'socket.io'
+// import socketio from 'socket.io'
 
-import Server from '../base/server'
+import Server from './server'
 
 
 
@@ -14,7 +14,7 @@ export default class SocketIOServer extends Server
 {
 	constructor(arg_name, arg_settings, arg_context)
 	{
-		super(arg_name, arg_settings, arg_context ? arg_context : context)
+		super(arg_name, 'SocketIOServer', arg_settings, arg_context ? arg_context : context)
 		
 		this.is_socketio_server = true
 	}

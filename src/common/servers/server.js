@@ -8,15 +8,20 @@ import Collection from '../base/collection'
 import BusClientInstance from './bus_client_instance'
 
 import AuthenticationWrapper from '../security/authentication_wrapper'
-// import AuthorizationWrapper from '../security/authorization_wrapper'
 
 
 
-const context = 'common/base/server'
+const context = 'common/servers/server'
 
+/**
+ * @public
+ * Type of servers.
+ */
 export const ServerTypes = {
 	SERVER_TYPE_EXPRESS : 'express',
 	SERVER_TYPE_RESTIFY : 'restify',
+	SERVER_TYPE_SOCKETIO : 'socketio',
+	SERVER_TYPE_FEATHER : 'feather',
 	SERVER_TYPE_CLUSTER : 'cluster'
 }
 
@@ -31,14 +36,19 @@ export default class Server extends BusClientInstance
 	/**
 	 * Create a server instance.
 	 * @extends BusClientInstance
-	 * @param {string} arg_name - plugin name
+	 * @param {string} arg_name - server name
+	 * @param {string} arg_class - server class name
 	 * @param {object} arg_settings - plugin settings map
 	 * @param {string} arg_log_context - trace context string.
 	 * @returns {nothing}
 	 */
-	constructor(arg_name, arg_settings, arg_log_context)
+	constructor(arg_name, arg_class, arg_settings, arg_log_context)
 	{
-		super('servers', 'Server', arg_name, arg_settings, arg_log_context ? arg_log_context : context)
+		if (! T.isObject(arg_settings))
+		{
+			console.error(arg_class, arg_name, arg_settings, arg_log_context, 'arg_class, arg_name, arg_settings, arg_context')
+		}
+		super('servers', (arg_class ? arg_class.toString() : 'Server'), arg_name, arg_settings, arg_log_context ? arg_log_context : context)
 		
 		this.is_server = true
 		this.is_build = false
@@ -97,13 +107,15 @@ export default class Server extends BusClientInstance
 		
 		// GET SERVER SECURITY SETTINGS
 		const srv_security_settings = self.get_setting('security', null)
+		// console.log(context + '.get_security_settings:srv_security_settings', srv_security_settings)
+		
 		if (srv_security_settings && srv_security_settings.has('authentication'))
 		{
 			// AUTHENTICATION IS ENABLED ?
 			if ( srv_security_settings.hasIn(['authentication', 'enabled']) )
 			{
 				const enabled = srv_security_settings.getIn(['authentication', 'enabled'])
-				security_settings = security_settings.set('enabled', enabled)
+				security_settings = security_settings.setIn(['authentication', 'enabled'], enabled)
 			}
 			else
 			{
@@ -116,7 +128,7 @@ export default class Server extends BusClientInstance
 			if ( srv_security_settings.hasIn(['authentication', 'plugins']) )
 			{
 				const plugins = srv_security_settings.getIn(['authentication', 'plugins'])
-				security_settings = security_settings.set('plugins', plugins.toArray())
+				security_settings = security_settings.setIn(['authentication', 'plugins'], plugins.toArray())
 				if (plugins.size == 0)
 				{
 					self.error('bad server.settings.security.authentication.plugins.size')
@@ -131,6 +143,7 @@ export default class Server extends BusClientInstance
 				return security_settings
 			}
 			
+			// console.log(context + '.get_security_settings:from server:security_settings', security_settings)
 			self.leave_group('get_security_settings:from server')
 			return security_settings
 		}
@@ -139,13 +152,26 @@ export default class Server extends BusClientInstance
 		
 		// GET RUNTIME SECURITY SETTINGS
 		const rt_security_settings = config().get('security')
+		if ( rt_security_settings.has('enabled') )
+		{
+			const enabled = rt_security_settings.get('enabled')
+			security_settings = security_settings.set('enabled', enabled)
+		}
+		else
+		{
+			self.error('get_security_settings:bad runtime.settings.security.enabled')
+			self.leave_group('get_security_settings:from runtime with error')
+			return security_settings
+		}
+		
+		// GET RUNTIME AUTHENTICATION SECURITY SETTINGS
 		if (rt_security_settings && rt_security_settings.has('authentication'))
 		{
 			// AUTHENTICATION IS ENABLED ?
 			if ( rt_security_settings.hasIn(['authentication', 'enabled']) )
 			{
 				const enabled = rt_security_settings.getIn(['authentication', 'enabled'])
-				security_settings = security_settings.set('enabled', enabled)
+				security_settings = security_settings.setIn(['authentication', 'enabled'], enabled)
 			}
 			else
 			{
@@ -158,7 +184,7 @@ export default class Server extends BusClientInstance
 			if ( rt_security_settings.hasIn(['authentication', 'default_plugins']) )
 			{
 				const plugins = rt_security_settings.getIn(['authentication', 'default_plugins'])
-				security_settings = security_settings.set('plugins', plugins.toArray())
+				security_settings = security_settings.setIn(['authentication', 'plugins'], plugins.toArray())
 				if (plugins.size == 0)
 				{
 					self.error('bad runtime.settings.security.authentication.plugins.size')
@@ -231,11 +257,12 @@ export default class Server extends BusClientInstance
 		
 		// SECURITY (could be null for Bus Server...)
 		const security_settings = this.get_security_settings()
+		// console.log(context + '.load:security_settings', security_settings)
 		
 		// AUTHENTICATION
 		if ( security_settings && security_settings.hasIn(['authentication', 'enabled']) && security_settings.hasIn(['authentication', 'plugins']) )
 		{
-			this.authentication.load(security_settings)
+			this.authentication.load(security_settings.get('authentication'))
 		}
 		
 		// AUTHORIZATION
@@ -297,6 +324,23 @@ export default class Server extends BusClientInstance
 }
 
 /*
+https://engineering.gosquared.com/making-dashboard-faster
+function parallel(middlewares) {
+  return function (req, res, next) {
+    async.each(middlewares, function (mw, cb) {
+      mw(req, res, cb);
+    }, next);
+  };
+}
+
+app.use(parallel([
+  getUser,
+  getSiteList,
+  getCurrentSite,
+  getSubscription
+]));
+
+
 		const has_cluster = this.$settings.has('workers')
 		
 		// CLUSTER

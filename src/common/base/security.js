@@ -71,6 +71,7 @@ export default class Security extends Errorable
 		const authorization = arg_settings.get('authorization')
 		
 		this.is_readonly = arg_settings.get('is_readonly')
+		
 		this.authentication_manager.load(authentication)
 		this.authorization_manager.load(authorization)
 		/*

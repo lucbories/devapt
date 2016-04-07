@@ -3,7 +3,6 @@ import assert from 'assert'
 import T from 'typr'
 import path from 'path'
 
-import logs from '../../../utils/logs'
 import parser from '../../../parser/parser'
 
 
@@ -28,7 +27,7 @@ let error_msg_bad_resource_config = context + ':bad resource config'
 
 
 
-function load_config_modules(arg_modules_config, arg_base_dir)
+function load_config_modules(logs, arg_modules_config, arg_base_dir)
 {
 	logs.info(context, 'loading config.modules')
 	
@@ -43,7 +42,7 @@ function load_config_modules(arg_modules_config, arg_base_dir)
 			{
 				if (module_name === 'files')
 				{
-					return;
+					return
 				}
 				
 				logs.info(context, 'loading config.modules.' + module_name)

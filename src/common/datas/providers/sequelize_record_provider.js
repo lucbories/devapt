@@ -4,7 +4,6 @@ import assert from 'assert'
 
 import RecordProvider from './record_provider'
 
-import logs from '../../utils/logs'
 // import runtime from '../../base/runtime'
 
 
@@ -45,7 +44,7 @@ export default class SequelizeRecordProvider extends RecordProvider
      */
 	build_query(arg_query)
 	{
-		logs.debug(context, 'build_query:enter')
+		// logs.debug(context, 'build_query:enter')
 
 		let query = {}
 
@@ -59,7 +58,7 @@ export default class SequelizeRecordProvider extends RecordProvider
 			query.attributes = this.fields_list
 		}
 
-		logs.debug(context, 'build_query:leave')
+		// logs.debug(context, 'build_query:leave')
 		return query
 	}
     
@@ -71,12 +70,12 @@ export default class SequelizeRecordProvider extends RecordProvider
      */
 	find_all_records(arg_query)
 	{
-		logs.debug(context, 'find_all_records:enter')
+		// logs.debug(context, 'find_all_records:enter')
 
 		const query = this.build_query(arg_query)
 		const records_promise = this.sequelize_model.findAll(query)
 
-		logs.debug(context, 'find_all_records:leave')
+		// logs.debug(context, 'find_all_records:leave')
 		return records_promise
 	}
     
@@ -88,12 +87,12 @@ export default class SequelizeRecordProvider extends RecordProvider
      */
 	find_records_by_id(arg_id)
 	{
-		logs.debug(context, 'find_record_by_id:enter')
+		// logs.debug(context, 'find_record_by_id:enter')
 		assert( T.isString(arg_id) || T.isNumber(arg_id), context + ':find_record_by_id:bad id string or number')
 
 		const records_promise = this.sequelize_model.findById()
 
-		logs.debug(context, 'find_record_by_id:leave')
+		// logs.debug(context, 'find_record_by_id:leave')
 		return records_promise
 	}
     
@@ -106,7 +105,7 @@ export default class SequelizeRecordProvider extends RecordProvider
      */
 	find_records_by_values(arg_values_map, arg_query)
 	{
-		logs.debug(context, 'find_record_by_values:enter')
+		// logs.debug(context, 'find_record_by_values:enter')
 		assert( T.isObject(arg_values_map), context + ':find_record_by_values:bad values object')
 
 		// UPDATE QUERY WITH VALUES
@@ -120,7 +119,7 @@ export default class SequelizeRecordProvider extends RecordProvider
 		const query = this.build_query(arg_query)
 		const records_promise = this.sequelize_model.findAll(query)
 
-		logs.debug(context, 'find_record_by_values:leave')
+		// logs.debug(context, 'find_record_by_values:leave')
 		return records_promise
 	}
 }

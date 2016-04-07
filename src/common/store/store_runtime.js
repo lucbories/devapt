@@ -1,4 +1,4 @@
-import T from 'typr'
+// import T from 'typr'
 
 import { store, config, runtime } from './store';
 

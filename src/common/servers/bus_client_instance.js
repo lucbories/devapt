@@ -30,7 +30,11 @@ export default class BusClientInstance extends Instance
 	 */
 	constructor(arg_collection, arg_class, arg_name, arg_settings, arg_context)
 	{
-		assert( T.isObject(arg_settings), context + ':bad settings object')
+		if (! T.isObject(arg_settings))
+		{
+			console.error(arg_collection, arg_class, arg_name, arg_settings, arg_context, 'arg_collection, arg_class, arg_name, arg_settings, arg_context')
+		}
+			assert( T.isObject(arg_settings), context + ':bad bus clientsettings object')
 		
 		super(arg_collection, arg_class, arg_name, arg_settings, arg_context ? arg_context : context)
 		

@@ -1,32 +1,30 @@
 
-import assert from 'assert'
-import T from 'typr'
-
-import logs from '../../../utils/logs'
+// import assert from 'assert'
+// import T from 'typr'
 
 
 
 let context = 'common/store/config/loaders/load_config_security_authorization'
-let error_msg_bad_config = context + ':bad config'
-let error_msg_bad_enabled = context + ':authorization.enabled should be a boolean'
-let error_msg_bad_mode = context + ':authorization.mode should be a string in [database]'
-let error_msg_bad_alt = context + ':authorization.alt should be an object'
+// let error_msg_bad_config = context + ':bad config'
+// let error_msg_bad_enabled = context + ':authorization.enabled should be a boolean'
+// let error_msg_bad_mode = context + ':authorization.mode should be a string in [database]'
+// let error_msg_bad_alt = context + ':authorization.alt should be an object'
 
-let error_msg_bad_model = context + ':authorization.model should be a string'
-let error_msg_bad_role = context + ':authorization.role should be a string'
-let error_msg_bad_username = context + ':authorization.username should be a string'
+// let error_msg_bad_model = context + ':authorization.model should be a string'
+// let error_msg_bad_role = context + ':authorization.role should be a string'
+// let error_msg_bad_username = context + ':authorization.username should be a string'
 
 // let error_msg_bad_authorization = context + ':authorization should be an object'
 
 
 
-function load_config_security_authorization(arg_auth_config, arg_base_dir)
+function load_config_security_authorization(logs, arg_auth_config/*, arg_base_dir*/)
 {
-	logs.info(context, 'loading config.security')
+	logs.info(context, 'loading config.security.load_config_security_authorization')
 	
 	try{
 		// CHECK SECURITY
-		assert(T.isObject(arg_auth_config), error_msg_bad_config)
+	/*	assert(T.isObject(arg_auth_config), error_msg_bad_config)
 		assert(T.isBoolean(arg_auth_config.enabled), error_msg_bad_enabled)
 		assert(T.isString(arg_auth_config.mode), error_msg_bad_mode)
 		assert(T.isObject(arg_auth_config.alt), error_msg_bad_alt)
@@ -44,7 +42,7 @@ function load_config_security_authorization(arg_auth_config, arg_base_dir)
 		else
 		{
 			assert(false, error_msg_bad_mode)
-		}
+		}*/
 	}
 	catch(e)
 	{
