@@ -15,9 +15,9 @@ export default class HBox extends Component
 	{
 		arg_settings = T.isObject(arg_settings) ? arg_settings : {}
 		
-		arg_settings.page_styles = []
+		arg_settings.styles = []
 		
-		arg_settings.page_headers = ['<meta keywords="hbox" />']
+		arg_settings.headers = ['<meta keywords="hbox" />']
 		
 		super(arg_name, arg_settings)
 		

@@ -15,9 +15,9 @@ export default class VBox extends Component
 	{
 		arg_settings = T.isObject(arg_settings) ? arg_settings : {}
 		
-		arg_settings.page_styles = []
+		arg_settings.styles = []
 		
-		arg_settings.page_headers = ['<meta keywords="vbox" />']
+		arg_settings.headers = ['<meta keywords="vbox" />']
 		
 		super(arg_name, arg_settings)
 		

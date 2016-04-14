@@ -52,7 +52,7 @@ export default class BusClientInstance extends Instance
 	{
 		this.enter_group('init_bus_client')
 		
-		let BusServer = require('../servers/bus_server').default
+		let BusServer = require('../servers/simplebus_server').default
 		this.bus_client = BusServer.create_client(this, arg_host, arg_port)
 		
 		this.leave_group('init_bus_client')

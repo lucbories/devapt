@@ -11,6 +11,12 @@ import MetricsMiddleware from '../metrics/metric_http'
 let context = 'common/servers/restify_server'
 
 
+
+/**
+ * @file Restify server class.
+ * @author Luc BORIES
+ * @license Apache-2.0
+ */
 export default class RestifyServer extends Server
 {
 	constructor(arg_name, arg_settings, arg_context)

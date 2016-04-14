@@ -1,8 +1,6 @@
 
 import T from 'typr'
 
-import LoggerConsole from './logger_console'
-import LoggerWinston from './logger_winston'
 
 
 // const context = 'common/loggers/logger_manager'
@@ -42,15 +40,17 @@ export default class LoggerManager
 	{
 		// console.log(arg_settings, context + ':arg_settings')
 		
-		if ( T.isObject(arg_settings) && ("console" in arg_settings) )
+		if ( T.isObject(arg_settings) && ('console' in arg_settings) )
 		{
+			const LoggerConsole = require('./logger_console').default
 			// console.log('add console logger')
-			this.loggers.push( new LoggerConsole(true, arg_settings["console"]) )
+			this.loggers.push( new LoggerConsole(true, arg_settings['console']) )
 		}
-		if ( T.isObject(arg_settings) && ("winston" in arg_settings) )
+		if ( T.isObject(arg_settings) && ('winston' in arg_settings) )
 		{
+			const LoggerWinston = require('./logger_winston').default
 			// console.log('add winston logger')
-			this.loggers.push( new LoggerWinston(true, arg_settings["winston"]) )
+			this.loggers.push( new LoggerWinston(true, arg_settings['winston']) )
 		}
 		
 		this.$settings = arg_settings

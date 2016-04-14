@@ -17,16 +17,17 @@ export default class Tree extends Component
 	{
 		arg_settings = T.isObject(arg_settings) ? arg_settings : {}
 		
-		arg_settings.page_styles = [
-					'#content      { margin-left: 50px; }',
-					'.node         { cursor: default; }',
-					'.node_a       { position: relative; cursor: pointer; }',
-					'.node_content { margin-left: 10px; }',
-					'.node_opened  { position: absolute;left: -0.7em; }',
-					'.node_closed  { position: absolute;left: -0.7em; }']
+		arg_settings.styles = [
+			'#content      { margin-left: 50px; }',
+			'.node         { cursor: default; }',
+			'.node_a       { position: relative; cursor: pointer; }',
+			'.node_content { margin-left: 10px; }',
+			'.node_opened  { position: absolute;left: -0.7em; }',
+			'.node_closed  { position: absolute;left: -0.7em; }'
+		]
 		
-		arg_settings.page_headers = ['<meta keywords="tree" />']
-		arg_settings.page_scripts = [`
+		arg_settings.headers = ['<meta keywords="tree" />']
+		arg_settings.scripts = [`
 			$('.node_closed').hide()
 			$('a.node_a').click(
 				function(ev)
@@ -38,9 +39,7 @@ export default class Tree extends Component
 					$('span.node_closed', node).toggle()
 				}
 			)`]
-        // const jquery_url = // TODO
-		// arg_settings.page_scripts_urls = ["http://localhost:8081/assets/js/vendor/foundation/jquery.js"]
-		arg_settings.page_scripts_urls = ["js/vendor/foundation/jquery.js"]
+		// arg_settings.scripts_urls = ['js/vendor/foundation/jquery.min.js']
 		
 		super(arg_name, arg_settings)
 		
@@ -52,18 +51,8 @@ export default class Tree extends Component
 	get_initial_state()
 	{
 		return {
-			// page_headers:['<meta keywords="tree" />'],
-			// page_styles:[
-			// 		'#content      { margin-left: 50px; }',
-			// 		'.node         { cursor: default; }',
-			// 		'.node_a       { position: relative; cursor: pointer; }',
-			// 		'.node_content { margin-left: 10px; }',
-			// 		'.node_opened  { position: absolute;left: -0.7em; }',
-			// 		'.node_closed  { position: absolute;left: -0.7em; }'],
-			// page_scripts:[],
-			
 			tree:{},
-			label:"no label"
+			label:'no label'
 		}
 	}
 	

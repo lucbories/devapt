@@ -16,11 +16,23 @@ export default class Menubar extends Component
 	{
 		arg_settings = T.isObject(arg_settings) ? arg_settings : {}
 		
-		arg_settings.page_styles = []
+		arg_settings.styles = []
 		
-		arg_settings.page_headers = ['<meta keywords="menubar" />']
+		arg_settings.headers = ['<meta keywords="menubar" />']
+		
 		
 		super(arg_name, arg_settings)
+		
+		const scripts_urls = [
+			'plugins/foundation-6/js/vendor/jquery.min.js',
+			'plugins/foundation-6/js/foundation.js',
+			'plugins/foundation-6/js/app.js']
+		this.add_scripts_urls(scripts_urls)
+		
+		const styles_urls = [
+			'plugins/foundation-6/css/foundation.min.css',
+			'plugins/foundation-6/css/app.css']
+		this.add_styles_urls(styles_urls)
 	}
 	
 	
@@ -31,11 +43,6 @@ export default class Menubar extends Component
 			headers: [],
 			items: [],
             
-			page_scripts_urls:[
-				'plugins/foundation-6/js/vendor/jquery.min.js',
-				'plugins/foundation-6/js/app.js',
-				'plugins/foundation-6/js/foundation.js'],
-            
 			label:'no label'
 		}
 	}
@@ -44,6 +51,8 @@ export default class Menubar extends Component
 	// RENDERING
 	render()
 	{
+		// console.log('Foundation6:Menubar.render:state',this.state)
+		
 		// console.log(this.state, 'state2')
 		assert( T.isObject(this.state), context + ':bad state object')
 		assert( T.isArray(this.state.items), context + ':bad state items array')

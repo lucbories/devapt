@@ -53,7 +53,7 @@ export default class BusServerInstance extends BusClientInstance
 	{
 		this.enter_group('init_bus_server')
 		
-		let BusServer = require('./bus_server').default
+		let BusServer = require('./simplebus_server').default
 		// console.log(BusServer)
 
 		const self = this
@@ -68,7 +68,7 @@ export default class BusServerInstance extends BusClientInstance
 		this.bus_server = new BusServer(this.get_name() + '_bus_server', new IMap(node_server_cfg) )
 		this.bus_server.load()
 		this.bus_server.enable()
-		this.bus_server.bus.subscribe( { 'target': this.get_name() },
+		this.bus_server.subscribe( { 'target': this.get_name() },
 			function(arg_msg)
 			{
 				assert( T.isObject(arg_msg) && T.isObject(arg_msg.payload), context + ':subscribe:bad payload object')

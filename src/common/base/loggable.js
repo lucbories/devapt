@@ -118,7 +118,7 @@ export default class Loggable
 	 */
 	get_logger_manager()
 	{
-		if (! this.logger_manager && ! this.is_runtime)
+		if (! this.logger_manager && ! this.is_runtime && ! this.is_client_runtime)
 		{
 			const runtime = require('./runtime').default
 			this.logger_manager = runtime.logger_manager

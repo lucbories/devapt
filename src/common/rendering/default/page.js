@@ -69,8 +69,9 @@ export default class Page extends Component
 		// CONCAT CHILDREN STATES
 		for(let child of this.$settings.children)
 		{
-			// console.log(child.state, 'child.state')
+			// console.log(child.state.scripts_urls, 'child.state.scripts_urls')
 			// console.log(child.settings, 'child.settings')
+			
 			const child_headers = child.get_headers()
 			
 			const child_styles = child.get_styles()
@@ -112,15 +113,24 @@ export default class Page extends Component
 	
 	render_head()
 	{
-		const html_styles = this.$settings.styles.join('\n')
+		const html_styles = this.get_styles().join('\n')
 		const html_headers = this.$settings.headers.join('\n')
 		
 		// STYLES URLS
 		let css_headers = ''
-		if (this.$settings.styles_urls.length > 0)
+		let urls_map = {}
+		const all_styles_urls = this.get_styles_urls()
+		if (all_styles_urls.length > 0)
 		{
-			css_headers += this.$settings.styles_urls.map(
+			css_headers += all_styles_urls.map(
 				url => {
+					if (url in urls_map)
+					{
+						return
+					}
+					
+					urls_map[url] = true
+					
 					// console.log(url, 'url')
 					const absolute_url = this.renderer.get_assets_style_url(url)
 					return `<link href="${absolute_url}" media="all" rel="stylesheet"/>`
@@ -148,15 +158,27 @@ export default class Page extends Component
 		
 		
 		// SCRIPTS URLS
-		if (this.$settings.scripts_urls.length > 0)
+		let urls_map = {}
+		const all_scripts_urls = this.get_scripts_urls()
+		// console.log(all_scripts_urls, 'render_body:all_scripts_urls')
+		if (all_scripts_urls.length > 0)
 		{
-			html += this.$settings.scripts_urls.map(
+			html += all_scripts_urls.map(
 				url => {
-					// console.log(url, 'url')
+					if (url in urls_map)
+					{
+						return
+					}
+					
+					urls_map[url] = true
+					
+					// console.log(url, 'RENDER SCRIPTS URLS url')
 					const absolute_url = this.renderer.get_assets_script_url(url)
 					return `<script type="text/javascript" src="${absolute_url}"></script>`
 				}
 			).join('\n') + '\n'
+			
+			html += '<script type="text/javascript" src="/socket.io/socket.io.js"></script>\n\n'
 		}
 		
 		// INLINE SCRIPT AND FOOTER

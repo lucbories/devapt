@@ -1,195 +1,110 @@
 
 'use strict'
 
-// var del = require('del')
-var gulp = require('gulp');
+// var del = require('del');
+var gulp = require('gulp')
 var del = require('del')
-var sourcemaps = require('gulp-sourcemaps')
-var babel = require('gulp-babel')
-var concat = require('gulp-concat')
-var changed = require('gulp-changed')
-// var browserSync = require('browser-sync').create()
-var runseq = require('run-sequence')
-var jsdoc = require('gulp-jsdoc3')
+// var sourcemaps = require('gulp-sourcemaps');
+// var babel = require('gulp-babel');
+// var concat = require('gulp-concat');
+// var changed = require('gulp-changed');
+// var browserSync = require('browser-sync').create();
+// var runseq = require('run-sequence');
+// var jsdoc = require('gulp-jsdoc3');
+
+// var source = require('vinyl-source-stream');
+// var buffer = require('vinyl-buffer');
+// var browserify = require('browserify');
+// var watchify = require('watchify');
+// var babelify = require('babelify');
+// var path = require('path')
+// var livereload = require('gulp-livereload')
 
 
+// var SRC_ALL_JS = 'src/**/*.js'
+// var SRC_ALL_JSON = 'src/**/*.json'
 
-var SRC_ALL_JS = 'src/**/*.js'
-var SRC_ALL_JSON = 'src/**/*.json'
-var SRC_APPS = 'src/apps/**/*.js'
+// var SRC_BROWSER_INDEX = 'src/browser/index.js'
 // var SRC_BROWSER = 'src/browser/**/*.js'
-var SRC_COMMON  = 'src/common/**/*.js'
-var SRC_SERVER  = 'src/server/**/*.js'
+// var SRC_COMMON  = 'src/common/**/*.js'
+// var SRC_SERVER  = 'src/server/**/*.js'
 
 var DST = 'dist'
-var DST_APPS = 'dist/apps'
-var DST_BROWSER = 'dist/browser'
-var DST_COMMON  = 'dist/common'
-var DST_SERVER  = 'dist/server'
+// var DST_BROWSER_INDEX = 'dist/browser/index.js'
+// var DST_BROWSER = 'dist/browser/**/*.js'
+// var DST_COMMON  = 'dist/common/**/*.js'
+// var DST_SERVER  = 'dist/server/**/*.js'
 // var DOCS_API  = 'docs/api/'
 
+var plugins = require('gulp-load-plugins')( {DEBUG:true} )
 
-const jsconfig = {
-	"tags": {
-		"allowUnknownTags": true
-	},
-	"source": {
-		"excludePattern": "(^|\\/|\\\\)_"
-	},
-	"opts": {
-		"destination": "./docs/api"
-	},
-	"plugins": [
-		"plugins/markdown"
-	],
-	"templates": {
-		"cleverLinks": false,
-		"monospaceLinks": false,
-		"outputSourceFiles": true,
-		"path": "ink-docstrap",
-		"theme": "cerulean",
-		"navType": "inline",
-		"linenums": true,
-		"dateFormat": "MMMM Do YYYY, h:mm:ss a"
-	}
+
+
+function getTask(task)
+{
+	return require('./build/' + task)(gulp, plugins)
 }
+
+
+gulp.task('build_browser_transpile', getTask('gulp_browser_transpile') )
+gulp.task('build_browser_concat', getTask('gulp_browser_concat') )
+gulp.task('build_browser_bundle', getTask('gulp_browser_bundle') )
+// gulp.task('build_browser_watch', getTask('gulp_browser_watch') )
+gulp.task('build_browser', ['build_browser_transpile', 'build_browser_concat', 'build_browser_bundle'] )
+// gulp.task('watch_browser', ['build_browser_watch'] )
+
+var SRC_BROWSER_JS = 'src/browser/**/*.js'
+var watcher = gulp.watch(SRC_BROWSER_JS, [/*'del_browser_index', */'build_browser_transpile', 'build_browser_concat', 'build_browser_bundle'])
+watcher.on('change',
+	(event) => {
+		console.log('File ' + event.path + ' was ' + event.type + ', running tasks...');	
+	}
+)
+// var livereload = require('gulp-livereload')
+// livereload.listen()
+
+gulp.task('build_common_transpile', getTask('gulp_common_transpile') )
+gulp.task('build_common_bundle', getTask('gulp_common_bundle') )
+gulp.task('build_common', ['build_common_transpile', 'build_common_bundle'] )
+
+gulp.task('build_plugins_transpile', getTask('gulp_plugins_transpile') )
+gulp.task('build_plugins_bundle', getTask('gulp_plugins_bundle') )
+gulp.task('build_plugins', ['build_plugins_transpile', 'build_plugins_bundle'] )
+
+gulp.task('build_server_transpile', getTask('gulp_server_transpile') )
+gulp.task('build_server_bundle', getTask('gulp_server_bundle') )
+gulp.task('build_server', ['build_server_transpile', 'build_server_bundle'] )
+
+
+gulp.task('build_docs', getTask('gulp_doc') )
+gulp.task('build_all_transpile', getTask('gulp_all_transpile') )
+gulp.task('build_json_copy', getTask('gulp_json_copy') )
+
+/*
+	COPY INDEX SRC FILE TO DIST/
+		build one file
+*/
+const BABEL_CONFIG = {
+	presets: ['es2015']
+}
+gulp.task('build_index_transpile',
+	() => {
+		return gulp.src('src/index.js')
+			.pipe( plugins.changed('dist') )
+			.pipe( plugins.sourcemaps.init() )
+			.pipe( plugins.babel(BABEL_CONFIG) )
+			.pipe( plugins.sourcemaps.write('.') )
+			.pipe( gulp.dest('dist') )
+	}
+)
 
 
 /*
     CLEAN DIST DIRECTORY
 */
-gulp.task('clean', () => {
-  return del(DST);
-});
-
-
-/*
-    BUILD ALL SRC/ JS FILES TO DIST/
-        with sourcemap files
-        build only changed files
-*/
-gulp.task('build_all_js', () => {
-    return gulp.src(SRC_ALL_JS)
-		.pipe(changed(DST))
-        .pipe(sourcemaps.init())
-        .pipe(
-            babel({
-                presets: ['es2015']
-            })
-        )
-        .pipe(sourcemaps.write('.'))
-        .pipe(gulp.dest(DST));
-});
-
-
-/*
-    COPY ALL SRC/ JSON FILES TO DIST/
-        build only changed files
-*/
-gulp.task('build_all_json', () => {
-    return gulp.src(SRC_ALL_JSON)
-		.pipe(changed(DST))
-        .pipe(gulp.dest(DST));
-});
-
-
-/*
-    COPY ALL SRC/APPS FILES TO DIST/
-        build all files
-*/
-gulp.task('build_all_apps', () => {
-    return gulp.src(SRC_APPS)
-        .pipe(sourcemaps.init())
-        .pipe(
-            babel({
-                presets: ['es2015']
-            })
-        )
-        .pipe(sourcemaps.write('.'))
-        .pipe(gulp.dest(DST));
-});
-
-
-/*
-    COPY ALL SRC/COMMON FILES TO DIST/
-        build all files
-*/
-gulp.task('build_all_common', () => {
-    return gulp.src(SRC_COMMON)
-        .pipe(sourcemaps.init())
-        .pipe(
-            babel({
-                presets: ['es2015']
-            })
-        )
-        .pipe(sourcemaps.write('.'))
-        .pipe(gulp.dest(DST));
-});
-
-
-/*
-    COPY ALL SRC/SERVER FILES TO DIST/
-        build all files
-*/
-gulp.task('build_all_server', () => {
-    return gulp.src(SRC_SERVER)
-        .pipe(sourcemaps.init())
-        .pipe(
-            babel({
-                presets: ['es2015']
-            })
-        )
-        .pipe(sourcemaps.write('.'))
-        .pipe(gulp.dest(DST));
-})
-
-
-
-/*
-    BUILD JS BUNDLES
-*/
-gulp.task('build_bundle_apps', () => {
-    return gulp.src(DST_APPS)
-        .pipe(concat('devapt-bundle-apps.js'))
-        .pipe(sourcemaps.init())
-        .pipe(sourcemaps.write('.'))
-        .pipe(gulp.dest(DST));
-});
-
-gulp.task('build_bundle_browser', () => {
-    return gulp.src(DST_BROWSER)
-        .pipe(concat('devapt-bundle-browser.js'))
-        .pipe(sourcemaps.init())
-        .pipe(sourcemaps.write('.'))
-        .pipe(gulp.dest(DST));
-});
-
-gulp.task('build_bundle_common', () => {
-    return gulp.src(DST_COMMON)
-        .pipe(concat('devapt-bundle-common.js'))
-        .pipe(sourcemaps.init())
-        .pipe(sourcemaps.write('.'))
-        .pipe(gulp.dest(DST));
-})
-
-gulp.task('build_bundle_server', () => {
-    return gulp.src(DST_SERVER)
-        .pipe(concat('devapt-bundle-server.js'))
-        .pipe(sourcemaps.init())
-        .pipe(sourcemaps.write('.'))
-        .pipe(gulp.dest(DST));
-});
-
-
-
-/*
-	GENERATE DOCS API
-*/
-gulp.task('docs_api',
-	function(cb)
-	{
-		gulp.src([SRC_COMMON, SRC_SERVER])
-			.pipe( jsdoc(jsconfig, cb) )
+gulp.task('clean',
+	() => {
+		return del(DST)
 	}
 )
 
@@ -197,13 +112,13 @@ gulp.task('docs_api',
 /*
     DEFINE MAIN GULP TASKS
 */
-gulp.task('default', ['build_all_js', 'build_all_json']);
+gulp.task('default', ['build_common_transpile', 'build_plugins_transpile', 'build_server_transpile', 'build_index_transpile', 'build_browser', 'build_json_copy'])
 
-gulp.task('build_clean', (cb) => runseq('clean', ['build_all_js', 'build_all_json'], cb) );
+// gulp.task('build_clean', (cb) => runseq('clean', ['default', 'build_json_copy'], cb) )
 
-gulp.task('build_bundles', ['build_bundle_browser', 'build_bundle_common', 'build_bundle_server']);
+// gulp.task('build_bundles', ['build_bundle_common', 'build_bundle_browser', 'build_bundle_server'])
 
-gulp.task('release', ['default', 'build_bundles']);
+// gulp.task('release', ['build_clean', 'build_bundles'])
 
 
 

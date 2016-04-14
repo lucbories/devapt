@@ -58,6 +58,9 @@ export default class Server extends BusClientInstance
 		this.server_protocole = null
 		this.server_type = null
 		
+		this.server = null
+		this.serverio = null
+		
 		this.services_without_security = new Collection()
 		this.services_with_security = new Collection()
 		
@@ -301,7 +304,8 @@ export default class Server extends BusClientInstance
 		// LISTENER
 		if (should_listen)
 		{
-			/*let listener =*/ this.server.listen(this.server_port,
+			const srv = this.server_http ? this.server_http : this.server
+			/*let listener =*/ srv.listen(this.server_port,
 				function()
 				{
 					// let host = listener.address().address;

@@ -1,26 +1,27 @@
 
-// import T from 'typr'
-// import assert from 'assert'
+import T from 'typr'
+import assert from 'assert'
 
-import Server from './server'
+import simplebus from 'simplebus'
+
+import BusServer from './bus_server'
 
 
 
-let context = 'common/servers/bus_server'
+let context = 'common/servers/simplebus_server'
 
 
 
 /**
- * @file Bus server base class.
+ * @file SimpleBus server class.
  * @author Luc BORIES
  * @license Apache-2.0
  */
-export default class BusServer extends Server
+export default class SimpleBusServer extends BusServer
 {
 	/**
 	 * Create a server instance.
-	 * @extends Server
-	 * @abstract
+	 * @extends BusServer
 	 * @param {string} arg_name - server name
 	 * @param {object} arg_settings - plugin settings map
 	 * @param {string} arg_log_context - trace context string.
@@ -28,9 +29,9 @@ export default class BusServer extends Server
 	 */
 	constructor(arg_name, arg_settings, arg_context)
 	{
-		super(arg_name, 'BusServer', arg_settings, arg_context ? arg_context : context)
+		super(arg_name, arg_settings, arg_context ? arg_context : context)
 		
-		this.is_bus_server = true
+		this.is_simplebus_server = true
 	}
 	
 	
@@ -42,8 +43,22 @@ export default class BusServer extends Server
 	{
 		this.enter_group('build_server')
 		
-		console.error(context + ':build_server:not yet implemented')
+		const host = this.server_host
+		const port = this.server_port
+		const size = this.get_setting('size', 1000)
 		
+		console.log('BusServer.build_server %s:%s of size %s', host, port, size)
+		
+		this.bus = simplebus.createBus(size)
+		this.server = simplebus.createServer(this.bus, port, host)
+		
+        // SET SOCKET SERVER HANDLERS
+		// TODO server.on doesn't exist
+        // this.server.on('connection', BusServer.on_server_connection)
+        // this.server.on('close', BusServer.on_client_close)
+        // this.server.on('error', BusServer.on_client_error)
+        // this.server.on('listening', BusServer.on_client_listening)
+        
 		this.leave_group('build_server')
 	}
 	
@@ -56,7 +71,7 @@ export default class BusServer extends Server
 	{
 		this.enter_group('enable Bus server')
 		
-		console.error(context + ':enable:not yet implemented')
+		this.server.start()
 		
 		this.leave_group('enable Bus server')
 	}
@@ -70,7 +85,7 @@ export default class BusServer extends Server
 	{
 		this.enter_group('disable Bus server')
 		
-		console.error(context + ':disable:not yet implemented')
+		this.server.stop()
 		
 		this.leave_group('disable Bus server')
 	}
@@ -83,7 +98,7 @@ export default class BusServer extends Server
 	 */
 	post(arg_msg)
 	{
-		console.error(context + ':post:not yet implemented')
+		this.bus.post(arg_msg)
 	}
 	
 	
@@ -95,15 +110,48 @@ export default class BusServer extends Server
 	 */
 	subscribe(arg_filter, arg_handler)
 	{
-		console.error(context + ':subscribe:not yet implemented')
+		this.bus.subscribe(arg_filter, arg_handler)
 	}
+	
 	
 	
 	static create_client(arg_node, arg_host, arg_port)
 	{
-		console.error(context + ':create_client:not yet implemented')
+		const node_name = arg_node.get_name()
+		console.log('BusServer.create_client %s:%s for node %s', arg_host, arg_port, node_name)
 		
-		return undefined
+		var client = simplebus.createClient(arg_port, arg_host)
+		
+		client.start(
+			function ()
+			{
+				client.subscribe( { "target": node_name },
+					function(arg_msg)
+					{
+						console.log(arg_msg, context + ':client.on_msg:enter')
+
+						assert( T.isObject(arg_msg) && T.isObject(arg_msg.payload), context + ':subscribe:bad payload object')
+						arg_node.receive_msg(arg_msg.sender, arg_msg.payload)
+
+						console.log(context + ':client.on_msg:leave')
+					}
+				)
+				
+				arg_node.info('Messages bus client is started')
+				
+				arg_node.register_to_master()
+			}
+		)
+        
+        // SET SOCKET CLIENT HANDLERS
+		client.on('connect', BusServer.on_client_connect)
+		client.on('close', BusServer.on_client_close)
+		client.on('data', BusServer.on_client_data)
+		client.on('end', BusServer.on_client_end)
+		client.on('error', BusServer.on_client_error)
+		client.on('timeout', BusServer.on_client_timeout)
+		
+		return client
 	}
     
     

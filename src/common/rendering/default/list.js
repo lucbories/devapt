@@ -15,9 +15,9 @@ export default class List extends Component
 	{
 		arg_settings = T.isObject(arg_settings) ? arg_settings : {}
 		
-		arg_settings.page_styles = []
+		arg_settings.styles = []
 		
-		arg_settings.page_headers = ['<meta keywords="list" />']
+		arg_settings.headers = ['<meta keywords="list" />']
 		
 		super(arg_name, arg_settings)
 		

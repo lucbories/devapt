@@ -10,6 +10,12 @@ import MetricHttpReducer from '../metrics/metric_http_reducer'
 const context = 'common/servers/metrics_server'
 
 
+
+/**
+ * @file Metrics server class.
+ * @author Luc BORIES
+ * @license Apache-2.0
+ */
 export default class MetricsServer extends Server
 {
 	constructor(arg_name, arg_settings, arg_context)
