@@ -39,7 +39,7 @@ export default class Page extends Component
 			
 			children:[],
 			
-			label:"no label"
+			label:'no label'
 		}
 	}
 	

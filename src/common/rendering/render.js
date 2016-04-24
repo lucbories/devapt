@@ -5,10 +5,13 @@ import assert from 'assert'
 import Loggable from '../base/loggable'
 import runtime from '../base/runtime'
 import RenderStack from './base/render_stack'
-import RenderingManager from './base/rendering_manager'
+import RenderingManager from '../plugins/rendering_manager'
 
 
 const context = 'common/rendering/render'
+
+
+// const default_plugin_path = runtime.context.get_absolute_path(__dirname, './default/rendering_plugin')
 
 
 
@@ -32,13 +35,8 @@ export default class Render extends Loggable
 		
 		this.request = arg_request ? arg_request : undefined
 		
-		// const plugins = undefined
-		// const f6_plugin_path = runtime.context.get_absolute_plugin_path('backend-foundation-6', 'plugin/rendering_plugin')
-		const f6_plugin_path = runtime.context.get_absolute_plugin_path(__dirname, '../../plugins/backend-foundation-6/plugin/rendering_plugin')
-		const plugins = [f6_plugin_path]
-		// const plugins = [ path.join(__dirname, '../../plugins/backend-foundation6/plugin/rendering_plugin') ]
-		this.rendering_manager = new RenderingManager(plugins)
-
+		this.rendering_manager = runtime.plugins_factory.rendering_manager
+		
 		this.assets_images_service_name = arg_assets_img ? arg_assets_img : null
 		this.assets_html_service_name = arg_assets_html ? arg_assets_html : null
 		this.assets_scripts_service_name = arg_assets_scripts ? arg_assets_scripts : null
@@ -146,7 +144,7 @@ export default class Render extends Loggable
 	{
 		this.enter_group('get_assets_url')
 
-		console.log(typeof arg_url, 'arg_url', arg_url)
+		// console.log(typeof arg_url, 'arg_url', arg_url)
 		assert( T.isString(arg_url), context + ':get_assets_url:bad url string for svc [' + arg_svc_name + '] for url [' + arg_url + ']')
 
 		const has_consumer = T.isObject(arg_consumer) && arg_consumer.is_service_consumer
@@ -236,8 +234,8 @@ export default class Render extends Loggable
      */
 	page(arg_name, arg_settings)
 	{
-        arg_settings = arg_settings ? arg_settings : {}
-        arg_settings.render = this
+		arg_settings = arg_settings ? arg_settings : {}
+		arg_settings.render = this
         
 		let component = this.rendering_manager.create('Page', arg_name, arg_settings)
 		assert( T.isObject(component) && component.is_component, context + ':bad Page component object')
@@ -436,7 +434,7 @@ export default class Render extends Loggable
 			return null
 		}
 		
-		console.log('render ' + (this.current().get_type()) )
+		// console.log('render ' + (this.current().get_type()) )
 		return this.current().render()
 	}
 }

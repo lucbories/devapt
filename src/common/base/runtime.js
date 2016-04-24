@@ -76,6 +76,7 @@ class Runtime extends Settingsable
 		this.servers = new Collection()
 		this.services = new Collection()
 		this.registered_services = new Collection()
+		this.socketio_servers = {}
 		
 		this.modules = new Collection()
 		this.plugins = new Collection()
@@ -262,6 +263,85 @@ class Runtime extends Settingsable
 	{
 		assert( T.isObject(this.security_mgr) && this.security_mgr.is_security, context + ':bad security object')
 		return this.security_mgr
+	}
+	
+	
+	/**
+	 * Get plugins factory object.
+	 * @returns {PluginsFactory}
+	 */
+	get_plugins_factory()
+	{
+		assert( T.isObject(this.plugins_factory) && this.plugins_factory.is_plugins_factory, context + ':bad plugins factory object')
+		return this.plugins_factory
+	}
+	
+	
+	
+	/**
+	 * Register and configure a socketio server.
+	 * @param {string} arg_server_name - bound server name
+	 * @param {object} arg_socketio - socketio server
+	 * @returns {nothing}
+	 */
+	add_socketio(arg_server_name, arg_socketio)
+	{
+		const self = this
+		assert( T.isString(arg_server_name), context + ':add_socketio:bad server name')
+		assert( T.isObject(arg_socketio) && arg_socketio.emit && arg_socketio.on, context + ':add_socketio:bad socketio server')
+		
+		self.socketio_servers[arg_server_name] = arg_socketio
+		
+		arg_socketio.on('connection',
+			function (socket)
+			{
+				console.info(context + ':add_socketio:new connection on /')
+				
+				// ROOT
+				socket.on('disconnect',
+					function()
+					{
+						self.on_socketio_disconnect()
+					}
+				)
+				
+				self.on_socketio_connect(arg_socketio, socket)
+			}
+		)
+	}
+	
+	
+	/**
+	 * On socketio server connect event.
+	 * @param {object} arg_socketio - socketio server.
+	 * @param {object} arg_socket - client socket.
+	 * @returns {nothing}
+	 */
+	on_socketio_connect(arg_socketio, arg_socket)
+	{
+		const self = this
+		console.info(context + ':on_socketio_connect:socket connected')
+		
+		arg_socket.emit('welcome on /', { from: 'server runtime' })
+		
+		// ON PING
+		arg_socket.on('ping',
+			function(data)
+			{
+				console.info(context + ':on_socketio_connect:socket receives ping', data)
+				arg_socket.emit('pong', { from: 'server runtime' })
+			}
+		)
+	}
+	
+	
+	/**
+	 * On socketio server disconnect event.
+	 * @returns {nothing}
+	 */
+	on_socketio_disconnect()
+	{
+		console.info(context + ':on_socketio_disconnect:socket disconnected')
 	}
 }
 

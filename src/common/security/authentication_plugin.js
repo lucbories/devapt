@@ -1,9 +1,9 @@
 
-import T from 'typr'
-import assert from 'assert'
-import crypto from 'crypto'
+// import T from 'typr'
+// import assert from 'assert'
+// import crypto from 'crypto'
 
-import Plugin from '../base/plugin'
+import Plugin from '../plugins/plugin'
 
 
 
@@ -21,14 +21,15 @@ export default class AuthenticationPlugin extends Plugin
 {
 	/**
 	 * Create an Authentication base class.
+	 * @param {AuhtenticationManager} arg_manager - authentication plugins manager.
 	 * @param {string} arg_name - plugin name.
 	 * @param {string} arg_class - plugin class name.
 	 * @param {string|undefined} arg_log_context - optional.
 	 * @returns {nothing}
 	 */
-	constructor(arg_name, arg_class, arg_log_context)
+	constructor(arg_manager, arg_name, arg_class, arg_log_context)
 	{
-		super(arg_name, (arg_class ? arg_class.toString() : 'AuthenticationPlugin'), undefined, arg_log_context ? arg_log_context : context)
+		super(arg_manager, arg_name, (arg_class ? arg_class.toString() : 'AuthenticationPlugin'), { version: '1.0.0' }, arg_log_context ? arg_log_context : context)
 		
 		this.is_authentication_plugin = true
 	}

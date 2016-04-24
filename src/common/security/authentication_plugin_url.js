@@ -21,17 +21,18 @@ export default class AuthenticationPluginURL extends AuthenticationPlugin
 {
 	/**
 	 * Create an Authentication plugin class based on query parameters.
+	 * @param {AuhtenticationManager} arg_manager - authentication plugins manager.
 	 * @param {string} arg_name - plugin name.
 	 * @param {string|undefined} arg_log_context - optional.
 	 * @returns {nothing}
 	 */
-	constructor(arg_name, arg_log_context)
+	constructor(arg_manager, arg_name, arg_log_context)
 	{
-		super(arg_name, 'AuthenticationPluginURL', arg_log_context ? arg_log_context : context)
+		super(arg_manager, arg_name, 'AuthenticationPluginURL', arg_log_context ? arg_log_context : context)
 		
 		this.is_authentication_url_plugin = true
 		
-		this.is_trace_enabled = true
+		// this.is_trace_enabled = true
 	}
 	
 	

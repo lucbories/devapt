@@ -1,8 +1,8 @@
 
-// import T from 'typr'
-// import assert from 'assert'
+import T from 'typr'
+import assert from 'assert'
 
-import ServiceProvider from './service_provider'
+import SocketIOServiceProvider from './socketio_service_provider'
 
 let context = 'common/services/base/service_exec_provider'
 
@@ -13,7 +13,7 @@ let context = 'common/services/base/service_exec_provider'
  * @author Luc BORIES
  * @license Apache-2.0
  */
-export default class ServiceExecProvider extends ServiceProvider
+export default class ServiceExecProvider extends SocketIOServiceProvider
 {
 	/**
 	 * Create a service provider.
@@ -26,7 +26,7 @@ export default class ServiceExecProvider extends ServiceProvider
 	{
 		super(arg_provider_name, arg_service_instance, arg_context ? arg_context : context)
 		
-		this.is_serviceexec_provider = true
+		this.is_service_exec_provider = true
 	}
 	
 	
@@ -39,6 +39,8 @@ export default class ServiceExecProvider extends ServiceProvider
 	 */
 	activate_self(arg_application, arg_server, arg_app_svc_cfg)
 	{
+		assert( T.isObject(this.exec), context + ':activate_self:bad exec object')
+		
 		const exec_cfg = { 'routes':this.get_setting('routes').toJS(), 'server': arg_server, 'unused':arg_app_svc_cfg }
 		this.exec.prepare(exec_cfg)
 		this.exec.execute(arg_application)

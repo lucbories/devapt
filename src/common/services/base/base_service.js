@@ -3,7 +3,7 @@
 import T from 'typr'
 import assert from 'assert'
 
-import Service from '../../base/service'
+import Service from './service'
 
 
 let context = 'common/services/base/base_service'

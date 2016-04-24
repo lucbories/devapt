@@ -2,7 +2,7 @@
 // import T from 'typr'
 import assert from 'assert'
 
-import ServiceConsumer from '../base/svc_consumer'
+import ServiceConsumer from '../base/service_consumer'
 
 
 let context = 'common/services/metrics/metrics_svc_consumer'
@@ -27,7 +27,7 @@ export default class MetricsSvcConsumer extends ServiceConsumer
 	constructor(arg_consumer_name, arg_service_instance, arg_context)
 	{
 		super(arg_consumer_name, arg_service_instance, arg_context ? arg_context : context)
-		assert( arg_service_instance.is_crud_service, context + ':constructor:bad crud service instance')
+		assert( arg_service_instance.is_metrics_service, context + ':constructor:bad crud service instance')
 	}
 	
 	

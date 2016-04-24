@@ -120,7 +120,10 @@ export default class RuntimeStage1Executable extends RuntimeExecutable
 				const security_settings = config().get('security')
 				// console.log(security_settings, context + '.execute:security_settings')
 				
+				const saved_trace2 = self.get_trace()
+				self.set_trace(false)
 				runtime.security().load(security_settings)
+				self.set_trace(saved_trace2)
 				
 				return true
 			}

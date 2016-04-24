@@ -40,11 +40,20 @@ module.exports = function (gulp, plugins)
 	{
 		gulp.task('build_common_bundle',
 			() => {
-				return gulp.src(DST_COMMON_JS)
-					.pipe( plugins.concat('devapt-common.js') )
-					.pipe( plugins.sourcemaps.init() )
-					.pipe( plugins.sourcemaps.write('.') )
-					.pipe( gulp.dest(DST) )
+				try
+				{
+					return gulp.src(DST_COMMON_JS)
+						.pipe( plugins.concat('devapt-common.js') )
+						.pipe( plugins.sourcemaps.init() )
+						.pipe( plugins.sourcemaps.write('.') )
+						.pipe( gulp.dest(DST) )
+				}
+				catch(e)
+				{
+					console.log('build_common_bundle:an error occures', Object.keys(e) )
+					// Error: Cannot find module 'fsevents' from 'D:\DATAS\GitHub\devapt\node_modules\chokidar\lib'
+				}
+				return undefined
 			}
 		)
 	}

@@ -10,7 +10,7 @@
 // var changed = require('gulp-changed');
 // var browserSync = require('browser-sync').create();
 // var runseq = require('run-sequence');
-// var jsdoc = require('gulp-jsdoc3');
+var jsdoc = require('gulp-jsdoc3');
 
 // var source = require('vinyl-source-stream');
 // var buffer = require('vinyl-buffer');
@@ -20,6 +20,7 @@
 // var path = require('path')
 
 
+var SRC_BROWSER  = 'src/browser/**/*.js'
 var SRC_COMMON  = 'src/common/**/*.js'
 var SRC_SERVER  = 'src/server/**/*.js'
 
@@ -60,11 +61,11 @@ module.exports = function (gulp, plugins)
 {
 	return function ()
 	{
-		gulp.task('docs_api',
+		gulp.task('build_docs',
 			function(cb)
 			{
-				gulp.src([SRC_COMMON, SRC_SERVER])
-					.pipe( plugins.jsdoc(jsconfig, cb) )
+				gulp.src([SRC_COMMON, SRC_BROWSER, SRC_SERVER])
+					.pipe( jsdoc(jsconfig, cb) )
 			}
 		)
 	}

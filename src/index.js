@@ -46,6 +46,19 @@ const store = api.default.store
 const Render = api.default.Render
 const Component = api.default.Component
 
+const RenderingPlugin = api.default.RenderingPlugin
+const ServicesPlugin = api.default.ServicesPlugin
+const ServersPlugin = api.default.ServersPlugin
+
+const DefaultRenderingPlugin = api.default.DefaultRenderingPlugin
+const DefaultServicesPlugin = api.default.DefaultServicesPlugin
+
 // console.log(api.runtime, 'devapt/src/index:api.runtime')
 
-export default { runtime, config, store, Render, Component }
+export default {
+	runtime, config, store,
+	Render, Component,
+	RenderingPlugin, ServicesPlugin, ServersPlugin,
+	DefaultRenderingPlugin,
+	DefaultServicesPlugin
+}

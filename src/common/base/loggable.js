@@ -24,7 +24,7 @@ export default class Loggable
 		this.is_loggable = true
 		this.$context = arg_context
 		
-		this.is_trace_enabled = true
+		// this.is_trace_enabled = true
 		
 		if ( T.isObject(arg_logger_manager) && arg_logger_manager.is_logger_manager )
 		{

@@ -36,7 +36,7 @@ var DST = 'dist'
 // var DST_SERVER  = 'dist/server/**/*.js'
 // var DOCS_API  = 'docs/api/'
 
-var plugins = require('gulp-load-plugins')( {DEBUG:true} )
+var plugins = require('gulp-load-plugins')( { DEBUG:false } )
 
 
 
@@ -49,19 +49,19 @@ function getTask(task)
 gulp.task('build_browser_transpile', getTask('gulp_browser_transpile') )
 gulp.task('build_browser_concat', getTask('gulp_browser_concat') )
 gulp.task('build_browser_bundle', getTask('gulp_browser_bundle') )
-// gulp.task('build_browser_watch', getTask('gulp_browser_watch') )
 gulp.task('build_browser', ['build_browser_transpile', 'build_browser_concat', 'build_browser_bundle'] )
-// gulp.task('watch_browser', ['build_browser_watch'] )
 
-var SRC_BROWSER_JS = 'src/browser/**/*.js'
-var watcher = gulp.watch(SRC_BROWSER_JS, [/*'del_browser_index', */'build_browser_transpile', 'build_browser_concat', 'build_browser_bundle'])
-watcher.on('change',
-	(event) => {
-		console.log('File ' + event.path + ' was ' + event.type + ', running tasks...');	
-	}
+gulp.task('watch',
+    () => {
+        var SRC_BROWSER_JS = 'src/browser/**/*.js'
+        var watcher = gulp.watch(SRC_BROWSER_JS, ['build_browser_transpile', 'build_browser_concat', 'build_browser_bundle'])
+        watcher.on('change',
+            (event) => {
+                console.log('File ' + event.path + ' was ' + event.type + ', running tasks...');	
+            }
+        )
+    }
 )
-// var livereload = require('gulp-livereload')
-// livereload.listen()
 
 gulp.task('build_common_transpile', getTask('gulp_common_transpile') )
 gulp.task('build_common_bundle', getTask('gulp_common_bundle') )

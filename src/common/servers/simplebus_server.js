@@ -125,21 +125,24 @@ export default class SimpleBusServer extends BusServer
 		client.start(
 			function ()
 			{
-				client.subscribe( { "target": node_name },
+				client.subscribe( { 'target': node_name },
 					function(arg_msg)
 					{
-						console.log(arg_msg, context + ':client.on_msg:enter')
+						// console.log(arg_msg, context + ':client.on_msg:enter')
 
 						assert( T.isObject(arg_msg) && T.isObject(arg_msg.payload), context + ':subscribe:bad payload object')
 						arg_node.receive_msg(arg_msg.sender, arg_msg.payload)
 
-						console.log(context + ':client.on_msg:leave')
+						// console.log(context + ':client.on_msg:leave')
 					}
 				)
 				
 				arg_node.info('Messages bus client is started')
 				
-				arg_node.register_to_master()
+				if (arg_node.register_to_master)
+				{
+					arg_node.register_to_master()
+				}
 			}
 		)
         

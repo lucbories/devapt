@@ -4,13 +4,13 @@ import assert from 'assert'
 
 import { config } from '../store/index'
 import Module from '../base/module'
-import Plugin from '../base/plugin'
+// import Plugin from '../plugins/plugin'
 import Database from '../resources/database'
 
 import RuntimeExecutable from './runtime_executable'
 
 
-let context = 'common/executables/runtime_stage3_executable'
+let context = 'common/runtime/runtime_stage3_executable'
 
 
 
@@ -48,7 +48,7 @@ export default class RuntimeStage3Executable extends RuntimeExecutable
 		this.leave_group('execute')
 		this.separate_level_1()
 		this.set_trace(saved_trace)
-        return Promise.resolve()
+		return Promise.resolve()
 	}
 	
 	
@@ -131,6 +131,8 @@ export default class RuntimeStage3Executable extends RuntimeExecutable
 	{
 		this.enter_group('make_plugins')
 		
+		// TODO
+		/*
 		let cfg_plugins = config.get_collection('plugins')
 		cfg_plugins.forEach(
 			(plugin_cfg, plugin_name) => {
@@ -140,7 +142,7 @@ export default class RuntimeStage3Executable extends RuntimeExecutable
 				plugin.load()
 				this.runtime.plugins.add(plugin)
 			}
-		)
+		)*/
 		
 		this.leave_group('make_plugins')
 	}

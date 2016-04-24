@@ -128,19 +128,19 @@ export default class MetricHttp extends Metric
 		if (arg_server.is_restify_server)
 		{
 			arg_server.server.on('after',
-				function (req, res)
+				function (req/*, res*/)
 				{
 					// console.log('MetricHttp middleware on finish')
 					
 					let metric = req.devapt_metrics
                     // console.log(metric, 'metric')
                     
-                    if (metric)
+					if (metric)
                     {
-					   metric.after()
-                    }
-                    
-                    // console.log('MetricHttp middleware on finish, leave')
+						metric.after()
+					}
+
+					// console.log('MetricHttp middleware on finish, leave')
 				}
 			)
 		}
@@ -152,7 +152,7 @@ export default class MetricHttp extends Metric
 			// console.log('MetricHttp middleware created')
 			
 			let metric = new MetricHttp(req, res)
-            metric.server = arg_server
+			metric.server = arg_server
 			metric.before()
 			
 			// HANDLE END OF REQUEST PROCESSING FOR EXPRESS SERVER
@@ -166,10 +166,10 @@ export default class MetricHttp extends Metric
 						let metric = res.devapt_metrics
                         // console.log(metric, 'metric')
                         
-                        if (metric)
-                        {
-						  metric.after()
-                        }
+						if (metric)
+						{
+							metric.after()
+						}
 					}
 				)
 			}
@@ -238,7 +238,7 @@ export default class MetricHttp extends Metric
 	{
 		var latency = this.res.get('Response-Time');
 		if ( typeof (latency) !== 'number' )
-			latency = this.metrics.ts_end - this.metrics.ts_begin;
+			latency = this.metrics.ts_end - this.metrics.ts_begin
 		
 		return latency
 	}
@@ -249,6 +249,7 @@ export default class MetricHttp extends Metric
 
 
 // RESTIFY AUDIT FORMAT
+/*
 const r = {
 	"name":"audit","hostname":"LFR000867",
 	"pid":6552,"audit":true,
@@ -260,7 +261,7 @@ const r = {
 		"headers":{
 			"user-agent":"curl/7.30.0",
 			"host":"localhost:8080",
-			"accept":'*/*'
+			"accept":'* / *'
 		},
 		"httpVersion":"1.1",
 		"trailers":{},
@@ -284,3 +285,4 @@ const r = {
 	"time":"2015- 12 - 17T16: 10:00.583Z",
 	"v":0
 }
+*/

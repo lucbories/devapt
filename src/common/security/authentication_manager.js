@@ -3,7 +3,7 @@ import T from 'typr'
 import assert from 'assert'
 import forge from 'node-forge'
 
-import PluginsManager from '../base/plugins_manager'
+import PluginsManager from '../plugins/plugins_manager'
 
 // import AuthenticationPluginPassportLocalDb from './authentication_plugin_passport_local_db'
 // import AuthenticationPluginPassportLocalFile from './authentication_plugin_passport_local_file'
@@ -121,7 +121,7 @@ export default class AuthenticationManager extends PluginsManager
 			// }
 			// default:
 			{
-				const plugin = new AuthenticationPluginURL(arg_settings.name, context)
+				const plugin = new AuthenticationPluginURL(this, arg_settings.name, context)
 				// self.info(context + ':load_plugin:create plugin for mode [' + mode + '] for name [' + plugin.get_name() + ']')
 				
 				this.register_plugin(plugin)

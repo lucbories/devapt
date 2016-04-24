@@ -34,8 +34,11 @@ export default class ServiceProvider extends Instance
 		super('svc_providers', 'ServiceProvider', arg_provider_name, arg_service_instance.get_settings(), arg_context ? arg_context : context)
 		
 		this.is_service_provider = true
+		
 		this.service = arg_service_instance
 		this.server = null
+		this.application = null
+		this.application_server = null
 	}
 	
 	
@@ -67,10 +70,13 @@ export default class ServiceProvider extends Instance
 		
 		assert( is_server(), context + ':service activation is only available on server')
 		
+		
+		// CUSTOM IMPLEMENTATION
 		if ( T.isFunction(this.activate_self) )
 		{
 			this.activate_self(arg_application, arg_server, arg_app_svc_cfg)
 		}
+		
 		
 		this.server = arg_server
 		this.application = arg_application
@@ -79,26 +85,8 @@ export default class ServiceProvider extends Instance
 	
 	
 	/**
-	 * Activate a service feature for an application for a specific provider.
-	 * @param {Application} arg_application - application instance
-	 * @param {Server} arg_server - server instance to bind the service
-	 * @param {object} arg_app_svc_cfg - service configuration for activation on application (unused)
-	 * @returns {nothing}
-	 */
-	activate_self(arg_application, arg_server, arg_app_svc_cfg)
-	{
-		const exec_cfg = { 'routes':this.get_setting('routes').toJS(), 'server': arg_server, 'unused':arg_app_svc_cfg }
-		
-		if ( T.isObject(this.exec) )
-		{
-			this.exec.prepare(exec_cfg)
-			this.exec.execute(arg_application)
-		}
-	}
-	
-	
-	/**
 	 * Produce service datas on request
+	 * @param {object} arg_data - query datas (optional)
 	 * @returns {Promise} - promise of results
 	 */
 	produce()

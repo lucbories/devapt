@@ -10,6 +10,10 @@ import Bacon from 'baconjs'
 
 const DEFAULT_OPS = [
 	{
+		name:'ping',
+		operands:[]
+	},
+	{
 		name:'get',
 		operands:[]
 	},

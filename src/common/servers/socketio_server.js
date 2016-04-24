@@ -25,7 +25,7 @@ export const IOServerTypes = {
 }
 
 
-const handler = function(req, res)
+const handler = function(/*req, res*/)
 {
 	// TODO
 }
@@ -62,29 +62,25 @@ export default class SocketIOServer extends BusServer
 		
 		switch(iotype)
 		{
-			case IOServerTypes.IOSERVER_TYPE_EXPRESS_SERVER:
-			{
+			case IOServerTypes.IOSERVER_TYPE_EXPRESS_SERVER: {
 				const app = express()
 				this.server = http.Server(app)
 				this.server.use( MetricsMiddleware.create_middleware(this) )
 				this.serverio = socketio(this.server)
 				break
 			}
-			case IOServerTypes.IOSERVER_TYPE_EXPRESS_FRAMEWORK:
-			{
+			case IOServerTypes.IOSERVER_TYPE_EXPRESS_FRAMEWORK: {
 				this.server = express.createServer()
 				this.server.use( MetricsMiddleware.create_middleware(this) )
 				this.serverio = socketio(this.server)
 				break
 			}
-			case IOServerTypes.IOSERVER_TYPE_HTTP:
-			{
+			case IOServerTypes.IOSERVER_TYPE_HTTP: {
 				this.server = http.createServer(handler)
 				this.serverio = socketio(this.server)
 				break
 			}
-			case IOServerTypes.IOSERVER_TYPE_SOCKETIO:
-			{
+			case IOServerTypes.IOSERVER_TYPE_SOCKETIO: {
 				this.server = null
 				this.serverio = socketio(this.port)
 				break
@@ -147,12 +143,6 @@ export default class SocketIOServer extends BusServer
 					)
 					
 					socket.emit('welcome', { hello: 'world' })
-					// socket.on('my other event',
-					// 	function (data)
-					// 	{
-					// 		console.log(data)
-					// 	}
-					// )
 				}
 			)
 		}

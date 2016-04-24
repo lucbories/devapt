@@ -3,6 +3,14 @@ import { store, config } from '../common/store/index'
 import Render from '../common/rendering/render'
 import Component from '../common/rendering/base/component'
 
+import RenderingPlugin from '../common/plugins/rendering_plugin'
+import ServicesPlugin from '../common/plugins/services_plugin'
+import ServersPlugin from '../common/plugins/servers_plugin'
+
+import DefaultRenderingPlugin from '../plugins/default/rendering_default_plugin'
+import DefaultServicesPlugin from '../plugins/default/services_default_plugin'
+
+
 /**
  * Main public part of Devapt library
  * @name index.js
@@ -18,4 +26,4 @@ import Component from '../common/rendering/base/component'
  */
 
 
-export default { runtime, config, store, Render, Component }
+export default { runtime, config, store, Render, Component, RenderingPlugin, ServicesPlugin, ServersPlugin, DefaultRenderingPlugin, DefaultServicesPlugin }

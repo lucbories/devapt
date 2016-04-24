@@ -2,24 +2,24 @@
 // import T from 'typr'
 import assert from 'assert'
 
-import ExecutableRouteMiddleware from './executable_route_middleware'
+import ExecutableRouteAssets from './executable_route_assets'
 
 import ServiceExecProvider from '../base/service_exec_provider'
 
 
-let context = 'common/services/middleware/mw_svc_provider'
+let context = 'common/services/assets/assets_svc_provider'
 
 
 
 /**
- * Middleware service provider class.
+ * Assets service provider class.
  * @author Luc BORIES
  * @license Apache-2.0
  */
-export default class MiddlewareSvcProvider extends ServiceExecProvider
+export default class AssetsSvcProvider extends ServiceExecProvider
 {
 	/**
-	 * Create a middleware service provider.
+	 * Create a assets service provider.
 	 * @param {string} arg_provider_name - consumer name
 	 * @param {Service} arg_service_instance - service instance
 	 * @param {string} arg_context - logging context label
@@ -29,9 +29,9 @@ export default class MiddlewareSvcProvider extends ServiceExecProvider
 	{
 		super(arg_provider_name, arg_service_instance, arg_context ? arg_context : context)
 		
-		assert(this.service.is_mw_service, context + ':bad mw service')
+		assert(this.service.is_assets_service, context + ':bad assets service')
 		
-		this.exec = new ExecutableRouteMiddleware()
+		this.exec = new ExecutableRouteAssets()
 	}
 	
 	
@@ -41,6 +41,6 @@ export default class MiddlewareSvcProvider extends ServiceExecProvider
 	 */
 	produce()
 	{
-		return Promise.resolve( { msg: 'hello consumer'} )
+		return Promise.resolve(undefined)
 	}
 }

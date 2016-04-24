@@ -2,19 +2,19 @@
 import T from 'typr'
 import assert from 'assert'
 
-import { is_browser, is_server } from '../utils/is_browser'
-import { config } from '../store/index'
+import { is_browser, is_server } from '../../utils/is_browser'
+import { config } from '../../store/index'
 
-import Instance from './instance'
-import Collection from './collection'
-import runtime from './runtime'
+import Instance from '../../base/instance'
+import Collection from '../../base/collection'
+import runtime from '../../base/runtime'
 
-import ServiceConsumer from '../services/base/service_consumer'
-import ServiceProvider from '../services/base/service_provider'
+import ServiceConsumer from './service_consumer'
+import ServiceProvider from './service_provider'
 
 
 
-let context = 'common/base/service'
+let context = 'common/services/base'
 
 
 // STATUS CONSTANTS

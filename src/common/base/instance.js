@@ -75,10 +75,10 @@ export default class Instance extends Settingsable
 				const traces = logger.$settings['traces']
 				this.is_trace_enabled = this.should_trace(traces)
 			}
-			else
-			{
-				console.log(context + ':undefined logger settings for ' + this.get_descriptor_string())
-			}
+			// else
+			// {
+			// 	console.log(context + ':undefined logger settings for ' + this.get_descriptor_string())
+			// }
 		}
 	}
 	

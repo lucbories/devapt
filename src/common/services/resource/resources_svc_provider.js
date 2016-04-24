@@ -2,7 +2,7 @@
 // import T from 'typr'
 import assert from 'assert'
 
-import ExecutableRouteResources from '../../executables/executable_route_get_resource'
+import ExecutableRouteResources from './executable_route_get_resource'
 
 import ServiceExecProvider from '../base/service_exec_provider'
 
@@ -32,9 +32,6 @@ export default class ResourcesSvcProvider extends ServiceExecProvider
 		assert(this.service.is_resources_service, context + ':bad resources service')
 		
 		this.exec = new ExecutableRouteResources()
-		this.server = null
-		this.application = null
-		this.application_server = null
 	}
 	
 	

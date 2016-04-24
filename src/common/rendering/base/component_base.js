@@ -185,7 +185,7 @@ export default class ComponentBase extends Instance
 			for(let component of this.$settings.children)
 			{
 				const component_styles = component.get_styles()
-				console.log(component_styles, this.get_name() + ':component_styles')
+				// console.log(component_styles, this.get_name() + ':component_styles')
 				
 				styles = styles.concat(component_styles)
 			}

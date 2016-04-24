@@ -233,6 +233,31 @@ export default class Collection
 	}
 	
 	
+	/**
+	 * Add an item to the collection at the first position.
+	 * TODO: use indices to optimize search.
+	 * @param {Instance} arg_item - Instance item.
+	 * @returns {nothing}
+	 */
+	add_first(arg_item)
+	{
+		if ( T.isObject(arg_item) && arg_item instanceof Instance )
+		{
+			if ( this.has_accepted_type('*') || this.has_accepted_type(arg_item.$type) )
+			{
+				this.$items = [arg_item].concat(this.$items)
+                
+				return
+			}
+			
+			this.error('not accepted type [' + arg_item.$type + '] for instance [' + arg_item.$name + ']')
+			return
+		}
+		
+		this.error('bad item: not an instance object')
+	}
+	
+	
 	
 	/**
 	 * Remove an item from the collection.
@@ -307,6 +332,15 @@ export default class Collection
 	
 	
 	/**
+	 * Find an item by one of its attributes into the collection.
+	 * TODO: optimize with a map index
+	 * @param {string} arg_filter_function - function to apply on instance, returns a boolean.
+	 * @returns {Instance|undefined}
+	 */
+	find_by_filter(arg_filter_function) { return this.$items.find( item => arg_filter_function(item) ) }
+	
+	
+	/**
 	 * Get all collection accepted types.
 	 * @returns {array} - array of types strings.
 	 */
@@ -352,7 +386,7 @@ export default class Collection
 	
 	
 	/**
-	 * forEach wrapper.
+	 * forEach wrapper on ordered items.
 	 * @param {function} arg_cb - callback to call on each item.
 	 * @returns {nothing}
 	 */

@@ -1,6 +1,6 @@
 
 import T from 'typr'
-import assert from 'assert'
+// import assert from 'assert'
 
 
 
@@ -74,14 +74,15 @@ export function render_node(arg_value, arg_depth, arg_label)
 		let str = ''
 		try
 		{
-			arg_value.forEach( (value, index) =>
-				{
+			arg_value.forEach(
+				(value, index) => {
 					str += '<div>' + render_node(value, arg_depth + 1, index) + '</div>\n'
 				}
 			)
 		}
 		catch(e)
 		{
+			// NOTHING TO DO
 		}
 		return render_expandable_node(arg_label, str)
 	}
@@ -91,14 +92,16 @@ export function render_node(arg_value, arg_depth, arg_label)
 		let str = ''
 		try
 		{
-			Object.keys(arg_value).forEach( key =>
+			Object.keys(arg_value).forEach(
+				(key) =>
 				{
-					str += `<div>` + render_node(arg_value[key], arg_depth + 1, key) + '</div>\n'
+					str += '<div>' + render_node(arg_value[key], arg_depth + 1, key) + '</div>\n'
 				}
 			)
 		}
 		catch(e)
 		{
+			// NOTHING TO DO
 		}
 		return render_expandable_node(arg_label, str)
 	}

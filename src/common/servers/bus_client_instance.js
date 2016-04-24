@@ -34,7 +34,7 @@ export default class BusClientInstance extends Instance
 		{
 			console.error(arg_collection, arg_class, arg_name, arg_settings, arg_context, 'arg_collection, arg_class, arg_name, arg_settings, arg_context')
 		}
-			assert( T.isObject(arg_settings), context + ':bad bus clientsettings object')
+		assert( T.isObject(arg_settings), context + ':bad bus clientsettings object')
 		
 		super(arg_collection, arg_class, arg_name, arg_settings, arg_context ? arg_context : context)
 		
@@ -54,6 +54,9 @@ export default class BusClientInstance extends Instance
 		
 		let BusServer = require('../servers/simplebus_server').default
 		this.bus_client = BusServer.create_client(this, arg_host, arg_port)
+		this.bus_server_class = BusServer
+		this.bus_server_host = arg_host
+		this.bus_server_port = arg_port
 		
 		this.leave_group('init_bus_client')
 	}

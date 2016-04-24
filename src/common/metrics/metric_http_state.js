@@ -1,6 +1,6 @@
 
-import T from 'typr'
-import assert from 'assert'
+// import T from 'typr'
+// import assert from 'assert'
 
 
 
@@ -47,8 +47,8 @@ export default class MetricHttpState
 		this.metrics.response_status_counters = {}
 	}
     
-    get_values()
-    {
-        return this.metrics
-    }
+	get_values()
+	{
+		return this.metrics
+	}
 }

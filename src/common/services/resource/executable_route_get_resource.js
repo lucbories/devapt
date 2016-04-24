@@ -2,12 +2,12 @@ import T from 'typr'
 import assert from 'assert'
 import fs from 'fs'
 
-import runtime from '../base/runtime'
+import runtime from '../../base/runtime'
 
-import ExecutableRoute from './executable_route'
+import ExecutableRoute from '../../executables/executable_route'
 
 
-let context = 'common/executables/executable_route_get_resources'
+let context = 'common/services/base/executable_route_get_resources'
 
 
 

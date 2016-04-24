@@ -3,13 +3,17 @@ import T from 'typr'
 import assert from 'assert'
 
 import { config } from '../store/index'
-import Service from '../base/service'
-import * as exec from '../executables/index'
-import MiddlewareService from '../services/middleware/mw_service'
-import CrudService from '../services/crud/crud_service'
-import ResourcesService from '../services/resource/resources_service'
 
+// import MiddlewareService from '../services/middleware/mw_service'
+// import CrudService from '../services/crud/crud_service'
+// import ResourcesService from '../services/resource/resources_service'
+// import AssetsService from '../services/assets/assets_service'
+// import MetricsService from '../services/metrics/metrics_service'
+
+// import DefaultServicePlugin from '../../plugins/default/services_default_plugin'
+// import ServicesManager from '../plugins/services_manager'
 import RuntimeExecutable from './runtime_executable'
+import PluginsFactory from '../plugins/plugins_factory'
 
 
 let context = 'common/executables/runtime_stage2_executable'
@@ -37,6 +41,9 @@ export default class RuntimeStage2Executable extends RuntimeExecutable
 		
 		this.separate_level_1()
 		this.enter_group('execute')
+		
+		// CREATE PLUGINS MANAGERS AND LOAD DEFAULT PLUGINS
+		this.runtime.plugins_factory = new PluginsFactory(this.runtime)
 		
 		if (this.runtime.is_master)
 		{
@@ -74,6 +81,8 @@ export default class RuntimeStage2Executable extends RuntimeExecutable
 	{
 		this.enter_group('make_services')
 		
+		const svc_mgr = this.runtime.plugins_factory.services_manager
+		
 		let services = config.get_collection_names('services')
 		services.forEach(
 			(service_name) => {
@@ -81,57 +90,20 @@ export default class RuntimeStage2Executable extends RuntimeExecutable
 				this.info('Processing service creation of:' + service_name)
 				
 				let cfg_service = config.get_collection_item('services', service_name)
-				// console.log(cfg_service, 'cfg_svc')
+				
 				assert( T.isObject(cfg_service), context + ':bad service cfg for [' + service_name + ']')
 				assert( T.isString(cfg_service.get('type')), context + ':bad service type [' + cfg_service.type + ']')
-				// assert( T.isString(cfg_service.get('server')), context + ':bad service server [' + cfg_service.server + ']')
 				
-				let service = null
-				
-				switch( cfg_service.get('type') )
-				{
-					case 'middleware':{
-						service = new MiddlewareService(service_name, cfg_service)
-						break
-					}
-					case 'rest_api_models_query':{
-						service = new CrudService(service_name, cfg_service)
-						break
-					}
-					case 'rest_api_models_modifier':{
-						service = new CrudService(service_name, cfg_service)
-						break
-					}
-					case 'rest_api_resources_query':{
-						service = new ResourcesService(service_name, cfg_service)
-						break
-					}
-					case 'rest_api_resources_modifier':{
-						// let locale_exec = null
-						// let remote_exec = null
-						// service = new Service(service_name, locale_exec, remote_exec) // TODO: create Real service
-						break
-					}
-					case 'html_assets':{
-						let locale_exec = new exec.ExecutableRouteAssets()
-						let remote_exec = locale_exec
-						service = new Service(service_name, locale_exec, remote_exec)
-						break
-					}
-					case 'html_app':{
-						// let locale_exec = null
-						// let remote_exec = null
-						// service = new Service(service_name, locale_exec, remote_exec) // TODO: create Real service
-						break
-					}
-				}
-				
-				// assert( T.isObject(service), context + ':bad service type [' + cfg_service.get('type') + ']')
+				let service = svc_mgr.create(cfg_service.get('type'), service_name, cfg_service)
 				
 				if (service)
 				{
 					service.enable()
 					this.runtime.services.add(service)
+				}
+				else
+				{
+					console.error(context + ':make_services:bad service for ' + service_name)
 				}
 			}
 		)

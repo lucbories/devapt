@@ -1,6 +1,6 @@
 import T from 'typr'
 import assert from 'assert'
-import { fromJS } from 'immutable'
+// import { fromJS } from 'immutable'
 
 import Loggable from '../common/base/loggable'
 import LoggerManager from '../common/loggers/logger_manager'
@@ -14,9 +14,10 @@ let context = 'browser/runtime'
 /**
  * DEFAULT RUNTIME SETTINGS
  */
-const default_settings = {}
+// const default_settings = {}
 
-const test_build = 'kkkk'
+const test_build = 'lll'
+console.log(test_build, 'livereload check')
 
 
 /**
@@ -101,6 +102,16 @@ export default class ClientRuntime extends Loggable
 	{
 		// console.info('getting/creating service', arg_name)
 		return (arg_name in this.services) ? this.services[arg_name] : undefined
+	}
+	
+	
+	/**
+	 * Emit a ping request through SocketIO
+	 */
+	ping()
+	{
+		const socketio = io()
+		socketio.emit('ping')
 	}
 }
 

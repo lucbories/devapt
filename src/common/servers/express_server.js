@@ -77,7 +77,8 @@ export default class ExpressServer extends Server
 		
 		
 		// BUILD SOCKETIO
-		const use_socketio = this.get_setting('use_socketio', true)
+		const use_socketio = this.get_setting('use_socketio', false)
+		
 		if (use_socketio)
 		{
 			console.log(context + ':creating socket io')
@@ -85,82 +86,7 @@ export default class ExpressServer extends Server
 			this.server_http = http.Server(this.server)
 			this.serverio = socketio(this.server_http)
 			
-			
-			const srv = this
-			const root_srv_socket = this.serverio
-			this.serverio.on('connection',
-				function (socket)
-				{
-					console.info(context + ':build_server:new connection on /')
-					
-					// ROOT
-					socket.on('disconnect',
-						function()
-						{
-							console.info(context + ':build_server:socket disconnected')
-						}
-					)
-					
-					socket.on('hello',
-						function(data)
-						{
-							console.info(context + ':build_server:socket receives hello', data)
-						}
-					)
-					
-					socket.emit('welcome on /', { hello: 'world' })
-					
-					
-					// METRICS
-					srv.serverio_metrics = root_srv_socket.of('/metrics')
-					srv.serverio_metrics.on('connection',
-						function (socket)
-						{
-							console.info(context + ':build_server:new connection on /metrics', socket.id)
-							
-							socket.on('disconnect',
-								function()
-								{
-									console.info(context + ':build_server:socket disconnected from /metrics')
-									socket.emit('welcome on /metrics', { hello: 'world' })
-								}
-							)
-							socket.on('get',
-								function(data)
-								{
-									console.info(context + ':build_server:socket get on /metrics', socket.id, data)
-									socket.emit('get', '/metrics/get response')
-								}
-							)
-							socket.on('end',
-								function ()
-								{
-									socket.disconnect(0)
-								}
-							)
-						}
-					)
-					
-					// socket.on('my other event',
-					// 	function (data)
-					// 	{
-					// 		console.log(data)
-					// 	}
-					// )
-					/*
-					var messages = connections.flatMap(
-						function(socket)
-						{
-							return Bacon.fromBinder(
-								function(txt)
-								{
-									sink( { author: socket, txt: txt } )
-								}
-							)
-						}
-					)*/
-				}
-			)
+			runtime.add_socketio(this.get_name(), this.serverio)
 		}
 		
 		
