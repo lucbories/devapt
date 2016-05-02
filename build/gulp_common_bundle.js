@@ -43,6 +43,7 @@ module.exports = function (gulp, plugins)
 				try
 				{
 					return gulp.src(DST_COMMON_JS)
+						// .pipe( plugins.changed(DST_COMMON_JS) )
 						.pipe( plugins.concat('devapt-common.js') )
 						.pipe( plugins.sourcemaps.init() )
 						.pipe( plugins.sourcemaps.write('.') )

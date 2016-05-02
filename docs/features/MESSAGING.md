@@ -5,6 +5,8 @@ A distributed application needs to provide a communication between its nodes.
 
 Devapt provides a messages bus to ensure JSON messages exchange.
 
+![Messaging](https://github.com/lucbories/Devapt/tree/master/docs/features/buses.png)
+
 
 
 ## Status

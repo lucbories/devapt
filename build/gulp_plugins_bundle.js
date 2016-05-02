@@ -14,6 +14,7 @@ module.exports = function (gulp, plugins)
 		gulp.task('build_plugins_bundle',
 			() => {
 				return gulp.src(DST_PLUGINS_JS)
+					// .pipe( plugins.changed(DST_PLUGINS_JS) )
 					.pipe( plugins.concat('devapt-plugins.js') )
 					.pipe( plugins.sourcemaps.init() )
 					.pipe( plugins.sourcemaps.write('.') )

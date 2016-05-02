@@ -9,7 +9,7 @@ var del = require('del')
 // var concat = require('gulp-concat');
 // var changed = require('gulp-changed');
 // var browserSync = require('browser-sync').create();
-// var runseq = require('run-sequence');
+var runseq = require('run-sequence')
 // var jsdoc = require('gulp-jsdoc3');
 
 // var source = require('vinyl-source-stream');
@@ -90,7 +90,7 @@ const BABEL_CONFIG = {
 gulp.task('build_index_transpile',
 	() => {
 		return gulp.src('src/index.js')
-			.pipe( plugins.changed('dist') )
+			.pipe( plugins.changed('src/index.js') )
 			.pipe( plugins.sourcemaps.init() )
 			.pipe( plugins.babel(BABEL_CONFIG) )
 			.pipe( plugins.sourcemaps.write('.') )
@@ -112,7 +112,11 @@ gulp.task('clean',
 /*
     DEFINE MAIN GULP TASKS
 */
-gulp.task('default', ['build_common_transpile', 'build_plugins_transpile', 'build_server_transpile', 'build_index_transpile', 'build_browser', 'build_json_copy'])
+var default_tasks = ['build_common_transpile', 'build_plugins_transpile', 'build_server_transpile', 'build_index_transpile', 'build_browser']
+gulp.task('default_all', (/*cb*/) => runseq(default_tasks) )
+
+var default_srv_tasks = ['build_common_transpile', 'build_server_transpile']
+gulp.task('default', (/*cb*/) => runseq(default_srv_tasks) )
 
 // gulp.task('build_clean', (cb) => runseq('clean', ['default', 'build_json_copy'], cb) )
 

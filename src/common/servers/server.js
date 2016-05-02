@@ -5,7 +5,9 @@ import { fromJS } from 'immutable'
 
 import { config } from '../store/index'
 import Collection from '../base/collection'
-import BusClientInstance from './bus_client_instance'
+import Instance from '../base/instance'
+import BusClient from '../messaging/simplebus_client'
+// import BusClientInstance from './bus_client_instance'
 
 import AuthenticationWrapper from '../security/authentication_wrapper'
 
@@ -31,7 +33,7 @@ export const ServerTypes = {
  * @author Luc BORIES
  * @license Apache-2.0
  */
-export default class Server extends BusClientInstance
+export default class Server extends Instance
 {
 	/**
 	 * Create a server instance.
@@ -44,11 +46,13 @@ export default class Server extends BusClientInstance
 	 */
 	constructor(arg_name, arg_class, arg_settings, arg_log_context)
 	{
+		const log_context = arg_log_context ? arg_log_context : context
+		
 		if (! T.isObject(arg_settings))
 		{
 			console.error(arg_class, arg_name, arg_settings, arg_log_context, 'arg_class, arg_name, arg_settings, arg_context')
 		}
-		super('servers', (arg_class ? arg_class.toString() : 'Server'), arg_name, arg_settings, arg_log_context ? arg_log_context : context)
+		super('servers', (arg_class ? arg_class.toString() : 'Server'), arg_name, arg_settings, log_context)
 		
 		this.is_server = true
 		this.is_build = false
@@ -66,7 +70,55 @@ export default class Server extends BusClientInstance
 		
 		this.authentication = new AuthenticationWrapper(arg_log_context ? arg_log_context : context)
 		// this.authorization = new AuthorizationWrapper(arg_log_context ? arg_log_context : context)
+		
+		// this.msg_bus_client = undefined
 	}
+
+	
+	// init_bus_client(arg_host, arg_port)
+	// {
+	// 	const bus_settings = {
+	// 		'type':'server',
+	// 		'host':arg_host,
+	// 		'port':arg_port
+	// 	}
+	// 	this.msg_bus_client = new BusClient(this.get_name(), bus_settings, context)
+	// }
+	
+	
+	/**
+	 * Send a message to an other client.
+	 * @abstract
+	 * @param {string} arg_node_name - recipient node name.
+	 * @param {object} arg_payload - message payload plain object.
+	 * @returns {nothing}
+	 */
+	send_msg(arg_node_name, arg_payload)
+	{
+		this.node.msg_bus.send_msg(arg_node_name, arg_payload)
+	}
+    
+    
+	
+	/**
+	 * Send a message to the metrics server.
+	 * @param {string} arg_metric_type - type of metrics.
+	 * @param {object} arg_metrics - metrics plain object.
+	 * @returns {nothing}
+	 */
+	send_metrics(arg_metric_type, arg_metrics)
+	{
+		assert( T.isString(arg_metric_type), context + ':send_metrics:bad metrics type string')
+		assert( T.isArray(arg_metrics) || T.isObject(arg_metrics), context + ':send_metrics:bad metrics object or array')
+		
+		const metrics = T.isArray(arg_metrics) ? arg_metrics : [arg_metrics]
+		const count = metrics.length
+		
+		// TODO Manage a buffer of metrics and send every N metrics
+		// console.log('Server: new metrics record on the bus:%i', count)
+		this.node.metrics_bus.send_msg('metrics_server', { is_metrics_message:true, 'metric':arg_metric_type, 'metrics': metrics, 'metrics_count':count } )
+	}
+	
 	
 	
 	/**
@@ -232,7 +284,7 @@ export default class Server extends BusClientInstance
 		{
 			this.server_host = cfg.getIn(['servers', 'default', 'host'])
 		}
-		assert( T.isString(this.server_host), context + ':bad server host string')
+		assert( T.isString(this.server_host), context + ':bad server host string:[' + this.server_host + ']')
 		
 		// SET SERVER PORT
 		this.server_port = this.$settings.has('port') ? this.$settings.get('port') : null
@@ -240,7 +292,7 @@ export default class Server extends BusClientInstance
 		{
 			this.server_port = cfg.getIn(['servers', 'default', 'port'])
 		}
-		assert( T.isNumber(this.server_port), context + ':bad server port string')
+		assert( T.isNumber(this.server_port), context + ':bad server port string:[' + this.server_port + ']')
 		
 		// SET SERVER PROTOCOLE
 		this.server_protocole = this.$settings.has('protocole') ? this.$settings.get('protocole') : null
@@ -248,7 +300,7 @@ export default class Server extends BusClientInstance
 		{
 			this.server_protocole = cfg.getIn(['servers', 'default', 'protocole'])
 		}
-		assert( T.isString(this.server_protocole), context + ':bad server protocole string')
+		assert( T.isString(this.server_protocole), context + ':bad server protocole string:[' + this.server_protocole + ']')
 		
 		// SET SERVER TYPE
 		this.server_type = this.$settings.has('type') ? this.$settings.get('type') : null
@@ -256,7 +308,7 @@ export default class Server extends BusClientInstance
 		{
 			this.server_type = cfg.getIn(['servers', 'default', 'type'])
 		}
-		assert( T.isString(this.server_type), context + ':bad server type string')
+		assert( T.isString(this.server_type), context + ':bad server type string:[' + this.server_type + ']')
 		
 		// SECURITY (could be null for Bus Server...)
 		const security_settings = this.get_security_settings()
@@ -277,6 +329,18 @@ export default class Server extends BusClientInstance
 		this.build_server()
 		this.is_build = true
 		
+		// SUBSCRIBE TO MESSAGES BUS
+		const self = this
+		if ( T.isFunction(self.receive_msg) )
+		{
+			assert( T.isObject(this.node) && this.node.is_node, context + ':load:bad node object')
+			this.node.msg_bus.subscribe( { 'target': this.get_name() },
+				(arg_msg) => {
+					assert( T.isObject(arg_msg) && T.isObject(arg_msg.payload), context + ':msg_bus.subsribe:bad payload object')
+					self.receive_msg(arg_msg.sender, arg_msg.payload)
+				}
+			)
+		}
 		super.load()
 		
 		this.leave_group('load')

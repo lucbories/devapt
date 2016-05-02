@@ -1,12 +1,12 @@
 
-// import T from 'typr'
-// import assert from 'assert'
+import T from 'typr'
+import assert from 'assert'
 
-import Server from './server'
+import Bus from './bus'
 
 
 
-let context = 'common/servers/bus_server'
+let context = 'common/messaging/bus_server'
 
 
 
@@ -15,7 +15,7 @@ let context = 'common/servers/bus_server'
  * @author Luc BORIES
  * @license Apache-2.0
  */
-export default class BusServer extends Server
+export default class BusServer extends Bus
 {
 	/**
 	 * Create a server instance.
@@ -26,9 +26,9 @@ export default class BusServer extends Server
 	 * @param {string} arg_log_context - trace context string.
 	 * @returns {nothing}
 	 */
-	constructor(arg_name, arg_settings, arg_context)
+	constructor(arg_name, arg_settings, arg_log_context)
 	{
-		super(arg_name, 'BusServer', arg_settings, arg_context ? arg_context : context)
+		super('bus_servers', 'BusServer', arg_name, arg_settings, arg_log_context ? arg_log_context : context)
 		
 		this.is_bus_server = true
 	}
@@ -38,13 +38,14 @@ export default class BusServer extends Server
 	 * Build server.
 	 * @returns {nothing}
 	 */
-	build_server()
+	load()
 	{
-		this.enter_group('build_server')
+		this.enter_group('load')
 		
-		console.error(context + ':build_server:not yet implemented')
+		super.load()
+		console.error(context + ':load:not yet implemented')
 		
-		this.leave_group('build_server')
+		this.leave_group('load')
 	}
 	
 	
@@ -81,7 +82,7 @@ export default class BusServer extends Server
 	 * @param {object} arg_msg - message payload.
 	 * @returns {nothing}
 	 */
-	post(arg_msg)
+	post(/*arg_msg*/)
 	{
 		console.error(context + ':post:not yet implemented')
 	}
@@ -93,15 +94,21 @@ export default class BusServer extends Server
 	 * @param {function} arg_handler - subscription callback as f(msg).
 	 * @returns {nothing}
 	 */
-	subscribe(arg_filter, arg_handler)
+	subscribe(/*arg_filter, arg_handler*/)
 	{
 		console.error(context + ':subscribe:not yet implemented')
 	}
 	
 	
-	static create_client(arg_node, arg_host, arg_port)
+	
+	/**
+	 * Create a bus client.
+	 * @param {string} arg_name - client name
+	 * @returns {BusClient}
+	 */
+	create_client(arg_name)
 	{
-		console.error(context + ':create_client:not yet implemented')
+		console.error(context + ':create_client:not yet implemented:' + arg_name)
 		
 		return undefined
 	}

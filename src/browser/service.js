@@ -18,6 +18,10 @@ const DEFAULT_OPS = [
 		operands:[]
 	},
 	{
+		name:'post',
+		operands:[]
+	},
+	{
 		name:'subscribe',
 		operands:[]
 	},

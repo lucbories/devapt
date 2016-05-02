@@ -72,17 +72,26 @@ With Devapt you define
 
 A topology contains:
 * nodes: A node is a nodejs process with a unique name. You can have many nodes on the same machine.
-Each node communicates with other node through a couple (host, port).
+Each node communicates with other node through a messaging bus.
+
+![Messaging](https://github.com/lucbories/Devapt/tree/master/docs/features/buses.png)
+
+
 A node can have one or many servers.
 * servers: A server provides one or more services and listen client connections through a couple (host, port).
+
 A server has a unique name and can be one of types: restify, express, socket.io, message bus...
 * services: A service offer one feature to clients. A service can be one of: static assets providers, middleware provider, model RESTfull access...
 * applications: An application contains some services and is provided through nodes and servers.
+
 An application can have one service on one server on one node.
 Or many services on many servers on many nodes.
 * modules: functional features for applications (a set of preconfigured UI for example).
 * plugins: technical fearures for applications (a rendering provider for example).
 * security: defines authentication and authorization rules.
+
+![Distributed](https://github.com/lucbories/Devapt/tree/master/docs/features/host.png)
+
 
 The rendering engines are plugins and rendering classes are stateless: state is stored in a Redux store.
 See [Getting Started with Redux](https://egghead.io/series/getting-started-with-redux) for flow concepts.

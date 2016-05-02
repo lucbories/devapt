@@ -6,19 +6,19 @@ import SocketIOServiceProvider from '../base/socketio_service_provider'
 import runtime from '../../base/runtime'
 
 
-let context = 'common/services/metrics/metrics_svc_provider'
+let context = 'common/services/loggers/loggers_svc_provider'
 
 
 
 /**
- * Metrics service provider class.
+ * Loggers service provider class.
  * @author Luc BORIES
  * @license Apache-2.0
  */
-export default class MetricsSvcProvider extends SocketIOServiceProvider
+export default class LoggersSvcProvider extends SocketIOServiceProvider
 {
 	/**
-	 * Create a Metrics service provider.
+	 * Create a Loggers service provider.
 	 * @param {string} arg_provider_name - consumer name
 	 * @param {Service} arg_service_instance - service instance
 	 * @param {string} arg_context - logging context label
@@ -28,18 +28,22 @@ export default class MetricsSvcProvider extends SocketIOServiceProvider
 	{
 		super(arg_provider_name, arg_service_instance, arg_context ? arg_context : context)
 		
-		assert(this.service.is_metrics_service, context + ':bad Metrics service')
+		assert(this.service.is_loggers_service, context + ':bad Loggers service')
 		
-		// const self = this
+		this.is_loggers_service_provider = true
 		
 		// CREATE A BUS CLIENT
-		this.metrics_bus_stream = runtime.node.metrics_bus.get_bus_stream()
-		this.init_msg_bus_stream()
-		// this.metrics_bus_stream.onValue(
-		// 	(metrics_record) => {
-		// 		console.log('MetricsSvcProvider: new metrics record on the bus', metrics_record)
-		// 	}
-		// )
+		// const loggers_server = runtime.node.loggers_server
+		// const msg_bus_server_class = loggers_server.bus_server_class
+		// const msg_bus_server_host = loggers_server.bus_server_host
+		// const msg_bus_server_port = loggers_server.bus_server_port
+		// const self = this
+		// const wrapper = {
+		// 	get_name: () => { return loggers_server.get_name() },
+		// 	receive_msg: (arg_sender, arg_payload) => { self.receive_msg(arg_sender, arg_payload) },
+		// 	info: (arg_text) => { self.info(arg_text) }
+		// }
+		// this.msg_bus_client = msg_bus_server_class.create_client(wrapper, msg_bus_server_host, msg_bus_server_port)
 	}
 	
 	
@@ -81,26 +85,9 @@ export default class MetricsSvcProvider extends SocketIOServiceProvider
 			return grouped_stream
 		}
 		
-		const msg_cb = (arg_msg) => {
-			const metric_type = arg_msg.payload.metric
-			const metrics_array = arg_msg.payload.metrics
-			const metrics_record = {
-				metric: metric_type,
-				metrics:metrics_array
-			}
-			
-			return metrics_record
-		}
 		
-		self.msg_bus_stream_transfomed = self.metrics_bus_stream.map(msg_cb).groupBy(key_cb, limit_cb).flatMap(flatmap_cb)
-		
-		self.msg_bus_stream_transfomed.onValue(
-			(metrics_record) => {
-				this.provided_values_stream.push(metrics_record)
-			}
-		)
+		self.msg_bus_stream_transfomed = self.msg_bus_stream.groupBy(key_cb, limit_cb).flatMap(flatmap_cb)
 	}
-	
 	
 	
 	/**
@@ -108,36 +95,31 @@ export default class MetricsSvcProvider extends SocketIOServiceProvider
 	 * @param {object} arg_data - query datas (optional)
 	 * @returns {Promise} - promise of results
 	 */
-	produce(arg_data)
+	produce(/*arg_data*/)
 	{
 		// GET METRICS STATE
-		const metrics_server = runtime.node.metrics_server
-		const http_state = metrics_server.get_http_metrics().metrics
+		// const loggers_server = runtime.node.loggers_server
 		
-		// TODO: FILTER METRICS
-		if ( T.isObject(arg_data) )
-		{
-			//...
-		}
+		// // TODO: FILTER METRICS
+		// if ( T.isObject(arg_data) )
+		// {
+		// 	//...
+		// }
 		
-		return Promise.resolve(http_state)
+		// return Promise.resolve(http_state)
 	}
 	
 	
 	/**
 	 * 
 	 */
-	// receive_msg(arg_sender, arg_payload)
-	// {
-	// 	const metric_type = arg_payload.metric
-	// 	const metrics_array = arg_payload.metrics
-	// 	const metrics_record = {
-	// 		metric: metric_type,
-	// 		metrics:metrics_array/*,
-	// 		senders:[arg_sender.toString()]*/
-	// 	}
+	receive_msg(arg_sender, arg_payload)
+	{
+		// console.log('LoggersSvcProvider.receive_msg', arg_sender, arg_payload)
 		
+		// const metric_type = arg_payload.metric
+		// const loggers_array = arg_payload.loggers
 		
-	// 	this.msg_bus_stream.push(metrics_record)
-	// }
+		// this.post( {metric: metric_type, loggers:loggers_array} )
+	}
 }

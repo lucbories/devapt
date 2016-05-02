@@ -1,6 +1,6 @@
 
 import T from 'typr'
-import assert from 'assert'
+// import assert from 'assert'
 import uuid from 'node-uuid'
 
 import Metric from '../base/metric'
@@ -103,9 +103,7 @@ export default class MetricHttp extends Metric
 		this.metrics.server.node_name = this.server.get_name()
 		this.metrics.server.server_name = this.server.node.get_name()
         
-        this.server.send_metrics(this.metrics.metric, this.metrics)
-        
-		// console.log(this.metrics, 'request metrics')
+		this.server.send_metrics(this.metrics.metric, this.metrics)
 	}
 	
     

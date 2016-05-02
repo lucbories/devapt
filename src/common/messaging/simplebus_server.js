@@ -8,7 +8,7 @@ import BusServer from './bus_server'
 
 
 
-let context = 'common/servers/simplebus_server'
+let context = 'common/messaging/simplebus_server'
 
 
 
@@ -32,6 +32,8 @@ export default class SimpleBusServer extends BusServer
 		super(arg_name, arg_settings, arg_context ? arg_context : context)
 		
 		this.is_simplebus_server = true
+		
+		this.load()
 	}
 	
 	
@@ -39,18 +41,25 @@ export default class SimpleBusServer extends BusServer
 	 * Build server.
 	 * @returns {nothing}
 	 */
-	build_server()
+	load()
 	{
-		this.enter_group('build_server')
+		this.enter_group('load')
+		
+		super.load()
 		
 		const host = this.server_host
 		const port = this.server_port
 		const size = this.get_setting('size', 1000)
 		
-		console.log('BusServer.build_server %s:%s of size %s', host, port, size)
 		
+		console.log(context + ':load: bus of size %s',  size)
 		this.bus = simplebus.createBus(size)
-		this.server = simplebus.createServer(this.bus, port, host)
+		
+		if (this.server_type == 'server')
+		{
+			console.log(context + ':load: server listen on %s:%s', host, port)
+			this.server = simplebus.createServer(this.bus, port, host)
+		}
 		
         // SET SOCKET SERVER HANDLERS
 		// TODO server.on doesn't exist
@@ -59,7 +68,7 @@ export default class SimpleBusServer extends BusServer
         // this.server.on('error', BusServer.on_client_error)
         // this.server.on('listening', BusServer.on_client_listening)
         
-		this.leave_group('build_server')
+		this.leave_group('load')
 	}
 	
 	
@@ -71,7 +80,10 @@ export default class SimpleBusServer extends BusServer
 	{
 		this.enter_group('enable Bus server')
 		
-		this.server.start()
+		if (this.server)
+		{
+			this.server.start()
+		}
 		
 		this.leave_group('enable Bus server')
 	}
@@ -85,7 +97,10 @@ export default class SimpleBusServer extends BusServer
 	{
 		this.enter_group('disable Bus server')
 		
-		this.server.stop()
+		if (this.server)
+		{
+			this.server.stop()
+		}
 		
 		this.leave_group('disable Bus server')
 	}
@@ -99,6 +114,30 @@ export default class SimpleBusServer extends BusServer
 	post(arg_msg)
 	{
 		this.bus.post(arg_msg)
+		this.msg_bus_stream.push(arg_msg)
+	}
+	
+	
+	/**
+	 * Send a message to an other client.
+	 * @param {string} arg_node_name - recipient node name.
+	 * @param {object} arg_payload - message payload plain object.
+	 * @returns {nothing}
+	 */
+	send_msg(arg_node_name, arg_payload)
+	{
+		if ( T.isString(arg_payload) )
+		{
+			arg_payload = { msg:arg_payload }
+		}
+		assert( T.isString(arg_node_name), context + ':send_msg:bad node name string')
+		assert( T.isObject(arg_payload), context + ':send_msg:bad payload object')
+		
+		this.info('sending a message to [' + arg_node_name + ']')
+		
+		const msg =  { 'target':arg_node_name, 'sender':this.get_name(), 'payload':arg_payload }
+		this.bus.post(msg)
+		this.msg_bus_stream.push(msg)
 	}
 	
 	
@@ -114,50 +153,6 @@ export default class SimpleBusServer extends BusServer
 	}
 	
 	
-	
-	static create_client(arg_node, arg_host, arg_port)
-	{
-		const node_name = arg_node.get_name()
-		console.log('BusServer.create_client %s:%s for node %s', arg_host, arg_port, node_name)
-		
-		var client = simplebus.createClient(arg_port, arg_host)
-		
-		client.start(
-			function ()
-			{
-				client.subscribe( { 'target': node_name },
-					function(arg_msg)
-					{
-						// console.log(arg_msg, context + ':client.on_msg:enter')
-
-						assert( T.isObject(arg_msg) && T.isObject(arg_msg.payload), context + ':subscribe:bad payload object')
-						arg_node.receive_msg(arg_msg.sender, arg_msg.payload)
-
-						// console.log(context + ':client.on_msg:leave')
-					}
-				)
-				
-				arg_node.info('Messages bus client is started')
-				
-				if (arg_node.register_to_master)
-				{
-					arg_node.register_to_master()
-				}
-			}
-		)
-        
-        // SET SOCKET CLIENT HANDLERS
-		client.on('connect', BusServer.on_client_connect)
-		client.on('close', BusServer.on_client_close)
-		client.on('data', BusServer.on_client_data)
-		client.on('end', BusServer.on_client_end)
-		client.on('error', BusServer.on_client_error)
-		client.on('timeout', BusServer.on_client_timeout)
-		
-		return client
-	}
-    
-    
     
 	// SOCKET SERVER EVENT HANDLERS
 
@@ -182,44 +177,5 @@ export default class SimpleBusServer extends BusServer
 	static on_server_listening()
 	{
 		console.log(context + ':listening on bus server')
-	}
-
-
-
-	// SOCKET CLIENT EVENT HANDLERS
-
-	static on_client_connect()
-	{
-		console.log(context + ':connect on bus client')
-	}
-
-
-	static on_client_data()
-	{
-		console.log(context + ':data on bus client')
-	}
-
-
-	static on_client_error(e)
-	{
-		console.log(context + ':error on bus client', e)
-	}
-
-
-	static on_client_close()
-	{
-		console.log(context + ':close on bus client')
-	}
-
-
-	static on_client_end()
-	{
-		console.log(context + ':end on bus client')
-	}
-
-
-	static on_client_timeout()
-	{
-		console.log(context + ':timeout on bus client')
 	}
 }

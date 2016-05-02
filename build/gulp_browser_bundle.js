@@ -7,7 +7,7 @@ var browserify = require('browserify');
 
 
 var DST = 'dist'
-var DST_BROWSER_INDEX = 'dist/browser/index.js'
+var DST_BROWSER_INDEX = './dist/browser/index.js'
 var DST_BROWSER_BUNDLE = 'devapt-browser.js'
 
 
@@ -41,6 +41,7 @@ module.exports = function (gulp, plugins)
 							}
 						)
 						.pipe( source(DST_BROWSER_BUNDLE) )
+						// .pipe( plugins.changed(DST) )
 						.pipe( buffer() )
 						.pipe( plugins.sourcemaps.init() )
 						.pipe( plugins.sourcemaps.write('.') )

@@ -11,7 +11,7 @@ import Settingsable from './settingsable'
 
 
 let context = 'common/base/instance'
-const NOT_STORED_COLLECTIONS = ['registered_services', 'components', 'svc_providers', 'svc_consumers']
+const NOT_STORED_COLLECTIONS = ['registered_services', 'components', 'svc_providers', 'svc_consumers', 'bus_servers', 'bus_clients']
 
 
 
@@ -38,8 +38,10 @@ export default class Instance extends Settingsable
 		// Loggable.static_debug(context, 'Instance.constructor(%s,%s,%s)', arg_collection, arg_class, arg_name)
 		// Loggable.static_info(context, 'Instance.constructor(%s,%s,%s)', arg_collection, arg_class, arg_name)
 		
+		console.log('Instance collection:%s class:%s name:%s context:%s', arg_collection, arg_class, arg_name, arg_log_context)
+		
 		assert( T.isString(arg_collection) && arg_collection.length > 0, context + ':bad collection string')
-		assert( (NOT_STORED_COLLECTIONS.indexOf(arg_collection) > -1) || store.has_collection(arg_collection), context + ':bad collection')
+		assert( (NOT_STORED_COLLECTIONS.indexOf(arg_collection) > -1) || store.has_collection(arg_collection), context + ':bad collection for ' + arg_collection)
 		assert( T.isString(arg_class) && arg_class.length > 0, context + ':bad class [' + arg_class + ']')
 		assert( T.isString(arg_name) && arg_name.length > 0, context + ':bad name [' + arg_name + ']')
 		

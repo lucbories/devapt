@@ -43,6 +43,7 @@ module.exports = function (gulp, plugins)
 				try
 				{
 					return gulp.src(DST_SERVER_JS)
+						// .pipe( plugins.changed(DST) )
 						.pipe( plugins.concat('devapt-server.js') )
 						.pipe( plugins.sourcemaps.init() )
 						.pipe( plugins.sourcemaps.write('.') )

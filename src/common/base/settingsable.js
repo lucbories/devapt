@@ -1,6 +1,7 @@
 
 import T from 'typr'
 // import assert from 'assert'
+import { fromJS } from 'immutable'
 
 import Loggable from './loggable'
 
@@ -19,7 +20,7 @@ export default class Settingsable extends Loggable
 	/**
 	 * Create a Settingsable instance.
 	 * @extends Loggable
-	 * @param {object} arg_settings - instance settings map.
+	 * @param {Immutable.Map} arg_settings - instance settings map.
 	 * @param {string} arg_log_context - trace context string.
 	 * @returns {nothing}
 	 */
@@ -35,17 +36,24 @@ export default class Settingsable extends Loggable
 	
 	/**
 	 * Set instance settings.
-	 * @param {object} arg_settings - instance settings map.
+	 * @param {Immutable.Map} arg_settings - instance settings map.
 	 * @returns {nothing}
 	 */
 	set_settings(arg_settings)
 	{
-		this.$settings = arg_settings
+		if (arg_settings.has && arg_settings.set & arg_settings.hasIn && arg_settings.setIn && arg_settings.get && arg_settings.getIn)
+		{
+			this.$settings = arg_settings
+		}
+		else
+		{
+			this.$settings = fromJS(arg_settings)
+		}
 	}
 	
 	/**
 	 * Get instance settings.
-	 * @returns {object}
+	 * @returns {Immutable.Map}
 	 */
 	get_settings()
 	{
@@ -70,7 +78,7 @@ export default class Settingsable extends Loggable
 	
 	/**
 	 * Get a value in settings for given key.
-	 * @param {string} arg_name - settings value key.
+	 * @param {string|array} arg_name - settings value key.
 	 * @param {any} arg_default - default value.
 	 * @returns {any} - found value or given default value
 	 */

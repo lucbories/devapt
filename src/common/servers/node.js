@@ -6,7 +6,11 @@ import { fromJS } from 'immutable'
 import Collection from '../base/collection'
 
 import { ServerTypes } from '../servers/server'
-import BusServerInstance from '../servers/bus_server_instance'
+import Instance from '../base/instance'
+// import BusServerInstance from '../servers/bus_server_instance'
+import BusServer from '../messaging/simplebus_server'
+import BusClient from '../messaging/simplebus_client'
+
 import RestifyServer from '../servers/restify_server'
 import ExpressServer from '../servers/express_server'
 // import VantageServer from '../servers/vantage_server'
@@ -34,7 +38,7 @@ const STATE_UNREGISTERING = 'NODE_IS_UNREGISTERING_TO_MASTER'
  * @author Luc BORIES
  * @license Apache-2.0
  */
-export default class Node extends BusServerInstance
+export default class Node extends Instance
 {
 	/**
 	 * Create a Node instance.
@@ -55,6 +59,10 @@ export default class Node extends BusServerInstance
 		
 		this.servers = new Collection()
 		
+		this.msg_bus = undefined
+		this.logs_bus = undefined
+		this.metrics_bus = undefined
+		
 		this.switch_state(STATE_CREATED)
 	}
 	
@@ -69,31 +77,95 @@ export default class Node extends BusServerInstance
 		
 		super.load()
 		
-		const master_cfg = this.get_setting('master').toJS()
-		const host = master_cfg.host
-		const port = master_cfg.port
+		
+		const msg_bus_type = this.get_setting(['master', 'msg_bus', 'type'], 'local')
+		const msg_bus_host = this.get_setting(['master', 'msg_bus', 'host'], undefined)
+		const msg_bus_port = this.get_setting(['master', 'msg_bus', 'port'], undefined)
+		
+		const metrics_bus_type = this.get_setting(['master', 'metrics_bus', 'type'], 'local')
+		const metrics_bus_host = this.get_setting(['master', 'metrics_bus', 'host'], undefined)
+		const metrics_bus_port = this.get_setting(['master', 'metrics_bus', 'port'], undefined)
+		
+		const logs_bus_type = this.get_setting(['master', 'logs_bus', 'type'], 'local')
+		const logs_bus_host = this.get_setting(['master', 'logs_bus', 'host'], undefined)
+		const logs_bus_port = this.get_setting(['master', 'logs_bus', 'port'], undefined)
 		
 		// CREATE MASTER MESSAGE BUS
 		if (this.is_master)
 		{
 			this.master_name = this.get_name()
 			
-			this.init_bus_server(host, port)
-			this.bus_server.node = this
+			// CREATE MESSAGES BUS
+			const msg_bus_settings = {
+				'type':msg_bus_type,
+				'host':msg_bus_host,
+				'port':msg_bus_port
+			}
+			this.msg_bus = new BusServer(this.get_name() + '_msg_bus', msg_bus_settings, context)
 			
-			this.init_metrics_server(host, port)
+			// CREATE METRICS BUS
+			const metrics_bus_settings = {
+				'type':metrics_bus_type,
+				'host':metrics_bus_host,
+				'port':metrics_bus_port
+			}
+			this.metrics_bus = new BusServer(this.get_name() + '_metrics_bus', metrics_bus_settings, context)
+			
+			const metrics_server_settings = {
+				'protocole':'bus',
+				'host':metrics_bus_host ? metrics_bus_host : 'localhost',
+				'port':metrics_bus_port ? metrics_bus_port : 9900,
+				'type':'metrics'
+			}
+			this.metrics_server = new MetricsServer('metrics_server', fromJS(metrics_server_settings) )
+			this.metrics_server.node = this
+			this.metrics_server.load()
+			
+			// CREATE MESSAGES BUS
+			const logs_bus_settings = {
+				'type':logs_bus_type,
+				'host':logs_bus_host,
+				'port':logs_bus_port
+			}
+			this.logs_bus = new BusServer(this.get_name() + '_logs_bus', logs_bus_settings, context)
+			
+			// this.init_metrics_server(host, port)
 		}
 		
 		// CONNECT TO MASTER MESSAGE BUS
 		else
 		{
-			this.master_name = master_cfg.name
+			this.master_name = this.get_setting(['master', 'name'])
 			
-			this.init_bus_client(host, port)
+			const bus_settings = {
+				'type':msg_bus_type,
+				'host':msg_bus_host,
+				'port':msg_bus_port
+			}
+			this.msg_bus = new BusClient(this.get_name() + '_msg_bus', bus_settings, context)
+			
+			// CREATE METRICS BUS
+			const metrics_bus_settings = {
+				'type':metrics_bus_type,
+				'host':metrics_bus_host,
+				'port':metrics_bus_port
+			}
+			this.metrics_bus = new BusClient(this.get_name() + '_metrics_bus', metrics_bus_settings, context)
+			
+			// CREATE MESSAGES BUS
+			const logs_bus_settings = {
+				'type':logs_bus_type,
+				'host':logs_bus_host,
+				'port':logs_bus_port
+			}
+			this.logs_bus = new BusClient(this.get_name() + '_logs_bus', logs_bus_settings, context)
+			
+			// this.init_bus_client(host, port)
 		}
 		
 		this.leave_group('load()')
 	}
+	
 	
 	
 	/**
@@ -108,6 +180,7 @@ export default class Node extends BusServerInstance
 	}
 	
     
+	
 	/**
 	 * Init node metrics server.
 	 * @param {string} arg_host - metrics server host.
@@ -116,16 +189,7 @@ export default class Node extends BusServerInstance
 	 */
 	init_metrics_server(arg_host, arg_port)
 	{
-		const metrics_settings = {
-			'protocole':'bus',
-			'host':arg_host,
-			'port':arg_port,
-			'type':'metrics'
-		}
-		this.metrics_server = new MetricsServer('metrics_server', fromJS(metrics_settings) )
-		this.metrics_server.load()
-		this.metrics_server.node = this
-		this.metrics_server.init_bus_client(arg_host, arg_port)
+		// this.metrics_server.init_bus_client(arg_host, arg_port)
 	}
 	
 	
@@ -136,6 +200,36 @@ export default class Node extends BusServerInstance
 	get_metrics_server()
 	{
 		return this.metrics_server
+	}
+	
+	
+	/**
+	 * Get metrics bus client or server instance.
+	 * @returns {BusClient|BusServer} - Metrics bus client or server.
+	 */
+	get_msg_bus()
+	{
+		return this.msg_bus
+	}
+	
+	
+	/**
+	 * Get metrics bus client or server instance.
+	 * @returns {BusClient|BusServer} - Metrics bus client or server.
+	 */
+	get_metrics_bus()
+	{
+		return this.metrics_bus
+	}
+	
+	
+	/**
+	 * Get metrics bus client or server instance.
+	 * @returns {BusClient|BusServer} - Metrics bus client or server.
+	 */
+	get_logs_bus()
+	{
+		return this.logs_bus
 	}
 	
 	
@@ -312,8 +406,8 @@ export default class Node extends BusServerInstance
 		
 		const servers = this.get_setting('servers')
 		// console.log(servers, 'servers')
-		const host = this.get_setting(['master', 'host'])
-		const port = this.get_setting(['master', 'port'])
+		// const host = this.get_setting(['master', 'host'])
+		// const port = this.get_setting(['master', 'port'])
 		
 		servers.forEach(
 			(server_cfg, server_name) => {
@@ -325,7 +419,7 @@ export default class Node extends BusServerInstance
 				let server = this.create_server(server_type, server_name, server_cfg)
 				server.load()
 				server.node = this
-				server.init_bus_client(host, port)
+				// server.init_bus_client(host, port)
 				
 				this.servers.add(server)
 				

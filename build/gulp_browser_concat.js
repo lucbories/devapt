@@ -52,6 +52,7 @@ module.exports = function (gulp, plugins)
 		gulp.task('build_browser_concat',
 			() => {
 				return gulp.src(DST_BROWSER_JS)
+					// .pipe( plugins.changed(DST) )
 					.pipe( plugins.concat(DST_BROWSER_CONCAT) )
 					.pipe( plugins.sourcemaps.init() )
 					.pipe( plugins.sourcemaps.write('.') )

@@ -2,6 +2,7 @@
 
 import T from 'typr'
 import assert from 'assert'
+import Baconjs from 'baconjs'
 
 import ServiceProvider from './service_provider'
 import runtime from '../../base/runtime'
@@ -40,6 +41,21 @@ export default class SocketIOServiceProvider extends ServiceProvider
 		
 		// ACTIVATE SERVICE ON SOCKETIO SERVER FOR BROWSER REQUEST
 		this.activate_on_socketio_servers()
+		
+		
+		// CREATE AN OUTPUT STREAM AND A TRANSFORMED OUTPUT STREAM
+		const self = this
+		self.provided_values_stream = new Baconjs.Bus()
+		// self.provided_values_stream_transfomed = self.provided_values_stream
+		if ( T.isFunction(this.init_provided_values_stream) )
+		{
+			this.init_provided_values_stream()
+		}
+		const post_cb = (v) => {
+			// console.log('on metrics stream value:' + v.metrics.length)
+			self.post_provided_values_to_subscribers(v)
+		}
+		self.provided_values_stream.onValue(post_cb)
 	}
 	
 	
@@ -188,9 +204,10 @@ export default class SocketIOServiceProvider extends ServiceProvider
 	 * @param {object} arg_msg - message payload.
 	 * @returns {nothing}
 	 */
-	post(arg_datas)
+	post_provided_values_to_subscribers(arg_datas)
 	{
 		const svc_name = this.service.get_name()
+		// console.log(context + ':post:emit datas for ' + svc_name + ' with subscribers:' + this.subscribers_sockets.length)
 		this.subscribers_sockets.forEach(
 			(socket) => {
 				// console.log(context + ':post:emit datas for ' + svc_name)
@@ -202,7 +219,7 @@ export default class SocketIOServiceProvider extends ServiceProvider
 	
 	
 	/**
-	 * Remove a subscriber socket.
+	 * Get operation handler on socket.
 	 * @param {object} arg_socket - subscribing socket.
 	 * @param {object} arg_data - query filter or datas (optional).
 	 * @returns {nothing}
