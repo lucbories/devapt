@@ -81,7 +81,7 @@ export default class ExpressServer extends Server
 		
 		if (use_socketio)
 		{
-			console.log(context + ':creating socket io')
+			// console.log(context + ':creating socket io')
 			
 			this.server_http = http.Server(this.server)
 			this.serverio = socketio(this.server_http)

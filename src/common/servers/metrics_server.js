@@ -44,19 +44,23 @@ export default class MetricsServer extends Server
 	build_server()
 	{
 		this.enter_group('build_server')
-		console.log('MetricsServer:build_server')
+		
 		assert( this.server_protocole == 'bus', context + ':bad protocole for metric server [' + this.server_protocole + ']')
 		
 		const self = this
 		
-		this.node.metrics_bus.get_bus_stream().onValue(
-			(arg_msg) => {
-				assert( T.isObject(arg_msg) && T.isObject(arg_msg.payload), context + ':subscribe:bad payload object')
-				// console.log('MetricsServer:new metrics bus msg from %s', arg_msg.sender)
-				// self.receive_msg(arg_msg.sender, arg_msg.payload)
+		this.node.metrics_bus.subscribe(
+			(arg_value) => {
+				assert( T.isObject(arg_value), context + ':subscribe:bad value object')
+				assert( T.isString(arg_value.sender), context + ':subscribe:bad sender string')
+				assert( T.isString(arg_value.target), context + ':subscribe:bad target string')
+				assert( T.isObject(arg_value.payload), context + ':subscribe:bad payload object')
+				assert( T.isString(arg_value.payload.metric), context + ':subscribe:bad payload.metric string')
+				assert( T.isArray(arg_value.payload.metrics), context + ':subscribe:bad payload.metrics array')
+				
 				try
 				{
-					self.process_metric(arg_msg.payload.metric, arg_msg.payload.metrics)
+					self.process_metric(arg_value.payload.metric, arg_value.payload.metrics)
 				}
 				catch(e)
 				{

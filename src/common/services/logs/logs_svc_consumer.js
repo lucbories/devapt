@@ -5,7 +5,7 @@ import assert from 'assert'
 import ServiceConsumer from '../base/service_consumer'
 
 
-let context = 'common/services/loggers/loggers_svc_consumer'
+let context = 'common/services/logs/logs_svc_consumer'
 
 
 
@@ -14,7 +14,7 @@ let context = 'common/services/loggers/loggers_svc_consumer'
  * @author Luc BORIES
  * @license Apache-2.0
  */
-export default class LoggersSvcConsumer extends ServiceConsumer
+export default class LogsSvcConsumer extends ServiceConsumer
 {
 	
 	/**
@@ -27,7 +27,7 @@ export default class LoggersSvcConsumer extends ServiceConsumer
 	constructor(arg_consumer_name, arg_service_instance, arg_context)
 	{
 		super(arg_consumer_name, arg_service_instance, arg_context ? arg_context : context)
-		assert( arg_service_instance.is_loggers_service, context + ':constructor:bad crud service instance')
+		assert( arg_service_instance.is_logs_service, context + ':constructor:bad logs service instance')
 	}
 	
 	

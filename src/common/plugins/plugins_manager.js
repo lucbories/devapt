@@ -55,7 +55,7 @@ export default class PluginsManager extends Errorable
 
 				// const file_path_name = path.isAbsolute(plugin) ? plugin : path.join(plugin_dir, plugin)
 				const file_path_name = runtime.context.get_absolute_plugin_path(plugin)
-				console.info('loading plugin at [' + plugin + '] at [' + file_path_name + ']')
+				console.info('loading plugin [' + plugin + '] at [' + (file_path_name == plugin ? 'same' : file_path_name) + ']')
 
 				try
 				{

@@ -1,6 +1,8 @@
 
 import T from 'typr'
 
+import LoggerMsgPost from './logger_msg_post'
+4
 
 
 // const context = 'common/loggers/logger_manager'
@@ -39,6 +41,10 @@ export default class LoggerManager
 	load(arg_settings)
 	{
 		// console.log(arg_settings, context + ':arg_settings')
+		
+		const runtime = require('../base/runtime').default
+		this.loggers.push( new LoggerMsgPost(true, runtime.node.logs_bus.get_input_stream()) )
+		// this.info('msg logger created')
 		
 		if ( T.isObject(arg_settings) && ('console' in arg_settings) )
 		{

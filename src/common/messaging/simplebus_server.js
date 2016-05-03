@@ -1,8 +1,8 @@
 
-import T from 'typr'
-import assert from 'assert'
+// import T from 'typr'
+// import assert from 'assert'
 
-import simplebus from 'simplebus'
+import Simplebus from 'simplebus'
 
 import BusServer from './bus_server'
 
@@ -20,7 +20,7 @@ let context = 'common/messaging/simplebus_server'
 export default class SimpleBusServer extends BusServer
 {
 	/**
-	 * Create a server instance.
+	 * Create a Simplebus server instance.
 	 * @extends BusServer
 	 * @param {string} arg_name - server name
 	 * @param {object} arg_settings - plugin settings map
@@ -29,9 +29,11 @@ export default class SimpleBusServer extends BusServer
 	 */
 	constructor(arg_name, arg_settings, arg_context)
 	{
-		super(arg_name, arg_settings, arg_context ? arg_context : context)
+		super('SimpleBusServer', arg_name, arg_settings, arg_context ? arg_context : context)
 		
 		this.is_simplebus_server = true
+		this.simplebus_bus = undefined
+		this.simplebus_server = undefined
 		
 		this.load()
 	}
@@ -53,20 +55,17 @@ export default class SimpleBusServer extends BusServer
 		
 		
 		console.log(context + ':load: bus of size %s',  size)
-		this.bus = simplebus.createBus(size)
+		this.simplebus_bus = Simplebus.createBus(size)
 		
-		if (this.server_type == 'server')
-		{
-			console.log(context + ':load: server listen on %s:%s', host, port)
-			this.server = simplebus.createServer(this.bus, port, host)
-		}
+		console.log(context + ':load: server listen on %s:%s', host, port)
+		this.simplebus_server = Simplebus.createServer(this.bus, port, host)
+		
 		
         // SET SOCKET SERVER HANDLERS
-		// TODO server.on doesn't exist
-        // this.server.on('connection', BusServer.on_server_connection)
-        // this.server.on('close', BusServer.on_client_close)
-        // this.server.on('error', BusServer.on_client_error)
-        // this.server.on('listening', BusServer.on_client_listening)
+		// this.simplebus_server.server.on('connection', BusServer.on_server_connection)
+		// this.simplebus_server.server.on('close', BusServer.on_client_close)
+		// this.simplebus_server.server.on('error', BusServer.on_client_error)
+		// this.simplebus_server.server.on('listening', BusServer.on_client_listening)
         
 		this.leave_group('load')
 	}
@@ -80,9 +79,9 @@ export default class SimpleBusServer extends BusServer
 	{
 		this.enter_group('enable Bus server')
 		
-		if (this.server)
+		if (this.simplebus_server)
 		{
-			this.server.start()
+			this.simplebus_server.start()
 		}
 		
 		this.leave_group('enable Bus server')
@@ -97,13 +96,14 @@ export default class SimpleBusServer extends BusServer
 	{
 		this.enter_group('disable Bus server')
 		
-		if (this.server)
+		if (this.simplebus_server)
 		{
-			this.server.stop()
+			this.simplebus_server.stop()
 		}
 		
 		this.leave_group('disable Bus server')
 	}
+	
 	
 	
 	/**
@@ -111,11 +111,11 @@ export default class SimpleBusServer extends BusServer
 	 * @param {object} arg_msg - message payload.
 	 * @returns {nothing}
 	 */
-	post(arg_msg)
-	{
-		this.bus.post(arg_msg)
-		this.msg_bus_stream.push(arg_msg)
-	}
+	// post(arg_msg)
+	// {
+	// 	this.bus.post(arg_msg)
+	// 	this.msg_bus_stream.push(arg_msg)
+	// }
 	
 	
 	/**
@@ -124,21 +124,21 @@ export default class SimpleBusServer extends BusServer
 	 * @param {object} arg_payload - message payload plain object.
 	 * @returns {nothing}
 	 */
-	send_msg(arg_node_name, arg_payload)
-	{
-		if ( T.isString(arg_payload) )
-		{
-			arg_payload = { msg:arg_payload }
-		}
-		assert( T.isString(arg_node_name), context + ':send_msg:bad node name string')
-		assert( T.isObject(arg_payload), context + ':send_msg:bad payload object')
+	// send_msg(arg_node_name, arg_payload)
+	// {
+	// 	if ( T.isString(arg_payload) )
+	// 	{
+	// 		arg_payload = { msg:arg_payload }
+	// 	}
+	// 	assert( T.isString(arg_node_name), context + ':send_msg:bad node name string')
+	// 	assert( T.isObject(arg_payload), context + ':send_msg:bad payload object')
 		
-		this.info('sending a message to [' + arg_node_name + ']')
+	// 	this.info('sending a message to [' + arg_node_name + ']')
 		
-		const msg =  { 'target':arg_node_name, 'sender':this.get_name(), 'payload':arg_payload }
-		this.bus.post(msg)
-		this.msg_bus_stream.push(msg)
-	}
+	// 	const msg =  { 'target':arg_node_name, 'sender':this.get_name(), 'payload':arg_payload }
+	// 	this.bus.post(msg)
+	// 	this.msg_bus_stream.push(msg)
+	// }
 	
 	
 	/**
@@ -147,10 +147,10 @@ export default class SimpleBusServer extends BusServer
 	 * @param {function} arg_handler - subscription callback as f(msg).
 	 * @returns {nothing}
 	 */
-	subscribe(arg_filter, arg_handler)
-	{
-		this.bus.subscribe(arg_filter, arg_handler)
-	}
+	// subscribe(arg_filter, arg_handler)
+	// {
+	// 	this.bus.subscribe(arg_filter, arg_handler)
+	// }
 	
 	
     

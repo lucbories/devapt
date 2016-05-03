@@ -28,11 +28,12 @@ export default class SimpleBusClient extends BusClient
 	 */
 	constructor(arg_name, arg_log_context, arg_logger_manager)
 	{
-		super(arg_name, arg_log_context, arg_logger_manager)
+		super('SimpleBusClient', arg_name, arg_log_context, arg_logger_manager)
 		
 		this.is_simplebus_client = true
+		this.simplebus_client = undefined
 		
-		this.init_client()
+		this.load()
 	}
 	
 	
@@ -41,85 +42,105 @@ export default class SimpleBusClient extends BusClient
 	 * Create a simplebus client.
 	 * @returns {nothing}
 	 */
-	init_client()
+	load()
 	{
 		const self = this
+		this.enter_group('load')
 		
-		// CREATE CLIENT OBJECT
-		if (this.msg_server_type == 'local')
-		{
-			this.msg_bus_client = Simplebus.createClient()
-		}
-		else
-		{
-			this.msg_bus_client = Simplebus.createClient(this.msg_server_host, this.msg_server_port)
-		}
+		super.load()
 		
-		// START CLIENT
-		this.msg_bus_client.start(
-			function ()
-			{
-				self.msg_bus_client.subscribe( { 'target': this.$name },
-					(arg_msg) => {
-						assert( T.isObject(arg_msg) && T.isObject(arg_msg.payload), context + ':subscribe:bad payload object')
-						
-						self.info('receiving a message from ' + arg_msg.sender)
-						self.msg_bus_stream.post(arg_msg)
-					}
-				)
-				
-				self.info('Messages bus client is started')
-			}
-		)
-        
+		// CREATE CLIENT OF REMOTE BUS
+		this.simplebus_client = Simplebus.createClient(this.server_host, this.server_port)
+		
         // SET SOCKET CLIENT HANDLERS
-		self.msg_bus_client.on('connect', self.on_client_connect)
-		self.msg_bus_client.on('close', self.on_client_close)
-		self.msg_bus_client.on('data', self.on_client_data)
-		self.msg_bus_client.on('end', self.on_client_end)
-		self.msg_bus_client.on('error', self.on_client_error)
-		self.msg_bus_client.on('timeout', self.on_client_timeout)
+		self.simplebus_client.on('connect', self.on_client_connect)
+		self.simplebus_client.on('close', self.on_client_close)
+		self.simplebus_client.on('data', self.on_client_data)
+		self.simplebus_client.on('end', self.on_client_end)
+		self.simplebus_client.on('error', self.on_client_error)
+		self.simplebus_client.on('timeout', self.on_client_timeout)
 	}
 	
 	
 	
 	/**
-	 * Send a message to an other client.
-	 * @abstract
-	 * @param {string} arg_node_name - recipient node name.
-	 * @param {object} arg_payload - message payload plain object.
+	 * Test if a target is on the remote bus.
+	 * @protected
+	 * @param {string} arg_target - target name.
+	 * @returns {boolean}
+	 */
+	has_remote_target(arg_target)
+	{
+		this.info(context + ':has_remote_target:default implementation, returns always true')
+		return true || arg_target
+	}
+	
+	
+	
+	/**
+	 * Send a value to a remote recipient.
+	 * @protected
+	 * @param {object} arg_value - value to send.
 	 * @returns {nothing}
 	 */
-	send_msg(arg_recipient_name, arg_payload)
+	post_to_remote(arg_value)
 	{
-		this.info('sending a message to [' + arg_recipient_name + ']')
+		this.info('sending a message on the remote bus')
 		
-		// CHECK ARGS
-		if ( T.isString(arg_payload) )
+		this.simplebus_client.post(arg_value)
+	}
+	
+	
+	/**
+	 * Enable server (start it).
+	 * @returns {nothing}
+	 */
+	enable()
+	{
+		this.enter_group('enable Bus client')
+		
+		if (this.simplebus_client)
 		{
-			arg_payload = { msg:arg_payload }
+			// START CLIENT
+			this.simplebus_client.start(
+				function ()
+				{
+					self.simplebus_client.subscribe( { 'target': this.get_name() },
+						(arg_msg) => {
+							assert( T.isObject(arg_msg), context + ':subscribe:bad msg object')
+							assert( T.isString(arg_msg.sender), context + ':subscribe:bad sender string')
+							assert( T.isString(arg_msg.target), context + ':subscribe:bad target string')
+							assert( T.isObject(arg_msg.payload), context + ':subscribe:bad payload object')
+							
+							self.info('receiving a message from ' + arg_msg.sender)
+							
+							self.receive_from_remote(arg_msg)
+						}
+					)
+					
+					self.info('Messages bus client is started')
+				}
+			)
 		}
-		assert( T.isString(arg_recipient_name), context + ':send_msg:bad node name string')
-		assert( T.isObject(arg_payload), context + ':send_msg:bad payload object')
 		
+		this.leave_group('enable Bus client')
+	}
+	
+	
+	/**
+	 * Disable server (stop it).
+	 * @returns {nothing}
+	 */
+	disable()
+	{
+		this.enter_group('disable Bus client')
 		
-		// A BUS SERVER EXISTS
-		if (this.msg_bus_server)
+		if (this.simplebus_client)
 		{
-			this.msg_bus_server.post( { 'target':arg_recipient_name, 'sender':this.get_name(), 'payload':arg_payload } )
-			return
+			this.simplebus_client.stop()
 		}
 		
-		
-		// A BUS CLIENT EXISTS
-		if (this.bus_client)
-		{
-			this.msg_bus_client.post( { 'target':arg_recipient_name, 'sender':this.get_name(), 'payload':arg_payload } )
-			return
-		}
-		
-		
-		this.error('no client nor server !')
+		this.leave_group('disable Bus client')
 	}
     
 	

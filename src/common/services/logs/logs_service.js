@@ -5,20 +5,20 @@
 
 import BaseService from '../base/base_service'
 
-import LoggersSvcProvider from './loggers_svc_provider'
-import LoggersSvcConsumer from './loggers_svc_consumer'
+import LogsSvcProvider from './logs_svc_provider'
+import LogsSvcConsumer from './logs_svc_consumer'
 
 
-let context = 'common/services/loggers/loggers_service'
+let context = 'common/services/logs/logs_service'
 
 
 
 /**
- * Crud service class for Loggers datas.
+ * Crud service class for Logs datas.
  * @author Luc BORIES
  * @license Apache-2.0
  */
-export default class LoggersService extends BaseService
+export default class LogsService extends BaseService
 {
 	/**
 	 * Create a crud service.
@@ -31,7 +31,7 @@ export default class LoggersService extends BaseService
 	{
 		super(arg_svc_name, arg_service_settings, arg_context ? arg_context : context)
 		
-		this.is_loggers_service = true
+		this.is_logs_service = true
 	}
 	
 	
@@ -44,7 +44,7 @@ export default class LoggersService extends BaseService
 	create_provider(arg_name, arg_service)
 	{
 		// TODO: why not this in place of arg_service
-		return new LoggersSvcProvider(arg_name, arg_service)
+		return new LogsSvcProvider(arg_name, arg_service)
 	}
 	
 	
@@ -54,6 +54,6 @@ export default class LoggersService extends BaseService
 	 */
 	create_consumer()
 	{
-		return new LoggersSvcConsumer(this.get_name() + '_consumer_' + this.get_id(), this)
+		return new LogsSvcConsumer(this.get_name() + '_consumer_' + this.get_id(), this)
 	}
 }

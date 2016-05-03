@@ -17,32 +17,17 @@ export default class LoggerMessagePost extends Logger
 {
 	/**
 	 * Create a Console Logger instance.
-	 * @param {string} arg_context - trace context.
+	 * @param {boolean} arg_enabled - traces are enabled.
+	 * @param {Stream} arg_logs_stream - output logs stream.
 	 * @returns {nothing}
 	 */
-	constructor(arg_enabled)
+	constructor(arg_enabled, arg_logs_stream)
 	{
 		super(arg_enabled)
 		
 		this.is_logger_message_post = true
 		
-		this.services_providers = []
-		this.has_services_providers = false
-	}
-	
-	
-	
-	/**
-	 * Subscribe to logs.
-	 * @param {ServiceProvider} arg_service_provider - message string.
-	 * @returns {nothing}
-	 */
-	subscribe(arg_service_provider)
-	{
-		assert( T.isObject(arg_service_provider) && arg_service_provider.is_loggers_service_provider, context + ':subscribe:bad loggers service provider')
-		
-		this.services_providers.push(arg_service_provider)
-		this.has_services_providers = true
+		this.logs_stream = arg_logs_stream
 	}
 	
 	
@@ -53,16 +38,36 @@ export default class LoggerMessagePost extends Logger
 	 * @param {string} arg_msg - message string.
 	 * @returns {nothing}
 	 */
-	process(arg_level, arg_msg)
+	process(arg_level, arg_text)
 	{
-		if (this.has_services_providers)
+		if ( this.get_trace() )
 		{
-			this.services_providers.forEach(
-				(provider) => {
-					provider.post()
-				}
-			)
+			const logs_record = {
+				level:arg_level,
+				logs:[arg_text]
+			}
+			
+			// console.log('LoggerMessagePost.process:level=%s text=%s', arg_level, arg_text)
+			
+			this.logs_stream.push(logs_record)
+			// this.logs_stream.subscribe(
+			// 	(logs_record) => {
+			// 		console.log('LoggerMessagePost: new logs record on the bus', logs_record)
+			// 	}
+			// )
 		}
+	}
+	
+	
+	
+	/**
+	 * Logger DEBUG implementation.
+	 * @param {string} arg_msg - message string.
+	 * @returns {nothing}
+	 */
+	debug_self(arg_msg)
+	{
+		this.process('debug', arg_msg)
 	}
 	
 	
@@ -73,7 +78,7 @@ export default class LoggerMessagePost extends Logger
 	 */
 	info_self(arg_msg)
 	{
-		console.info(arg_msg)
+		this.process('info', arg_msg)
 	}
 	
 	
@@ -84,7 +89,7 @@ export default class LoggerMessagePost extends Logger
 	 */
 	warn_self(arg_msg)
 	{
-		console.warn(arg_msg)
+		this.process('warn', arg_msg)
 	}
 	
 	
@@ -95,6 +100,6 @@ export default class LoggerMessagePost extends Logger
 	 */
 	error_self(arg_msg)
 	{
-		console.error(arg_msg)
+		this.process('error', arg_msg)
 	}
 }

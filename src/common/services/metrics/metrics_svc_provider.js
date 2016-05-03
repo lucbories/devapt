@@ -30,12 +30,10 @@ export default class MetricsSvcProvider extends SocketIOServiceProvider
 		
 		assert(this.service.is_metrics_service, context + ':bad Metrics service')
 		
-		// const self = this
-		
 		// CREATE A BUS CLIENT
-		this.metrics_bus_stream = runtime.node.metrics_bus.get_bus_stream()
+		this.metrics_bus_stream = runtime.node.metrics_bus.get_output_stream()
 		this.init_msg_bus_stream()
-		// this.metrics_bus_stream.onValue(
+		// this.metrics_bus_stream.subscribe(
 		// 	(metrics_record) => {
 		// 		console.log('MetricsSvcProvider: new metrics record on the bus', metrics_record)
 		// 	}
@@ -44,8 +42,14 @@ export default class MetricsSvcProvider extends SocketIOServiceProvider
 	
 	
 	
+	/**
+	 * Init output stream.
+	 * @returns {nothing}
+	 */
 	init_msg_bus_stream()
 	{
+		const max_metrics_per_msg = 10
+		const delay_per_metrics_msg = 100
 		const self = this
 		const limit_cb = (grouped_stream/*, group_start_event*/) => {
 			const map_cb = (values) => {
@@ -67,7 +71,7 @@ export default class MetricsSvcProvider extends SocketIOServiceProvider
 				return metrics_record
 			}
 			
-			return grouped_stream.bufferWithTimeOrCount(100, 4).map(map_cb)
+			return grouped_stream.bufferWithTimeOrCount(delay_per_metrics_msg, max_metrics_per_msg).map(map_cb)
 		}
 		
 		
@@ -92,7 +96,7 @@ export default class MetricsSvcProvider extends SocketIOServiceProvider
 			return metrics_record
 		}
 		
-		self.msg_bus_stream_transfomed = self.metrics_bus_stream.map(msg_cb).groupBy(key_cb, limit_cb).flatMap(flatmap_cb)
+		self.msg_bus_stream_transfomed = self.metrics_bus_stream.transformed_stream.map(msg_cb).groupBy(key_cb, limit_cb).flatMap(flatmap_cb)
 		
 		self.msg_bus_stream_transfomed.onValue(
 			(metrics_record) => {
@@ -122,22 +126,4 @@ export default class MetricsSvcProvider extends SocketIOServiceProvider
 		
 		return Promise.resolve(http_state)
 	}
-	
-	
-	/**
-	 * 
-	 */
-	// receive_msg(arg_sender, arg_payload)
-	// {
-	// 	const metric_type = arg_payload.metric
-	// 	const metrics_array = arg_payload.metrics
-	// 	const metrics_record = {
-	// 		metric: metric_type,
-	// 		metrics:metrics_array/*,
-	// 		senders:[arg_sender.toString()]*/
-	// 	}
-		
-		
-	// 	this.msg_bus_stream.push(metrics_record)
-	// }
 }

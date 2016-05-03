@@ -70,32 +70,20 @@ export default class Server extends Instance
 		
 		this.authentication = new AuthenticationWrapper(arg_log_context ? arg_log_context : context)
 		// this.authorization = new AuthorizationWrapper(arg_log_context ? arg_log_context : context)
-		
-		// this.msg_bus_client = undefined
 	}
-
 	
-	// init_bus_client(arg_host, arg_port)
-	// {
-	// 	const bus_settings = {
-	// 		'type':'server',
-	// 		'host':arg_host,
-	// 		'port':arg_port
-	// 	}
-	// 	this.msg_bus_client = new BusClient(this.get_name(), bus_settings, context)
-	// }
 	
 	
 	/**
 	 * Send a message to an other client.
 	 * @abstract
-	 * @param {string} arg_node_name - recipient node name.
+	 * @param {string} arg_target_name - recipient name.
 	 * @param {object} arg_payload - message payload plain object.
 	 * @returns {nothing}
 	 */
-	send_msg(arg_node_name, arg_payload)
+	send_msg(arg_target_name, arg_payload)
 	{
-		this.node.msg_bus.send_msg(arg_node_name, arg_payload)
+		this.node.msg_bus.send_msg(this.get_name(), arg_target_name, arg_payload)
 	}
     
     
@@ -116,7 +104,7 @@ export default class Server extends Instance
 		
 		// TODO Manage a buffer of metrics and send every N metrics
 		// console.log('Server: new metrics record on the bus:%i', count)
-		this.node.metrics_bus.send_msg('metrics_server', { is_metrics_message:true, 'metric':arg_metric_type, 'metrics': metrics, 'metrics_count':count } )
+		this.node.metrics_bus.send_msg(this.get_name(), 'metrics_server', { is_metrics_message:true, 'metric':arg_metric_type, 'metrics': metrics, 'metrics_count':count } )
 	}
 	
 	
@@ -334,7 +322,7 @@ export default class Server extends Instance
 		if ( T.isFunction(self.receive_msg) )
 		{
 			assert( T.isObject(this.node) && this.node.is_node, context + ':load:bad node object')
-			this.node.msg_bus.subscribe( { 'target': this.get_name() },
+			this.node.msg_bus.subscribe(this.get_name(),
 				(arg_msg) => {
 					assert( T.isObject(arg_msg) && T.isObject(arg_msg.payload), context + ':msg_bus.subsribe:bad payload object')
 					self.receive_msg(arg_msg.sender, arg_msg.payload)

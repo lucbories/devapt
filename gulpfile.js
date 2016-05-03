@@ -115,7 +115,7 @@ gulp.task('clean',
 var default_tasks = ['build_common_transpile', 'build_plugins_transpile', 'build_server_transpile', 'build_index_transpile', 'build_browser']
 gulp.task('default_all', (/*cb*/) => runseq(default_tasks) )
 
-var default_srv_tasks = ['build_common_transpile', 'build_server_transpile']
+var default_srv_tasks = ['build_common_transpile', 'build_server_transpile', 'build_plugins_transpile']
 gulp.task('default', (/*cb*/) => runseq(default_srv_tasks) )
 
 // gulp.task('build_clean', (cb) => runseq('clean', ['default', 'build_json_copy'], cb) )
