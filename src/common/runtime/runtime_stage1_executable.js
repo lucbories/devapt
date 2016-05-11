@@ -3,7 +3,6 @@ import T from 'typr'
 // import assert from 'assert'
 
 import { store, config } from '../store/index'
-import { dispatch_store_config_set_all } from '../store/config/actions'
 
 import Provider from '../datas/providers/json_provider'
 import RuntimeExecutable from './runtime_executable'
@@ -23,6 +22,7 @@ export default class RuntimeStage1Executable extends RuntimeExecutable
 	constructor(arg_logger_manager)
 	{
 		super(context, arg_logger_manager)
+		this.$name = 'stage 1'
 	}
 	
 	// TODO MONITOR EXECUTE PROMISE !!!
@@ -30,9 +30,17 @@ export default class RuntimeStage1Executable extends RuntimeExecutable
 	{
 		const self = this
 		
+		// DEBUG STORE
+		// console.log(store, 'store')
+		// console.log(config, 'config')
+		
 		const saved_trace = this.get_trace()
 		const has_trace = this.runtime.get_setting(['trace', 'stages', 'RuntimeStage1', 'enabled'], false)
 		this.set_trace(has_trace)
+		
+		// DEBUG
+		this.set_trace(true)
+		this.is_trace_enabled = true
 		
 		this.separate_level_1()
 		this.enter_group('execute')
@@ -57,8 +65,13 @@ export default class RuntimeStage1Executable extends RuntimeExecutable
 					function(arg_json)
 					{
 						self.info('Dispatching master settings into store')
+						// console.info('Dispatching master settings into store')
+						
 						// console.log(arg_json, 'arg_json')
-						dispatch_store_config_set_all(store, arg_json)
+						runtime.config_store = store
+						runtime.config_store.load(arg_json)
+						// console.log(config(), 'config()')
+						
 						return true
 					}
 				)

@@ -20,6 +20,7 @@ export default class RuntimeStage0Executable extends RuntimeExecutable
 	constructor(arg_logger_manager)
 	{
 		super(context, arg_logger_manager)
+		this.$name = 'stage 0'
 	}
 	
 	
@@ -28,6 +29,10 @@ export default class RuntimeStage0Executable extends RuntimeExecutable
 		const saved_trace = this.get_trace()
 		const has_trace = this.runtime.get_setting(['trace', 'stages', 'RuntimeStage0', 'enabled'], false)
 		this.set_trace(has_trace)
+		
+		// DEBUG
+		// this.set_trace(true)
+		// this.is_trace_enabled = true
 		
 		this.separate_level_1()
 		this.enter_group('execute')

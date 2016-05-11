@@ -5,13 +5,9 @@ import assert from 'assert'
 import Loggable from '../base/loggable'
 import runtime from '../base/runtime'
 import RenderStack from './base/render_stack'
-import RenderingManager from '../plugins/rendering_manager'
 
 
 const context = 'common/rendering/render'
-
-
-// const default_plugin_path = runtime.context.get_absolute_path(__dirname, './default/rendering_plugin')
 
 
 

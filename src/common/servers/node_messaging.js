@@ -120,27 +120,36 @@ export default class NodeMessaging extends Instance
 		// CREATE INTER NODES COMMUNICATION
 		
 		// CREATE MESSAGES GATEWAY
-		if (msg_bus_type && msg_bus_host && msg_bus_port)
+		if ( T.isString(msg_bus_type) && msg_bus_host && msg_bus_port)
 		{
-			const msg_gw_settings = this.get_setting(['master', 'msg_bus']).toJS()
-			this.msg_bus_gateway = this.create_bus_gateway(msg_bus_type, this.get_name() + '_msg_bus_gateway', msg_gw_settings, context)
-			this.msg_bus_gateway.enable()
+			if (msg_bus_type != 'local')
+			{
+				const msg_gw_settings = this.get_setting(['master', 'msg_bus']).toJS()
+				this.msg_bus_gateway = this.create_bus_gateway(msg_bus_type, this.get_name() + '_msg_bus_gateway', msg_gw_settings, context)
+				this.msg_bus_gateway.enable()
+			}
 		}
 		
 		// CREATE LOGS GATEWAY FOR INTER NODES COMMUNICATION
-		if (logs_bus_type && logs_bus_host && logs_bus_port)
+		if ( T.isString(logs_bus_type) && logs_bus_host && logs_bus_port)
 		{
-			const logs_gw_settings = this.get_setting(['master', 'logs_bus']).toJS()
-			this.logs_bus_gateway = this.create_bus_gateway(logs_bus_type, this.get_name() + '_logs_bus_gateway', logs_gw_settings, context)
-			this.logs_bus_gateway.enable()
+			if (logs_bus_type != 'local')
+			{
+				const logs_gw_settings = this.get_setting(['master', 'logs_bus']).toJS()
+				this.logs_bus_gateway = this.create_bus_gateway(logs_bus_type, this.get_name() + '_logs_bus_gateway', logs_gw_settings, context)
+				this.logs_bus_gateway.enable()
+			}
 		}
 		
 		// CREATE METRICS GATEWAY FOR INTER NODES COMMUNICATION
-		if (metrics_bus_type && metrics_bus_host && metrics_bus_port)
+		if ( T.isString(metrics_bus_type) && metrics_bus_host && metrics_bus_port)
 		{
-			const metrics_gw_settings = this.get_setting(['master', 'metrics_bus']).toJS()
-			this.metrics_bus_gateway = this.create_bus_gateway(metrics_bus_type, this.get_name() + '_metrics_bus_gateway', metrics_gw_settings, context)
-			this.metrics_bus_gateway.enable()
+			if (metrics_bus_type != 'local')
+			{
+				const metrics_gw_settings = this.get_setting(['master', 'metrics_bus']).toJS()
+				this.metrics_bus_gateway = this.create_bus_gateway(metrics_bus_type, this.get_name() + '_metrics_bus_gateway', metrics_gw_settings, context)
+				this.metrics_bus_gateway.enable()
+			}
 		}
 		
 		

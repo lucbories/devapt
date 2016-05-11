@@ -1,10 +1,6 @@
 
 import runtime from './client_runtime'
-// var runtime = require('./client_runtime')
-
-// import { store, config } from './common/store/index'
-// import Render from './common/rendering/render'
-// import Component from './common/rendering/base/component'
+import ui from './ui'
 
 /**
  * Main public part of Devapt library
@@ -22,4 +18,4 @@ import runtime from './client_runtime'
 
 
 
-export default { runtime /*, config, store, Render, Component*/ }
+export default { runtime, ui }

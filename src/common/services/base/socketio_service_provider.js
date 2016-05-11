@@ -46,7 +46,6 @@ export default class SocketIOServiceProvider extends ServiceProvider
 		// CREATE AN OUTPUT STREAM AND A TRANSFORMED OUTPUT STREAM
 		const self = this
 		self.provided_values_stream = new Baconjs.Bus()
-		// self.provided_values_stream_transfomed = self.provided_values_stream
 		if ( T.isFunction(this.init_provided_values_stream) )
 		{
 			this.init_provided_values_stream()
@@ -73,7 +72,7 @@ export default class SocketIOServiceProvider extends ServiceProvider
 			// SOCKET OPERATIONS
 			'disconnect':
 				() => {
-					self.info(context + ':activate_on_socketio_server:socket disconnected from /' + svc_name)
+					self.info('activate_on_socketio_server:socket disconnected from /' + svc_name)
 					arg_socket.emit('bye bye from /' + svc_name, { from: 'world' })
 				},
 			'end':
@@ -114,13 +113,13 @@ export default class SocketIOServiceProvider extends ServiceProvider
 		const self = this
 		const svc_name = self.service.get_name()
 		
-		self.debug(context + ':activate_on_socketio_servers:svc=' + svc_name)
+		self.debug('activate_on_socketio_servers:svc=' + svc_name)
 		
 		Object.keys(runtime.socketio_servers).forEach(
 			(server_name) => {
 				const socketio_server = runtime.socketio_servers[server_name]
 				
-				self.debug(context + ':activate_on_socketio_servers:svc=' + svc_name + ':server=' + server_name)
+				self.debug('activate_on_socketio_servers:svc=' + svc_name + ':server=' + server_name)
 				
 				self.activate_on_socketio_server(socketio_server)
 			}
@@ -146,10 +145,9 @@ export default class SocketIOServiceProvider extends ServiceProvider
 		
 		// console.log(context + ':activate_on_socketio_server:svc=' + svc_name + ':socket.id=' + serverio_svc.id)
 		
-		
 		serverio_svc.on('connection',
 			(socket) => {
-				self.info(context + ':activate_on_socketio_server:new connection on /' + svc_name, socket.id)
+				self.info('activate_on_socketio_server:new connection on /' + svc_name, socket.id)
 				
 				const ops = self.get_io_operations(socket)
 				Object.keys(ops).forEach(

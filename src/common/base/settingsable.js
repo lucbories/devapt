@@ -1,6 +1,6 @@
 
 import T from 'typr'
-// import assert from 'assert'
+import assert from 'assert'
 import { fromJS } from 'immutable'
 
 import Loggable from './loggable'
@@ -68,6 +68,8 @@ export default class Settingsable extends Loggable
 	 */
 	has_setting(arg_name)
 	{
+		assert( T.isFunction(this.$settings.has), context + ':has:bad settings object')
+		
 		if ( T.isArray(arg_name) )
 		{
 			return this.$settings.hasIn(arg_name)
@@ -84,6 +86,8 @@ export default class Settingsable extends Loggable
 	 */
 	get_setting(arg_name, arg_default)
 	{
+		assert( T.isFunction(this.$settings.has), context + ':has:bad settings object')
+		
 		if ( T.isArray(arg_name) )
 		{
 			return this.$settings.hasIn(arg_name) ? this.$settings.getIn(arg_name) : (arg_default ? arg_default : null)

@@ -333,7 +333,8 @@ export default class Transaction extends Instance
 			let tx_promise = Promise.resolve(true)
 			this.executables.forEach(
 				(executable, index) => {
-					// console.log('loop on executable')
+					// console.log('loop on executable', index, executable.$name)
+					
 					if ( tx_promise && tx_promise.then )
 					{
 						// console.log('promise exists')
@@ -343,7 +344,7 @@ export default class Transaction extends Instance
 								// console.log('previous is resolved')
 								if(!value)
 								{
-									// console.error('previous executable error')
+									console.log('previous executable error', index, executable.$name)
 									return false
 								}
 								
@@ -354,6 +355,7 @@ export default class Transaction extends Instance
 									function(exec_value)
 									{
 										let has_error = executable.has_error()
+										console.log('current executable without exception', index, executable.$name)
 										
 										self.results.push(
 											{
@@ -372,6 +374,7 @@ export default class Transaction extends Instance
 								// EXECUTION FAILURE WITH AN EXCEPTION
 								exec_promise.catch(
 									(reason)=>{
+										console.log('current executable exception', index, executable.$name)
 										self.results.push(
 											{
 												index:index,
@@ -394,6 +397,8 @@ export default class Transaction extends Instance
 			tx_promise = tx_promise.then(
 				function(result)
 				{
+					console.log('executable success')
+					
 					self.metric_duration.after()
 					
 					if (! result)
@@ -412,6 +417,7 @@ export default class Transaction extends Instance
 			// TRANSACTION FAILURE WITH EXCEPTION
 			tx_promise = tx_promise.catch(
 				(reason)=>{
+					console.log('executable failure')
 					self.metric_duration.after()
 					
 					console.error('tx failure', reason)
@@ -425,6 +431,7 @@ export default class Transaction extends Instance
 		}
 		catch(e)
 		{
+			console.error(e)
 			this.rollback()
 		}
 		

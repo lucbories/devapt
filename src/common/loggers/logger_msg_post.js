@@ -43,6 +43,7 @@ export default class LoggerMessagePost extends Logger
 		if ( this.get_trace() )
 		{
 			const logs_record = {
+				ts:new Date().getTime(),
 				level:arg_level,
 				logs:[arg_text]
 			}

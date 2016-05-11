@@ -45,6 +45,19 @@ export default class DefaultPlugin extends RenderingPlugin
 		return undefined
 	}
 	
+    
+	/**
+     * Get a feature class.
+     * @param {string} arg_class_name - feature class name.
+     * @returns {object} feature class.
+     */
+	get_feature_class(arg_class_name)
+	{
+		assert( T.isString(arg_class_name), context + ':get_class:bad class string')
+		
+		return DefaultPlugin.get_class(arg_class_name)
+	}
+	
 	
 	/**
      * Get a feature class.
@@ -66,6 +79,7 @@ export default class DefaultPlugin extends RenderingPlugin
 			case 'Page':   return DefaultComponents.Page
 			case 'Script': return DefaultComponents.Script
 			case 'Menubar': return DefaultComponents.Menubar
+			case 'Tabs':  return DefaultComponents.Tabs
 		}
 		
 		assert(false, context + ':bad class name')
@@ -88,6 +102,7 @@ export default class DefaultPlugin extends RenderingPlugin
 			case 'Page':
 			case 'Script':
 			case 'Menubar':
+			case 'Tabs':
 				return true
 		}
 		

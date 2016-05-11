@@ -332,8 +332,7 @@ export default class Collection
 	
 	
 	/**
-	 * Find an item by one of its attributes into the collection.
-	 * TODO: optimize with a map index
+	 * Find an item by a filter function.
 	 * @param {string} arg_filter_function - function to apply on instance, returns a boolean.
 	 * @returns {Instance|undefined}
 	 */

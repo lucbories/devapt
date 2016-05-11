@@ -6,8 +6,6 @@ import { fromJS } from 'immutable'
 import { config } from '../store/index'
 import Collection from '../base/collection'
 import Instance from '../base/instance'
-import BusClient from '../messaging/simplebus_client'
-// import BusClientInstance from './bus_client_instance'
 
 import AuthenticationWrapper from '../security/authentication_wrapper'
 
@@ -47,6 +45,10 @@ export default class Server extends Instance
 	constructor(arg_name, arg_class, arg_settings, arg_log_context)
 	{
 		const log_context = arg_log_context ? arg_log_context : context
+		
+		// DEBUG STORE
+		// console.log(store, 'store')
+		// console.log(config, 'config')
 		
 		if (! T.isObject(arg_settings))
 		{
@@ -149,8 +151,15 @@ export default class Server extends Instance
 		let security_settings = fromJS(default_security)
 		
 		// GET SERVER SECURITY SETTINGS
-		const srv_security_settings = self.get_setting('security', null)
+		// console.log(context + '.get_security_settings', this.get_name(), this.$settings)
+		let srv_security_settings = self.get_setting('security', null)
 		// console.log(context + '.get_security_settings:srv_security_settings', srv_security_settings)
+		// assert( T.isObject(srv_security_settings), context + ':bad srv_security_settings object')
+		
+		if ( srv_security_settings && ! T.isFunction(srv_security_settings.has) )
+		{
+			srv_security_settings = fromJS(srv_security_settings)
+		}
 		
 		if (srv_security_settings && srv_security_settings.has('authentication'))
 		{
@@ -195,6 +204,8 @@ export default class Server extends Instance
 		
 		// GET RUNTIME SECURITY SETTINGS
 		const rt_security_settings = config().get('security')
+		assert( T.isObject(rt_security_settings) && rt_security_settings.has, context + ':bad rt_security_settings object')
+		
 		if ( rt_security_settings.has('enabled') )
 		{
 			const enabled = rt_security_settings.get('enabled')
@@ -262,7 +273,7 @@ export default class Server extends Instance
 	{
 		this.enter_group('load')
 		
-		assert( T.isObject(this.$settings), context + ':bad settings object')
+		assert( T.isObject(this.$settings) && T.isFunction(this.$settings.has), context + ':bad settings object')
 		
 		const cfg = config()
 		

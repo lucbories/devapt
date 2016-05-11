@@ -2,7 +2,7 @@
 import T from 'typr'
 import assert from 'assert'
 
-import { config } from '../store/index'
+import { store, config } from '../store/index'
 
 // import MiddlewareService from '../services/middleware/mw_service'
 // import CrudService from '../services/crud/crud_service'
@@ -30,6 +30,7 @@ export default class RuntimeStage2Executable extends RuntimeExecutable
 	constructor(arg_logger_manager)
 	{
 		super(context, arg_logger_manager)
+		this.$name = 'stage 2'
 	}
 	
 	
@@ -50,6 +51,7 @@ export default class RuntimeStage2Executable extends RuntimeExecutable
 			this.info('Create master node servers')
 			
 			const nodes_cfg = config().get('nodes')
+			assert( T.isFunction(nodes_cfg.has), context + ':execute:bad nodes_cfg object')
 			if ( nodes_cfg.has('error') )
 			{
 				this.info('master settings loading failure', nodes_cfg.get('error'))
@@ -61,7 +63,7 @@ export default class RuntimeStage2Executable extends RuntimeExecutable
 				return Promise.reject('master settings loading failure')
 			}
 			
-			const node_settings = config.get_collection_item('nodes', this.runtime.node.get_name())
+			const node_settings = store.get_collection_item('nodes', this.runtime.node.get_name())
 			// console.log(context + ':config', config().get('nodes'))
 			
 			this.runtime.node.load_master_settings(node_settings)
@@ -83,13 +85,13 @@ export default class RuntimeStage2Executable extends RuntimeExecutable
 		
 		const svc_mgr = this.runtime.plugins_factory.services_manager
 		
-		let services = config.get_collection_names('services')
+		let services = store.get_collection_names('services')
 		services.forEach(
 			(service_name) => {
 				assert(T.isString(service_name), context + ':bad service namr')
 				this.info('Processing service creation of:' + service_name)
 				
-				let cfg_service = config.get_collection_item('services', service_name)
+				let cfg_service = store.get_collection_item('services', service_name)
 				
 				assert( T.isObject(cfg_service), context + ':bad service cfg for [' + service_name + ']')
 				assert( T.isString(cfg_service.get('type')), context + ':bad service type [' + cfg_service.type + ']')

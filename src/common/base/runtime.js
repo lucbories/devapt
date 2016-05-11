@@ -107,6 +107,8 @@ class Runtime extends Settingsable
 		
 		runtime_settings.logger_manager = this.logger_manager
 		this.$settings = fromJS(runtime_settings)
+		// console.log(this.$settings, 'runtime.$settings')
+		
 		this.is_master = this.get_setting('is_master', false)
 		
 		const stage0 = new exec.RuntimeStage0Executable(this.logger_manager)
@@ -319,7 +321,7 @@ class Runtime extends Settingsable
 	 */
 	on_socketio_connect(arg_socketio, arg_socket)
 	{
-		const self = this
+		// const self = this
 		console.info(context + ':on_socketio_connect:socket connected')
 		
 		arg_socket.emit('welcome on /', { from: 'server runtime' })

@@ -111,10 +111,12 @@ export default class Node extends NodeMessaging
 		this.switch_state(STATE_LOADING)
 		
 		// GET NODE SERVERS SETTINGS
-		assert( T.isObject(arg_settings), context + ':bad master settings object')
-		assert( arg_settings.has('servers'), context + ':unknow settings.servers')
+		// console.log(arg_settings, 'node.loading_master_settings:arg_settings')
+		assert( T.isObject(arg_settings), context + ':load_master_settings:bad master settings object')
+		assert( T.isFunction(arg_settings.has), context + ':load_master_settings:bad settings object')
+		assert( arg_settings.has('servers'), context + ':load_master_settings:unknow settings.servers')
 		const servers = arg_settings.get('servers')
-		assert( T.isObject(servers), context + ':bad settings.servers object')
+		assert( T.isObject(servers), context + ':load_master_settings:bad settings.servers object')
 		
 		// UDPATE NODE SETTINGS WITH SERVERS
 		this.$settings = this.$settings.set('servers', servers)

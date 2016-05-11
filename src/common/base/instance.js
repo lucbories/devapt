@@ -4,7 +4,7 @@ import assert from 'assert'
 import uid from '../utils/uid'
 import { is_browser, is_server } from '../utils/is_browser'
 import { store } from '../store/index'
-import { dispatch_store_config_create_value } from '../store/config/actions'
+// import { dispatch_store_config_create_value } from '../store/config/actions'
 
 import Settingsable from './settingsable'
 
@@ -40,6 +40,10 @@ export default class Instance extends Settingsable
 		
 		// console.log('Instance collection:%s class:%s name:%s context:%s', arg_collection, arg_class, arg_name, arg_log_context)
 		
+		// DEBUG STORE
+		// console.log(store, 'store')
+		// console.log(config, 'config')
+		
 		assert( T.isString(arg_collection) && arg_collection.length > 0, context + ':bad collection string')
 		assert( (NOT_STORED_COLLECTIONS.indexOf(arg_collection) > -1) || store.has_collection(arg_collection), context + ':bad collection for ' + arg_collection)
 		assert( T.isString(arg_class) && arg_class.length > 0, context + ':bad class [' + arg_class + ']')
@@ -65,7 +69,7 @@ export default class Instance extends Settingsable
 		
 		if ( store.has_collection(arg_collection) )
 		{
-			dispatch_store_config_create_value(store, ['runtime', 'instances', this.$name], {'id':this.$id, 'name':this.$name, 'class':this.$class, 'type':this.$type} )
+			store.set_item( ['runtime', 'instances', this.$name], {'id':this.$id, 'name':this.$name, 'class':this.$class, 'type':this.$type} )
 		}
 		
 		if ( ! this.is_runtime )

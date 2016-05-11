@@ -2,7 +2,6 @@
 // import T from 'typr'
 // import assert from 'assert'
 
-// import { store, config } from '../store/index'
 import RuntimeExecutable from './runtime_executable'
 
 
@@ -19,6 +18,7 @@ export default class RuntimeStage5Executable extends RuntimeExecutable
 	constructor(arg_logger_manager)
 	{
 		super(context, arg_logger_manager)
+		this.$name = 'stage 5'
 	}
 	
 	

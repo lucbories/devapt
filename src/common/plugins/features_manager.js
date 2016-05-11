@@ -74,16 +74,28 @@ export default class FeaturesManager extends PluginsManager
      */
 	has(arg_class_name)
 	{
-		assert( T.isString(arg_class_name), context + ':bad class string')
+		assert( T.isString(arg_class_name), context + ':has:bad class string')
 		
-		for(let plugin of this.$items)
-		{
-			if ( plugin.has(arg_class_name) )
-			{
-				return true
-			}
-		}
+		// const plugin = this.enabled_plugins.find_by_filter( (plugin) => plugin.has(arg_class_name) )
+		const plugin = this.registered_plugins.find_by_filter( (plugin) => plugin.has(arg_class_name) )
 		
-		return false
+		return plugin != undefined
+	}
+	
+	
+    
+	/**
+     * Get a feature class.
+     * @param {string} arg_class_name - feature class name.
+     * @returns {boolean} feature class found or not.
+     */
+	get_feature_class(arg_class_name)
+	{
+		assert( T.isString(arg_class_name), context + ':get_class:bad class string')
+		
+		// const plugin = this.enabled_plugins.find_by_filter( (plugin) => plugin.has(arg_class_name) )
+		const plugin = this.registered_plugins.find_by_filter( (plugin) => plugin.has(arg_class_name) )
+		
+		return plugin ? plugin.get_feature_class(arg_class_name) : undefined
 	}
 }

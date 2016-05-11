@@ -2,7 +2,7 @@
 // import T from 'typr'
 // import assert from 'assert'
 
-import { config } from '../store/index'
+import { store } from '../store/index'
 import Application from '../base/application'
 
 import RuntimeExecutable from './runtime_executable'
@@ -21,6 +21,7 @@ export default class RuntimeStage4Executable extends RuntimeExecutable
 	constructor(arg_logger_manager)
 	{
 		super(context, arg_logger_manager)
+		this.$name = 'stage 4'
 	}
 	
 	
@@ -52,7 +53,7 @@ export default class RuntimeStage4Executable extends RuntimeExecutable
 	{
 		this.enter_group('make_applications')
 		
-		let applications = config.get_collection_names('applications')
+		let applications = store.get_collection_names('applications')
 		applications.forEach(
 			(application_name) => {
 				let application = new Application(application_name)

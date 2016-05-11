@@ -41,6 +41,22 @@ export default class RenderingPlugin extends FeaturesPlugin
 		}
 	}
 	
+    
+	/**
+     * Get a feature class.
+	 * @abstract
+     * @param {string} arg_class_name - feature class name.
+     * @returns {object} feature class.
+     */
+	get_feature_class(arg_class_name)
+	{
+		assert( T.isString(arg_class_name), context + ':get_class:bad class string')
+		
+		assert(false, context + ':get_class:not yet implemented')
+		
+		return undefined
+	}
+	
 	
 	/**
 	 * Get all plugin public assets (CSS, JS, HTML...).

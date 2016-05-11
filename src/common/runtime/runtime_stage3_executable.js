@@ -2,9 +2,8 @@
 // import T from 'typr'
 import assert from 'assert'
 
-import { config } from '../store/index'
+import { store, config } from '../store/index'
 import Module from '../base/module'
-// import Plugin from '../plugins/plugin'
 import Database from '../resources/database'
 
 import RuntimeExecutable from './runtime_executable'
@@ -23,6 +22,7 @@ export default class RuntimeStage3Executable extends RuntimeExecutable
 	constructor(arg_logger_manager)
 	{
 		super(context, arg_logger_manager)
+		this.$name = 'stage 3'
 	}
 	
 	
@@ -31,6 +31,10 @@ export default class RuntimeStage3Executable extends RuntimeExecutable
 		const saved_trace = this.get_trace()
 		const has_trace = this.runtime.get_setting(['trace', 'stages', 'RuntimeStage3', 'enabled'], false)
 		this.set_trace(has_trace)
+		
+		// DEBUG
+		// this.set_trace(true)
+		// this.is_trace_enabled = true
 		
 		this.separate_level_1()
 		this.enter_group('execute')
@@ -81,7 +85,7 @@ export default class RuntimeStage3Executable extends RuntimeExecutable
 		
 		
 		// CREATE MODULES
-		let cfg_modules = config.get_collection('modules')
+		let cfg_modules = store.get_collection('modules')
 		cfg_modules.forEach(
 			(module_cfg, module_name) => {
 				if (module_name == 'error')
@@ -133,7 +137,7 @@ export default class RuntimeStage3Executable extends RuntimeExecutable
 		
 		// TODO
 		/*
-		let cfg_plugins = config.get_collection('plugins')
+		let cfg_plugins = store.get_collection('plugins')
 		cfg_plugins.forEach(
 			(plugin_cfg, plugin_name) => {
 				this.info('Processing plugin creation of:' + plugin_name)

@@ -54,12 +54,14 @@ export default class LogsSvcProvider extends SocketIOServiceProvider
 				// console.log(values, 'limit.map.values')
 				
 				let logs_record = {
+					ts:undefined,
 					level: undefined,
 					logs:[]
 				}
 				
 				values.forEach(
 					(value) => {
+						logs_record.ts = value.ts,
 						logs_record.level = value.level,
 						logs_record.logs = logs_record.logs.concat(value.logs)
 					}
@@ -84,21 +86,25 @@ export default class LogsSvcProvider extends SocketIOServiceProvider
 		}
 		
 		const msg_cb = (arg_msg) => {
+			let logs_ts = undefined
 			let logs_level = undefined
 			let logs_array = undefined
 			
 			if ( T.isObject(arg_msg) && T.isString(arg_msg.target) && T.isObject(arg_msg.payload) )
 			{
+				logs_ts = arg_msg.payload.ts
 				logs_level = arg_msg.payload.level
 				logs_array = arg_msg.payload.logs
 			}
 			else if ( T.isString(arg_msg.level) && T.isArray(arg_msg.logs) )
 			{
+				logs_ts = arg_msg.ts
 				logs_level = arg_msg.level
 				logs_array = arg_msg.logs
 			}
 			
 			const logs_record = {
+				ts: logs_ts,
 				level: logs_level,
 				logs:logs_array
 			}

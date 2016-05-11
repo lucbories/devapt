@@ -27,6 +27,7 @@ export default class RuntimeExecutable extends Executable
 	constructor(arg_log_context, arg_logger_manager)
 	{
 		super(arg_log_context ? arg_log_context : context, arg_logger_manager)
+		this.$name = 'no name'
 	}
 	
 	

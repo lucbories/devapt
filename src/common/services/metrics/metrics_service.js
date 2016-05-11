@@ -14,14 +14,14 @@ let context = 'common/services/metrics/metrics_service'
 
 
 /**
- * Crud service class for metrics datas.
+ * Service class for metrics datas.
  * @author Luc BORIES
  * @license Apache-2.0
  */
 export default class MetricsService extends BaseService
 {
 	/**
-	 * Create a crud service.
+	 * Create a service.
 	 * @param {string} arg_svc_name - service name
 	 * @param {object} arg_service_settings - service settings
 	 * @param {string} arg_context - logging context label

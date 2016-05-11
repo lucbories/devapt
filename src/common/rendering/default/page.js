@@ -164,7 +164,16 @@ export default class Page extends Component
 		if (all_scripts_urls.length > 0)
 		{
 			html += all_scripts_urls.map(
-				url => {
+				script_item => {
+					let url = script_item
+					let type = 'text/javascript'
+					
+					if ( T.isObject(script_item) )
+					{
+						url = script_item.url
+						type = script_item.type
+					}
+					
 					if (url in urls_map)
 					{
 						return
@@ -174,7 +183,7 @@ export default class Page extends Component
 					
 					// console.log(url, 'RENDER SCRIPTS URLS url')
 					const absolute_url = this.renderer.get_assets_script_url(url)
-					return `<script type="text/javascript" src="${absolute_url}"></script>`
+					return `<script type="${type}" src="${absolute_url}"></script>`
 				}
 			).join('\n') + '\n'
 			
@@ -182,6 +191,8 @@ export default class Page extends Component
 		}
 		
 		// INLINE SCRIPT AND FOOTER
+		html += this.render_state_store()
+		html += this.render_devapt_init()
 		html += this.render_body_script()
 		html += this.render_body_footter()
 		
@@ -204,11 +215,70 @@ export default class Page extends Component
 		const show_content = '\n document.getElementById("' + this.$page_id + '").style.display="block";\n'
 		const handler_1 = 'function(e){ ' + show_content + '}'
 		const on_ready = '\n document.addEventListener("DOMContentLoaded", ' + handler_1 + ', false);\n'
-		return `<script type="text/babel">${html_scripts} ${on_ready}</script>\n`
+		return `<script type="text/javascript">${html_scripts} ${on_ready}</script>\n`
 	}
 	
 	render_body_footter()
 	{
 		return '<footer></footer>\n'
+	}
+	
+	render_state_store()
+	{
+		let initial_state = this.get_children_state()
+		const stored_state = JSON.stringify(initial_state)
+		return `<script>window.__INITIAL_STATE__ = ${stored_state}</script>\n`
+	}
+	
+	render_devapt_init()
+	{
+		return `<script>
+			$(document).ready(
+				function()
+				{
+					// CREATE ROOT
+					var private_devapt = {}
+					
+					function reducers(prev_state, action)
+					{
+						if (! prev_state)
+						{
+							prev_state = {}
+						}
+						if (! prev_state.counter)
+						{
+							prev_state.counter = 0
+						}
+						prev_state.counter++
+						
+						// console.log(prev_state, 'state')
+						
+						return prev_state
+					}
+					
+					// CREATE RUNTIME
+					var runtime_settings = {
+						reducers:reducers
+					}
+					var ClientRuntime = require('client_runtime').default
+					var private_runtime = new ClientRuntime()
+					private_runtime.load(runtime_settings)
+					private_devapt.runtime = function() { return private_runtime }
+					
+					const state = window.__INITIAL_STATE__
+					var private_ui = private_runtime.ui(state)
+					private_devapt.ui = function(arg_name)
+					{
+						if (arg_name)
+						{
+							return private_ui.get(arg_name)
+						}
+						return private_ui
+					}
+					
+					window.devapt = function() { return private_devapt }
+				}
+			)
+		</script>\n`
 	}
 }

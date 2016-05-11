@@ -2,7 +2,7 @@
 import T from 'typr'
 import assert from 'assert'
 
-import { config } from '../store/index'
+import { store, config } from '../store/index'
 
 import Instance from './instance'
 import Collection from './collection'
@@ -34,7 +34,7 @@ export default class Module extends Instance
 	 */
 	constructor(arg_name)
 	{
-		assert( config.has_collection('modules'), context + ':not found config.modules')
+		assert( store.has_collection('modules'), context + ':not found store.modules')
 		const cfg = config()
 		let settings = cfg.hasIn(['modules', arg_name]) ? cfg.getIn(['modules', arg_name]) : {}
 		
@@ -52,6 +52,7 @@ export default class Module extends Instance
 	load()
 	{
 		assert( T.isObject(this.$settings), context + ':bad settings object')
+		assert( T.isFunction(this.$settings.has), context + ':load:bad settings object')
 		
 		// ENABLE APP SERVICES
 		if (! this.$settings.has('resources_by_name') )

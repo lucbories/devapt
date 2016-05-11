@@ -82,14 +82,48 @@ export default class Component extends ComponentBase
 	 */
 	add_child(arg_child)
 	{
+		assert( T.isObject(arg_child) && arg_child.is_component)
+		
 		if ( ! T.isArray(this.$settings.children) )
 		{
 			this.$settings.children = []
 		}
 		
+		if ( ! T.isObject(this.$settings.children_by_name) )
+		{
+			this.$settings.children_by_name = {}
+		}
+		
 		this.$settings.children.push(arg_child)
+		this.$settings.children_by_name[arg_child.get_name()] = arg_child
 		
 		return this
+	}
+	
+	
+	/**
+	 * Get child component by name.
+	 * @param {string} arg_name - component name.
+	 * @returns {Component} - child component object.
+	 */
+	get_child(arg_name)
+	{
+		return (arg_name in this.$settings.children_by_name) ? this.$settings.children_by_name[arg_name] : null
+	}
+	
+	
+	/**
+	 * Get children components.
+	 * @returns {Array} - children components array.
+	 */
+	get_children()
+	{
+		if ( ! T.isArray(this.$settings.children) )
+		{
+			this.$settings.children = []
+		}
+		
+		return this.$settings.children
 	}
 	
 	
@@ -129,7 +163,36 @@ export default class Component extends ComponentBase
 	 */
 	get_state()
 	{
-		return this.state
+		return this.state ? this.state : { name:undefined, type:undefined, children:undefined }
+	}
+	
+	
+	/**
+	 * Get current deep state.
+	 * @returns {object} state plain object
+	 */
+	get_children_state()
+	{
+		let state = this.get_state()
+		delete state.request
+		state.type = this.get_type()
+		state.children = state.children ? state.children : {}
+		state.name = state.name ? state.name : this.get_name()
+		state.type = state.type ? state.type : this.get_type()
+		state.dom_id = state.dom_id ? state.dom_id : this.get_dom_id()
+		
+		const children = this.get_children()
+		children.map(
+			(child) => {
+				const children_state = child.get_children_state()
+				state.children[child.get_name()] = children_state
+				children_state.name = children_state.name ? children_state.name : child.get_name()
+				children_state.type = children_state.type ? children_state.type : child.get_type()
+				children_state.dom_id = children_state.dom_id ? children_state.dom_id : child.get_dom_id()
+			}
+		)
+		
+		return state
 	}
 	
 	

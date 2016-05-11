@@ -8,6 +8,7 @@ import Table from './table'
 import Page from './page'
 import Script from './script'
 import Menubar from './menubar'
+import Tabs from './tabs'
 
 export {
 	Button,
@@ -18,5 +19,6 @@ export {
 	Table,
 	Page,
 	Script,
-	Menubar
+	Menubar,
+	Tabs
 }

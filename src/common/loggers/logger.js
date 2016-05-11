@@ -135,7 +135,7 @@ export default class Logger
 			{
 				if ( args[arg_index] )
 				{
-					str += ':' + args[arg_index].toString()
+					str += (arg_index > 0 ? ':' : '') + args[arg_index].toString()
 				}
 			}
 

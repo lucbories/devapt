@@ -69,10 +69,27 @@ export default class FeaturesPlugin extends Plugin
 	/**
      * Get a feature class.
 	 * @abstract
+	 * @static
      * @param {string} arg_class_name - feature class name.
      * @returns {object} feature class.
      */
 	static get_class(arg_class_name)
+	{
+		assert( T.isString(arg_class_name), context + ':get_class:bad class string')
+		
+		assert(false, context + ':get_class:not yet implemented')
+		
+		return false
+	}
+	
+    
+	/**
+     * Get a feature class.
+	 * @abstract
+     * @param {string} arg_class_name - feature class name.
+     * @returns {object} feature class.
+     */
+	get_feature_class(arg_class_name)
 	{
 		assert( T.isString(arg_class_name), context + ':get_class:bad class string')
 		

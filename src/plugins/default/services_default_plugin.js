@@ -10,6 +10,7 @@ const default_plugins_map = {
 	'middleware': '../common/services/middleware/mw_service',
 	'metrics': '../common/services/metrics/metrics_service',
 	'logs': '../common/services/logs/logs_service',
+	'messages': '../common/services/messages/messages_service',
 	'rest_api_models_query': '../common/services/crud/crud_service',
 	'rest_api_models_modifier': '../common/services/crud/crud_service',
 	'rest_api_resources_query': '../common/services/resource/resources_service',

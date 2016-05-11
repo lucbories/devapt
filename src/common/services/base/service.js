@@ -3,7 +3,7 @@ import T from 'typr'
 import assert from 'assert'
 
 import { is_browser, is_server } from '../../utils/is_browser'
-import { config } from '../../store/index'
+import { store, config } from '../../store/index'
 
 import Instance from '../../base/instance'
 import Collection from '../../base/collection'
@@ -52,7 +52,7 @@ export default class Service extends Instance
 	 */
 	constructor(arg_svc_name, arg_locale_exec, arg_remote_exec, arg_log_context)
 	{
-		assert( config.has_collection('services'), context + ':not found config.services')
+		assert( store.has_collection('services'), context + ':not found store.services')
 		let settings = config().hasIn(['services', arg_svc_name]) ? config().getIn(['services', arg_svc_name]) : {}
 		
 		super('services', 'Service', arg_svc_name, settings, arg_log_context ? arg_log_context : context)

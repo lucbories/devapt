@@ -5,20 +5,20 @@
 
 import BaseService from '../base/base_service'
 
-import LogsSvcProvider from './logs_svc_provider'
-import LogsSvcConsumer from './logs_svc_consumer'
+import MessagesSvcProvider from './messages_svc_provider'
+import MessagesSvcConsumer from './messages_svc_consumer'
 
 
-let context = 'common/services/logs/logs_service'
+let context = 'common/services/messages/messages_service'
 
 
 
 /**
- * Service class for Logs datas.
+ * Service class for Messages datas.
  * @author Luc BORIES
  * @license Apache-2.0
  */
-export default class LogsService extends BaseService
+export default class MessagesService extends BaseService
 {
 	/**
 	 * Create a service.
@@ -31,7 +31,7 @@ export default class LogsService extends BaseService
 	{
 		super(arg_svc_name, arg_service_settings, arg_context ? arg_context : context)
 		
-		this.is_logs_service = true
+		this.is_messages_service = true
 	}
 	
 	
@@ -44,7 +44,7 @@ export default class LogsService extends BaseService
 	create_provider(arg_name, arg_service)
 	{
 		// TODO: why not this in place of arg_service
-		return new LogsSvcProvider(arg_name, arg_service)
+		return new MessagesSvcProvider(arg_name, arg_service)
 	}
 	
 	
@@ -54,6 +54,6 @@ export default class LogsService extends BaseService
 	 */
 	create_consumer()
 	{
-		return new LogsSvcConsumer(this.get_name() + '_consumer_' + this.get_id(), this)
+		return new MessagesSvcConsumer(this.get_name() + '_consumer_' + this.get_id(), this)
 	}
 }

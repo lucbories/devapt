@@ -2,7 +2,7 @@
 import T from 'typr'
 import assert from 'assert'
 
-import { config } from '../store/index'
+import { store, config } from '../store/index'
 
 import Instance from './instance'
 import Collection from './collection'
@@ -61,7 +61,7 @@ export default class Application extends Instance
 	constructor(arg_name)
 	{
 		const cfg = config()
-		assert( config.has_collection('applications'), context + ':not found config.applications')
+		assert( store.has_collection('applications'), context + ':not found store.applications')
 		let settings = cfg.hasIn(['applications', arg_name]) ? cfg.getIn(['applications', arg_name]) : {}
 		
 		super('applications', 'Application', arg_name, settings, context)
@@ -119,6 +119,7 @@ export default class Application extends Instance
 		
 		// ENABLE USED MODULES
 		this.info('enable used modules')
+		assert( T.isFunction(this.$settings.has), context + ':load:bad settings object')
 		assert( this.$settings.has('modules'), context + ':bad settings.modules key')
 		const cfg_modules = this.$settings.get('modules')
 		assert( T.isObject(cfg_modules), context + ':bad settings.modules object')
@@ -246,9 +247,9 @@ export default class Application extends Instance
 				let module_resources = null
 				if (arg_type)
 				{
-					module_resources = config.getIn('modules', module_name, 'resources_by_type', arg_type).toArray()
+					module_resources = store.getIn('modules', module_name, 'resources_by_type', arg_type).toArray()
 				} else {
-					module_resources = config.getIn('modules', module_name, 'resources_by_name').toArray()
+					module_resources = store.getIn('modules', module_name, 'resources_by_name').toArray()
 				}
 				module_resources.forEach(
 					(resource_name) => {
