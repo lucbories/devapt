@@ -5,7 +5,7 @@ import assert from 'assert'
 import ServiceConsumer from '../base/service_consumer'
 
 
-let context = 'common/services/metrics/metrics_svc_consumer'
+let context = 'common/services/metrics_host/metrics_svc_consumer'
 
 
 
@@ -14,14 +14,15 @@ let context = 'common/services/metrics/metrics_svc_consumer'
  * @author Luc BORIES
  * @license Apache-2.0
  */
-export default class MetricsSvcConsumer extends ServiceConsumer
+export default class MetricsSvcHostConsumer extends ServiceConsumer
 {
-	
 	/**
 	 * Create a service consumer.
-	 * @param {string} arg_consumer_name - consumer name
-	 * @param {Service} arg_service_instance - service instance
-	 * @param {string} arg_context - logging context label
+	 * 
+	 * @param {string} arg_consumer_name - consumer name.
+	 * @param {Service} arg_service_instance - service instance.
+	 * @param {string} arg_context - logging context label.
+	 * 
 	 * @returns {nothing}
 	 */
 	constructor(arg_consumer_name, arg_service_instance, arg_context)
@@ -31,10 +32,13 @@ export default class MetricsSvcConsumer extends ServiceConsumer
 	}
 	
 	
+	
 	/**
-	 * Enhance operands if needed
-	 * @params {array} arg_operands - Variable list of operands
-	 * @returns {array} - not used
+	 * Enhance operands if needed.
+	 * 
+	 * @params {array} arg_operands - Variable list of operands.
+	 * 
+	 * @returns {array} - not used.
 	 */
 	prepare_args(arg_operands)
 	{
@@ -45,10 +49,13 @@ export default class MetricsSvcConsumer extends ServiceConsumer
 	}
 	
 	
+	
 	/**
 	 * Consume a service on the same host.
-	 * @param {object} arg_provider - service provider
-	 * @return {object} a promise of results
+	 * 
+	 * @param {object} arg_provider - service provider.
+	 * 
+	 * @return {object} a promise of results.
 	 */
 	consume_local(/*arg_provider*/)
 	{
@@ -56,11 +63,14 @@ export default class MetricsSvcConsumer extends ServiceConsumer
 	}
 	
 	
+	
 	/**
-	 * Consume a service on a remote host
-	 * @param {object} arg_provider - service provider
-	 * @param {array} arg_routes - Routes to request
-	 * @return {object} a promise of results
+	 * Consume a service on a remote host.
+	 * 
+	 * @param {object} arg_provider - service provider.
+	 * @param {array} arg_routes - Routes to request.
+	 * 
+	 * @return {object} a promise of results.
 	 */
 	consume_remote(/*arg_provider, arg_routes*/)
 	{

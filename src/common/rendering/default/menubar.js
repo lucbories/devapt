@@ -1,13 +1,13 @@
 
 import T from 'typr'
-import assert from 'assert'
+// import assert from 'assert'
 
 import runtime from '../../base/runtime'
 import HBox from './hbox'
 
 
 
-const context = 'common/rendering/default/menubar'
+// const context = 'common/rendering/default/menubar'
 
 
 export default class Menubar extends HBox
@@ -20,7 +20,7 @@ export default class Menubar extends HBox
 			arg_settings.state.items.forEach(
 				function(value)
 				{
-					const url = runtime.context.get_url_with_credentials(arg_settings.state.app_url + value.url, arg_settings.state.request)
+					const url = runtime.context.get_url_with_credentials(arg_settings.state.app_url + value.url, this.renderer.request)
 					const anchor =  '<a href="/' + url + '">' + value.label + '</a>\n'
 					urls.push(anchor)
 				}

@@ -58,7 +58,7 @@ export default class Tree extends Component
 	
 	
 	// RENDERING
-	render()
+	render_main()
 	{
 		assert( T.isObject(this.state), context + ':bad state object')
 		assert( T.isObject(this.state.tree), context + ':bad state tree object')

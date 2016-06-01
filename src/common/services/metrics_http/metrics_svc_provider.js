@@ -6,22 +6,24 @@ import SocketIOServiceProvider from '../base/socketio_service_provider'
 import runtime from '../../base/runtime'
 
 
-let context = 'common/services/metrics/metrics_svc_provider'
+let context = 'common/services/metrics_http/metrics_svc_provider'
 
 
 
 /**
- * Metrics service provider class.
+ * Http Metrics service provider class.
  * @author Luc BORIES
  * @license Apache-2.0
  */
 export default class MetricsSvcProvider extends SocketIOServiceProvider
 {
 	/**
-	 * Create a Metrics service provider.
-	 * @param {string} arg_provider_name - consumer name
-	 * @param {Service} arg_service_instance - service instance
-	 * @param {string} arg_context - logging context label
+	 * Create a Http Metrics service provider.
+	 * 
+	 * @param {string} arg_provider_name - consumer name.
+	 * @param {Service} arg_service_instance - service instance.
+	 * @param {string} arg_context - logging context label.
+	 * 
 	 * @returns {nothing}
 	 */
 	constructor(arg_provider_name, arg_service_instance, arg_context)
@@ -33,6 +35,8 @@ export default class MetricsSvcProvider extends SocketIOServiceProvider
 		// CREATE A BUS CLIENT
 		this.metrics_bus_stream = runtime.node.metrics_bus.get_output_stream()
 		this.init_msg_bus_stream()
+		
+		// DEBUG STREAM
 		// this.metrics_bus_stream.subscribe(
 		// 	(metrics_record) => {
 		// 		console.log('MetricsSvcProvider: new metrics record on the bus', metrics_record)
@@ -44,6 +48,7 @@ export default class MetricsSvcProvider extends SocketIOServiceProvider
 	
 	/**
 	 * Init output stream.
+	 * 
 	 * @returns {nothing}
 	 */
 	init_msg_bus_stream()
@@ -85,6 +90,10 @@ export default class MetricsSvcProvider extends SocketIOServiceProvider
 			return grouped_stream
 		}
 		
+		const msg_filter_cb = (arg_msg) => {
+			return arg_msg.payload.metric == 'http'
+		}
+		
 		const msg_cb = (arg_msg) => {
 			const metric_type = arg_msg.payload.metric
 			const metrics_array = arg_msg.payload.metrics
@@ -96,11 +105,11 @@ export default class MetricsSvcProvider extends SocketIOServiceProvider
 			return metrics_record
 		}
 		
-		self.msg_bus_stream_transfomed = self.metrics_bus_stream.transformed_stream.map(msg_cb).groupBy(key_cb, limit_cb).flatMap(flatmap_cb)
+		self.msg_bus_stream_transfomed = self.metrics_bus_stream.transformed_stream.filter(msg_filter_cb).map(msg_cb).groupBy(key_cb, limit_cb).flatMap(flatmap_cb)
 		
 		self.msg_bus_stream_transfomed.onValue(
 			(metrics_record) => {
-				this.provided_values_stream.push(metrics_record)
+				self.provided_values_stream.push(metrics_record)
 			}
 		)
 	}
@@ -108,22 +117,32 @@ export default class MetricsSvcProvider extends SocketIOServiceProvider
 	
 	
 	/**
-	 * Produce service datas on request
-	 * @param {object} arg_data - query datas (optional)
-	 * @returns {Promise} - promise of results
+	 * Produce service datas on request.
+	 * 
+	 * @param {object} arg_data - query datas (optional).
+	 * 
+	 * @returns {Promise} - promise of results.
+	 * 
+	 * @todo implements metrics filtering with arg_data.
 	 */
 	produce(arg_data)
 	{
-		// GET METRICS STATE
 		const metrics_server = runtime.node.metrics_server
-		const http_state = metrics_server.get_http_metrics().metrics
 		
-		// TODO: FILTER METRICS
-		if ( T.isObject(arg_data) )
+		// NO DATA REQUEST
+		if ( ! T.isObject(arg_data) || ! T.isObject(arg_data.request) || ! T.isString(arg_data.request.operation))
 		{
-			//...
+			return Promise.reject('bad data request')
 		}
 		
-		return Promise.resolve(http_state)
+		
+		// DATA REQUEST METHOD EXISTS: GET
+		if (arg_data.request.operation == 'get')
+		{
+			const http_state_values = metrics_server.get_http_metrics_state_values()
+			return Promise.resolve(http_state_values)
+		}
+		
+		return Promise.reject('bad data request operation [' + arg_data.request.operation + ']')
 	}
 }

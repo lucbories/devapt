@@ -22,6 +22,10 @@ const context = 'common/rendering/base/component'
  *				  settings can provide component initial state through settings.state
  *			  context: contextual text string for logs
  * 
+ *  Settings contains immutable component attibutes for the component life cycle (how to render...).
+ * 
+ *  State contains mutable component content (what to render...).
+ * 
  *  State format:
  *  {
  * 		visible:(boolean)
@@ -33,12 +37,11 @@ const context = 'common/rendering/base/component'
  *	  ->get_state(): get existing state
  *	  ->get_initial_state(): get default state at the begining of component life
  * 
- *  Children methods
- *	  add_child()
- * 
  *  Rendering methods
- *	  ->render_children()
  *	  ->render()
+ *	  ->render_before()
+ *	  ->render_main()
+ *	  ->render_after()
  * 
  *  HTML dom methods
  *	  ->get_dom_node()
@@ -61,69 +64,44 @@ export default class Component extends ComponentBase
 	{
 		super(arg_name, arg_context ? arg_context : context)
 		
-		
 		this.dom_node = null
 		this.dom_is_rendered_on_node = false
 		
-		
+		// INIT STATE
 		if ( T.isFunction(this.get_initial_state) )
 		{
 			this.state = this.get_initial_state()
 		}
 		
+        // INIT SETTINGS AND UPDATE STATE IF 'settings.state' EXISTS
+		this.settings_is_immutable = false
+		
+		arg_settings = Component.normalize_settings(arg_settings)
+		if ( T.isFunction(this.get_default_settings) )
+		{
+			arg_settings = Object.assign(arg_settings, this.get_default_settings())
+		}
+		assert( T.isObject(arg_settings), context + ':constructor:bad settings object')
+		
+		const js_init = `
+			$(document).ready(
+				function()
+				{
+					window.devapt().ui('${arg_name}')
+				}
+			)
+		`
+		assert( T.isArray(arg_settings.scripts), context + ':constructor:bad settings.scripts array')
+		arg_settings.scripts = arg_settings.scripts.concat([js_init])
 		this.update_settings(arg_settings)
-	}
-	
-	
-	/**
-	 * Add a child component
-	 * @param {object} arg_child - component
-	 * @returns {object} this object
-	 */
-	add_child(arg_child)
-	{
-		assert( T.isObject(arg_child) && arg_child.is_component)
+		this.settings_is_immutable = true
 		
-		if ( ! T.isArray(this.$settings.children) )
+		// INIT STATE
+		const settings_state = this.get_setting(['state'], undefined)
+		if ( T.isFunction(this.update_state) && T.isObject(settings_state) )
 		{
-			this.$settings.children = []
+			this.update_state(settings_state)
 		}
-		
-		if ( ! T.isObject(this.$settings.children_by_name) )
-		{
-			this.$settings.children_by_name = {}
-		}
-		
-		this.$settings.children.push(arg_child)
-		this.$settings.children_by_name[arg_child.get_name()] = arg_child
-		
-		return this
-	}
-	
-	
-	/**
-	 * Get child component by name.
-	 * @param {string} arg_name - component name.
-	 * @returns {Component} - child component object.
-	 */
-	get_child(arg_name)
-	{
-		return (arg_name in this.$settings.children_by_name) ? this.$settings.children_by_name[arg_name] : null
-	}
-	
-	
-	/**
-	 * Get children components.
-	 * @returns {Array} - children components array.
-	 */
-	get_children()
-	{
-		if ( ! T.isArray(this.$settings.children) )
-		{
-			this.$settings.children = []
-		}
-		
-		return this.$settings.children
 	}
 	
 	
@@ -174,23 +152,10 @@ export default class Component extends ComponentBase
 	get_children_state()
 	{
 		let state = this.get_state()
-		delete state.request
-		state.type = this.get_type()
 		state.children = state.children ? state.children : {}
 		state.name = state.name ? state.name : this.get_name()
 		state.type = state.type ? state.type : this.get_type()
 		state.dom_id = state.dom_id ? state.dom_id : this.get_dom_id()
-		
-		const children = this.get_children()
-		children.map(
-			(child) => {
-				const children_state = child.get_children_state()
-				state.children[child.get_name()] = children_state
-				children_state.name = children_state.name ? children_state.name : child.get_name()
-				children_state.type = children_state.type ? children_state.type : child.get_type()
-				children_state.dom_id = children_state.dom_id ? children_state.dom_id : child.get_dom_id()
-			}
-		)
 		
 		return state
 	}
@@ -210,36 +175,80 @@ export default class Component extends ComponentBase
 	// }
 	
 	
+	
 	// ***************** RENDERING *****************
 	
 	/**
-	 * Render children component
-	 * @returns {object} rendered html string
+	 * Render component.
+	 * 
+	 * @param {string} arg_html - HTML string to sanitize.
+	 * 
+	 * @returns {string} sanitized html string.
 	 */
-	render_children()
+	sanitize(arg_html)
 	{
-		let html = ''
-		
-		if ( T.isArray(this.$settings.children) )
-		{
-			for(let child of this.$settings.children)
-			{
-				html += child.render()
-			}
-		}
-		
-		return html
+		// TODO: sanitize HTML
+		return arg_html
 	}
 	
 	
 	/**
 	 * Render component
-	 * @returns {object} rendered html string
+	 * @returns {string} rendered html string
 	 */
 	render()
 	{
-		return this.render_children()
+		return this.render_before() + this.render_main() + this.render_after()
 	}
+	
+	
+	/**
+	 * Render component before main rendering.
+	 * @returns {string} rendered html string
+	 */
+	render_before()
+	{
+		const html_before = this.get_setting('html_before', undefined)
+		if (html_before)
+		{
+			return this.sanitize(html_before)
+		}
+		
+		return ''
+	}
+	
+	
+	/**
+	 * Render component main rendering.
+	 * @returns {string} rendered html string
+	 */
+	render_main()
+	{
+		const html_main = this.get_setting('html_main', undefined)
+		if (html_main)
+		{
+			return this.sanitize(html_main)
+		}
+		
+		return ''
+	}
+	
+	
+	/**
+	 * Render component after main rendering.
+	 * @returns {string} rendered html string
+	 */
+	render_after()
+	{
+		const html_after = this.get_setting('html_after', undefined)
+		if (html_after)
+		{
+			return this.sanitize(html_after)
+		}
+		
+		return ''
+	}
+	
 	
 	
 	/**

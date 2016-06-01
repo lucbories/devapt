@@ -49,6 +49,7 @@ export default class RuntimeStage0Executable extends RuntimeExecutable
 			this.info('Create Node and load it')
 			this.runtime.node = new Node(node_name, this.runtime.get_settings())
 			this.runtime.node.load()
+			this.runtime.nodes.add(this.runtime.node)
 		}
 		else
 		{

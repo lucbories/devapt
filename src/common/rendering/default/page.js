@@ -2,14 +2,15 @@
 import T from 'typr'
 import assert from 'assert'
 
-import Component from '../base/component'
+// import Component from '../base/component'
+import Container from '../base/container'
 
 
 
 const context = 'common/rendering/default/page'
 
 
-export default class Page extends Component
+export default class Page extends Container
 {
 	constructor(arg_name, arg_settings)
 	{
@@ -52,58 +53,8 @@ export default class Page extends Component
 	
 	
 	// RENDERING
-	render()
+	render_main()
 	{
-		// console.log(this.$settings, 'page.settings')
-		// console.log(this.state, 'page.state')
-		
-		assert( T.isObject(this.$settings), context + ':bad state object')
-		assert( T.isArray(this.$settings.headers), context + ':bad state headers array')
-		assert( T.isArray(this.$settings.styles), context + ':bad state styles array')
-		assert( T.isArray(this.$settings.styles_urls), context + ':bad state styles urls array')
-		assert( T.isArray(this.$settings.children), context + ':bad state children array')
-		assert( T.isArray(this.$settings.scripts), context + ':bad state scripts array')
-		assert( T.isArray(this.$settings.scripts_urls), context + ':bad state scripts urls array')
-		assert( T.isString(this.$settings.label), context + ':bad state label string')
-		
-		// CONCAT CHILDREN STATES
-		for(let child of this.$settings.children)
-		{
-			// console.log(child.state.scripts_urls, 'child.state.scripts_urls')
-			// console.log(child.settings, 'child.settings')
-			
-			const child_headers = child.get_headers()
-			
-			const child_styles = child.get_styles()
-			const child_styles_urls = child.get_styles_urls()
-			
-			const child_scripts = child.get_scripts()
-			const child_scripts_urls = child.get_scripts_urls()
-			
-			if (child_headers && child_headers.length > 0)
-			{
-				this.$settings.headers = this.$settings.headers.concat(child_headers)
-			}
-			
-			if (child_styles && child_styles.length > 0)
-			{
-				this.$settings.styles = this.$settings.styles.concat(child_styles)
-			}
-			if (child_styles_urls && child_styles_urls.length > 0)
-			{
-				this.$settings.styles_urls = this.$settings.styles_urls.concat(child_styles_urls)
-			}
-			
-			if (child_scripts && child_scripts.length > 0)
-			{
-				this.$settings.scripts = this.$settings.scripts.concat(child_scripts)
-			}
-			if (child_scripts_urls && child_scripts_urls.length > 0)
-			{
-				this.$settings.scripts_urls = this.$settings.scripts_urls.concat(child_scripts_urls)
-			}
-		}
-		
 		let html = '<html>'
 		html += this.render_head()
 		html += this.render_body()
@@ -114,7 +65,7 @@ export default class Page extends Component
 	render_head()
 	{
 		const html_styles = this.get_styles().join('\n')
-		const html_headers = this.$settings.headers.join('\n')
+		const html_headers = this.get_headers().join('\n')
 		
 		// STYLES URLS
 		let css_headers = ''
@@ -138,9 +89,12 @@ export default class Page extends Component
 			).join('\n') + '\n'
 		}
 		
+		const charset = this.get_setting(['charset'], 'utf8')
+		const title = this.get_setting(['title'], 'Main')
+		
 		return `<head>
-			<meta charSet="${this.$settings.charset}"/>
-			<title>${this.$settings.label}</title>
+			<meta charSet="${charset}"/>
+			<title>${title}</title>
 			
 			${html_headers}
 			${css_headers}
@@ -206,12 +160,12 @@ export default class Page extends Component
 	
 	render_body_children()
 	{
-		return this.$settings.children.map(child => child.render()).join('\n')
+		return this.get_children().map(child => child.render()).join('\n')
 	}
 	
 	render_body_script()
 	{
-		const html_scripts = this.$settings.scripts.join('\n')
+		const html_scripts = this.get_scripts().join('\n')
 		const show_content = '\n document.getElementById("' + this.$page_id + '").style.display="block";\n'
 		const handler_1 = 'function(e){ ' + show_content + '}'
 		const on_ready = '\n document.addEventListener("DOMContentLoaded", ' + handler_1 + ', false);\n'
@@ -265,8 +219,7 @@ export default class Page extends Component
 					private_runtime.load(runtime_settings)
 					private_devapt.runtime = function() { return private_runtime }
 					
-					const state = window.__INITIAL_STATE__
-					var private_ui = private_runtime.ui(state)
+					var private_ui = private_runtime.ui
 					private_devapt.ui = function(arg_name)
 					{
 						if (arg_name)

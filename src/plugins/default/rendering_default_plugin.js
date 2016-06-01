@@ -71,6 +71,7 @@ export default class DefaultPlugin extends RenderingPlugin
 		switch(arg_class_name)
 		{
 			case 'Button': return DefaultComponents.Button
+			case 'InputField': return DefaultComponents.InputField
 			case 'Tree':   return DefaultComponents.Tree
 			case 'HBox':   return DefaultComponents.HBox
 			case 'VBox':   return DefaultComponents.VBox
@@ -94,6 +95,7 @@ export default class DefaultPlugin extends RenderingPlugin
 		switch(arg_class_name)
 		{
 			case 'Button':
+			case 'InputField':
 			case 'Tree':
 			case 'HBox':
 			case 'VBox':

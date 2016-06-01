@@ -5,20 +5,20 @@
 
 import BaseService from '../base/base_service'
 
-import MetricsSvcProvider from './metrics_svc_provider'
-import MetricsSvcConsumer from './metrics_svc_consumer'
+import TopologySvcProvider from './topology_svc_provider'
+import TopologySvcConsumer from './topology_svc_consumer'
 
 
-let context = 'common/services/metrics/metrics_service'
+let context = 'common/services/topology/topology_service'
 
 
 
 /**
- * Service class for metrics datas.
+ * Service class for topology datas.
  * @author Luc BORIES
  * @license Apache-2.0
  */
-export default class MetricsService extends BaseService
+export default class TopologyService extends BaseService
 {
 	/**
 	 * Create a service.
@@ -31,7 +31,7 @@ export default class MetricsService extends BaseService
 	{
 		super(arg_svc_name, arg_service_settings, arg_context ? arg_context : context)
 		
-		this.is_metrics_service = true
+		this.is_topology_service = true
 	}
 	
 	
@@ -44,7 +44,7 @@ export default class MetricsService extends BaseService
 	create_provider(arg_name, arg_service)
 	{
 		// TODO: why not this in place of arg_service
-		return new MetricsSvcProvider(arg_name, arg_service)
+		return new TopologySvcProvider(arg_name, arg_service)
 	}
 	
 	
@@ -54,6 +54,6 @@ export default class MetricsService extends BaseService
 	 */
 	create_consumer()
 	{
-		return new MetricsSvcConsumer(this.get_name() + '_consumer_' + this.get_id(), this)
+		return new TopologySvcConsumer(this.get_name() + '_consumer_' + this.get_id(), this)
 	}
 }

@@ -2,6 +2,7 @@ import runtime from '../common/base/runtime'
 import { store, config } from '../common/store/index'
 import Render from '../common/rendering/render'
 import Component from '../common/rendering/base/component'
+import Container from '../common/rendering/base/container'
 
 import RenderingPlugin from '../common/plugins/rendering_plugin'
 import ServicesPlugin from '../common/plugins/services_plugin'
@@ -26,4 +27,4 @@ import DefaultServicesPlugin from '../plugins/default/services_default_plugin'
  */
 
 
-export default { runtime, config, store, Render, Component, RenderingPlugin, ServicesPlugin, ServersPlugin, DefaultRenderingPlugin, DefaultServicesPlugin }
+export default { runtime, config, store, Render, Component, Container, RenderingPlugin, ServicesPlugin, ServersPlugin, DefaultRenderingPlugin, DefaultServicesPlugin }

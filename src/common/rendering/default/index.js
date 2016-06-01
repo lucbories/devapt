@@ -1,5 +1,6 @@
 
 import Button from './button'
+import InputField from './input_field'
 import Tree from './tree'
 import HBox from './hbox'
 import VBox from './vbox'
@@ -12,6 +13,7 @@ import Tabs from './tabs'
 
 export {
 	Button,
+	InputField,
 	Tree,
 	HBox,
 	VBox,

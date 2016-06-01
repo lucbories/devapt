@@ -1,6 +1,7 @@
 import T from 'typr'
 import assert from 'assert'
 import { fromJS } from 'immutable'
+import os from 'os'
 
 import * as exec from '../runtime/index'
 import {SOURCE_LOCAL_FILE} from '../datas/providers/json_provider'
@@ -68,6 +69,8 @@ class Runtime extends Settingsable
 		this.is_runtime = true
 		this.is_master = this.get_setting('is_master', false)
 		
+		this.uid = os.hostname() + '_' + process.pid
+		
 		this.node = null
 		
 		this.context = new Context(this)
@@ -91,6 +94,19 @@ class Runtime extends Settingsable
 		
 		this.info('Runtime is created')
 	}
+	
+	
+	
+	/**
+	 * Get runtime unique identifier.
+	 * 
+	 * @returns {string}
+	 */
+	get_uid()
+	{
+		return this.uid
+	}
+	
 	
 	
 	/**

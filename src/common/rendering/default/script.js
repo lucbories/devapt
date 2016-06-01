@@ -1,12 +1,12 @@
 
 import T from 'typr'
-import assert from 'assert'
+// import assert from 'assert'
 
 import Component from '../base/component'
 
 
 
-const context = 'common/rendering/default/script'
+// const context = 'common/rendering/default/script'
 
 
 export default class Script extends Component

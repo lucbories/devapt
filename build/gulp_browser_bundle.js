@@ -1,9 +1,9 @@
 
 'use strict'
 
-var source = require('vinyl-source-stream');
-var buffer = require('vinyl-buffer');
-var browserify = require('browserify');
+var source = require('vinyl-source-stream')
+var buffer = require('vinyl-buffer')
+var browserify = require('browserify')
 
 
 var DST = 'dist'

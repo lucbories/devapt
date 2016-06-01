@@ -407,7 +407,7 @@ export default class Transaction extends Instance
 						return false
 					}
 					
-					console.log('metrics', self.metric_duration.get_values())
+					console.log('runtime loading parts duration', self.metric_duration.get_values().iterations)
 					
 					self.commit()
 					return true

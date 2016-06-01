@@ -1,10 +1,10 @@
-// import T from 'typr'
-// import assert from 'assert'
+import T from 'typr'
+import assert from 'assert'
 
 import Bacon from 'baconjs'
 
 
-// let context = 'browser/service'
+let context = 'browser/service'
 
 
 
@@ -91,8 +91,79 @@ export default class Service
 		this.$name = arg_svc_name
 		this.is_service = true
 		
+		// MAP OF POLLING TIMERS: name => timer id
+		this.timers = {}
+		
 		this.load(arg_svc_settings)
 	}
+	
+	
+	
+	/**
+	 * Create a timer.
+	 * @param {string}	arg_timer_name - timer unique name.
+	 * @param {function} arg_timer_cb - timer callback function.
+	 * @param {integer} arg_delay - timer interval integer.
+	 * @returns {nothing}
+	 */
+	create_timer(arg_timer_name, arg_timer_cb, arg_delay)
+	{
+		assert( T.isString(arg_timer_name), context + ':create_timer:bad timer name string')
+		assert( T.isFunction(arg_timer_cb), context + ':create_timer:bad timer callback function')
+		assert( T.isNumber(arg_delay), context + ':create_timer:bad timer delay integer')
+		
+		// console.log('create_timer', arg_timer_name)
+		
+		if (arg_timer_name in this.timers)
+		{
+			this.delete_timer( this.timers[arg_timer_name] )
+		}
+		
+		this.timers[arg_timer_name] = setInterval(
+			arg_timer_cb,
+			arg_delay
+		)
+	}
+	
+	
+	
+	/**
+	 * Delete a timer.
+	 * @param {any}	arg_timer_id
+	 * @returns {nothing}
+	 */
+	delete_timer(arg_timer_id)
+	{
+		clearTimeout(arg_timer_id)
+	}
+	
+	
+	
+	
+	
+	// get_method_args(arg_cfg_array)
+	// {
+	// 	if ( ! T.isArray(arg_cfg_array) )
+	// 	{
+	// 		return undefined
+	// 	}
+		
+	// 	let out_args = []
+	// 	for(let cfg of arg_cfg_array)
+	// 	{
+	// 		if (cfg.constant)
+	// 		{
+	// 			out_args.push(cfg.constant)
+	// 			continue
+	// 		}
+	// 		if (cfg.from_attribute)
+	// 		{
+				
+	// 		}
+	// 	}
+		
+	// 	return arg_cfg_array
+	// }
 	
 	
 	/**
@@ -123,13 +194,32 @@ export default class Service
 				const op_name = operation.name
 				
 				self[op_name] = (value) => {
+					// DEFINE REQUEST PAYLOD
 					const payload = {
 						request: {
 							operation:op_name,
 							operands:[value]
 						}
 					}
+					
+					// SEND REQUEST
 					svc_socket.emit(op_name, payload)
+					
+					// REPEAT EVERY xxx MILLISECONDS
+					if ( T.isObject(value) && T.isNumber(value.poll_interval) && T.isString(value.poll_name) )
+					{
+						// console.log('create timer for operation:' + op_name, value.poll_name, value.poll_interval)
+						this.create_timer(
+							value.poll_name,
+							() => {
+								svc_socket.emit(op_name, payload)
+								// console.log('create_timer svc_socket.emit', op_name)
+							},
+							value.poll_interval
+						)
+					}
+					
+					// RETURN RESPONSE STREAM
 					return self[op_name].in
 				}
 				

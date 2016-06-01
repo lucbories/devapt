@@ -13,15 +13,6 @@ export default class Button extends Component
 {
 	constructor(arg_name, arg_settings)
 	{
-		arg_settings = T.isObject(arg_settings) ? arg_settings : {}
-		
-		arg_settings.styles = []
-		
-		arg_settings.headers = ['<meta keywords="button" />']
-		
-		const on_click_script = 'function button_on_click() { console.log(arguments, "button click"); }'
-		arg_settings.scripts = [on_click_script]
-		
 		super(arg_name, arg_settings)
 		
 		this.$type = 'Button'
@@ -33,23 +24,28 @@ export default class Button extends Component
 	{
 		return {
 			label:'no label',
-			action_url:null/*,
-			action_cb:null*/ // TODO more button actions
+			action_url:null
 		}
 	}
 	
 	
 	// RENDERING
-	render()
+	render_main()
 	{
 		assert( T.isObject(this.state), context + ':bad state object')
 		assert( T.isString(this.state.label), context + ':bad state label string')
-		assert( T.isString(this.state.action_url), context + ':bad state action url string')
 		
-        // console.log(this.$settings.scripts, 'button scripts')
+		// GET ATTRIBUTES
+		const label = T.isString(this.state.label) ? this.state.label : '?'
+		const css_class1 = T.isString(this.state.css_class) ? this.state.css_class : undefined
+		const css_class2 = this.get_css_classes_for_tag('button')
+		const css_class = (css_class1 ? css_class1 + ' ' : '') + (css_class2 ? css_class2 : '')
 		
 		// BUILD HTML ELEMENT
-		let html = '<button id="' + this.get_dom_id() + '" onclick="button_on_click(this)">' + this.state.label + '</button>'
+		const html_id = 'id="' + this.get_dom_id() + '"'
+		const html_css_class = css_class ? `class="${css_class}"` : ''
+		
+		const html = `<button type="button" ${html_id} ${html_css_class}>${label}</button>`
 		
 		return html
 	}

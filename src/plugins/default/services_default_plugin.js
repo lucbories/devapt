@@ -7,14 +7,18 @@ import ServicesPlugin from '../../common/plugins/services_plugin'
 
 
 const default_plugins_map = {
-	'middleware': '../common/services/middleware/mw_service',
-	'metrics': '../common/services/metrics/metrics_service',
-	'logs': '../common/services/logs/logs_service',
-	'messages': '../common/services/messages/messages_service',
-	'rest_api_models_query': '../common/services/crud/crud_service',
+	'middleware':   '../common/services/middleware/mw_service',
+	'metrics_http': '../common/services/metrics_http/metrics_service',
+	'metrics_host': '../common/services/metrics_host/metrics_service',
+	'metrics_nodejs': '../common/services/metrics_nodejs/metrics_service',
+	'metrics_bus': '../common/services/metrics_bus/metrics_service',
+	'logs':         '../common/services/logs/logs_service',
+	'topology':     '../common/services/topology/topology_service',
+	'messages':     '../common/services/messages/messages_service',
+	'rest_api_models_query':    '../common/services/crud/crud_service',
 	'rest_api_models_modifier': '../common/services/crud/crud_service',
 	'rest_api_resources_query': '../common/services/resource/resources_service',
-	'html_assets': '../common/services/assets/assets_service'
+	'html_assets':  '../common/services/assets/assets_service'
 }
 
 

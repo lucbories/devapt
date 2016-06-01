@@ -36,7 +36,7 @@ export default class List extends Component
 	
 	
 	// RENDERING
-	render()
+	render_main()
 	{
 		// console.log(this.state, 'state2')
 		assert( T.isObject(this.state), context + ':bad state object')

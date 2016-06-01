@@ -51,6 +51,8 @@ export default class Node extends NodeMessaging
 		
 		this.servers = new Collection()
 		
+		this.metrics_server = undefined
+		
 		this.switch_state(STATE_CREATED)
 	}
 	
@@ -95,6 +97,7 @@ export default class Node extends NodeMessaging
 	 */
 	get_metrics_server()
 	{
+		assert( T.isObject(this.metrics_server), context + ':get_metrics_server:bad metrics_server object')
 		return this.metrics_server
 	}
 	

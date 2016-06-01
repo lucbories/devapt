@@ -139,4 +139,16 @@ export default class Bus extends Instance
 			}
 		)
 	}
+	
+	
+	
+	/**
+	 * Get metrics messages count.
+	 * 
+	 * @returns {number} - messages count number.
+	 */
+	get_msg_count()
+	{
+		
+	}
 }

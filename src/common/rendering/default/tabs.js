@@ -2,18 +2,19 @@
 import T from 'typr'
 import assert from 'assert'
 
-import Component from '../base/component'
-
+import Container from '../base/container'
 
 
 const context = 'common/rendering/default/tabs'
 
 
 
-export default class Tabs extends Component
+export default class Tabs extends Container
 {
 	constructor(arg_name, arg_settings)
 	{
+		// UPDATE SETTINGS
+		arg_settings = Container.normalize_settings(arg_settings)
 		const animation_delay = 0
 		const contents_id = arg_name + '_contents'
 		const func_name = arg_name + '_on_tab_click'
@@ -27,13 +28,6 @@ export default class Tabs extends Component
 			$("#" + arg_tab_content_id).show()
 		}
 		`
-		
-		arg_settings = T.isObject(arg_settings) ? arg_settings : {}
-		
-		arg_settings.styles = []
-		
-		arg_settings.headers = ['<meta keywords="tabs" />']
-		arg_settings.scripts = []
 		arg_settings.scripts.push(func1)
 		
 		super(arg_name, arg_settings)
@@ -53,12 +47,13 @@ export default class Tabs extends Component
 	
 	
 	// RENDERING
-	render()
+	render_main()
 	{
-		// console.log(this.state, 'state2')
-		assert( T.isObject(this.state), context + ':bad state object')
-		assert( T.isArray(this.state.items), context + ':bad state items array')
-		assert( T.isString(this.state.label), context + ':bad state label string')
+		console.log(context + ':render_main:children count=%i, state.items.count=%i', this.get_children().length, this.state.items.length)
+		
+		assert( T.isObject(this.state), context + ':render_main:bad state object')
+		assert( T.isArray(this.state.items), context + ':render_main:bad state items array')
+		assert( T.isString(this.state.label), context + ':render_main:bad state label string')
 		
 		const func_name = this.get_name() + '_on_tab_click'
 		const tab_labels_id = this.get_name() + '_labels'
@@ -95,6 +90,19 @@ export default class Tabs extends Component
 		return html_tabs_labels + html_tabs_contents
 	}
 	
+	
+	
+	/**
+	 * Render a tab child.
+	 * 
+	 * Tab settings :
+	 * 	{ content_html:'...' } for a tab with a HTML content.
+	 * 	{ content_view:'...' } for a tab with a Component.
+	 * 
+	 * @param {object} arg_tab_cfg - tab settings
+	 * 
+	 * @returns {string} - html rendering string
+	 */
 	render_tab_content(arg_tab_cfg)
 	{
 		assert( T.isObject(arg_tab_cfg), context + ':render_tab_content:bad tab cfg object')

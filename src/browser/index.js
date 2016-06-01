@@ -1,6 +1,7 @@
 
 import runtime from './client_runtime'
-import ui from './ui'
+
+
 
 /**
  * Main public part of Devapt library
@@ -18,4 +19,4 @@ import ui from './ui'
 
 
 
-export default { runtime, ui }
+export default { runtime }

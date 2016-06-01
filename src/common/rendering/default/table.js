@@ -1,29 +1,21 @@
 
 import T from 'typr'
-import assert from 'assert'
+// import assert from 'assert'
 
-import Component from '../base/component'
-
-
-
-const context = 'common/rendering/default/table'
+import TableBase from './table_base'
 
 
-export default class Table extends Component
+
+// const context = 'common/rendering/default/table'
+
+
+export default class Table extends TableBase
 {
 	constructor(arg_name, arg_settings)
 	{
-		arg_settings = T.isObject(arg_settings) ? arg_settings : {}
-		
-		arg_settings.styles = []
-		
-		arg_settings.headers = ['<meta keywords="table" />']
-		
 		super(arg_name, arg_settings)
 		
 		this.$type = 'Table'
-		// console.log(this.$settings, 'table.settings')
-		// console.log(this.state, 'state')
 	}
 	
 	
@@ -41,9 +33,34 @@ export default class Table extends Component
 	}
 	
 	
-	// RENDERING
+	
+	/**
+	 * Render table header.
+	 * 
+	 * @returns {string} - html
+	 */
+	render_thead_content()
+	{
+		let thead_content = ''
+		if (this.state.show_label)
+		{
+			thead_content += '<tr><th>' + this.state.label + '</th></tr>'
+		}
+		
+		if ( T.isBoolean(this.state.show_headers) && ! this.state.show_headers)
+		{
+			return thead_content
+		}
+		
+		thead_content += super.render_thead_content()
+		return thead_content
+	}
+	
+	
+	/*
 	render()
 	{
+		
 		// console.log(this.state, 'state2')
 		assert( T.isObject(this.state), context + ':bad state object')
 		assert( T.isArray(this.state.headers), context + ':bad state headers array')
@@ -119,5 +136,5 @@ export default class Table extends Component
 		html_table += '<tfoot></tfoot></table>'
 		
 		return html_table
-	}
+	}*/
 }

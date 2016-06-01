@@ -45,6 +45,7 @@ const config = api.default.config
 const store = api.default.store
 const Render = api.default.Render
 const Component = api.default.Component
+const Container = api.default.Container
 
 const RenderingPlugin = api.default.RenderingPlugin
 const ServicesPlugin = api.default.ServicesPlugin
@@ -57,7 +58,7 @@ const DefaultServicesPlugin = api.default.DefaultServicesPlugin
 
 export default {
 	runtime, config, store,
-	Render, Component,
+	Render, Component, Container,
 	RenderingPlugin, ServicesPlugin, ServersPlugin,
 	DefaultRenderingPlugin,
 	DefaultServicesPlugin

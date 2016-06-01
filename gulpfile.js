@@ -4,6 +4,7 @@
 // var del = require('del');
 var gulp = require('gulp')
 var del = require('del')
+var debounce = require('debounce')
 // var sourcemaps = require('gulp-sourcemaps');
 // var babel = require('gulp-babel');
 // var concat = require('gulp-concat');
@@ -25,9 +26,10 @@ var runseq = require('run-sequence')
 // var SRC_ALL_JSON = 'src/**/*.json'
 
 // var SRC_BROWSER_INDEX = 'src/browser/index.js'
-// var SRC_BROWSER = 'src/browser/**/*.js'
-// var SRC_COMMON  = 'src/common/**/*.js'
-// var SRC_SERVER  = 'src/server/**/*.js'
+var SRC_BROWSER_JS = 'src/browser/**/*.js'
+var SRC_COMMON_JS  = 'src/common/**/*.js'
+var SRC_PLUGINS_JS  = 'src/plugins/**/*.js'
+var SRC_SERVER_JS  = 'src/server/**/*.js'
 
 var DST = 'dist'
 // var DST_BROWSER_INDEX = 'dist/browser/index.js'
@@ -46,39 +48,98 @@ function getTask(task)
 }
 
 
-gulp.task('build_browser_transpile', getTask('gulp_browser_transpile') )
-gulp.task('build_browser_concat', getTask('gulp_browser_concat') )
-gulp.task('build_browser_bundle', getTask('gulp_browser_bundle') )
-gulp.task('build_browser', ['build_browser_transpile', 'build_browser_concat', 'build_browser_bundle'] )
 
-gulp.task('watch',
-    () => {
-        var SRC_BROWSER_JS = 'src/browser/**/*.js'
-        var watcher = gulp.watch(SRC_BROWSER_JS, ['build_browser_transpile', 'build_browser_concat', 'build_browser_bundle'])
-        watcher.on('change',
-            (event) => {
-                console.log('File ' + event.path + ' was ' + event.type + ', running tasks...');	
-            }
-        )
-    }
+// **************************************************************************************************
+// DEVAPT - BROWSER
+// **************************************************************************************************
+gulp.task('build_browser_transpile', getTask('gulp_browser_transpile') )
+// gulp.task('build_browser_concat', getTask('gulp_browser_concat') )
+gulp.task('build_browser_bundle', getTask('gulp_browser_bundle') )
+gulp.task('build_browser', (/*cb*/) => runseq(['build_browser_transpile', 'build_browser_bundle']) )
+
+gulp.task('watch_browser',
+	() => {
+		var watcher = gulp.watch(SRC_BROWSER_JS, ['build_browser'] )
+		watcher.on('change',
+			(event) => {
+				console.log('File ' + event.path + ' was ' + event.type + ', running tasks watch_browser...')	
+			}
+		)
+	}
+)
+// const delay = 2000
+// debounce(cb, delay)
+
+
+
+// **************************************************************************************************
+// DEVAPT - COMMON
+// **************************************************************************************************
+gulp.task('build_common_transpile', getTask('gulp_common_transpile') )
+// gulp.task('build_common_bundle', getTask('gulp_common_bundle') )
+gulp.task('build_common', ['build_common_transpile'] )
+
+gulp.task('watch_common',
+	() => {
+		var watcher = gulp.watch(SRC_COMMON_JS, ['build_common'] )
+		watcher.on('change',
+			(event) => {
+				console.log('File ' + event.path + ' was ' + event.type + ', running tasks watch_common...')	
+			}
+		)
+	}
 )
 
-gulp.task('build_common_transpile', getTask('gulp_common_transpile') )
-gulp.task('build_common_bundle', getTask('gulp_common_bundle') )
-gulp.task('build_common', ['build_common_transpile', 'build_common_bundle'] )
 
+
+// **************************************************************************************************
+// DEVAPT - PLUGINS
+// **************************************************************************************************
 gulp.task('build_plugins_transpile', getTask('gulp_plugins_transpile') )
-gulp.task('build_plugins_bundle', getTask('gulp_plugins_bundle') )
-gulp.task('build_plugins', ['build_plugins_transpile', 'build_plugins_bundle'] )
+// gulp.task('build_plugins_bundle', getTask('gulp_plugins_bundle') )
+gulp.task('build_plugins', ['build_plugins_transpile'] )
 
+gulp.task('watch_plugins',
+	() => {
+		var watcher = gulp.watch(SRC_PLUGINS_JS, ['build_plugins'] )
+		watcher.on('change',
+			(event) => {
+				console.log('File ' + event.path + ' was ' + event.type + ', running tasks watch_plugins...')	
+			}
+		)
+	}
+)
+
+
+
+// **************************************************************************************************
+// DEVAPT - SERVER
+// **************************************************************************************************
 gulp.task('build_server_transpile', getTask('gulp_server_transpile') )
-gulp.task('build_server_bundle', getTask('gulp_server_bundle') )
-gulp.task('build_server', ['build_server_transpile', 'build_server_bundle'] )
+// gulp.task('build_server_bundle', getTask('gulp_server_bundle') )
+gulp.task('build_server', ['build_server_transpile'] )
 
 
 gulp.task('build_docs', getTask('gulp_doc') )
 gulp.task('build_all_transpile', getTask('gulp_all_transpile') )
 gulp.task('build_json_copy', getTask('gulp_json_copy') )
+
+gulp.task('watch_server',
+	() => {
+		var watcher = gulp.watch(SRC_SERVER_JS, ['build_server'] )
+		watcher.on('change',
+			(event) => {
+				console.log('File ' + event.path + ' was ' + event.type + ', running tasks watch_server...')	
+			}
+		)
+	}
+)
+
+
+
+// **************************************************************************************************
+// DEVAPT - INDEX
+// **************************************************************************************************
 
 /*
 	COPY INDEX SRC FILE TO DIST/
@@ -90,7 +151,7 @@ const BABEL_CONFIG = {
 gulp.task('build_index_transpile',
 	() => {
 		return gulp.src('src/index.js')
-			.pipe( plugins.changed('src/index.js') )
+			.pipe( plugins.changed('dist') )
 			.pipe( plugins.sourcemaps.init() )
 			.pipe( plugins.babel(BABEL_CONFIG) )
 			.pipe( plugins.sourcemaps.write('.') )
@@ -98,6 +159,11 @@ gulp.task('build_index_transpile',
 	}
 )
 
+
+
+// **************************************************************************************************
+// DEVAPT - MAIN GULP TASKS
+// **************************************************************************************************
 
 /*
     CLEAN DIST DIRECTORY
@@ -109,49 +175,18 @@ gulp.task('clean',
 )
 
 
-/*
-    DEFINE MAIN GULP TASKS
-*/
-var default_tasks = ['build_common_transpile', 'build_plugins_transpile', 'build_server_transpile', 'build_index_transpile', 'build_browser']
-gulp.task('default_all', (/*cb*/) => runseq(default_tasks) )
+var default_tasks = ['build_common_transpile', 'build_server_transpile', 'build_plugins_transpile', 'build_index_transpile', 'build_browser']
+var server_tasks = ['build_common_transpile', 'build_server_transpile', 'build_plugins_transpile', 'build_index_transpile']
+var browser_tasks = ['build_common_transpile', 'build_browser']
+var watch_tasks = ['watch_browser', 'watch_common', 'watch_plugins', 'watch_server']
 
-var default_srv_tasks = ['build_common_transpile', 'build_server_transpile', 'build_plugins_transpile']
-gulp.task('default', (/*cb*/) => runseq(default_srv_tasks) )
+gulp.task('browser', (/*cb*/) => runseq(browser_tasks) )
+gulp.task('server', (/*cb*/) => runseq(server_tasks) )
+gulp.task('default', (/*cb*/) => runseq(default_tasks) )
+gulp.task('clean_build', (cb) => runseq('clean', ['default'], cb) )
 
-// gulp.task('build_clean', (cb) => runseq('clean', ['default', 'build_json_copy'], cb) )
+gulp.task('watch', (/*cb*/) => runseq('default', watch_tasks))
 
 // gulp.task('build_bundles', ['build_bundle_common', 'build_bundle_browser', 'build_bundle_server'])
 
 // gulp.task('release', ['build_clean', 'build_bundles'])
-
-
-
-
-
-// var watcher = gulp.watch('js/**/*.js', ['uglify','reload']);
-// watcher.on('change', function(event) {
-//   console.log('File ' + event.path + ' was ' + event.type + ', running tasks...');
-// });
-/*
-gulp.task('js-watch', ['build_all_js'], browserSync.reload);
-gulp.task('serve', ['build_all_js'],
-    function ()
-    {
-        // Serve files from the root of this project
-        browserSync.init({
-            server: {
-                baseDir: "./"
-            }
-        });
-    
-        // add browserSync.reload to the tasks array to make
-        // all browsers reload after tasks are complete.
-        var watcher = gulp.watch(SRC_ALL_JS, ['js-watch']);
-        watcher.on('change',
-            function(event)
-            {
-                console.log('File ' + event.path + ' was ' + event.type + ', running tasks...');
-            }
-        );
-    }
-);*/

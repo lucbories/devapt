@@ -1,6 +1,7 @@
 
 import T from 'typr'
 import assert from 'assert'
+import {fromJS} from 'immutable'
 
 import Instance from '../../base/instance'
 
@@ -19,25 +20,31 @@ const context = 'common/rendering/base/component_base'
  *  Constructor (abstract class)
  *	  Subclass with super(name, settings, context)
  *	  with	name: unique name of the component.
- *			  settings: plain text object with attributes to configure component rendering.
+ *			  settings: Immutable object with attributes to configure component rendering.
  *				  settings can provide component initial state through settings.state
  *			  context: contextual text string for logs
  * 
+ *  Settings is an Immutable.Map instance.
  *  Settings format:
  *  {
  * 		headers:[],
  * 		
  * 		styles:[],
- * 		styles_url:[],
+ * 		styles_urls:[],
  * 		
  * 		scripts:[],
- * 		scripts_url:[],
+ * 		scripts_urls:[],
+ * 		
+ * 		css:{
+ * 			classes_by_tag:{}
+ * 		}
  *  }
  *  Settings methods
  *	  ->set_settings(settings): replace all existing settings
- *	  ->update_settings(settings): set or replace provided settings
+ *	  ->update_settings(settings): set or replace provided settings on creation
  *	  ->get_settings(): get all settings
  *	  ->get_default_settings(settings): get default settings
+ * 	  ->get_setting(arg_path, arg_default)
  * 
  * 
  *  HTML page methods
@@ -45,15 +52,12 @@ const context = 'common/rendering/base/component_base'
  * 
  *	  ->get_styles()
  *	  ->get_styles_urls()
- *	  ->add_styles_urls(urls)
  * 
  *	  ->get_scripts()
  *	  ->get_scripts_urls()
- *	  ->add_scripts_url(urls)
  * 
  *  HTML tags methods
  *	  ->get_html_tag_begin(arg_tag, arg_tag_id, arg_tag_classes)
- *	  ->set_css_classes_for_tag(arg_tag, arg_classes_str, arg_replace)
  *	  ->get_css_classes_for_tag(tag)
  * 
  * @author Luc BORIES
@@ -73,18 +77,36 @@ export default class ComponentBase extends Instance
 		super('components', 'Component', arg_name, {}, arg_context ? arg_context : context)
 		
 		this.is_component = true
-		
-		this.$settings = {}
-		
-		if ( T.isFunction(this.get_default_settings) )
-		{
-			this.$settings = this.get_default_settings()
-		}
 	}
 	
 	
 	
 	// ***************** COMPONENT SETTINGS *****************
+	
+	/**
+	 * Normalize settings.
+	 * 
+	 * @param {object} arg_settings - component creation settings.
+	 * 
+	 * @returns {object} - an normalized object
+	 */
+	static normalize_settings(arg_settings)
+	{
+		arg_settings = T.isObject(arg_settings) ? arg_settings : {}
+		
+		arg_settings.headers      = T.isArray(arg_settings.headers)     ? arg_settings.headers : []
+		arg_settings.styles       = T.isArray(arg_settings.styles)      ? arg_settings.styles : []
+		arg_settings.styles_urls  = T.isArray(arg_settings.styles_urls)  ? arg_settings.styles_urls : []
+		arg_settings.scripts      = T.isArray(arg_settings.scripts)     ? arg_settings.scripts : []
+		arg_settings.scripts_urls = T.isArray(arg_settings.scripts_urls) ? arg_settings.scripts_urls : []
+		
+		arg_settings.css = T.isObject(arg_settings.css) ? arg_settings.css : {}
+		arg_settings.css.classes_by_tag = T.isObject(arg_settings.css.classes_by_tag) ? arg_settings.css.classes_by_tag : {}
+		arg_settings.css.attributes_by_tag = T.isObject(arg_settings.css.attributes_by_tag) ? arg_settings.css.attributes_by_tag : {}
+		
+		return arg_settings
+	}
+	
 	
 	/**
 	 * Set component initial settings
@@ -93,6 +115,8 @@ export default class ComponentBase extends Instance
 	 */
 	set_settings(arg_settings)
 	{
+		assert( ! this.settings_is_immutable, context + ':set_settings:settings are immutable')
+		
 		this.$settings = T.isObject(arg_settings) ? arg_settings : {}
 		
 		if ( T.isFunction(this.update_state) && T.isObject(this.$settings) && T.isObject(this.$settings.state) )
@@ -111,18 +135,15 @@ export default class ComponentBase extends Instance
 	 */
 	update_settings(arg_settings)
 	{
+		assert( ! this.settings_is_immutable, context + ':update_settings:settings are immutable')
 		assert( T.isObject(this.$settings), context + ':update_settings:bad settings object')
 		assert( T.isObject(arg_settings), context + ':update_settings:bad new settings object')
 		
-		this.$settings = Object.assign(this.$settings, arg_settings)
-		
-		if ( T.isFunction(this.update_state) && T.isObject(this.$settings) && T.isObject(this.$settings.state) )
-		{
-			this.update_state(this.$settings.state)
-		}
+		this.$settings = fromJS( Object.assign(this.$settings, arg_settings) )
 		
 		return this
 	}
+	
 	
 	
 	/**
@@ -133,6 +154,27 @@ export default class ComponentBase extends Instance
 	{
 		return this.$settings
 	}
+	
+	
+	
+	/**
+	 * Get component setting.
+	 * 
+	 * @param {string|array} arg_path - key name or keys path of the setting.
+	 * @param {any} arg_default - returned default value if not found.
+	 * 
+	 * @returns {any} found setting value or default value.
+	 */
+	get_setting(arg_path, arg_default)
+	{
+		assert( T.isObject(this.$settings), context + ':get_setting:bad settings object')
+		assert( T.isFunction(this.$settings.hasIn) && T.isFunction(this.$settings.getIn), context + ':get_setting: bad settings Immutable.Map')
+		
+		arg_path = T.isArray(arg_path) ? arg_path : [arg_path]
+		const value = this.$settings.getIn(arg_path, arg_default)
+		return ( T.isObject(value) && ('toJS' in value)) ? value.toJS() : value
+	}
+	
 	
 	
 	/**
@@ -149,26 +191,29 @@ export default class ComponentBase extends Instance
 	// }
 	
 	
+	
+	/**
+	 * Get consolidated array setting.
+	 * 
+	 * @param {string|array} arg_path - key name or keys path of the setting.
+	 * 
+	 * @returns {array} setting array
+	 */
+	get_children_setting_array(arg_path)
+	{
+		let setting = this.get_setting(arg_path, [])
+		
+		return setting
+	}
+	
+	
 	/**
 	 * Get consolidated headers
 	 * @returns {object} headers tags strings array
 	 */
 	get_headers()
 	{
-		let headers = T.isArray(this.$settings.headers) ? this.$settings.headers : []
-		
-		if ( T.isArray(this.$settings.children) && this.$settings.children.length > 0 )
-		{
-			for(let component of this.$settings.children)
-			{
-				const component_headers = component.get_headers()
-			//	console.log(component_headers, 'component_headers')
-				
-				headers = headers.concat(component_headers)
-			}
-		}
-		
-		return headers
+		return this.get_children_setting_array(['headers'])
 	}
 	
 	
@@ -178,20 +223,7 @@ export default class ComponentBase extends Instance
 	 */
 	get_styles()
 	{
-		let styles = T.isArray(this.$settings.styles) ? this.$settings.styles : []
-		
-		if ( T.isArray(this.$settings.children) && this.$settings.children.length > 0 )
-		{
-			for(let component of this.$settings.children)
-			{
-				const component_styles = component.get_styles()
-				// console.log(component_styles, this.get_name() + ':component_styles')
-				
-				styles = styles.concat(component_styles)
-			}
-		}
-		
-		return styles
+		return this.get_children_setting_array(['styles'])
 	}
 	
 	
@@ -201,38 +233,7 @@ export default class ComponentBase extends Instance
 	 */
 	get_styles_urls()
 	{
-		let styles_urls = T.isArray(this.$settings.styles_urls) ? this.$settings.styles_urls : []
-		
-		if ( T.isArray(this.$settings.children) && this.$settings.children.length > 0 )
-		{
-			for(let component of this.$settings.children)
-			{
-				const component_styles_urls = component.get_styles_urls()
-				
-				styles_urls = styles_urls.concat(component_styles_urls)
-			}
-		}
-		
-		return styles_urls
-	}
-	
-	
-	/**
-	 * Add styles URL
-	 * @param {string|array} arg_urls - URL string or string arrays
-	 * @returns {nothing}
-	 */
-	add_styles_urls(arg_urls)
-	{
-		assert( T.isObject(this.$settings), context + ':add_styles_urls:bad settings object')
-		arg_urls = T.isArray(arg_urls) ? arg_urls : [arg_urls]
-		
-		if ( ! T.isArray(this.$settings.styles_urls) )
-		{
-			this.$settings.styles_urls = []
-		}
-		
-		this.$settings.styles_urls = this.$settings.styles_urls.concat(arg_urls)
+		return this.get_children_setting_array(['styles_urls'])
 	}
 	
 	
@@ -242,20 +243,7 @@ export default class ComponentBase extends Instance
 	 */
 	get_scripts()
 	{
-		let scripts = T.isArray(this.$settings.scripts) ? this.$settings.scripts : []
-		
-		if ( T.isArray(this.$settings.children) && this.$settings.children.length > 0 )
-		{
-			for(let component of this.$settings.children)
-			{
-				const component_scripts = component.get_scripts()
-			//	console.log(component_scripts, 'component_scripts')
-				
-				scripts = scripts.concat(component_scripts)
-			}
-		}
-		
-		return scripts
+		return this.get_children_setting_array(['scripts'])
 	}
 	
 	
@@ -265,42 +253,7 @@ export default class ComponentBase extends Instance
 	 */
 	get_scripts_urls()
 	{
-		// console.log(this.$settings.scripts_urls, 'render:this.$settings.scripts_urls')
-		
-		let scripts_urls = T.isArray(this.$settings.scripts_urls) ? this.$settings.scripts_urls : []
-		
-		if ( T.isArray(this.$settings.children) && this.$settings.children.length > 0 )
-		{
-			for(let component of this.$settings.children)
-			{
-				const component_urls = component.get_scripts_urls()
-			//	console.log(component_urls, 'component_urls')
-				
-				scripts_urls = scripts_urls.concat(component_urls)
-			}
-		}
-		
-		// console.log(scripts_urls, 'scripts_urls')
-		return scripts_urls
-	}
-	
-	
-	/**
-	 * Add scripts URL
-	 * @param {string|array} arg_urls - URL string or string arrays
-	 * @returns {nothing}
-	 */
-	add_scripts_urls(arg_urls)
-	{
-		assert( T.isObject(this.$settings), context + ':add_scripts_urls:bad settings object')
-		arg_urls = T.isArray(arg_urls) ? arg_urls : [arg_urls]
-		
-		if ( ! T.isArray(this.$settings.scripts_urls) )
-		{
-			this.$settings.scripts_urls = []
-		}
-		
-		this.$settings.scripts_urls = this.$settings.scripts_urls.concat(arg_urls)
+		return this.get_children_setting_array(['scripts_urls'])
 	}
 	
 	
@@ -323,67 +276,29 @@ export default class ComponentBase extends Instance
 	
 	
 	/**
-	 * Set or update CSS classes for given tag name
-	 * @param {string} arg_tag - HTML tag name
-	 * @param {string} arg_classes_str - CSS classes string
-	 * @param {boolean} arg_replace - replace existing CSS classes string (optinonal, default is false)
-	 * @returns {string|undefined} - CSS classes string
-	 */
-	set_css_classes_for_tag(arg_tag, arg_classes_str, arg_replace)
-	{
-		assert( T.isObject(this.$settings), context + ':set_css_classes_for_tag:bad settings object')
-		assert( T.isString(arg_tag), context + ':set_css_classes_for_tag:bad tag string')
-		
-		
-		if ( ! T.isBoolean(arg_replace) )
-		{
-			arg_replace = false
-		}
-		
-		if ( ! T.isObject(this.$settings.css) )
-		{
-			this.$settings.css = {}
-		}
-		
-		if ( ! T.isObject(this.$settings.css.classes_by_tag) )
-		{
-			this.$settings.css.classes_by_tag = {}
-		}
-		
-		if (arg_replace ||  ! (arg_tag in this.$settings.css.classes_by_tag) )
-		{
-			this.$settings.css.classes_by_tag[arg_tag] = ''
-		}
-		
-		this.$settings.css.classes_by_tag[arg_tag] += arg_classes_str
-	}
-	
-	
-	/**
 	 * Get CSS classes for given tag name if available
 	 * @param {string} arg_tag - HTML tag name
 	 * @returns {string|undefined} - CSS classes string
 	 */
 	get_css_classes_for_tag(arg_tag)
 	{
-		assert( T.isObject(this.$settings), context + ':get_css_classes_for_tag:bad settings object')
+		assert( T.isObject(this.$settings) && T.isFunction(this.$settings.getIn), context + ':get_css_classes_for_tag:bad settings Immutable object')
 		
-		if ( T.isObject(this.$settings.css) )
-		{
-			if ( T.isObject(this.$settings.css.classes_by_tag) )
-			{
-				if ( arg_tag in this.$settings.css.classes_by_tag )
-				{
-					const tag_css_classes = this.$settings.css.classes_by_tag[arg_tag]
-					
-					if ( T.isString(tag_css_classes) )
-					{
-						return tag_css_classes
-					}
-				}
-			}
-		}
+		const result = this.$settings.getIn(['css', 'classes_by_tag', arg_tag], undefined)
+		return T.isString(result) ? result : undefined
+	}
+	
+	
+	/**
+	 * Get CSS attributes for given tag name if available
+	 * @param {string} arg_tag - HTML tag name
+	 * @returns {string|undefined} - CSS attributes string
+	 */
+	get_css_attributes_for_tag(arg_tag)
+	{
+		assert( T.isObject(this.$settings) && T.isFunction(this.$settings.getIn), context + ':get_css_attributes_for_tag:bad settings Immutable object')
 		
-		return undefined
+		const result = this.$settings.getIn(['css', 'attributes_by_tag', arg_tag], undefined)
+		return T.isString(result) ? result : undefined
 	}
 }

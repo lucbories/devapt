@@ -4,6 +4,8 @@ import assert from 'assert'
 
 import Component from './components/component'
 import Table from './components/table'
+import Topology from './components/topology'
+import OneRecordTable from './components/one_record_table'
 
 
 const context = 'browser/ui'
@@ -20,15 +22,16 @@ export default class UI
 	/**
 	 * Create a UI instance.
 	 * @param {object} arg_runtime - client runtime.
-	 * @param {object} arg_state - UI components state.
+	 * @param {object} arg_store - UI components state store.
 	 * @returns {nothing}
 	 */
-	constructor(arg_runtime, arg_state)
+	constructor(arg_runtime, arg_store)
 	{
 		this.is_ui = true
 		this.runtime = arg_runtime
-		this.state = arg_state
+		this.store = arg_store
 		this.cache = {}
+		this.state_by_path = {}
 	}
 	
 	
@@ -57,18 +60,48 @@ export default class UI
 	 */
 	create(arg_name)
 	{
-		const component_state = this.find_state(this.state, arg_name)
+		const current_state = this.store.getState()
+		let state_path = []
+		const component_state = this.find_state(current_state, arg_name, state_path)
 		assert( T.isObject(component_state), context + ':create:bad state object for ' + arg_name)
+		state_path.shift()
+		this.state_by_path[arg_name] = state_path
 		
-		const type = component_state.type
+		const type = component_state.has('browser_type') ? component_state.get('browser_type') : component_state.get('type')
 		assert( T.isString(type), context + ':create:bad type string for ' + arg_name)
 		
 		switch(type)
 		{
 			case 'Table':
 				{
-					const comp = new Table(this.runtime, component_state)
+					const comp_state = component_state.toJS()
+					const comp = new Table(this.runtime, comp_state)
+					comp.state_path = state_path
+					// console.log('ui:create:path', state_path, comp_state)
 					this.cache[arg_name] = comp
+					comp.load()
+					return comp
+				}
+			
+			case 'Topology':
+				{
+					const comp_state = component_state.toJS()
+					const comp = new Topology(this.runtime, comp_state)
+					comp.state_path = state_path
+					// console.log('ui:create:path', state_path, comp_state)
+					this.cache[arg_name] = comp
+					comp.load()
+					return comp
+				}
+			
+			case 'OneRecordTable':
+				{
+					const comp_state = component_state.toJS()
+					const comp = new OneRecordTable(this.runtime, comp_state)
+					comp.state_path = state_path
+					// console.log('ui:create:path', state_path, comp_state)
+					this.cache[arg_name] = comp
+					comp.load()
 					return comp
 				}
 			
@@ -83,8 +116,12 @@ export default class UI
 			case 'Tabs':
 			default:
 				{
-					const comp = new Component(this.runtime, component_state)
+					const comp_state = component_state.toJS()
+					const comp = new Component(this.runtime, comp_state)
+					comp.state_path = state_path
+					// console.log('ui:create:path', state_path, comp_state)
 					this.cache[arg_name] = comp
+					comp.load()
 					return comp
 				}
 		}
@@ -100,9 +137,10 @@ export default class UI
 	 * @param {string} arg_name - component name.
 	 * @returns {object}
 	 */
-	find_state(arg_state, arg_name)
+	find_state(arg_state, arg_name, arg_state_path = [])
 	{
-		// console.log(arg_state, 'ui.find_state for ' + arg_name)
+		// const js_state = arg_state.toJS()
+		// console.log('ui.find_state for ' + arg_name, arg_state_path, js_state)
 		
 		if (! arg_state)
 		{
@@ -110,32 +148,54 @@ export default class UI
 			return undefined
 		}
 		
-		if (arg_name in arg_state)
+		// FOUND ON ROOT
+		arg_state_path.push( arg_state.get('name').toString() )
+		if ( arg_state.has('name') )
 		{
-			return arg_state[arg_name]
+			if ( arg_state.get('name') == arg_name )
+			{
+				// console.log('ui.find_state FOUND 1 for ' + arg_name, arg_state_path)
+				return arg_state
+			}
 		}
 		
-		if (arg_state.children)
+		// LOOKUP ON CHILDREN
+		if ( arg_state.has('children') )
 		{
-			if (arg_name in arg_state.children)
+			arg_state_path.push('children')
+			
+			if ( arg_state.hasIn( ['children', arg_name] ) )
 			{
-				return arg_state.children[arg_name]
+				arg_state_path.push(arg_name)
+				// console.log('ui.find_state FOUND 2 for ' + arg_name, arg_state_path)
+				return arg_state.getIn( ['children', arg_name] )
 			}
 			
-			if ( T.isObject(arg_state.children) )
-			{
-				const keys = Object.keys(arg_state.children)
-				for(let key of keys)
-				{
-					const child_state = arg_state.children[key]
-					const result = this.find_state(child_state, arg_name)
-					if (result)
+			let result = undefined
+			arg_state.get('children').forEach(
+				(child_state/*, key*/) => {
+					if (! result)
 					{
-						return result
+						// console.log('ui.find_state loop on child ' + key + ' for ' + arg_name, arg_state_path)
+						result = this.find_state(child_state, arg_name, arg_state_path)
+						if (result)
+						{
+							// console.log('ui.find_state FOUND 3 for ' + arg_name, arg_state_path)
+							return
+						}
 					}
 				}
+			)
+			if (result)
+			{
+				// console.log('ui.find_state FOUND 4 for ' + arg_name, arg_state_path, result.toJS())
+				return result
 			}
+			
+			arg_state_path.pop() // CHILDREN
 		}
+		
+		arg_state_path.pop() // NAME
 		
 		// console.error('state not found for ' + arg_name)
 		return undefined

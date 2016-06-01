@@ -205,7 +205,10 @@ export default class Render extends Loggable
 	{
 		assert( T.isObject(arg_component) && arg_component.is_component, context + ':bad component object')
 		
-		this.current().add_child(arg_component)
+		if ( this.current().is_container )
+		{
+			this.current().add_child(arg_component)
+		}
 		this.push(arg_component)
 		
 		return this
@@ -219,6 +222,36 @@ export default class Render extends Loggable
 	current()
 	{
 		return this.stack.current()
+	}
+	
+	
+    /**
+     * Create a component instance and push it on the rendering stack.
+     * @param {string} arg_class_name - component class name.
+     * @param {string} arg_name - component name.
+     * @param {object} arg_settings - component settings plain object.
+     * @param {object} arg_state - component initial state plain object.
+     * @returns {object} this.
+     */
+	new_component(arg_class_name, arg_name, arg_settings, arg_state)
+	{
+		assert( T.isString(arg_class_name) && arg_class_name.length > 0, context + ':new_component:bad class name string')
+		assert( T.isString(arg_name) && arg_name.length > 0, context + ':new_component:bad name string')
+		
+		arg_settings = arg_settings ? arg_settings : {}
+		arg_settings.state = arg_state
+		
+		let component = this.rendering_manager.create(arg_class_name, arg_name, arg_settings)
+		assert( T.isObject(component) && component.is_component, context + ':bad ' + arg_class_name + ' component object')
+		component.renderer = this
+		
+		if ( this.current().is_container )
+		{
+			this.current().add_child(component)
+		}
+		this.push(component)
+		
+		return this
 	}
 	
 	
@@ -238,7 +271,7 @@ export default class Render extends Loggable
 		
 		this.push(component)
 		
-		return this
+		return this //.new_component('Page', arg_name, arg_settings, undefined)
 	}
 	
 	
@@ -250,7 +283,7 @@ export default class Render extends Loggable
      * @returns {object} this.
      */
 	button(arg_name, arg_settings, arg_state)
-	{
+	{/*
 		arg_settings = arg_settings ? arg_settings : {}
 		arg_settings.state = arg_state
 		
@@ -259,8 +292,8 @@ export default class Render extends Loggable
 		
 		this.current().add_child(component)
 		this.push(component)
-		
-		return this
+		*/
+		return this.new_component('Button', arg_name, arg_settings, arg_state)
 	}
 	
 	
@@ -272,7 +305,7 @@ export default class Render extends Loggable
      * @returns {object} this.
      */
 	tree(arg_name, arg_settings, arg_state)
-	{
+	{/*
 		arg_settings = arg_settings ? arg_settings : {}
 		arg_settings.state = arg_state
 		
@@ -281,8 +314,8 @@ export default class Render extends Loggable
 		
 		this.current().add_child(component)
 		this.push(component)
-		
-		return this
+		*/
+		return this.new_component('Tree', arg_name, arg_settings, arg_state)
 	}
 	
 	
@@ -294,7 +327,7 @@ export default class Render extends Loggable
      * @returns {object} this.
      */
 	hbox(arg_name, arg_settings, arg_state)
-	{
+	{/*
 		arg_settings = arg_settings ? arg_settings : {}
 		arg_settings.state = arg_state
 		
@@ -303,8 +336,8 @@ export default class Render extends Loggable
 		
 		this.current().add_child(component)
 		this.push(component)
-		
-		return this
+		*/
+		return this.new_component('HBox', arg_name, arg_settings, arg_state)
 	}
 	
 	
@@ -316,7 +349,7 @@ export default class Render extends Loggable
      * @returns {object} this.
      */
 	vbox(arg_name, arg_settings, arg_state)
-	{
+	{/*
 		arg_settings = arg_settings ? arg_settings : {}
 		arg_settings.state = arg_state
 		
@@ -325,8 +358,8 @@ export default class Render extends Loggable
 		
 		this.current().add_child(component)
 		this.push(component)
-		
-		return this
+		*/
+		return this.new_component('VBox', arg_name, arg_settings, arg_state)
 	}
 	
 	
@@ -338,7 +371,7 @@ export default class Render extends Loggable
      * @returns {object} this.
      */
 	list(arg_name, arg_settings, arg_state)
-	{
+	{/*
 		arg_settings = arg_settings ? arg_settings : {}
 		arg_settings.state = arg_state
 		
@@ -347,8 +380,8 @@ export default class Render extends Loggable
 		
 		this.current().add_child(component)
 		this.push(component)
-		
-		return this
+		*/
+		return this.new_component('List', arg_name, arg_settings, arg_state)
 	}
 	
 	
@@ -360,7 +393,7 @@ export default class Render extends Loggable
      * @returns {object} this.
      */
 	menubar(arg_name, arg_settings, arg_state)
-	{
+	{/*
 		arg_settings = arg_settings ? arg_settings : {}
 		arg_settings.state = arg_state
 		
@@ -369,8 +402,8 @@ export default class Render extends Loggable
 		
 		this.current().add_child(component)
 		this.push(component)
-		
-		return this
+		*/
+		return this.new_component('Menubar', arg_name, arg_settings, arg_state)
 	}
 	
 	
@@ -382,7 +415,7 @@ export default class Render extends Loggable
      * @returns {object} this.
      */
 	table(arg_name, arg_settings, arg_state)
-	{
+	{/*
 		arg_settings = arg_settings ? arg_settings : {}
 		arg_settings.state = arg_state
 		
@@ -391,8 +424,43 @@ export default class Render extends Loggable
 		
 		this.current().add_child(component)
 		this.push(component)
+		*/
+		return this.new_component('Table', arg_name, arg_settings, arg_state)
+	}
+	
+	
+    /**
+     * Create a Tabs component instance and push it on the rendering stack.
+     * @param {string} arg_name - component name.
+     * @param {object} arg_settings - component settings plain object.
+     * @param {object} arg_state - component initial state plain object.
+     * @returns {object} this.
+     */
+	tabs(arg_name, arg_settings, arg_state)
+	{/*
+		arg_settings = arg_settings ? arg_settings : {}
+		arg_settings.state = arg_state
 		
-		return this
+		let component = this.rendering_manager.create('Tabs', arg_name, arg_settings)
+		assert( T.isObject(component) && component.is_component, context + ':bad Tabs component object')
+		
+		this.current().add_child(component)
+		this.push(component)
+		*/
+		return this.new_component('Tabs', arg_name, arg_settings, arg_state)
+	}
+	
+	
+    /**
+     * Create a InputField component instance and push it on the rendering stack.
+     * @param {string} arg_name - component name.
+     * @param {object} arg_settings - component settings plain object.
+     * @param {object} arg_state - component initial state plain object.
+     * @returns {object} this.
+     */
+	input_field(arg_name, arg_settings, arg_state)
+	{
+		return this.new_component('InputField', arg_name, arg_settings, arg_state)
 	}
 	
 	
@@ -404,7 +472,7 @@ export default class Render extends Loggable
      * @returns {object} this.
      */
 	script(arg_name, arg_settings, arg_state)
-	{
+	{/*
 		arg_settings = arg_settings ? arg_settings : {}
 		arg_settings.state = arg_state
 		
@@ -414,8 +482,8 @@ export default class Render extends Loggable
 		this.current().add_child(component)
 		this.push(component)
 		// this.up()
-		
-		return this
+		*/
+		return this.new_component('Script', arg_name, arg_settings, arg_state)
 	}
 	
 	

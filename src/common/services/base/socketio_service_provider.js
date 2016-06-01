@@ -99,6 +99,14 @@ export default class SocketIOServiceProvider extends ServiceProvider
 			'get':
 				(data) => {
 					self.on_get(arg_socket, data)
+				},
+			'list':
+				(data) => {
+					self.on_list(arg_socket, data)
+				},
+			'push':
+				(data) => {
+					self.on_push(arg_socket, data)
 				}
 		}
 	}
@@ -218,11 +226,12 @@ export default class SocketIOServiceProvider extends ServiceProvider
 	
 	/**
 	 * Get operation handler on socket.
+	 * @param {string} arg_method - method name
 	 * @param {object} arg_socket - subscribing socket.
 	 * @param {object} arg_data - query filter or datas (optional).
 	 * @returns {nothing}
 	 */
-	on_get(arg_socket, arg_data)
+	on_method(arg_method, arg_socket, arg_data)
 	{
 		const svc_name = this.service.get_name()
 		// console.info(context + ':on_get:socket get on /' + svc_name, arg_socket.id, arg_data)
@@ -230,12 +239,51 @@ export default class SocketIOServiceProvider extends ServiceProvider
 		const datas_promise = this.produce(arg_data)
 		datas_promise.then(
 			(produced_datas) => {
-				arg_socket.emit('get', { 'service':svc_name, 'operation':'get', 'result':'done', 'datas':produced_datas })
+				arg_socket.emit(arg_method, { 'service':svc_name, 'operation':arg_method, 'result':'done', 'datas':produced_datas })
 			},
 			
 			(reason) => {
-				arg_socket.emit('get', { 'service':svc_name, 'operation':'get', 'result':'error', 'datas':reason })
+				arg_socket.emit(arg_method, { 'service':svc_name, 'operation':arg_method, 'result':'error', 'datas':reason })
 			}
 		)
+	}
+	
+	
+	
+	/**
+	 * Get operation handler on socket.
+	 * @param {object} arg_socket - subscribing socket.
+	 * @param {object} arg_data - query filter or datas (optional).
+	 * @returns {nothing}
+	 */
+	on_get(arg_socket, arg_data)
+	{
+		this.on_method('get', arg_socket, arg_data)
+	}
+	
+	
+	
+	/**
+	 * List operation handler on socket.
+	 * @param {object} arg_socket - subscribing socket.
+	 * @param {object} arg_data - query filter or datas (optional).
+	 * @returns {nothing}
+	 */
+	on_list(arg_socket, arg_data)
+	{
+		this.on_method('list', arg_socket, arg_data)
+	}
+	
+	
+	
+	/**
+	 * Push operation handler on socket.
+	 * @param {object} arg_socket - subscribing socket.
+	 * @param {object} arg_data - query filter or datas (optional).
+	 * @returns {nothing}
+	 */
+	on_push(arg_socket, arg_data)
+	{
+		this.on_method('push', arg_socket, arg_data)
 	}
 }
