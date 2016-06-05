@@ -19,7 +19,8 @@ export default class Container extends Component
 {
 	
 	/**
-	 * Creates an instance of Component.
+	 * Creates an instance of Container. A Container contains other Components through the 'children' property.
+	 * @extends Component
 	 * 
 	 * Container state attributes:
 	 * 	- strategy: Immutable.Map (how to manage UI updates with items changes)
@@ -30,10 +31,14 @@ export default class Container extends Component
 	 * 
 	 * @param {object} arg_runtime - client runtime.
 	 * @param {object} arg_state - component state.
+	 * @param {string} arg_log_context - context of traces of this instance (optional).
+	 * 
+	 * @returns {nothing}
 	 */
-	constructor(arg_runtime, arg_state)
+	constructor(arg_runtime, arg_state, arg_log_context)
 	{
-		super(arg_runtime, arg_state)
+		const log_context = arg_log_context ? arg_log_context : context
+		super(arg_runtime, arg_state, log_context)
 		
 		this.is_container = true
 		
@@ -404,6 +409,9 @@ export default class Container extends Component
 	
 	/**
 	 * Handle component state changes.
+	 * 
+	 * @param {Immutable.Map} arg_previous_state - previous state map.
+	 * @param {Immutable.Map} arg_new_state - new state map.
 	 * 
 	 * @returns {nothing}
 	 */

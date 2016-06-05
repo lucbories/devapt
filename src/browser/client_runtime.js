@@ -1,12 +1,13 @@
 import T from 'typr'
 import assert from 'assert'
-// import { fromJS } from 'immutable'
 import { createStore/*, combineReducers*/ } from 'redux'
 import { fromJS } from 'immutable'
 
 import Loggable from '../common/base/loggable'
 import LoggerManager from '../common/loggers/logger_manager'
-import LoggerSvc from './logger_svc'
+
+import ConsoleLogger from './console_logger'
+import StreamLogger from './stream_logger'
 import Service from './service'
 import UI from './ui'
 
@@ -28,9 +29,16 @@ export default class ClientRuntime extends Loggable
 	 */
 	constructor()
 	{
-		// const settings = fromJS( default_settings )
+		// INIT LOGGING FEATURE ON BROWSER
 		const loggers_settings = undefined
 		const logger_manager = new LoggerManager(loggers_settings)
+		
+		const console_logger = new ConsoleLogger(true)
+		logger_manager.loggers.push(console_logger)
+		
+		const stream_logger = new StreamLogger(undefined, true)
+		logger_manager.loggers.push(stream_logger)
+		
 		
 		super(context, logger_manager)
 		
@@ -38,11 +46,22 @@ export default class ClientRuntime extends Loggable
 		
 		this.services = {}
 		this.store = undefined
-		this.loggers = []
 		this.ui = undefined
 		this.current_state = undefined
 		
 		this.info('Client Runtime is created')
+	}
+	
+	
+	
+	/**
+	 * Get runtime logger manager.
+	 * 
+	 * @returns {LoggerManager}
+	 */
+	get_logger_manager()
+	{
+		return this.logger_manager
 	}
 	
 	
@@ -59,8 +78,8 @@ export default class ClientRuntime extends Loggable
 		
 		
 		// SET DEFAULT REMOTE LOGGING
-		const svc_logger_settings = ('default' in arg_settings) ? arg_settings['default'] : {}
-		this.loggers.push( new LoggerSvc(true, svc_logger_settings) )
+		// const svc_logger_settings = ('default' in arg_settings) ? arg_settings['default'] : {}
+		// this.loggers.push( new LoggerSvc(true, svc_logger_settings) )
 		
 		const initial_state = window ? window.__INITIAL_STATE__ : {error:'no browser window object'}
 		// console.log(initialState, 'initialState')
@@ -113,6 +132,7 @@ export default class ClientRuntime extends Loggable
 		this.services[arg_svc_name] = svc
 		
 		this.info('Client Service is created:' + arg_svc_name)
+		
 		
 		// this.leave_group('register_service')
 	}

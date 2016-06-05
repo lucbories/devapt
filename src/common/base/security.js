@@ -23,8 +23,10 @@ export default class Security extends Errorable
 	/**
 	 * Create a Security instance.
 	 * @extends Errorable
+	 * 
 	 * @param {string} arg_log_context - trace logging context string.
 	 * @param {object} arg_settings - runtime settings.
+	 * 
 	 * @returns {nothing}
 	 */
 	constructor(arg_log_context, arg_settings)
@@ -53,9 +55,10 @@ export default class Security extends Errorable
 	
 	
 	/**
-	 * Load security settings
+	 * Load security settings.
 	 * 
-	 * @param {object} arg_settings - runtime settings (Immutable object)
+	 * @param {object} arg_settings - runtime settings (Immutable object).
+	 * 
 	 * @returns {nothing}
 	 */
 	load(arg_settings)
@@ -84,8 +87,10 @@ export default class Security extends Errorable
 	}
 	
 	
+	
 	/**
-	 * Get authentication plugins manager
+	 * Get authentication plugins manager.
+	 * 
 	 * @returns {object} - a PluginsManager instance
 	 */
 	get_authentication_manager()
@@ -94,9 +99,11 @@ export default class Security extends Errorable
 	}
 	
 	
+	
 	/**
-	 * Get authorization plugins manager
-	 * @returns {object} - a PluginsManager instance
+	 * Get authorization plugins manager.
+	 * 
+	 * @returns {object} - a PluginsManager instance.
 	 */
 	get_authorization_manager()
 	{
@@ -104,9 +111,11 @@ export default class Security extends Errorable
 	}
 	
 	
+	
 	/**
-	 * Get authentication plugins manager
-	 * @returns {object} - a PluginsManager instance
+	 * Get authentication plugins manager.
+	 * 
+	 * @returns {object} - a PluginsManager instance.
 	 */
 	authentication()
 	{
@@ -115,9 +124,30 @@ export default class Security extends Errorable
 	}
 	
 	
+	
 	/**
-	 * Get authorization plugins manager
-	 * @returns {object} - a PluginsManager instance
+	 * Authenticate a user with giving credentials.
+	 * 
+	 * @param {object} arg_credentials - credentials object.
+	 * 
+	 * @returns {Promise} - a promise of boolean.
+	 */
+	authenticate(arg_credentials)
+	{
+		this.enter_group('authenticate')
+		
+		const promise = this.authentication().authenticate(arg_credentials)
+		
+		this.leave_group('authenticate')
+		return promise
+	}
+	
+	
+	
+	/**
+	 * Get authorization plugins manager.
+	 * 
+	 * @returns {object} - a PluginsManager instance.
 	 */
 	authorization()
 	{
@@ -127,11 +157,32 @@ export default class Security extends Errorable
 	
 	
 	
+	/**
+	 * Authenticate a user with giving credentials.
+	 * 
+	 * @param {object} arg_permission - permission plain object.
+	 * @param {object} arg_credentials - credentials object.
+	 * 
+	 * @returns {Promise} - a promise of boolean.
+	 */
+	authorize(arg_permission, arg_credentials)
+	{
+		this.enter_group('authorize')
+		
+		const promise = this.authorization().authorize(arg_permission, arg_credentials)
+		
+		this.leave_group('authorize')
+		return promise
+	}
+	
+	
+	
 	
 	// PREDEFINED ERRORS
 	
 	/**
-	 * Error wrapper - on bad user
+	 * Error wrapper - on bad user.
+	 * 
 	 * @returns {nothing}
 	 */
 	error_bad_user()
@@ -141,7 +192,8 @@ export default class Security extends Errorable
 	
 	
 	/**
-	 * Error wrapper - on bad credentials
+	 * Error wrapper - on bad credentials.
+	 * 
 	 * @returns {nothing}
 	 */
 	error_bad_credentials()

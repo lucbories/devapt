@@ -80,6 +80,8 @@ export default class DefaultPlugin extends RenderingPlugin
 			case 'Page':   return DefaultComponents.Page
 			case 'Script': return DefaultComponents.Script
 			case 'Menubar': return DefaultComponents.Menubar
+			
+			case 'Container':  return DefaultComponents.Container
 			case 'Tabs':  return DefaultComponents.Tabs
 		}
 		
@@ -96,15 +98,17 @@ export default class DefaultPlugin extends RenderingPlugin
 		{
 			case 'Button':
 			case 'InputField':
+			case 'List':
+			case 'Table':
+			case 'Script':
+			case 'Menubar':
+			
+			case 'Container':
+			case 'Page':
+			case 'Tabs':
 			case 'Tree':
 			case 'HBox':
 			case 'VBox':
-			case 'List':
-			case 'Table':
-			case 'Page':
-			case 'Script':
-			case 'Menubar':
-			case 'Tabs':
 				return true
 		}
 		

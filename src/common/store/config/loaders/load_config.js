@@ -185,43 +185,41 @@ function load_config(arg_state, arg_initial_config, arg_base_dir, arg_trace)
 		
 		// PROCESS ERROR
 		logs.info(context, 'processing errors')
-		if (arg_state.config.modules.error)
-		{
+		const add_sub_error = (arg_type, arg_error) => {
+			if (! arg_state.config.error)
+			{
+				arg_state.config.error = { context:context, exception:'has sub errors', error_msg:'see sub errors' }
+			}
 			if (! arg_state.config.suberrors)
 			{
-				arg_state.config.suberrors = []
+				arg_state.config.error.suberrors = []
 			}
-			arg_state.config.suberrors.push(arg_state.config.modules.error)
+			const msg = arg_error.error_msg ? arg_error.error_msg : arg_error.e
+			arg_state.config.error.suberrors.push( {type:arg_type, context:arg_error.context, error_msg:msg} )
+			
+		}
+		
+		if (arg_state.config.modules.error)
+		{
+			add_sub_error('modules', arg_state.config.modules.error)
 		}
 		if (arg_state.config.plugins.error)
 		{
-			if (! arg_state.config.suberrors)
-			{
-				arg_state.config.suberrors = []
-			}
-			arg_state.config.suberrors.push(arg_state.config.plugins.error)
+			add_sub_error('plugins', arg_state.config.plugins.error)
 		}
 		if (arg_state.config.applications.error)
 		{
-			if (! arg_state.config.suberrors)
-			{
-				arg_state.config.suberrors = []
-			}
-			arg_state.config.suberrors.push(arg_state.config.applications.error)
+			add_sub_error('applications', arg_state.config.applications.error)
 		}
 		if (arg_state.config.security.error)
 		{
-			if (! arg_state.config.suberrors)
-			{
-				arg_state.config.suberrors = []
-			}
-			arg_state.config.suberrors.push(arg_state.config.security.error)
+			add_sub_error('security', arg_state.config.security.error)
 		}
 	}
 	catch(e)
 	{
 		arg_state.config = { error: { context:context, exception:e, error_msg:e.toString() } }
-		console.error(e, context)
+		// console.error(e, context)
 	}
 	
     // console.log( Object.keys(arg_state.config.resources.by_name), 'resources' )

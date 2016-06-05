@@ -8,11 +8,13 @@ import Logger from '../common/loggers/logger'
  * @author Luc BORIES
  * @license Apache-2.0
  */
-export default class LoggerService extends Logger
+export default class ConsoleLogger extends Logger
 {
 	/**
 	 * Create a Console Logger instance.
-	 * @param {string} arg_context - trace context.
+	 * 
+	 * @param {boolean} arg_enabled - trace is enabled ?
+	 * 
 	 * @returns {nothing}
 	 */
 	constructor(arg_enabled)
@@ -26,7 +28,9 @@ export default class LoggerService extends Logger
 	
 	/**
 	 * Logger DEBUG implementation.
+	 * 
 	 * @param {string} arg_msg - message string.
+	 * 
 	 * @returns {nothing}
 	 */
 	debug_self(arg_msg)
@@ -35,9 +39,12 @@ export default class LoggerService extends Logger
 	}
 	
 	
+	
 	/**
 	 * Logger INFO implementation.
+	 * 
 	 * @param {string} arg_msg - message string.
+	 * 
 	 * @returns {nothing}
 	 */
 	info_self(arg_msg)
@@ -46,9 +53,12 @@ export default class LoggerService extends Logger
 	}
 	
 	
+	
 	/**
 	 * Logger WARN implementation.
+	 * 
 	 * @param {string} arg_msg - message string.
+	 * 
 	 * @returns {nothing}
 	 */
 	warn_self(arg_msg)
@@ -57,9 +67,12 @@ export default class LoggerService extends Logger
 	}
 	
 	
+	
 	/**
 	 * Logger ERROR implementation.
+	 * 
 	 * @param {string} arg_msg - message string.
+	 * 
 	 * @returns {nothing}
 	 */
 	error_self(arg_msg)

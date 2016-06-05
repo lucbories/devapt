@@ -5,17 +5,44 @@ Applications optimization and analyze need some metrics.
 
 Usefull libraries offer builin metrics support but each one with its own format.
 
-Devapt provides a unique metrics format per server domain: http request, messaging request...
+Devapt provides a unique metrics format per domain: http request, messaging, host, nodejs...
 
+
+Metrics architecture consist of 4 main base classes and one bus per topology, on the master node:
+* MetricsCollector: update MetricsRecord values, use MetricsReducer to consolidate values and post a message onto the metrics bus.
+* MetricsRecord: a snapshot of a set of values
+* MetricsReducer: reduce a list of MetricsRecord values
+* MetricsState: MetricsReducer result
+Each of this 4 classes should be subclassed to create a new metrics feature.
+
+
+For instance, available metrics are:
+* Bus metrics: collect master node buses counters (messages count, messages size, errors count, subscribers count)
+* Host metrics: collect NodeJs host metrics (CPUs count, CPUs architecture, CPUs usage...)
+* NodeJs metrics: collect NodeJs process metrics (pid, version, plateform, uptime, memory)
+* Http metrics: for Restify and Express, collect request metrics (id, method, status, referer, url, service, latency, browser...)
+
+
+How it runs:
+
+The MetricsServer owns collectors instance and listen the metrics bus and call a MetricsCollector method to process new metrics values.
+A MetricsCollector owns one MetricsReducer, one MetricsState and one MetricsRecord.
+The MetricsServer provides metrics reduced values to metrics services.
+Each metrics feature has its corresponding metrics service to publish metrics outside the node:
+* MetricsBusService
+* MetricsHostService
+* MetricsNodeJsService
+* MetricsHttpService
 
 
 ## Status
-The metrics collector is finished for HTTP servers.
+Features are finished for Bus, Host, NodeJs and Http metrics.
 
 The metrics server is operational.
 
-Need Test, Optimization and code review.
+See devapt-devtools project for a full example of metrics services usage.
 
+[DEVTOOLS Project](https://github.com/lucbories/devapt-devtools/)
 
 
 ## For Devapt users:
@@ -70,15 +97,37 @@ Need Test, Optimization and code review.
 ## For Devapt contributers:
 
 Metrics classes are:
-* common/base/metric.js - Metric: base class of metrics collectors
-* common/metrics/metric_duration.js - MetricDuration: metrics values collector for a simple time interval
-* common/metrics/metric_host.js - MetricHost: metrics values collector for a hostname value
-* common/metrics/metric_http.js - MetricHttp: metrics values collector for Http servers
-* common/metrics/metric_http_reducer.js - MetricHttpReducer: retrics reducer to calculate statistiques from collected values
-* common/metrics/metric_http_state.js - MetricHttpState: metrics reducer results (statistics)
+* common/metrics/metric_duration.js - MetricDuration: metrics values collector for a simple time interval.
+
+* common/metrics/base/metrics_collector.js - MetricsCollector: metrics values collector base class.
+* common/metrics/base/metrics_record.js - MetricsRecord: metrics values snapshot base class.
+* common/metrics/base/metrics_reducer.js - MetricsHost: metrics values reducer base class.
+* common/metrics/base/metrics_state.js - MetricsState: metrics values persistent state base class.
+
+* common/metrics/bus/metrics_bus_collector.js - MetricsBusCollector: metrics values collector class for bus metrics feature.
+* common/metrics/bus/metrics_bus_record.js - MetricsBusRecord: metrics values snapshot class for bus metrics feature.
+* common/metrics/bus/metrics_bus_reducer.js - MetricsBusHost: metrics values reducer class for bus metrics feature.
+* common/metrics/bus/metrics_bus_state.js - MetricsBusState: metrics values persistent state class for bus metrics feature.
+
+* common/metrics/host/metrics_host_collector.js - MetricsCollector: metrics values collector class for host metrics feature.
+* common/metrics/host/metrics_host_record.js - MetricsRecord: metrics values snapshot class for host metrics feature.
+* common/metrics/host/metrics_host_reducer.js - MetricsHost: metrics values reducer class for host metrics feature.
+* common/metrics/host/metrics_host_state.js - MetricsState: metrics values persistent state class for host metrics feature.
+
+* common/metrics/http/metrics_http_collector.js - MetricsHttpCollector: metrics values collector class for Http metrics feature.
+* common/metrics/http/metrics_http_record.js - MetricsHttpRecord: metrics values snapshot class for Http metrics feature.
+* common/metrics/http/metrics_http_reducer.js - MetricsHttpHost: metrics values reducer class for Http metrics feature.
+* common/metrics/http/metrics_http_state.js - MetricsHttpState: metrics values persistent state class for Http metrics feature.
+
+* common/metrics/nodejs/metrics_nodejs_collector.js - MetricsNodeJsCollector: metrics values collector class for NodeJs metrics feature.
+* common/metrics/nodejs/metrics_nodejs_record.js - MetricsNodeJsRecord: metrics values snapshot class for NodeJs metrics feature.
+* common/metrics/nodejs/metrics_nodejs_reducer.js - MetricsNodeJsHost: metrics values reducer class for NodeJs metrics feature.
+* common/metrics/nodejs/metrics_nodejs_state.js - MetricsNodeJsState: metrics values persistent state class for NodeJs metrics feature.
+
 * common/servers/metric_server.js - MetricsServer: server which reveive metrics message and call a reducer to update statistics
 
-Metrics message format:
+
+Metrics bus message format:
 ```
 {
    "target":"metrics_server", // Fixed name: see node.metrics_server.get_name()

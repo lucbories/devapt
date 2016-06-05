@@ -7,7 +7,7 @@ import PluginsManager from '../plugins/plugins_manager'
 
 // import AuthenticationPluginPassportLocalDb from './authentication_plugin_passport_local_db'
 // import AuthenticationPluginPassportLocalFile from './authentication_plugin_passport_local_file'
-import AuthenticationPluginURL from './authentication_plugin_url'
+import AuthenticationLowDbPlugin from './authentication_plugin_lowdb'
 
 
 let context = 'common/security/authentication_manager'
@@ -25,8 +25,10 @@ export default class AuthenticationManager extends PluginsManager
 	 * Create an Authentication manager class: load and create all authentication plugins.
 	 * AuthenticationWrapper use created plugins.
 	 * @extends PluginsManager
+	 * 
 	 * @param {string|undefined} arg_log_context - optional.
 	 * @param {LoggerManager} arg_logger_manager - logger manager object (optional).
+	 * 
 	 * @returns {nothing}
 	 */
 	constructor(arg_log_context, arg_logger_manager)
@@ -40,9 +42,12 @@ export default class AuthenticationManager extends PluginsManager
 	}
 	
 	
+	
 	/**
-	 * Load security settings
-	 * @param {object} arg_settings - authentication settings (Immutable object)
+	 * Load security settings.
+	 * 
+	 * @param {object} arg_settings - authentication settings (Immutable object).
+	 * 
 	 * @returns {nothing}
 	 */
 	load(arg_settings)
@@ -82,9 +87,12 @@ export default class AuthenticationManager extends PluginsManager
 	}
 	
 	
+	
 	/**
-	 * Load security plugin from settings
-	 * @param {object} arg_settings - authentication settings (Immutable object)
+	 * Load security plugin from settings.
+	 * 
+	 * @param {object} arg_settings - authentication settings (Immutable object).
+	 * 
 	 * @returns {boolean}
 	 */
 	load_plugin(arg_settings)
@@ -112,16 +120,14 @@ export default class AuthenticationManager extends PluginsManager
 			//	 plugin.enable(arg_settings)
 			//	 return true
 			// }
-			case 'jsonfile':
-			// {
+			case 'jsonfile': {
 			//	 const plugin = new AuthenticationPluginPassportLocalFile(context)
 			//	 this.register_plugin(plugin)
 			//	 plugin.enable(arg_settings)
 			//	 return true
 			// }
-			// default:
-			{
-				const plugin = new AuthenticationPluginURL(this, arg_settings.name, context)
+			// default: {
+				const plugin = new AuthenticationLowDbPlugin(this, arg_settings.name, context)
 				// self.info(context + ':load_plugin:create plugin for mode [' + mode + '] for name [' + plugin.get_name() + ']')
 				
 				this.register_plugin(plugin)
@@ -147,8 +153,7 @@ export default class AuthenticationManager extends PluginsManager
 				this.leave_group('load:jsonfile or database')
 				return true
 			}
-			case 'token':
-			{
+			case 'token': {
 				this.leave_group('load:token')
 				return true // TODO: plugin auth token
 			}
@@ -159,11 +164,52 @@ export default class AuthenticationManager extends PluginsManager
 	}
 	
 	
+	
+	/**
+	 * Authenticate a user with giving credentials.
+	 * 
+	 * @param {object} arg_credentials - credentials object.
+	 * 
+	 * @returns {Promise} - a promise of boolean.
+	 */
+	authenticate(arg_credentials)
+	{
+		this.enter_group('authenticate')
+		
+		let all_promises = []
+		this.registered_plugins.find(
+			(plugin) => {
+				const promise = plugin.authenticate(arg_credentials)
+				all_promises.push(promise)
+			}
+		)
+		
+		const promise = promise.all(all_promises).then(
+			(promise_results) => {
+				for(let result of promise_results)
+				{
+					if (result)
+					{
+						return true
+					}
+				}
+				return false
+			}
+		)
+		
+		this.leave_group('authenticate')
+		return promise
+	}
+	
+	
+	
 	/**
 	 * Hash a password.
-	 * @param {string} arg_password - password to hash
+	 * 
+	 * @param {string} arg_password - password to hash.
 	 * @param {string|undefined} arg_digest_method - digest method name (sha1,sha256,sha384,sha512,md5)
 	 * @param {string|undefined} arg_encoding_method - encoding method name (hex,utf8,utf16,binary,base64,hexstr)
+	 * 
 	 * @returns {string} - hashed password
 	 */
 	hash_password(arg_password, arg_digest_method, arg_encoding_method)
@@ -213,7 +259,6 @@ export default class AuthenticationManager extends PluginsManager
 	
 	
 	
-	
 	/**
 	 * Check request credentials authentication.
 	 *	Request format:
@@ -226,7 +271,9 @@ export default class AuthenticationManager extends PluginsManager
 	 *				password: $password
 	 *			}
 	 *		}
-	 * @param {object} arg_request - request object
+	 *
+	 * @param {object} arg_request - request object.
+	 * 
 	 * @returns {boolean}
 	 */
 	check_request_authentication(arg_request)
@@ -247,6 +294,7 @@ export default class AuthenticationManager extends PluginsManager
 	}
 	
 	
+	
 	/**
 	 * Get request credentials from headers.
 	 *	Request format:
@@ -259,31 +307,38 @@ export default class AuthenticationManager extends PluginsManager
 	 *				password: $password
 	 *			}
 	 *		}
-	 * @param {object} arg_request - request object
+	 * 
+	 * @param {object} arg_request - request object.
+	 * 
 	 * @returns {object} - plain object as { 'user':..., 'password':... }
 	 */
 	get_credentials(arg_request)
 	{
 		this.info('get_credentials')
 		
+		// DEBUG
 		// console.log(arg_request.url, 'arg_request.url')
 		// console.log(arg_request.queries, 'arg_request.queries')
 		// console.log(arg_request.password, 'arg_request')
 		// console.log(arg_request.query(), 'arg_request.query')
 		// console.log(arg_request.params, 'arg_request.params')
 		
+		
+		// CHECK REQUEST
+		let credentials = { 'username':null, 'password':null }
+		if (!arg_request)
+		{
+			return credentials
+		}
+		
+		
+		// REQUEST ALREADY HAVE PROCESSED CREDENTIAL
 		if ( T.isObject(arg_request.devapt_credentials) )
 		{
 			this.info('get_credentials:authentication from cache')
 			return arg_request.devapt_credentials
 		}
 		
-		let credentials = { 'username':null, 'password':null }
-		let query_str = null
-		if (!arg_request)
-		{
-			return credentials
-		}
 		
 		// EXPRESS REQUEST
 		if (arg_request && arg_request.query && arg_request.query.username && arg_request.query.password)
@@ -297,7 +352,9 @@ export default class AuthenticationManager extends PluginsManager
 			return credentials
 		}
 		
-		// RESTIFY
+		
+		// RESTIFY WITH QUERY STRING
+		let query_str = null
 		if (arg_request && T.isString(arg_request.query) )
 		{
 			this.info('get_credentials:authentication with query string')
@@ -341,7 +398,8 @@ export default class AuthenticationManager extends PluginsManager
 			}
 		}
 		
-		// RESTIFY QUERY PARSER PLUGIN (NO WORKING)
+		
+		// RESTIFY QUERY PARSER PLUGIN (NOT WORKING YET)
 		if (arg_request && arg_request.params && arg_request.params.username && arg_request.params.password)
 		{
 			this.info('get_credentials:authentication with params args')
@@ -352,6 +410,7 @@ export default class AuthenticationManager extends PluginsManager
 			
 			return credentials
 		}
+		
 		
 		// RESTIFY AUTHORIZATION PLUGIN
 		if (arg_request && arg_request.authorization)
@@ -369,15 +428,18 @@ export default class AuthenticationManager extends PluginsManager
 			
 			return credentials
 		}
-
+		
 		this.error_bad_credentials_format()
 		return credentials
 	}
 	
 	
+	
 	/**
 	 * Error wrapper - error during plugin loading.
-	 * @param {string} arg_plugin_mode - plugin mode
+	 * 
+	 * @param {string} arg_plugin_mode - plugin mode.
+	 * 
 	 * @returns {nothing}
 	 */
 	error_bad_plugin(arg_plugin_mode)
@@ -386,9 +448,12 @@ export default class AuthenticationManager extends PluginsManager
 	}
 	
 	
+	
 	/**
-	 * Error wrapper - unknow digest method
-	 * @param {string} arg_digest_method - digest method name
+	 * Error wrapper - unknow digest method.
+	 * 
+	 * @param {string} arg_digest_method - digest method name.
+	 * 
 	 * @returns {nothing}
 	 */
 	error_bad_digest_method(arg_digest_method)
@@ -397,9 +462,12 @@ export default class AuthenticationManager extends PluginsManager
 	}
 	
 	
+	
 	/**
-	 * Error wrapper - unknow encoding method
-	 * @param {string} arg_encoding_method - encoding method name
+	 * Error wrapper - unknow encoding method.
+	 * 
+	 * @param {string} arg_encoding_method - encoding method name.
+	 * 
 	 * @returns {nothing}
 	 */
 	error_bad_encoding_method(arg_encoding_method)
@@ -409,7 +477,8 @@ export default class AuthenticationManager extends PluginsManager
 	
 	
 	/**
-	 * Error wrapper - unknow request credentials format
+	 * Error wrapper - unknow request credentials format.
+	 * 
 	 * @returns {nothing}
 	 */
 	error_bad_credentials_format()

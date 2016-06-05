@@ -31,7 +31,7 @@ export default class LoggerConsole extends Logger
 	 */
 	debug_self(arg_msg)
 	{
-		console.debug(arg_msg)
+		console.log(arg_msg)
 	}
 	
 	

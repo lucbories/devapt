@@ -2,7 +2,7 @@
 import T from 'typr'
 import assert from 'assert'
 import path from 'path'
-
+import mustache from 'mustache'
 
 
 let context = 'common/base/context'
@@ -51,9 +51,9 @@ export default class Context
 	 */
 	get_absolute_path(arg_relative_path1, arg_relative_path2, arg_relative_path3)
 	{
-		assert( T.isString(arg_relative_path1), context + 'get_absolute_path: bad base dir string')
+		assert( T.isString(arg_relative_path1), context + ':get_absolute_path: bad paths strings')
 		let base_dir = path.isAbsolute(arg_relative_path1) ? '' : this.get_base_dir()
-		assert( T.isString(base_dir), context + 'get_absolute_path: bad base dir string')
+		assert( T.isString(base_dir), context + ':get_absolute_path: bad base dir string')
 
 		if ( T.isString(arg_relative_path2) )
 		{
@@ -105,34 +105,91 @@ export default class Context
 	// *************************************************** URL ********************************************************
 	
     /**
-     * Get an url to server the given image asset.
-     * @param {string} arg_url - image asset relative url.
+     * Get credentials string.
+	 * 
      * @param {object} arg_request - request object.
-     * @returns {string} absolute image asset url.
+	 * 
+     * @returns {string} credentials string.
      */
-	get_url_with_credentials(arg_url, arg_request)
+	get_credentials_string(arg_request)
 	{
-		// logs.debug('get_url_with_credentials')
+		// logs.debug('get_credentials_string')
 
 		// TODO: credentials
 		const auth_mgr = this.$runtime ? this.$runtime.security().authentication() : null
 		if (! auth_mgr)
 		{
-			return arg_url
+			return undefined
+		}
+		
+		if ( ! arg_request )
+		{
+			return undefined
 		}
 		
 		const credentials = auth_mgr.get_credentials(arg_request)
 		if (! credentials)
 		{
-			return arg_url
+			return ''
 		}
 		
 		// TODO: use security token
-		const url = arg_url + '?username=' + credentials.username + '&password=' + credentials.password
+		return 'username=' + credentials.username + '&password=' + credentials.password
+	}
+	
+	
+	
+    /**
+     * Get an url to server the given image asset.
+	 * 
+     * @param {string} arg_url - image asset relative url.
+     * @param {object} arg_request - request object.
+	 * 
+     * @returns {string} absolute image asset url.
+     */
+	get_url_with_credentials(arg_url, arg_request)
+	{
+		// logs.debug('get_url_with_credentials')
 		
-		return url
+		if ( ! arg_request )
+		{
+			return arg_url + '?{{credentials}}'
+		}
+		
+		const credentials_str = this.get_credentials_string(arg_request)
+		
+		if (credentials_str)
+		{
+			return arg_url + '?' + credentials_str
+		}
+		
+		return arg_url
 	}
     
+	
+	
+	/**
+     * Render credentials template.
+	 * 
+     * @param {string} arg_html - template html string.
+     * @param {object} arg_request - request object.
+	 * 
+     * @returns {string} rendered template.
+     */
+	render_credentials_template(arg_html, arg_request)
+	{
+		const credentials_str = this.get_credentials_string(arg_request)
+		// console.log(credentials_str, 'credentials_str')
+		
+		if (credentials_str)
+		{
+			return mustache.render(arg_html, { credentials:credentials_str })
+		}
+		
+		return arg_html
+	}
+	
+	
     
 	// TODO:TO CLEAN OR IMPLEMENT
 	// get_relative_url(arg_url)

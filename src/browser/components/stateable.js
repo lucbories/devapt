@@ -20,13 +20,18 @@ export default class Stateable extends Bindable
 	
 	/**
 	 * Creates an instance of Component.
+	 * @extends Bindable
 	 * 
 	 * @param {object} arg_runtime - client runtime.
 	 * @param {object} arg_state - component state.
+	 * @param {string} arg_log_context - context of traces of this instance (optional).
+	 * 
+	 * @returns {nothing}
 	 */
-	constructor(arg_runtime, arg_state)
+	constructor(arg_runtime, arg_state, arg_log_context)
 	{
-		super()
+		const log_context = arg_log_context ? arg_log_context : context
+		super(log_context)
 		
 		this.is_component = true
 		
@@ -35,27 +40,13 @@ export default class Stateable extends Bindable
 		this.state_path = undefined
 		
 		// console.info(context + ':constructor:creating component ' + this.get_name())
-	}	
-	
-	
-	/**
-	 * Load and apply a component configuration.
-	 * 
-	 * @param {Immutable.Map|undefined} arg_state - component state to load (optional).
-	 * @returns {nothing} 
-	 */
-	// load(arg_state)
-	// {
-	// 	const state = arg_state ? arg_state : this.get_state()
-	// 	super.load(state)
-	// 	console.info(context + ':load:loading ' + this.get_name())
-		
-	// }
+	}
 	
 	
 	
 	/**
 	 * Get initial state, an immutable object from a Redux data store.
+	 * 
 	 * @returns {object} - component state.
 	 */
 	get_initial_state()
@@ -67,14 +58,17 @@ export default class Stateable extends Bindable
 	
 	/**
 	 * Get current state, an immutable object from a Redux data store.
+	 * 
 	 * @returns {object} - component state.
 	 */
 	get_state()
 	{
 		const path = this.state_path
+		
 		// console.log('component:get_state', this.runtime.get_state().toJS())
 		// console.log('component:state_path', this.state_path)
 		// console.log('component:state', this.runtime.get_state().getIn(path).toJS())
+		
 		return this.runtime.get_state().getIn(path)
 	}
 	
@@ -82,6 +76,7 @@ export default class Stateable extends Bindable
 	
 	/**
 	 * Get state path into a Redux data store.
+	 * 
 	 * @returns {array} - component state path.
 	 */
 	get_state_path()
@@ -95,9 +90,12 @@ export default class Stateable extends Bindable
 	 * Handle component state changes.
 	 * @abstract
 	 * 
+	 * @param {Immutable.Map} arg_previous_state - previous state map.
+	 * @param {Immutable.Map} arg_new_state - new state map.
+	 * 
 	 * @returns {nothing}
 	 */
-	handle_state_change(arg_previous_state, arg_new_state)
+	handle_state_change(/*arg_previous_state, arg_new_state*/)
 	{
 		// NOT YET IMPLEMENTED
 	}
@@ -109,6 +107,7 @@ export default class Stateable extends Bindable
 	 * 
 	 * @param {string|object} arg_action_type - action type string or action object.
 	 * @param {object|undefined} arg_options - action options object (optional).
+	 * 
 	 * @returns {nothing}
 	 */
 	dispatch_action(arg_action_type, arg_options)
@@ -147,6 +146,7 @@ export default class Stateable extends Bindable
 	
 	/**
 	 * Get name.
+	 * 
 	 * @returns {string} - component name.
 	 */
 	get_name()

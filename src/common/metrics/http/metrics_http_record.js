@@ -21,8 +21,10 @@ export default class MetricsHttpRecord extends MetricsRecord
     /**
      * MetricsHttpRecord constructor.
 	 * @extends Metric
-     * @param {object}  Http request object (Request class instance)
-     * @param {object}  Http response object (Response class instance)
+	 * 
+     * @param {object}  Http request object (Request class instance).
+     * @param {object}  Http response object (Response class instance).
+	 * 
 	 * @returns {nothing}
      */
 	constructor(arg_request, arg_response)
@@ -42,7 +44,9 @@ export default class MetricsHttpRecord extends MetricsRecord
 	
     
 	/**
-     * Executed before request processing
+     * Executed before request processing.
+	 * 
+	 * @returns {nothing}
      */
 	before()
 	{
@@ -89,7 +93,9 @@ export default class MetricsHttpRecord extends MetricsRecord
 	
 	
 	/**
-     * Executed at each request processing iteration
+     * Executed at each request processing iteration.
+	 * 
+	 * @returns {nothing}
      */
 	iteration()
 	{
@@ -97,7 +103,9 @@ export default class MetricsHttpRecord extends MetricsRecord
 	
 	
 	/**
-     * Executed after request processing
+     * Executed after request processing.
+	 * 
+	 * @returns {nothing}
      */
 	after()
 	{
@@ -110,74 +118,12 @@ export default class MetricsHttpRecord extends MetricsRecord
 		this.values.server.node_name = this.server.get_name()
 		this.values.server.server_name = this.server.node.get_name()
 	}
-	
-	
-	/**
-     * Executed before main request processing
-     * {object}   server object (Server base class instance)
-     */
-	// static create_middleware(arg_server)
-	// {
-    //     // HANDLE END OF REQUEST PROCESSING FOR RESTIFY SERVER
-	// 	if (arg_server.is_restify_server)
-	// 	{
-	// 		arg_server.server.on('after',
-	// 			function (req/*, res*/)
-	// 			{
-	// 				// console.log('MetricsHttp middleware on finish')
-					
-	// 				let metric = req.devapt_metrics
-    //                 // console.log(metric, 'metric')
-                    
-	// 				if (metric)
-    //                 {
-	// 					metric.after()
-	// 				}
-
-	// 				// console.log('MetricsHttp middleware on finish, leave')
-	// 			}
-	// 		)
-	// 	}
-		
-        
-    //     // MIDDLEWARE FUNCTION
-	// 	return function(req, res, next)
-	// 	{
-	// 		// console.log('MetricsHttp middleware created')
-			
-	// 		let metric = new MetricsHttpRecord(req, res)
-	// 		// metric.server = arg_server
-	// 		metric.before()
-			
-	// 		// HANDLE END OF REQUEST PROCESSING FOR EXPRESS SERVER
-	// 		if (arg_server.is_express_server)
-	// 		{
-	// 			res.on('finish',
-	// 				function ()
-	// 				{
-	// 					// console.log('MetricsHttp middleware on finish')
-						
-	// 					let metric = res.devapt_metrics
-    //                     // console.log(metric, 'metric')
-                        
-	// 					if (metric)
-	// 					{
-	// 						metric.after()
-							
-	// 						const values = metric.get_values()
-	// 						arg_server.send_metrics(values.metric, values)
-	// 					}
-	// 				}
-	// 			)
-	// 		}
-			
-	// 		return next()
-	// 	}
-	// }
     
 	
 	/**
-     * Returns process id
+     * Returns process id.
+	 * 
+	 * @returns {string} - process PID.
      */
 	get_pid()
 	{
@@ -186,7 +132,9 @@ export default class MetricsHttpRecord extends MetricsRecord
 	
 	
 	/**
-     * Returns request id or a self generated unique id
+     * Returns request id or a self generated unique id.
+	 * 
+	 * @returns {string} - request ID.
      */
 	get_id()
 	{
@@ -198,7 +146,9 @@ export default class MetricsHttpRecord extends MetricsRecord
 	
 	
 	/**
-     * Returns client ip address or undefined
+     * Returns client ip address or undefined.
+	 * 
+	 * @returns {string} - server IP.
      */
 	get_ip()
 	{
@@ -210,7 +160,9 @@ export default class MetricsHttpRecord extends MetricsRecord
 	
 	
 	/**
-     * Returns client port or undefined
+     * Returns client port or undefined.
+	 * 
+	 * @returns {string} - server port.
      */
 	get_port()
 	{
@@ -220,7 +172,9 @@ export default class MetricsHttpRecord extends MetricsRecord
 	
 	
 	/**
-     * Returns client security token or undefined
+     * Returns client security token or undefined.
+	 * 
+	 * @returns {string} - security token.
      */
 	get_token()
 	{
@@ -229,7 +183,9 @@ export default class MetricsHttpRecord extends MetricsRecord
 	}
 	
 	/**
-     * Returns processing latency (response time)
+     * Returns processing latency (response time).
+	 * 
+	 * @returns {string} - request processing latency.
      */
 	get_latency()
 	{
@@ -240,8 +196,6 @@ export default class MetricsHttpRecord extends MetricsRecord
 		return latency
 	}
 }
-
-
 
 
 

@@ -40,6 +40,7 @@ export default class Errorable extends Loggable
 	{
 		this.$has_error = true
 		this.$error_msg = arg_msg
+		super.error(arg_msg)
 	}
 	
 	

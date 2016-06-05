@@ -68,20 +68,31 @@ export default class Component extends ComponentBase
 		this.dom_is_rendered_on_node = false
 		
 		// INIT STATE
+		this.state = {}
 		if ( T.isFunction(this.get_initial_state) )
 		{
 			this.state = this.get_initial_state()
 		}
 		
+		
         // INIT SETTINGS AND UPDATE STATE IF 'settings.state' EXISTS
 		this.settings_is_immutable = false
-		
-		arg_settings = Component.normalize_settings(arg_settings)
-		if ( T.isFunction(this.get_default_settings) )
+		if ( ! T.isObject(arg_settings) )
 		{
-			arg_settings = Object.assign(arg_settings, this.get_default_settings())
+			if ( T.isFunction(this.get_default_settings) )
+			{
+				arg_settings = this.get_default_settings()
+				// console.log('with default arg_settings for %s', arg_name, arg_settings)
+			}
+			else
+			{
+				arg_settings = {}
+			}
 		}
 		assert( T.isObject(arg_settings), context + ':constructor:bad settings object')
+		
+		arg_settings = Component.normalize_settings(arg_settings)
+		// console.log('normalized arg_settings.children for %s', arg_name, arg_settings.children)
 		
 		const js_init = `
 			$(document).ready(
@@ -93,10 +104,12 @@ export default class Component extends ComponentBase
 		`
 		assert( T.isArray(arg_settings.scripts), context + ':constructor:bad settings.scripts array')
 		arg_settings.scripts = arg_settings.scripts.concat([js_init])
+		
 		this.update_settings(arg_settings)
 		this.settings_is_immutable = true
 		
-		// INIT STATE
+		
+		// INIT STATE IF 'settings.state' EXISTS
 		const settings_state = this.get_setting(['state'], undefined)
 		if ( T.isFunction(this.update_state) && T.isObject(settings_state) )
 		{

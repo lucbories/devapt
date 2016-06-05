@@ -5,7 +5,7 @@
 import Table from './table'
 
 
-// const context = 'browser/components/one_record_table'
+const context = 'browser/components/records_table'
 
 
 
@@ -14,18 +14,23 @@ import Table from './table'
  * @author Luc BORIES
  * @license Apache-2.0
  */
-export default class OneRecordTable extends Table
+export default class RecordsTable extends Table
 {
 	
 	/**
 	 * Creates an instance of Component.
+	 * @extends Table
 	 * 
 	 * @param {object} arg_runtime - client runtime.
 	 * @param {object} arg_state - component state.
+	 * @param {string} arg_log_context - context of traces of this instance (optional).
+	 * 
+	 * @returns {nothing}
 	 */
-	constructor(arg_runtime, arg_state)
+	constructor(arg_runtime, arg_state, arg_log_context)
 	{
-		super(arg_runtime, arg_state)
+		const log_context = arg_log_context ? arg_log_context : context
+		super(arg_runtime, arg_state, log_context)
 		
 		this.is_one_record_table_component = true
 		
@@ -41,6 +46,13 @@ export default class OneRecordTable extends Table
 	
 	
 	
+	/**
+	 * Update the table with records.
+	 * 
+	 * @param {objetc} arg_records - datas records, plain object.
+	 * 
+	 * @returns {nothing}
+	 */
 	update_records(arg_records)
 	{
 		// console.log(arg_records, 'table.update_records:arg_records')
@@ -67,6 +79,13 @@ export default class OneRecordTable extends Table
 	
 	
 	
+	/**
+	 * Add one record to the table.
+	 * 
+	 * @param {objetc} arg_records - datas records, plain object.
+	 * 
+	 * @returns {nothing}
+	 */
 	add_record(arg_record)
 	{
 		// console.log(arg_record, 'table.add_record:arg_record')
@@ -94,6 +113,13 @@ export default class OneRecordTable extends Table
 	
 	
 	
+	/**
+	 * Update table with records values.
+	 * 
+	 * @param {array} arg_values - datas values, plain objects array.
+	 * 
+	 * @returns {nothing}
+	 */
 	update_values(arg_values)
 	{
 		// console.log(arg_values, 'table.update_values')
@@ -125,6 +151,13 @@ export default class OneRecordTable extends Table
 	
 	
 	
+	/**
+	 * Update table with one record values.
+	 * 
+	 * @param {object} arg_record_values - datas values, plain objects.
+	 * 
+	 * @returns {nothing}
+	 */
 	update_record_values(arg_record_values)
 	{
 		// console.log(arg_record_values, 'table.update_record_values:values')

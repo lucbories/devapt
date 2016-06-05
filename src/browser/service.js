@@ -7,7 +7,9 @@ import Bacon from 'baconjs'
 let context = 'browser/service'
 
 
-
+/**
+ * Service operations.
+ */
 const DEFAULT_OPS = [
 	{
 		name:'ping',
@@ -82,8 +84,10 @@ export default class Service
 {
 	/**
 	 * Create a client Runtime instance.
-	 * @param {string} arg_svc_name - service name
-	 * @param {object} arg_svc_settings - service settiings
+	 * 
+	 * @param {string} arg_svc_name - service name.
+	 * @param {object} arg_svc_settings - service settiings.
+	 * 
 	 * @returns {nothing}
 	 */
 	constructor(arg_svc_name, arg_svc_settings)
@@ -101,9 +105,11 @@ export default class Service
 	
 	/**
 	 * Create a timer.
+	 * 
 	 * @param {string}	arg_timer_name - timer unique name.
 	 * @param {function} arg_timer_cb - timer callback function.
 	 * @param {integer} arg_delay - timer interval integer.
+	 * 
 	 * @returns {nothing}
 	 */
 	create_timer(arg_timer_name, arg_timer_cb, arg_delay)
@@ -129,7 +135,9 @@ export default class Service
 	
 	/**
 	 * Delete a timer.
-	 * @param {any}	arg_timer_id
+	 * 
+	 * @param {any}	arg_timer_id.
+	 * 
 	 * @returns {nothing}
 	 */
 	delete_timer(arg_timer_id)
@@ -139,36 +147,11 @@ export default class Service
 	
 	
 	
-	
-	
-	// get_method_args(arg_cfg_array)
-	// {
-	// 	if ( ! T.isArray(arg_cfg_array) )
-	// 	{
-	// 		return undefined
-	// 	}
-		
-	// 	let out_args = []
-	// 	for(let cfg of arg_cfg_array)
-	// 	{
-	// 		if (cfg.constant)
-	// 		{
-	// 			out_args.push(cfg.constant)
-	// 			continue
-	// 		}
-	// 		if (cfg.from_attribute)
-	// 		{
-				
-	// 		}
-	// 	}
-		
-	// 	return arg_cfg_array
-	// }
-	
-	
 	/**
 	 * Load runtime settings.
-	 * @param {object} arg_settings - runtime settings
+	 * 
+	 * @param {object} arg_settings - runtime settings.
+	 * 
 	 * @returns {object} promise
 	 */
 	load(arg_settings)
@@ -226,7 +209,6 @@ export default class Service
 				self[op_name].in = Bacon.fromEvent(svc_socket, op_name)
 			}
 		)
-		
 		
 		// this.leave_group('load')
 		// this.separate_level_1()

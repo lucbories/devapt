@@ -245,9 +245,10 @@ export default class Render extends Loggable
 		assert( T.isObject(component) && component.is_component, context + ':bad ' + arg_class_name + ' component object')
 		component.renderer = this
 		
-		if ( this.current().is_container )
+		const current = this.current()
+		if ( current && current.is_container )
 		{
-			this.current().add_child(component)
+			current.add_child(component)
 		}
 		this.push(component)
 		
@@ -271,7 +272,7 @@ export default class Render extends Loggable
 		
 		this.push(component)
 		
-		return this //.new_component('Page', arg_name, arg_settings, undefined)
+		return this
 	}
 	
 	
@@ -283,16 +284,7 @@ export default class Render extends Loggable
      * @returns {object} this.
      */
 	button(arg_name, arg_settings, arg_state)
-	{/*
-		arg_settings = arg_settings ? arg_settings : {}
-		arg_settings.state = arg_state
-		
-		let component = this.rendering_manager.create('Button', arg_name, arg_settings)
-		assert( T.isObject(component) && component.is_component, context + ':bad Button component object')
-		
-		this.current().add_child(component)
-		this.push(component)
-		*/
+	{
 		return this.new_component('Button', arg_name, arg_settings, arg_state)
 	}
 	
@@ -305,16 +297,7 @@ export default class Render extends Loggable
      * @returns {object} this.
      */
 	tree(arg_name, arg_settings, arg_state)
-	{/*
-		arg_settings = arg_settings ? arg_settings : {}
-		arg_settings.state = arg_state
-		
-		let component = this.rendering_manager.create('Tree', arg_name, arg_settings)
-		assert( T.isObject(component) && component.is_component, context + ':bad Tree component object')
-		
-		this.current().add_child(component)
-		this.push(component)
-		*/
+	{
 		return this.new_component('Tree', arg_name, arg_settings, arg_state)
 	}
 	
@@ -327,16 +310,7 @@ export default class Render extends Loggable
      * @returns {object} this.
      */
 	hbox(arg_name, arg_settings, arg_state)
-	{/*
-		arg_settings = arg_settings ? arg_settings : {}
-		arg_settings.state = arg_state
-		
-		let component = this.rendering_manager.create('HBox', arg_name, arg_settings)
-		assert( T.isObject(component) && component.is_component, context + ':bad HBox component object')
-		
-		this.current().add_child(component)
-		this.push(component)
-		*/
+	{
 		return this.new_component('HBox', arg_name, arg_settings, arg_state)
 	}
 	
@@ -349,16 +323,7 @@ export default class Render extends Loggable
      * @returns {object} this.
      */
 	vbox(arg_name, arg_settings, arg_state)
-	{/*
-		arg_settings = arg_settings ? arg_settings : {}
-		arg_settings.state = arg_state
-		
-		let component = this.rendering_manager.create('VBox', arg_name, arg_settings)
-		assert( T.isObject(component) && component.is_component, context + ':bad VBox component object')
-		
-		this.current().add_child(component)
-		this.push(component)
-		*/
+	{
 		return this.new_component('VBox', arg_name, arg_settings, arg_state)
 	}
 	
@@ -371,16 +336,7 @@ export default class Render extends Loggable
      * @returns {object} this.
      */
 	list(arg_name, arg_settings, arg_state)
-	{/*
-		arg_settings = arg_settings ? arg_settings : {}
-		arg_settings.state = arg_state
-		
-		let component = this.rendering_manager.create('List', arg_name, arg_settings)
-		assert( T.isObject(component) && component.is_component, context + ':bad List component object')
-		
-		this.current().add_child(component)
-		this.push(component)
-		*/
+	{
 		return this.new_component('List', arg_name, arg_settings, arg_state)
 	}
 	
@@ -393,16 +349,7 @@ export default class Render extends Loggable
      * @returns {object} this.
      */
 	menubar(arg_name, arg_settings, arg_state)
-	{/*
-		arg_settings = arg_settings ? arg_settings : {}
-		arg_settings.state = arg_state
-		
-		let component = this.rendering_manager.create('Menubar', arg_name, arg_settings)
-		assert( T.isObject(component) && component.is_component, context + ':bad Menubar component object')
-		
-		this.current().add_child(component)
-		this.push(component)
-		*/
+	{
 		return this.new_component('Menubar', arg_name, arg_settings, arg_state)
 	}
 	
@@ -415,16 +362,7 @@ export default class Render extends Loggable
      * @returns {object} this.
      */
 	table(arg_name, arg_settings, arg_state)
-	{/*
-		arg_settings = arg_settings ? arg_settings : {}
-		arg_settings.state = arg_state
-		
-		let component = this.rendering_manager.create('Table', arg_name, arg_settings)
-		assert( T.isObject(component) && component.is_component, context + ':bad Table component object')
-		
-		this.current().add_child(component)
-		this.push(component)
-		*/
+	{
 		return this.new_component('Table', arg_name, arg_settings, arg_state)
 	}
 	
@@ -437,16 +375,7 @@ export default class Render extends Loggable
      * @returns {object} this.
      */
 	tabs(arg_name, arg_settings, arg_state)
-	{/*
-		arg_settings = arg_settings ? arg_settings : {}
-		arg_settings.state = arg_state
-		
-		let component = this.rendering_manager.create('Tabs', arg_name, arg_settings)
-		assert( T.isObject(component) && component.is_component, context + ':bad Tabs component object')
-		
-		this.current().add_child(component)
-		this.push(component)
-		*/
+	{
 		return this.new_component('Tabs', arg_name, arg_settings, arg_state)
 	}
 	
@@ -472,17 +401,7 @@ export default class Render extends Loggable
      * @returns {object} this.
      */
 	script(arg_name, arg_settings, arg_state)
-	{/*
-		arg_settings = arg_settings ? arg_settings : {}
-		arg_settings.state = arg_state
-		
-		let component = this.rendering_manager.create('Script', arg_name, arg_settings)
-		assert( T.isObject(component) && component.is_component, context + ':bad Script component object')
-		
-		this.current().add_child(component)
-		this.push(component)
-		// this.up()
-		*/
+	{
 		return this.new_component('Script', arg_name, arg_settings, arg_state)
 	}
 	
@@ -498,7 +417,6 @@ export default class Render extends Loggable
 			return null
 		}
 		
-		// console.log('render ' + (this.current().get_type()) )
 		return this.current().render()
 	}
 }

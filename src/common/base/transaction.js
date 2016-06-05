@@ -355,7 +355,12 @@ export default class Transaction extends Instance
 									function(exec_value)
 									{
 										let has_error = executable.has_error()
-										console.log('current executable without exception', index, executable.$name)
+										
+										console.info('current executable [%s] [%s] without exception', index, executable.$name)
+										if (has_error)
+										{
+											console.error('current executable [%s] [%s] with error', index, executable.$name)
+										}
 										
 										self.results.push(
 											{
@@ -431,7 +436,7 @@ export default class Transaction extends Instance
 		}
 		catch(e)
 		{
-			console.error(e)
+			console.error(context + ':exception:' + e)
 			this.rollback()
 		}
 		

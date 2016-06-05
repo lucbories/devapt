@@ -2,6 +2,7 @@
 import T from 'typr'
 import assert from 'assert'
 
+import Loggable from '../../common/base/loggable'
 import { transform } from '../../common/utils/transform'
 
 
@@ -15,15 +16,21 @@ const context = 'browser/components/bindable'
  * @author Luc BORIES
  * @license Apache-2.0
  */
-export default class Bindable
+export default class Bindable extends Loggable
 {
 	
 	/**
 	 * Creates an instance of Bindable.
+	 * @extends Loggable
 	 * 
+	 * @param {string} arg_log_context - context of traces of this instance (optional).
+	 * 
+	 * @returns {nothing}
 	 */
-	constructor()
+	constructor(arg_log_context)
 	{
+		const log_context = arg_log_context ? arg_log_context : context
+		super(log_context, window.devapt().runtime().get_logger_manager())
 		this.is_bindable = true
 	}
 	
@@ -118,7 +125,6 @@ export default class Bindable
 		}
 		
 		assert( T.isObject(arg_stream), context + ':bind_stream:bad stream object')
-		// assert( ! T.isUndefined(arg_values_xform), context + ':bind_stream:bad values paths string|array|function')
 		assert( T.isObject(arg_bound_object), context + ':bind_stream:bad bound object')
 		assert( T.isString(arg_bound_method), context + ':bind_stream:bad bound method string')
 		

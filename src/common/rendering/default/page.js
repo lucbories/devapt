@@ -2,6 +2,7 @@
 import T from 'typr'
 import assert from 'assert'
 
+// import runtime from '../../base/runtime'
 // import Component from '../base/component'
 import Container from '../base/container'
 
@@ -52,7 +53,12 @@ export default class Page extends Container
 	}
 	
 	
-	// RENDERING
+	
+	/**
+	 * Render page.
+	 * 
+	 * @returns {string} - HTML code.
+	 */
 	render_main()
 	{
 		let html = '<html>'
@@ -62,6 +68,13 @@ export default class Page extends Container
 		return html + '</html>'
 	}
 	
+	
+	
+	/**
+	 * Render page head.
+	 * 
+	 * @returns {string} - HTML code.
+	 */
 	render_head()
 	{
 		const html_styles = this.get_styles().join('\n')
@@ -105,10 +118,17 @@ export default class Page extends Container
 		</head>\n`
 	}
 	
+	
+	
+	/**
+	 * Render page body.
+	 * 
+	 * @returns {string} - HTML code.
+	 */
 	render_body()
 	{
 		let html = '<body>\n' + this.render_body_header()
-		html += '<div id="' + this.$page_id + '" style="display:\'none\';">\n' + this.render_body_children() + '</div>\n'
+		html += '\n<div id="' + this.$page_id + '" style="display:\'none\';">\n' + this.render_body_children() + '\n</div>\n'
 		
 		
 		// SCRIPTS URLS
@@ -148,21 +168,43 @@ export default class Page extends Container
 		html += this.render_state_store()
 		html += this.render_devapt_init()
 		html += this.render_body_script()
-		html += this.render_body_footter()
+		html += this.render_body_footer()
 		
 		return html + '</body>\n'
 	}
 	
+	
+	
+	/**
+	 * Render page header.
+	 * 
+	 * @returns {string} - HTML code.
+	 */
 	render_body_header()
 	{
 		return '<header></header>\n'
 	}
+	
+	
+	
+	/**
+	 * Render page children.
+	 * 
+	 * @returns {string} - HTML code.
+	 */
 	
 	render_body_children()
 	{
 		return this.get_children().map(child => child.render()).join('\n')
 	}
 	
+	
+	
+	/**
+	 * Render page scripts.
+	 * 
+	 * @returns {string} - HTML code.
+	 */
 	render_body_script()
 	{
 		const html_scripts = this.get_scripts().join('\n')
@@ -172,18 +214,40 @@ export default class Page extends Container
 		return `<script type="text/javascript">${html_scripts} ${on_ready}</script>\n`
 	}
 	
-	render_body_footter()
+	
+	
+	/**
+	 * Render page footer.
+	 * 
+	 * @returns {string} - HTML code.
+	 */
+	render_body_footer()
 	{
 		return '<footer></footer>\n'
 	}
 	
+	
+	
+	/**
+	 * Render state store init code.
+	 * 
+	 * @returns {string} - HTML code.
+	 */
 	render_state_store()
 	{
 		let initial_state = this.get_children_state()
+		initial_state.credentials = '{{credentials}}'
 		const stored_state = JSON.stringify(initial_state)
 		return `<script>window.__INITIAL_STATE__ = ${stored_state}</script>\n`
 	}
 	
+	
+	
+	/**
+	 * Render Devapt init code.
+	 * 
+	 * @returns {string} - HTML code.
+	 */
 	render_devapt_init()
 	{
 		return `<script>

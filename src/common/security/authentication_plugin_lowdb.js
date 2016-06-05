@@ -8,37 +8,42 @@ import runtime from '../base/runtime'
 import AuthenticationPlugin from './authentication_plugin'
 
 
-let context = 'common/security/authentication_plugin_url'
+let context = 'common/security/authentication_lowdb_plugin'
 
 
 
 /**
- * Authentication class for URL parameters.
+ * Authentication class with a LowDb user/login database.
  * @author Luc BORIES
  * @license Apache-2.0
  */
-export default class AuthenticationPluginURL extends AuthenticationPlugin
+export default class AuthenticationLowDbPlugin extends AuthenticationPlugin
 {
 	/**
 	 * Create an Authentication plugin class based on query parameters.
+	 * 
 	 * @param {AuhtenticationManager} arg_manager - authentication plugins manager.
 	 * @param {string} arg_name - plugin name.
 	 * @param {string|undefined} arg_log_context - optional.
+	 * 
 	 * @returns {nothing}
 	 */
 	constructor(arg_manager, arg_name, arg_log_context)
 	{
-		super(arg_manager, arg_name, 'AuthenticationPluginURL', arg_log_context ? arg_log_context : context)
+		super(arg_manager, arg_name, 'AuthenticationLowDbPlugin', arg_log_context ? arg_log_context : context)
 		
-		this.is_authentication_url_plugin = true
+		this.is_authentication_lowdb_plugin = true
 		
 		// this.is_trace_enabled = true
 	}
 	
 	
+	
 	/**
 	 * Enable authentication plugin with contextual informations.
+	 * 
 	 * @param {object|undefined} arg_settings - optional contextual settings.
+	 * 
 	 * @returns {object} - a promise object of a boolean result (success:true, failure:false)
 	 */
 	enable(arg_settings)
@@ -49,8 +54,10 @@ export default class AuthenticationPluginURL extends AuthenticationPlugin
 		
 		// console.log(arg_settings, 'arg_settings')
 		
-		// TODO: test if plain object
-		arg_settings = arg_settings.toJS()
+		// GET SETTINGS PLAIN OBJECT
+		arg_settings = T.isFunction(arg_settings.toJS) ? arg_settings.toJS() : arg_settings
+		
+		// CALL BASE CLASS METHOD
 		let resolved_promise = super.enable(arg_settings)
 		
 		// SET FIELD NAMES FOR USER NAME
@@ -109,17 +116,8 @@ export default class AuthenticationPluginURL extends AuthenticationPlugin
 					const json_full_path = path.join(base_dir, 'resources', self.file_name)
 					// console.log(json_full_path, 'json_full_path')
 					
-					// OPEN DATABASE
-					// const db_settings = {
-					// 	autosave:true,
-					// 	async:true
-					// }
-					
-					// TODO
 					const storage = require('lowdb/file-sync')
-					
 					self.file_db = lowdb(json_full_path, {storage})
-					// self.file_db = lowdb(json_full_path, db_settings)
 					
 					// console.log(self.file_db.object, 'self.file_db.object')
 					// console.log( require(json_full_path), 'self.file_db JSON file')
@@ -141,9 +139,12 @@ export default class AuthenticationPluginURL extends AuthenticationPlugin
 	}
 	
 	
+	
 	/**
 	 * Disable authentication plugin with contextual informations.
+	 * 
 	 * @param {object|undefined} arg_settings - optional contextual settings.
+	 * 
 	 * @returns {object} - a promise object of a boolean result (success:true, failure:false)
 	 */
 	disable(arg_settings)
@@ -153,49 +154,52 @@ export default class AuthenticationPluginURL extends AuthenticationPlugin
 	}
 	
 	
+	
 	/**
 	 * Get a authentication middleware to use on servers (see Connect/Express middleware signature).
+	 * 
 	 * @param {boolean} arg_should_401 - should send an 401 error on authentication failure.
 	 * @param {Function} arg_next_auth_mw - next authentication middleware.
+	 * 
 	 * @returns {Function} - function(request,response,next){...}
 	 */
 	create_middleware(arg_should_401, arg_next_auth_mw)
 	{
 		const self = this
 		self.debug('create_middleware')
-		// console.log('auth_plugin_url.create_middleware')
+		// console.log('auth_lowdb_plugin.create_middleware')
 		
 		const auth_mgr = runtime.security().get_authentication_manager()
 		
 		return (req, res, next) => {
 			const credentials = auth_mgr.get_credentials(req)
-			// console.log('auth_plugin_url.create_middleware', credentials)
+			// console.log('auth_lowdb_plugin.create_middleware', credentials)
 			
 			if ( auth_mgr.check_request_authentication(req) )
 			{
-				// console.log(context + ':auth_plugin_url.create_middleware.request is already authenticated')
-				self.debug('auth_plugin_url.create_middleware.request is already authenticated')
+				// console.log(context + ':auth_lowdb_plugin.create_middleware.request is already authenticated')
+				self.debug('auth_lowdb_plugin.create_middleware.request is already authenticated')
 				next()
 				return
 			}
 			else
 			{
-				// console.log(context + ':auth_plugin_url.create_middleware:not authenticated with credentials'/*, credentials*/)
-				self.debug('auth_plugin_url.create_middleware:not authenticated with credentials'/*, credentials*/)
+				// console.log(context + ':auth_lowdb_plugin.create_middleware:not authenticated with credentials'/*, credentials*/)
+				self.debug('auth_lowdb_plugin.create_middleware:not authenticated with credentials'/*, credentials*/)
 			}
 			
 			
 			this.authenticate(credentials)
 			.then(
 				(result) => {
-					// console.log(context + ':auth_plugin_url.create_middleware.authenticate then')
-					self.debug('auth_plugin_url.create_middleware.authenticate then')
+					// console.log(context + ':auth_lowdb_plugin.create_middleware.authenticate then')
+					self.debug('auth_lowdb_plugin.create_middleware.authenticate then')
 					
 					// SUCCESS
 					if (result)
 					{
-						// console.log(context + ':auth_plugin_url.create_middleware.authenticate then:next')
-						self.debug('auth_plugin_url.create_middleware.authenticate then:next')
+						// console.log(context + ':auth_lowdb_plugin.create_middleware.authenticate then:next')
+						self.debug('auth_lowdb_plugin.create_middleware.authenticate then:next')
 						
 						req.is_authenticated = true
 						next()
@@ -210,16 +214,16 @@ export default class AuthenticationPluginURL extends AuthenticationPlugin
 						res.contentType = 'json'
 						res.send({ message: 'Authentication failure' })
 						
-						// console.log(context + ':auth_plugin_url.create_middleware.authenticate then:auth failure')
-						self.debug('auth_plugin_url.create_middleware.authenticate then:auth failure')
+						// console.log(context + ':auth_lowdb_plugin.create_middleware.authenticate then:auth failure')
+						self.debug('auth_lowdb_plugin.create_middleware.authenticate then:auth failure')
 						
 						next('Authentication failure')
 						return
 					}
 					
 					// FAILURE WITHOUT ERROR
-					// console.log(context + ':auth_plugin_url.create_middleware.authenticate failure without error:next')
-					self.debug('auth_plugin_url.create_middleware.authenticate failure without error:next')
+					// console.log(context + ':auth_lowdb_plugin.create_middleware.authenticate failure without error:next')
+					self.debug('auth_lowdb_plugin.create_middleware.authenticate failure without error:next')
 					
 					if (arg_next_auth_mw)
 					{
@@ -232,8 +236,8 @@ export default class AuthenticationPluginURL extends AuthenticationPlugin
 			)
 			.catch(
 				(reason) => {
-					// console.log(context + ':auth_plugin_url.create_middleware.authenticate exception', reason)
-					self.debug('auth_plugin_url.create_middleware.authenticate exception', reason)
+					// console.log(context + ':auth_lowdb_plugin.create_middleware.authenticate exception', reason)
+					self.debug('auth_lowdb_plugin.create_middleware.authenticate exception', reason)
 					
 					// SEND OUTPUT
 					res.status(401)
@@ -247,16 +251,24 @@ export default class AuthenticationPluginURL extends AuthenticationPlugin
 	}
 	
 	
+	
 	/**
 	 * Authenticate a user with a file giving request credentials.
-	 * @param {object|undefined} arg_credentials - request credentials object
-	 * @returns {object} - a promise of boolean
+	 * 
+	 * @param {object|undefined} arg_credentials - request credentials object.
+	 * 
+	 * @returns {object} - a promise of boolean.
 	 */
 	authenticate(arg_credentials)
 	{
 		this.debug('authenticate')
 		// console.log(arg_credentials, context + ':authenticate:arg_credentials')
 		
+		if (! this.file_db)
+		{
+			this.debug('authenticate:failure:bad db')
+			return Promise.resolve(false)
+		}
 		// assert( T.isFunction(this.file_db), context + ':authenticate:bad db object')
 		assert( T.isObject(arg_credentials), context + ':authenticate:bad credentials object')
 		
@@ -308,10 +320,13 @@ export default class AuthenticationPluginURL extends AuthenticationPlugin
 	}
 	
 	
+	
 	/**
 	 * Get user id from a user record.
-	 * @param {object} arg_user_record - user record object
-	 * @returns {string} - user id
+	 * 
+	 * @param {object} arg_user_record - user record object.
+	 * 
+	 * @returns {string} - user id.
 	 */
 	get_user_id(arg_user_record)
 	{
@@ -320,10 +335,13 @@ export default class AuthenticationPluginURL extends AuthenticationPlugin
 	}
 	
 	
+	
 	/**
 	 * Get user record by its id.
-	 * @param {string} arg_user_id - user id
-	 * @returns {string} - user id
+	 * 
+	 * @param {string} arg_user_id - user id.
+	 * 
+	 * @returns {string} - user id.
 	 */
 	get_user_by_id(arg_user_id)
 	{

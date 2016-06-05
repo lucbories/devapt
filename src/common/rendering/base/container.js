@@ -3,6 +3,7 @@ import T from 'typr'
 import assert from 'assert'
 
 import Component from './component'
+import { get_or_create_component, get_component, create_component } from './factory'
 
 
 const context = 'common/rendering/base/container'
@@ -17,10 +18,14 @@ const context = 'common/rendering/base/container'
  *	  ->set_state(state): replace existing state
  * 
  *  Children methods
- *	  add_child()
+ *    get_component(arg_name)
+ *    create_component(arg_settings)
+ *	  create_and_add_child(arg_child)
+ *    add_child()
  *    get_child(arg_name)
  *    get_children()
  *    has_children()
+ *    has_child(arg_name)
  *    get_children_setting_array(arg_path)
  *    get_children_state()
  * 
@@ -47,16 +52,106 @@ export default class Container extends Component
 		this.is_container = true
 		
 		// INIT CHILDREN
-		this.children = this.get_setting(['children'], [])
+		this.children = []
 		this.children_by_name = {}
-		this.children.map( (child) => this.children_by_name[child.get_name()] = child )
+		
+		const children = this.get_setting(['children'], [])
+		// console.log('children for %s', arg_name, children)
+		children.map(
+			(child) => {
+				if ( T.isObject(child) && child.is_component )
+				{
+					this.add_child(child)
+				}
+				else if ( T.isString(child) )
+				{
+					this.create_and_add_child(child)
+				}
+			}
+		)
 	}
+	
+	
+	
+	/**
+	 * Get an existing component by its name or create it with its existing settings.
+	 * 
+	 * @param {string} arg_name - component name.
+	 * 
+	 * @returns {Component|undefined} - found component or undefined
+	 */
+	get_component(arg_name)
+	{
+		return get_or_create_component(arg_name)
+	}
+	
+	
+	
+	/**
+	 * Create a component with given settings.
+	 * 
+	 * @param {object} arg_settings - component settings.
+	 * 
+	 * @returns {Component|undefined} - created component or undefined
+	 */
+	create_component(arg_settings)
+	{
+		return create_component(arg_settings)
+	}
+	
+	
+	
+	/**
+	 * Create and add a child component.
+	 * 
+	 * @param {string|object} arg_child - component name, component settings or component instance.
+	 * 
+	 * @returns {Container} this object.
+	 */
+	create_and_add_child(arg_child)
+	{
+		let component = undefined
+		
+		if ( T.isString(arg_child) )
+		{
+			const name = arg_child
+			component = this.get_component(name)
+		}
+		
+		else if ( T.isObject(arg_child) && ! arg_child.is_component )
+		{
+			const settings = arg_child
+			component = this.create_component(settings)
+		}
+		
+		else if ( T.isObject(arg_child) && arg_child.is_component )
+		{
+			component = arg_child
+		}
+		
+		else
+		{
+			console.error(context + ':create_and_add_child:bad child component', arg_child)
+			return this
+		}
+		
+		if ( ! T.isObject(component) || ! component.is_component )
+		{
+			console.error(context + ':create_and_add_child:child component not found', arg_child)
+			return this
+		}
+		
+		return this.add_child(component)
+	}
+	
 	
 	
 	/**
 	 * Add a child component.
+	 * 
 	 * @param {object} arg_child - component.
-	 * @returns {object} this object.
+	 * 
+	 * @returns {Container} this object.
 	 */
 	add_child(arg_child)
 	{
@@ -71,19 +166,29 @@ export default class Container extends Component
 	}
 	
 	
+	
 	/**
 	 * Get child component by name.
+	 * 
 	 * @param {string} arg_name - component name.
+	 * 
 	 * @returns {Component} - child component object.
 	 */
 	get_child(arg_name)
 	{
-		return (arg_name in this.children_by_name) ? this.children_by_name[arg_name] : null
+		if (arg_name in this.children_by_name)
+		{
+			return this.children_by_name[arg_name]
+		}
+		
+		return undefined
 	}
+	
 	
 	
 	/**
 	 * Get children components.
+	 * 
 	 * @returns {Array} - children components array.
 	 */
 	get_children()
@@ -95,8 +200,10 @@ export default class Container extends Component
 	}
 	
 	
+	
 	/**
 	 * Has children components ?
+	 * 
 	 * @returns {boolean} - children components array is not empty?
 	 */
 	has_children()
@@ -105,6 +212,28 @@ export default class Container extends Component
 		assert( T.isArray(this.children), context + ':get_children:bad children object')
 		
 		return this.children.length > 0
+	}
+	
+	
+	
+	/**
+	 * Has child component ?
+	 * 
+	 * @param {string} arg_name - child name.
+	 * 
+	 * @returns {boolean} - children components array is not empty?
+	 */
+	has_child(arg_name)
+	{
+		assert( T.isObject(this.children_by_name), context + ':get_children:bad children_by_name object')
+		assert( T.isArray(this.children), context + ':get_children:bad children object')
+		
+		if ( T.isString(arg_name) )
+		{
+			return (arg_name in this.children_by_name)
+		}
+		
+		return false
 	}
 	
 	

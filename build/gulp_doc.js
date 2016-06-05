@@ -33,7 +33,7 @@ const jsconfig = {
 		"allowUnknownTags": true
 	},
 	"source": {
-		"excludePattern": "(^|\\/|\\\\)_"
+		"excludePattern": "(^|\\/|\\\\|unused_.*|todo_.*)_"
 	},
 	"opts": {
 		"destination": "./docs/api"
@@ -57,7 +57,7 @@ const jsconfig = {
 /*
 	GENERATE DOCS API
 */
-module.exports = function (gulp, plugins)
+module.exports = function (gulp/*, plugins*/)
 {
 	return function ()
 	{

@@ -20,13 +20,18 @@ export default class Component extends Stateable
 	
 	/**
 	 * Creates an instance of Component.
+	 * @extends Stateable
 	 * 
 	 * @param {object} arg_runtime - client runtime.
 	 * @param {object} arg_state - component state.
+	 * @param {string} arg_log_context - context of traces of this instance (optional).
+	 * 
+	 * @returns {nothing}
 	 */
-	constructor(arg_runtime, arg_state)
+	constructor(arg_runtime, arg_state, arg_log_context)
 	{
-		super(arg_runtime, arg_state)
+		const log_context = arg_log_context ? arg_log_context : context
+		super(arg_runtime, arg_state, log_context)
 		
 		this.is_component = true
 		

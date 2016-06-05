@@ -107,18 +107,28 @@ export default class Tabs extends Container
 	{
 		assert( T.isObject(arg_tab_cfg), context + ':render_tab_content:bad tab cfg object')
 		
+		// HTML CONTENT
 		if ( T.isString(arg_tab_cfg.content_html) )
 		{
 			return arg_tab_cfg.content_html
 		}
 		
+		// VIEW
 		if ( T.isString(arg_tab_cfg.content_view) )
 		{
+			// CREATE A VIEW
+			if ( ! this.has_child(arg_tab_cfg.content_view) )
+			{
+				this.create_and_add_child(arg_tab_cfg.content_view)
+			}
+			
 			const view = this.get_child(arg_tab_cfg.content_view)
-			if ( ! T.isObject(view) )
+			
+			if ( ! T.isObject(view) || ! view.is_component )
 			{
 				return ''
 			}
+			
 			return view.render()
 		}
 		

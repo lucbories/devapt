@@ -12,7 +12,9 @@ export default class Logger
 {
 	/**
 	 * Create a Logger instance.
+	 * 
 	 * @param {string} arg_context - trace context.
+	 * 
 	 * @returns {nothing}
 	 */
 	constructor(arg_enabled)
@@ -30,8 +32,10 @@ export default class Logger
 	}
 	
 	
+	
 	/**
 	 * Enable traces.
+	 * 
 	 * @returns {nothing}
 	 */
 	enable_trace()
@@ -40,8 +44,10 @@ export default class Logger
 	}
 	
 	
+	
 	/**
 	 * Disable traces.
+	 * 
 	 * @returns {nothing}
 	 */
 	disable_trace()
@@ -50,8 +56,10 @@ export default class Logger
 	}
 	
 	
+	
 	/**
 	 * Get trace flag.
+	 * 
 	 * @returns {boolean}
 	 */
 	get_trace()
@@ -60,9 +68,12 @@ export default class Logger
 	}
 	
 	
+	
 	/**
 	 * Set trace flag.
+	 * 
 	 * @param {boolean} arg_enabled - trace flag.
+	 * 
 	 * @returns {nothing}
 	 */
 	set_trace(arg_enabled)
@@ -71,8 +82,10 @@ export default class Logger
 	}
 	
 	
+	
 	/**
 	 * Toggle trace flag.
+	 * 
 	 * @returns {boolean}
 	 */
 	toggle_trace()
@@ -81,10 +94,13 @@ export default class Logger
 	}
 	
 	
+	
 	/**
 	 * Get formatted trace message.
 	 * @static
+	 * 
 	 * @param {string|array} args - messages to format.
+	 * 
 	 * @returns {string} - formatted trace message.
 	 */
 	static format(args)
@@ -146,9 +162,12 @@ export default class Logger
 	}
 	
 	
+	
 	/**
 	 * Trace DEBUG formatted message.
+	 * 
 	 * @param {string|array} arg_msg - variadic messages to format.
+	 * 
 	 * @returns {nothing}
 	 */
 	debug(...arg_msg)
@@ -163,9 +182,12 @@ export default class Logger
 	}
 	
 	
+	
 	/**
 	 * Trace INFO formatted message.
+	 * 
 	 * @param {string|array} arg_msg - variadic messages to format.
+	 * 
 	 * @returns {nothing}
 	 */
 	info(...arg_msg)
@@ -180,9 +202,12 @@ export default class Logger
 	}
 	
 	
+	
 	/**
 	 * Trace WARN formatted message.
+	 * 
 	 * @param {string|array} arg_msg - variadic messages to format.
+	 * 
 	 * @returns {nothing}
 	 */
 	warn(...arg_msg)
@@ -197,9 +222,12 @@ export default class Logger
 	}
 	
 	
+	
 	/**
 	 * Trace ERROR formatted message.
+	 * 
 	 * @param {string|array} arg_msg - variadic messages to format.
+	 * 
 	 * @returns {nothing}
 	 */
 	error(...arg_msg)
@@ -214,11 +242,15 @@ export default class Logger
 	}
 	
 	
+	
 	/**
 	 * Logger DEBUG implementation.
 	 * @absract
+	 * @class Logger
 	 * @method debug_self
+	 * 
 	 * @param {string} arg_msg - message string.
+	 * 
 	 * @returns {nothing}
 	 */
 	
@@ -226,8 +258,11 @@ export default class Logger
 	/**
 	 * Logger INFO implementation.
 	 * @absract
+	 * @class Logger
 	 * @method info_self
+	 * 
 	 * @param {string} arg_msg - message string.
+	 * 
 	 * @returns {nothing}
 	 */
 	
@@ -235,8 +270,11 @@ export default class Logger
 	/**
 	 * Logger WARN implementation.
 	 * @absract
+	 * @class Logger
 	 * @method warn_self
+	 * 
 	 * @param {string} arg_msg - message string.
+	 * 
 	 * @returns {nothing}
 	 */
 	
@@ -244,16 +282,22 @@ export default class Logger
 	/**
 	 * Logger ERROR implementation.
 	 * @absract
+	 * @class Logger
 	 * @method error_self
+	 * 
 	 * @param {string} arg_msg - message string.
+	 * 
 	 * @returns {nothing}
 	 */
 	
 	
+	
 	/**
 	 * Trace INFO message on "enter trace group".
+	 * 
 	 * @param {string} arg_context - trace context.
 	 * @param {string} arg_group - trace group name.
+	 * 
 	 * @returns {nothing}
 	 */
 	enter_group(arg_context, arg_group)
@@ -268,10 +312,13 @@ export default class Logger
 	}
 	
 	
+	
 	/**
 	 * Trace INFO message on "leave trace group".
+	 * 
 	 * @param {string} arg_context - trace context.
 	 * @param {string} arg_group - trace group name.
+	 * 
 	 * @returns {nothing}
 	 */
 	leave_group(arg_context, arg_group)
@@ -286,9 +333,12 @@ export default class Logger
 	}
 	
 	
+	
 	/**
 	 * Trace INFO trace level 1 separator.
+	 * 
 	 * @param {string} arg_context - trace context.
+	 * 
 	 * @returns {nothing}
 	 */
 	separate_level_1(arg_context)
@@ -303,9 +353,12 @@ export default class Logger
 	}
 	
 	
+	
 	/**
 	 * Trace INFO trace level 2 separator.
+	 * 
 	 * @param {string} arg_context - trace context.
+	 * 
 	 * @returns {nothing}
 	 */
 	separate_level_2(arg_context)
@@ -320,9 +373,12 @@ export default class Logger
 	}
 	
 	
+	
 	/**
 	 * Trace INFO trace level 3 separator.
+	 * 
 	 * @param {string} arg_context - trace context.
+	 * 
 	 * @returns {nothing}
 	 */
 	separate_level_3(arg_context)

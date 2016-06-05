@@ -5,7 +5,7 @@ import assert from 'assert'
 import Component from './components/component'
 import Table from './components/table'
 import Topology from './components/topology'
-import OneRecordTable from './components/one_record_table'
+import RecordsTable from './components/records_table'
 
 
 const context = 'browser/ui'
@@ -21,8 +21,10 @@ export default class UI
 {
 	/**
 	 * Create a UI instance.
+	 * 
 	 * @param {object} arg_runtime - client runtime.
 	 * @param {object} arg_store - UI components state store.
+	 * 
 	 * @returns {nothing}
 	 */
 	constructor(arg_runtime, arg_store)
@@ -38,7 +40,9 @@ export default class UI
 	
 	/**
 	 * Get a UI component by its name.
+	 * 
 	 * @param {string} arg_name - component name.
+	 * 
 	 * @returns {object}
 	 */
 	get(arg_name)
@@ -55,7 +59,9 @@ export default class UI
 	
 	/**
 	 * Create a UI component.
+	 * 
 	 * @param {string} arg_name - component name.
+	 * 
 	 * @returns {object}
 	 */
 	create(arg_name)
@@ -94,10 +100,10 @@ export default class UI
 					return comp
 				}
 			
-			case 'OneRecordTable':
+			case 'RecordsTable':
 				{
 					const comp_state = component_state.toJS()
-					const comp = new OneRecordTable(this.runtime, comp_state)
+					const comp = new RecordsTable(this.runtime, comp_state)
 					comp.state_path = state_path
 					// console.log('ui:create:path', state_path, comp_state)
 					this.cache[arg_name] = comp
@@ -133,8 +139,10 @@ export default class UI
 	
 	/**
 	 * Find a UI component state.
+	 * 
 	 * @param {object} arg_state - state object.
 	 * @param {string} arg_name - component name.
+	 * 
 	 * @returns {object}
 	 */
 	find_state(arg_state, arg_name, arg_state_path = [])

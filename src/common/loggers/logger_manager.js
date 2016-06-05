@@ -42,21 +42,24 @@ export default class LoggerManager
 	{
 		// console.log(arg_settings, context + ':arg_settings')
 		
-		const runtime = require('../base/runtime').default
-		this.loggers.push( new LoggerMsgPost(true, runtime.node.logs_bus.get_input_stream()) )
-		// this.info('msg logger created')
-		
-		if ( T.isObject(arg_settings) && ('console' in arg_settings) )
+		if (! this.is_client_runtime)
 		{
-			const LoggerConsole = require('./logger_console').default
-			// console.log('add console logger')
-			this.loggers.push( new LoggerConsole(true, arg_settings['console']) )
-		}
-		if ( T.isObject(arg_settings) && ('winston' in arg_settings) )
-		{
-			const LoggerWinston = require('./logger_winston').default
-			// console.log('add winston logger')
-			this.loggers.push( new LoggerWinston(true, arg_settings['winston']) )
+			const runtime = require('../base/runtime').default
+			this.loggers.push( new LoggerMsgPost(true, runtime.node.logs_bus.get_input_stream()) )
+			// this.info('msg logger created')
+			
+			if ( T.isObject(arg_settings) && ('console' in arg_settings) )
+			{
+				const LoggerConsole = require('./logger_console').default
+				// console.log('add console logger')
+				this.loggers.push( new LoggerConsole(true, arg_settings['console']) )
+			}
+			if ( T.isObject(arg_settings) && ('winston' in arg_settings) )
+			{
+				const LoggerWinston = require('./logger_winston').default
+				// console.log('add winston logger')
+				this.loggers.push( new LoggerWinston(true, arg_settings['winston']) )
+			}
 		}
 		
 		this.$settings = arg_settings

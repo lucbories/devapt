@@ -14,8 +14,8 @@ import AuthenticationWrapper from '../security/authentication_wrapper'
 const context = 'common/servers/server'
 
 /**
- * @public
  * Type of servers.
+ * @public
  */
 export const ServerTypes = {
 	SERVER_TYPE_EXPRESS : 'express',
@@ -36,10 +36,12 @@ export default class Server extends Instance
 	/**
 	 * Create a server instance.
 	 * @extends BusClientInstance
+	 * 
 	 * @param {string} arg_name - server name
 	 * @param {string} arg_class - server class name
 	 * @param {object} arg_settings - plugin settings map
 	 * @param {string} arg_log_context - trace context string.
+	 * 
 	 * @returns {nothing}
 	 */
 	constructor(arg_name, arg_class, arg_settings, arg_log_context)
@@ -79,8 +81,10 @@ export default class Server extends Instance
 	/**
 	 * Send a message to an other client.
 	 * @abstract
+	 * 
 	 * @param {string} arg_target_name - recipient name.
 	 * @param {object} arg_payload - message payload plain object.
+	 * 
 	 * @returns {nothing}
 	 */
 	send_msg(arg_target_name, arg_payload)
@@ -92,8 +96,10 @@ export default class Server extends Instance
 	
 	/**
 	 * Send a message to the metrics server.
+	 * 
 	 * @param {string} arg_metric_type - type of metrics.
 	 * @param {object} arg_metrics - metrics plain object.
+	 * 
 	 * @returns {nothing}
 	 */
 	send_metrics(arg_metric_type, arg_metrics)
@@ -113,7 +119,8 @@ export default class Server extends Instance
 	
 	/**
 	 * Get security settings object into the server.
-	 * @returns {object} - security settings
+	 * 
+	 * @returns {object} - security settings.
 	 */
 	get_server_security_settings()
 	{
@@ -126,9 +133,11 @@ export default class Server extends Instance
 	}
 	
 	
+	
 	/**
 	 * Get security settings from server or runtime.
-	 * @returns {Immutable.Map} - security settings
+	 * 
+	 * @returns {Immutable.Map} - security settings.
 	 */
 	get_security_settings()
 	{
@@ -265,8 +274,10 @@ export default class Server extends Instance
 	}
 	
 	
+	
 	/**
 	 * Load server settings.
+	 * 
 	 * @returns {nothing}
 	 */
 	load()
@@ -346,8 +357,10 @@ export default class Server extends Instance
 	}
 	
 	
+	
 	/**
 	 * Enable server (start it).
+	 * 
 	 * @returns {nothing}
 	 */
 	enable()
@@ -380,8 +393,10 @@ export default class Server extends Instance
 	}
 	
 	
+	
 	/**
 	 * Disable server (stop it).
+	 * 
 	 * @returns {nothing}
 	 */
 	disable()

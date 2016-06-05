@@ -41,6 +41,7 @@ export default class Loggable
 	}
 	
 	
+	
 	/**
 	 * Should trace flag.
 	 * @param {object} arg_traces_cfg - traces settings object as { modules:{}, classes:{}, instances:{} }
@@ -62,6 +63,7 @@ export default class Loggable
 		
 		return should_trace
 	}
+	
 	
 	
 	/**
@@ -112,6 +114,7 @@ export default class Loggable
 	}
 	
 	
+	
 	/**
 	 * Get logger manager.
 	 * @returns {LoggerManager}
@@ -130,14 +133,17 @@ export default class Loggable
 	}
 	
 	
+	
 	/**
 	 * Enable traces.
 	 * @returns {nothing}
 	 */
 	enable_trace()
 	{
+		this.is_trace_enabled = true
 		this.get_logger_manager().enable_trace()
 	}
+	
 	
 	
 	/**
@@ -146,8 +152,10 @@ export default class Loggable
 	 */
 	disable_trace()
 	{
+		this.is_trace_enabled = false
 		this.get_logger_manager().disable_trace()
 	}
+	
 	
 	
 	/**
@@ -156,8 +164,9 @@ export default class Loggable
 	 */
 	get_trace()
 	{
-		return this.get_logger_manager().get_trace()
+		return this.get_logger_manager().get_trace() && this.is_trace_enabled
 	}
+	
 	
 	
 	/**
@@ -167,8 +176,10 @@ export default class Loggable
 	 */
 	set_trace(arg_value)
 	{
-		this.get_logger_manager().set_trace(arg_value)
+		this.is_trace_enabled = arg_value ? true : false
+		this.get_logger_manager().set_trace(this.is_trace_enabled)
 	}
+	
 	
 	
 	/**
@@ -177,8 +188,10 @@ export default class Loggable
 	 */
 	toggle_trace()
 	{
+		this.is_trace_enabled = ! this.is_trace_enabled
 		this.get_logger_manager().toggle_trace()
 	}
+	
 	
 	
 	/**
@@ -193,6 +206,7 @@ export default class Loggable
 			this.get_logger_manager().debug(this.$context, args)
 		}
 	}
+	
 	
 	
 	/**

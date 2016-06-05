@@ -11,6 +11,8 @@ import Script from './script'
 import Menubar from './menubar'
 import Tabs from './tabs'
 
+import Container from '../base/container'
+
 export {
 	Button,
 	InputField,
@@ -22,5 +24,6 @@ export {
 	Page,
 	Script,
 	Menubar,
-	Tabs
+	Tabs,
+	Container
 }

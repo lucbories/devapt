@@ -6,7 +6,8 @@ import rt from '../base/runtime'
 import load_config from './config/loaders/load_config'
 
 
-const context = 'common/store/index'
+// const context = 'common/store/index'
+const TRACE = false
 
 
 class Store
@@ -20,7 +21,7 @@ class Store
 		// this.runtime_collections = ['nodes', 'servers', 'applications', 'views', 'models', 'menubars', 'menus', 'loggers', 'services', 'transactions']
 		
 		// INIT STORE WITH DEFAULT CONFIG
-		const default_config = load_config({}, undefined)
+		const default_config = load_config({}, undefined, undefined, TRACE)
 		this.set( fromJS( default_config.config ) )
 	}
 	
@@ -28,19 +29,65 @@ class Store
 	{
 		const base_dir = rt && rt.get_setting ? rt.get_setting('base_dir', null) : undefined
 			
-		let checked_config = load_config({}, arg_config, base_dir)
-		if (checked_config.error)
+		let checked_config = load_config({}, arg_config, base_dir,TRACE)
+		
+		if (checked_config.config.error)
 		{
-			console.error(context + ':load:error', checked_config.error)
+			this.error = checked_config.config.error
+			// console.error(context + ':load:error', this.format_error(checked_config.config.error))
 			return false
 		}
+		
+		// console.log(checked_config.config.resources.by_name['default_menubar'], 'store.checked_config.config default_menubar')
 		
 		const immutable_config = fromJS(checked_config.config)
 		
 		this.root = immutable_config
 		
+		// console.log(this.root.getIn(['resources', 'by_name', 'default_menubar']), 'store.root default_menubar')
+		
 		return true
 	}
+	
+	
+	
+	get_error()
+	{
+		return this.error
+	}
+	
+	
+	
+	format_error(arg_error)
+	{
+		let str = '\n'
+		str += '*****************************************************************************************\n'
+		
+		// FORMAT MAIN ERROR
+		str += '\n\nError:\n'
+		str += '* context:   ' + arg_error.context + '\n'
+		str += '* exception: ' + arg_error.exception + '\n'
+		str += '* message:   ' + arg_error.error_msg + '\n'
+		
+		// FORMAT SUB ERRORS
+		if ('suberrors' in arg_error)
+		{
+			str += '\nsub errors:\n'
+			arg_error.suberrors.map(
+				(suberror) => {
+					str += '------------------------------------------------------------------------\n'
+					str += '* context: ' + suberror.context + '\n'
+					str += '* message: ' + suberror.error_msg + '\n'
+				}
+			)
+		}
+		
+		str += '\n*****************************************************************************************\n'
+		
+		return str
+	}
+	
+	
 	
 	get()
 	{
@@ -186,28 +233,45 @@ class Store
 		return name ? this.has_resource(name) : null
 	}
 	
-	has_view(arg_name) { return this.has_resource_by_type( ['views',      arg_name] ) }
-	has_model(arg_name) { return this.has_resource_by_type( ['models',     arg_name] ) }
-	has_menubar(arg_name) { return this.has_resource_by_type( ['menubars',   arg_name] ) }
-	has_menu(arg_name) { return this.has_resource_by_type( ['menus',      arg_name] ) }
-	has_connexion(arg_name) { return this.has_resource_by_type( ['connexions', arg_name] ) }
-	has_logger(arg_name) { return this.has_resource_by_type( ['loggers',    arg_name] ) }
+	has_view(arg_name)      { return this.has_resource_by_type('views',      arg_name) }
+	has_model(arg_name)     { return this.has_resource_by_type('models',     arg_name) }
+	has_menubar(arg_name)   { return this.has_resource_by_type('menubars',   arg_name) }
+	has_menu(arg_name)      { return this.has_resource_by_type('menus',      arg_name) }
+	has_connexion(arg_name) { return this.has_resource_by_type('connexions', arg_name) }
+	has_logger(arg_name)    { return this.has_resource_by_type('loggers',    arg_name) }
 
 
 	// CONFIG: GET A RESOURCE
-	get_resource(arg_name) { return this.root.getIn( ['resources', 'by_name', arg_name] ).toMap().toJS() }
+	get_resource(arg_name)
+	{
+		if ( this.root.hasIn( ['resources', 'by_name', arg_name] ) )
+		{
+			return this.root.getIn( ['resources', 'by_name', arg_name] ).toMap().toJS()
+		}
+		return undefined
+	}
+	
+	get_resource_of_type(arg_type, arg_name)
+	{
+		if ( this.has_resource_by_type(arg_type, arg_name) )
+		{
+			return this.get_resource(arg_name)
+		}
+		return undefined
+	}
+	
 	get_resource_by_type(arg_type, arg_name)
 	{
 		let name = this.root.getIn( ['resources', 'by_type', arg_type, arg_name] )
-		return name ? this.get_resource(name) : null
+		return name ? this.get_resource(name) : undefined
 	}
 	
-	get_view(arg_name) { return this.get_resource_by_type('views',      arg_name) }
-	get_model(arg_name) { return this.get_resource_by_type('models',     arg_name) }
-	get_menubar(arg_name) { return this.get_resource_by_type('menubars',   arg_name) }
-	get_menu(arg_name) { return this.get_resource_by_type('menus',      arg_name) }
-	get_connexion(arg_name) { return this.get_resource_by_type('connexions', arg_name) }
-	get_logger(arg_name) { return this.get_resource_by_type('loggers',    arg_name) }
+	get_view(arg_name)      { return this.get_resource_of_type('views',      arg_name) }
+	get_model(arg_name)     { return this.get_resource_of_type('models',     arg_name) }
+	get_menubar(arg_name)   { return this.get_resource_of_type('menubars',   arg_name) }
+	get_menu(arg_name)      { return this.get_resource_of_type('menus',      arg_name) }
+	get_connexion(arg_name) { return this.get_resource_of_type('connexions', arg_name) }
+	get_logger(arg_name)    { return this.get_resource_of_type('loggers',    arg_name) }
 }
 
 

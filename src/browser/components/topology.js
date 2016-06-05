@@ -22,10 +22,14 @@ export default class Topology extends Component
 	 * 
 	 * @param {object} arg_runtime - client runtime.
 	 * @param {object} arg_state - component state.
+	 * @param {string} arg_log_context - context of traces of this instance (optional).
+	 * 
+	 * @returns {nothing}
 	 */
-	constructor(arg_runtime, arg_state)
+	constructor(arg_runtime, arg_state, arg_log_context)
 	{
-		super(arg_runtime, arg_state)
+		const log_context = arg_log_context ? arg_log_context : context
+		super(arg_runtime, arg_state, log_context)
 		
 		this.is_topology_component = true
 		
@@ -122,6 +126,12 @@ export default class Topology extends Component
 	}
 	
 	
+	
+	/**
+	 * Init view.
+	 * 
+	 * @returns {nothing}
+	 */
 	init()
 	{
 		this.mode = this.get_initial_state()['mode']
@@ -130,6 +140,16 @@ export default class Topology extends Component
 		
 		// console.log(context + ':init:mode %s, svc %s', this.mode, this.svc)
 	}
+	
+	
+	
+	/**
+	 * Update topology graph with physical or logical elements.
+	 * 
+	 * @param {object} arg_values - service response values.
+	 * 
+	 * @returns {nothing}
+	 */
 	
 	update_topology(arg_values)
 	{
@@ -159,12 +179,21 @@ export default class Topology extends Component
 		cy.resize()
 	}
 	
+	
+	
+	/**
+	 * Get physical topology elements.
+	 * 
+	 * @param {object} arg_values - service response values.
+	 * 
+	 * @returns {array} - cytoscape graph elements array.
+	 */
 	get_physical_els(arg_values)
 	{
 		const topology_id = this.get_dom_id()
 		var els = [
 			{
-				data: { id:'world'}
+				data: { id:'world', label:'World' }
 			}
 		]
 		const nodes = arg_values.datas.nodes
@@ -176,7 +205,7 @@ export default class Topology extends Component
 				const node_id = topology_id + '_node_' + node_name
 				els.push(
 					{
-						data: { id:node_id }
+						data: { id:node_id, label:node_name }
 					},
 					{
 						data: { source:'world', target:node_id }
@@ -192,7 +221,7 @@ export default class Topology extends Component
 						const server_id = topology_id + '_server_' + server_name
 						els.push(
 							{
-								data: { id:server_id }
+								data: { id:server_id, label:server_name }
 							},
 							{
 								data: { source:node_id, target:server_id }
@@ -206,12 +235,21 @@ export default class Topology extends Component
 		return els
 	}
 	
+	
+	
+	/**
+	 * Get logical topology elements.
+	 * 
+	 * @param {object} arg_values - service response values.
+	 * 
+	 * @returns {array} - cytoscape graph elements array.
+	 */
 	get_logical_els(arg_values)
 	{
 		const topology_id = this.get_dom_id()
 		var els = [
 			{
-				data: { id:'world'}
+				data: { id:'world', label:'World' }
 			}
 		]
 		const apps = arg_values.datas.applications
@@ -223,7 +261,7 @@ export default class Topology extends Component
 				const app_id = topology_id + '_app_' + app_name
 				els.push(
 					{
-						data: { id:app_id }
+						data: { id:app_id, label:app_name }
 					},
 					{
 						data: { source:'world', target:app_id }
@@ -240,7 +278,7 @@ export default class Topology extends Component
 						const svc_id = topology_id + '_provided_svc_' + provided_service_name
 						els.push(
 							{
-								data: { id:svc_id }
+								data: { id:svc_id, label:provided_service_name }
 							},
 							{
 								data: { source:app_id, target:svc_id }

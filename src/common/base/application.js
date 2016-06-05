@@ -55,7 +55,9 @@ export default class Application extends Instance
     /**
      * Application constructor.
 	 * @extends Instance
-     * @param {string} arg_name - Application name
+	 * 
+     * @param {string} arg_name - Application name.
+	 * 
 	 * @returns {nothing}
      */
 	constructor(arg_name)
@@ -84,8 +86,10 @@ export default class Application extends Instance
 	}
 	
     
+	
 	/**
      * Load configuration and build application.
+	 * 
 	 * @returns {nothing}
      */
 	load()
@@ -103,8 +107,9 @@ export default class Application extends Instance
 		assert( T.isObject(consumes), context + ':bad settings.services.consumes object')
 		consumes.forEach(
 			(service_cfg, service_name) => {
-				let service = runtime.services.find_by_name(service_name)
+				/*let service =*/ runtime.services.find_by_name(service_name)
 				
+				// TODO PROCESS CONSUMED SERVICES
 				// assert( T.isObject(service) && service.is_service, context + ':bad service object')
 				
 				// if (service)
@@ -193,9 +198,11 @@ export default class Application extends Instance
 	}
 	
 	
+	
     /**
      * Get all application models names.
-     * @{returns} - Array of String
+	 * 
+     * @{returns} - Array of String.
      */
 	get_models_names()
 	{
@@ -203,9 +210,11 @@ export default class Application extends Instance
 	}
 	
 	
+	
     /**
      * Get all application views names.
-     * @{returns} - Array of String
+	 * 
+     * @{returns} - Array of String.
      */
 	get_views_names()
 	{
@@ -213,9 +222,11 @@ export default class Application extends Instance
 	}
 	
 	
+	
     /**
      * Get all application menubars names.
-     * @{returns} - Array of String
+	 * 
+     * @{returns} - Array of String.
      */
 	get_menubars_names()
 	{
@@ -223,9 +234,11 @@ export default class Application extends Instance
 	}
 	
 	
+	
     /**
      * Get all application menus names.
-     * @{returns} - Array of String
+	 * 
+     * @{returns} - Array of String.
      */
 	get_menus_names()
 	{
@@ -233,9 +246,12 @@ export default class Application extends Instance
 	}
 	
 	
+	
     /**
      * Get all application resources of given type names.
-     * @param {string} arg_type - Resource type
+	 * 
+     * @param {string} arg_type - resource type.
+	 * 
      * @{returns} - Array of String
      */
 	get_resources_names(arg_type)

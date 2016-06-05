@@ -19,7 +19,9 @@ export default class Collection
 {
 	/**
 	 * Create a collection of Instance objects.
+	 * 
 	 * @param {array} args - variadic arguments.
+	 * 
 	 * @returns {nothing}
 	 */
 	constructor(...args)
@@ -31,9 +33,12 @@ export default class Collection
 	}
 	
 	
+	
 	/**
 	 * Set all collection items.
+	 * 
 	 * @param {Instance|array} arg_items - collection items: one or many Instance objects.
+	 * 
 	 * @returns {nothing}
 	 */
 	set_all(arg_items)
@@ -59,9 +64,12 @@ export default class Collection
 	}
 	
 	
+	
 	/**
 	 * Get all collection items or filter items with given type.
+	 * 
 	 * @param {array|string|nothing} arg_types - type or types for items filtering.
+	 * 
 	 * @returns {array} - all or filtered items, empty array if not found.
 	 */
 	get_all(arg_types)
@@ -82,13 +90,18 @@ export default class Collection
 	}
 	
 	
+	
 	/**
-	 * Get an item by its name
+	 * Get an item by its name.
+	 * 
+	 * @returns {Instance}
 	 */
 	item(arg_name)
 	{
 		return this.find_by_name(arg_name)
 	}
+	
+	
 	
 	/**
 	 * Default iterator operator.
@@ -123,14 +136,20 @@ export default class Collection
 	// 	return iterator
 	// }
 	
+	
+	
 	[Symbol.iterator]()
 	{
 		return this.$items.iterator()
 	}
 	
+	
+	
 	/**
 	 * Get all items names with or without a filter on items types.
+	 * 
 	 * @param {array|string|nothing} arg_types - type or types for items filtering.
+	 * 
 	 * @returns {array} - all or filtered items names, empty array if not found.
 	 */
 	get_all_names(arg_types)
@@ -151,22 +170,28 @@ export default class Collection
 	}
 	
 	
+	
 	/**
 	 * Get all items ids with or without a filter on items types.
+	 * 
 	 * @returns {array} - all items ids.
 	 */
 	get_all_ids() { return this.$items.map( (item) =>{ return item.$id } ) }
 	
 	
+	
 	/**
 	 * Get all items count.
+	 * 
 	 * @returns {number} - all items count.
 	 */
 	get_count() { return this.$items.length }
     
     
+	
 	/**
 	 * Get first item.
+	 * 
 	 * @returns {object|null} - first collection items or null if collection is empty.
 	 */
 	get_first()
@@ -180,9 +205,11 @@ export default class Collection
 		return this.$weight_map.first() // TO FIX
 	}
 	
+	
     
 	/**
 	 * Get Last item.
+	 * 
 	 * @returns {object|null} - last collection items or null if collection is empty.
 	 */
 	get_last()
@@ -197,10 +224,14 @@ export default class Collection
 	}
 	
 	
+	
 	/**
 	 * Add an item to the collection.
+	 * 
 	 * TODO: use indices to optimize search.
+	 * 
 	 * @param {Instance} arg_item - Instance item.
+	 * 
 	 * @returns {nothing}
 	 */
 	add(arg_item)
@@ -233,10 +264,14 @@ export default class Collection
 	}
 	
 	
+	
 	/**
 	 * Add an item to the collection at the first position.
+	 * 
 	 * TODO: use indices to optimize search.
+	 * 
 	 * @param {Instance} arg_item - Instance item.
+	 * 
 	 * @returns {nothing}
 	 */
 	add_first(arg_item)
@@ -261,7 +296,9 @@ export default class Collection
 	
 	/**
 	 * Remove an item from the collection.
+	 * 
 	 * @param {Instance} arg_item - Instance item.
+	 * 
 	 * @returns {nothing}
 	 */
 	remove(arg_item)
@@ -280,9 +317,12 @@ export default class Collection
 	}
 	
 	
+	
 	/**
 	 * Test if an item is inside the collection.
+	 * 
 	 * @param {Instance} arg_item - Instance item.
+	 * 
 	 * @returns {boolean}
 	 */
 	has(arg_item)
@@ -294,11 +334,15 @@ export default class Collection
 		return false
 	}
 	
+	
     
 	/**
 	 * Find an item by its name into the collection.
-	 * TODO: optimize with a map index
+	 * 
+	 * TODO: optimize with a map index.
+	 * 
 	 * @param {string} arg_name - instance name.
+	 * 
 	 * @returns {Instance|undefined}
 	 */
 	find_by_name(arg_name)
@@ -312,35 +356,48 @@ export default class Collection
 	}
 	
 	
+	
 	/**
 	 * Find an item by its id into the collection.
-	 * TODO: optimize with a map index
+	 * 
+	 * TODO: optimize with a map index.
+	 * 
 	 * @param {string} arg_id - instance id.
+	 * 
 	 * @returns {Instance|undefined}
 	 */
 	find_by_id(arg_id) { return this.$items.find( item => item.id == arg_id) }
 	
 	
+	
 	/**
 	 * Find an item by one of its attributes into the collection.
-	 * TODO: optimize with a map index
+	 * 
+	 * TODO: optimize with a map index.
+	 * 
 	 * @param {string} arg_attr_name - instance attribute name.
 	 * @param {any} arg_attr_value - instance attribute value.
+	 * 
 	 * @returns {Instance|undefined}
 	 */
 	find_by_attr(arg_attr_name, arg_attr_value) { return this.$items.find( item => (arg_attr_name in item) && item[arg_attr_name] == arg_attr_value) }
 	
 	
+	
 	/**
 	 * Find an item by a filter function.
+	 * 
 	 * @param {string} arg_filter_function - function to apply on instance, returns a boolean.
+	 * 
 	 * @returns {Instance|undefined}
 	 */
 	find_by_filter(arg_filter_function) { return this.$items.find( item => arg_filter_function(item) ) }
 	
 	
+	
 	/**
 	 * Get all collection accepted types.
+	 * 
 	 * @returns {array} - array of types strings.
 	 */
 	get_accepted_types()
@@ -349,9 +406,12 @@ export default class Collection
 	}
 	
 	
+	
 	/**
 	 * Set all collection accepted types.
+	 * 
 	 * @param {array} arg_types - accepted types strings array.
+	 * 
 	 * @returns {nothing}
 	 */
 	set_accepted_types(arg_types)
@@ -361,9 +421,12 @@ export default class Collection
 	}
 	
 	
+	
 	/**
 	 * Add one collection accepted type.
+	 * 
 	 * @param {string} arg_type - accepted types string.
+	 * 
 	 * @returns {nothing}
 	 */
 	add_accepted_type(arg_type)
@@ -373,9 +436,12 @@ export default class Collection
 	}
 	
 	
+	
 	/**
 	 * Test if collection has given accepted type.
+	 * 
 	 * @param {string} arg_type - accepted types string.
+	 * 
 	 * @returns {boolean}
 	 */
 	has_accepted_type(arg_type)
@@ -384,9 +450,12 @@ export default class Collection
 	}
 	
 	
+	
 	/**
 	 * forEach wrapper on ordered items.
+	 * 
 	 * @param {function} arg_cb - callback to call on each item.
+	 * 
 	 * @returns {nothing}
 	 */
 	forEach(arg_cb)

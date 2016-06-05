@@ -99,25 +99,44 @@ export default class AuthorizationManager extends PluginsManager
 	}
 	
 	
-	/**
-	 * Authenticate a user with request credentials.
-	 * @param {object|undefined} arg_credentials - request credentials object
-	 * @returns {object} - a promise of boolean
-	 */
-	authenticate(/*arg_credentials*/)
-	{
-		return Promise.resolve(false)
-	}
-	
 	
 	/**
-	 * Login current request (alias of authenticate).
-	 * @abstract
+	 * Chech permission authorization of a user.
+	 * 
+	 * @param {object} arg_permission - permission plain object.
+	 * @param {object} arg_credentials - user credentials plain object.
+	 * 
 	 * @returns {object} - a promise of boolean
 	 */
-	login()
+	authorize(/*arg_permission, arg_credentials*/)
 	{
-		return Promise.resolve(false)
+		this.enter_group('authenticate')
+		
+		// let all_promises = []
+		// this.registered_plugins.find(
+		// 	(plugin) => {
+		// 		const promise = plugin.authorize(arg_permission, arg_credentials)
+		// 		all_promises.push(promise)
+		// 	}
+		// )
+		
+		// const promise = promise.all(all_promises).then(
+		// 	(promise_results) => {
+		// 		for(let result of promise_results)
+		// 		{
+		// 			if (result)
+		// 			{
+		// 				return true
+		// 			}
+		// 		}
+		// 		return false
+		// 	}
+		// )
+		
+		this.leave_group('authenticate')
+		// return promise
+		
+		return Promise.resolve(true)
 	}
 	
 	

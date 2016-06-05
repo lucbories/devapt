@@ -36,12 +36,13 @@ export default class FeaturesPlugin extends Plugin
 	
     
 	/**
-     * Create a component instance by lookup on self contained plugins.
-	 * @abstract
+     * Create a component instance.
+	 * 
      * @param {string} arg_class_name - type or class feature name.
      * @param {string} arg_name - feature name.
      * @param {object} arg_settings - feature settings plain object.
      * @param {object} arg_state - feature initial state plain object (optional).
+	 * 
      * @returns {object} feature instance.
      */
 	create(arg_class_name, arg_name, arg_settings, arg_state)
@@ -54,10 +55,10 @@ export default class FeaturesPlugin extends Plugin
 			assert( T.isObject(arg_state), context + ':bad state object')
 		}
 		
-		const component_class = FeaturesPlugin.get_class(arg_class_name)
-		if (component_class)
+		const feature_class = FeaturesPlugin.get_class(arg_class_name)
+		if (feature_class)
 		{
-			return new component_class(arg_name, arg_settings, arg_state)
+			return new feature_class(arg_name, arg_settings, arg_state)
 		}
 		
 		assert(false, context + ':not yet implemented')

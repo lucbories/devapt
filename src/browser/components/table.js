@@ -22,12 +22,18 @@ export default class Table extends Container
 	 * 
 	 * @param {object} arg_runtime - client runtime.
 	 * @param {object} arg_state - component state.
+	 * @param {string} arg_log_context - context of traces of this instance (optional).
+	 * 
+	 * @returns {nothing}
 	 */
-	constructor(arg_runtime, arg_state)
+	constructor(arg_runtime, arg_state, arg_log_context)
 	{
-		super(arg_runtime, arg_state)
+		const log_context = arg_log_context ? arg_log_context : context
+		super(arg_runtime, arg_state, log_context)
 		
 		this.is_table_component = true
+		
+		this.enable_trace()
 	}
 	
 	
@@ -68,6 +74,7 @@ export default class Table extends Container
 	ui_items_append(arg_items_array)
 	{
 		// console.log(context + ':ui_items_append:arg_items_array', arg_items_array)
+		this.info('append a row')
 		
 		let arg_options = arg_options ? arg_options : {}
 		arg_options.mode = 'append'
@@ -86,6 +93,7 @@ export default class Table extends Container
 	ui_items_prepend(arg_items_array)
 	{
 		// console.log(context + ':ui_items_prepend:arg_items_array', arg_items_array)
+		this.info('prepend a row')
 		
 		let arg_options = arg_options ? arg_options : {}
 		arg_options.mode = 'prepend'

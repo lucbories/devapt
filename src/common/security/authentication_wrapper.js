@@ -20,7 +20,9 @@ export default class AuthenticationWrapper extends Settingsable
 	/**
 	 * Create an Authentication wrapper class to interact with authentication plugins.
 	 * @extends Settingsable
+	 * 
 	 * @param {string|undefined} arg_log_context - optional.
+	 * 
 	 * @returns {nothing}
 	 */
 	constructor(arg_log_context)
@@ -33,9 +35,12 @@ export default class AuthenticationWrapper extends Settingsable
 	}
 	
 	
+	
 	/**
-	 * Load security settings
-	 * @param {object} arg_settings - authentication settings (Immutable object)
+	 * Load security settings.
+	 * 
+	 * @param {object} arg_settings - authentication settings (Immutable object).
+	 * 
 	 * @returns {nothing}
 	 */
 	load(arg_settings)
@@ -71,18 +76,22 @@ export default class AuthenticationWrapper extends Settingsable
 	}
 	
 	
+	
 	/**
 	 * Apply all plugins authentication middleware on a Server instance.
-	 * @param {Server} arg_server - server instance
+	 * 
+	 * @param {Server} arg_server - server instance.
+	 * 
 	 * @returns {boolean}
 	 */
 	apply_middlewares(arg_server)
 	{
 		this.enter_group('apply_middlewares')
-		
+		// assert( T.isObject(arg_server) && T.isObject(arg_server.server), context + ':apply_middlewares:bad arg_server.server object')
+		// assert( T.isFunction(arg_server.server.use), context + ':apply_middlewares:bad arg_server.server.user function')
 		
 		// CHECK SERVER
-		if (! arg_server.server || ! T.isFunction(arg_server.server.use) )
+		if (! arg_server || ! arg_server.server || ! T.isFunction(arg_server.server.use) )
 		{
 			this.leave_group('apply_middlewares:bad server')
 			return false

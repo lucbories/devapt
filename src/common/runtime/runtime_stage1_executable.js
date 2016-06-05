@@ -69,7 +69,14 @@ export default class RuntimeStage1Executable extends RuntimeExecutable
 						
 						// console.log(arg_json, 'arg_json')
 						runtime.config_store = store
-						runtime.config_store.load(arg_json)
+						if ( ! runtime.config_store.load(arg_json) )
+						{
+							const error = runtime.config_store.get_error()
+							const str = runtime.config_store.format_error(error)
+							console.error(context + ':runtime.config_store.load:error', str)
+							self.error(context + ':runtime.config_store.load:error:' + str)
+							return false
+						}
 						// console.log(config(), 'config()')
 						
 						return true
