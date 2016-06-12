@@ -1,6 +1,8 @@
 
-// import T from 'typr'
+import T from 'typr'
 // import assert from 'assert'
+
+import runtime from '../../base/runtime'
 
 import MetricsCollector from '../base/metrics_collector'
 import MetricsHttpRecord from './metrics_http_record'
@@ -111,6 +113,8 @@ export default class MetricsHttpCollector extends MetricsCollector
 			let metric = new MetricsHttpRecord(req, res)
 			// metric.server = arg_server
 			metric.before()
+			metric.values.server.node_name = arg_server.node.get_name()
+			metric.values.server.server_name = arg_server.get_name()
 			
 			// HANDLE END OF REQUEST PROCESSING FOR EXPRESS SERVER
 			if (arg_server.is_express_server)
@@ -123,12 +127,18 @@ export default class MetricsHttpCollector extends MetricsCollector
 						let metric = res.devapt_metrics
                         // console.log(metric, 'metric')
                         
+						const metrics_server_name = runtime.node.get_metrics_server().get_name()
+						// console.log(context + ':create_middleware:metrics srv=%s', metrics_server_name)
+
 						if (metric)
 						{
 							metric.after()
 							
-							const values = metric.get_values()
-							arg_server.send_metrics(values.metric, values)
+							const type = metric.get_name()
+							const values = T.isArray(metric.get_values()) ? metric.get_values() : [metric.get_values()]
+							// console.log(context + ':create_middleware:target=%s type=%s', metrics_server_name, type)
+							
+							arg_server.send_metrics(metrics_server_name, type, values)
 						}
 					}
 				)

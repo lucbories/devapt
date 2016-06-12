@@ -115,8 +115,8 @@ export default class MetricsHttpRecord extends MetricsRecord
 
 		this.values.latency = this.get_latency()
 		
-		this.values.server.node_name = this.server.get_name()
-		this.values.server.server_name = this.server.node.get_name()
+		// this.values.server.node_name = this.server.node.get_name()
+		// this.values.server.server_name = this.server.get_name()
 	}
     
 	

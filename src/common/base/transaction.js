@@ -2,11 +2,11 @@
 import T from 'typr'
 import assert from 'assert'
 
-import { store, config } from '../store/index'
+// import { store, config } from '../store/index'
 
 import Instance from './instance'
 import MetricDuration from '../metrics/metric_duration'
-import MetricHost from '../metrics/metric_host'
+// import MetricHost from '../metrics/metric_host'
 
 
 let context = 'common/base/transaction'
@@ -56,7 +56,7 @@ export default class Transaction extends Instance
 		this.set_type(arg_type)
 		
 		this.metric_duration = new MetricDuration() 
-		this.metrics = [this.metric_duration, new MetricHost()]
+		this.metrics = [this.metric_duration/*, new MetricHost()*/]
 		
 		this.status = STATUS_CREATED
 	}
@@ -136,16 +136,13 @@ export default class Transaction extends Instance
 	{
 		switch(this.tx_type)
 		{
-			case TYPE_EVERY:
-			{
+			case TYPE_EVERY: {
 				return this.execute_every(arg_data)
 			}
-			case TYPE_ONE:
-			{
+			case TYPE_ONE: {
 				return this.execute_one(arg_data)
 			}
-			case TYPE_SEQUENCE:
-			{
+			case TYPE_SEQUENCE: {
 				return this.execute_sequence(arg_data)
 			}
 		}

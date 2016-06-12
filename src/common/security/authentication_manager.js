@@ -176,15 +176,17 @@ export default class AuthenticationManager extends PluginsManager
 	{
 		this.enter_group('authenticate')
 		
+		// console.log(context + ':authenticate:arg_credentials', arg_credentials)
+		
 		let all_promises = []
-		this.registered_plugins.find(
+		this.registered_plugins.forEach(
 			(plugin) => {
 				const promise = plugin.authenticate(arg_credentials)
 				all_promises.push(promise)
 			}
 		)
 		
-		const promise = promise.all(all_promises).then(
+		const promise = Promise.all(all_promises).then(
 			(promise_results) => {
 				for(let result of promise_results)
 				{
@@ -325,7 +327,7 @@ export default class AuthenticationManager extends PluginsManager
 		
 		
 		// CHECK REQUEST
-		let credentials = { 'username':null, 'password':null }
+		let credentials = { 'username':null, 'password':null, 'token':null, 'expire':null }
 		if (!arg_request)
 		{
 			return credentials

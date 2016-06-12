@@ -45,7 +45,7 @@ export default class LoggerManager
 		if (! this.is_client_runtime)
 		{
 			const runtime = require('../base/runtime').default
-			this.loggers.push( new LoggerMsgPost(true, runtime.node.logs_bus.get_input_stream()) )
+			this.loggers.push( new LoggerMsgPost(true, runtime.node.get_logs_bus().get_input_stream()) )
 			// this.info('msg logger created')
 			
 			if ( T.isObject(arg_settings) && ('console' in arg_settings) )

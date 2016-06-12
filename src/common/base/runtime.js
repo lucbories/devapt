@@ -24,17 +24,12 @@ let context = 'common/base/runtime'
  */
 const default_settings = {
 	'is_master':false,
-	
+	'name': null,
+
 	'master':{
 		'name': null,
 		'host':'localhost',
 		'port':5000
-	},
-	
-	'node':{
-		'name': null/*,
-		'host':"localhost",
-		'port':5001*/
 	},
 	
 	'settings_provider': {
@@ -64,12 +59,11 @@ class Runtime extends Settingsable
 		settings.logger_manager = new LoggerManager(loggers_settings)
 		super(settings, context)
 		
-		// this.$settings = fromJS( default_settings )
 		
 		this.is_runtime = true
 		this.is_master = this.get_setting('is_master', false)
-		
 		this.uid = os.hostname() + '_' + process.pid
+		// console.log(context + ':constructor:is_master', this.is_master)
 		
 		this.node = null
 		
@@ -90,7 +84,6 @@ class Runtime extends Settingsable
 		
 		this.security_mgr = new Security(context, { 'logger_manager':this.logger_manager } )
 		
-		// this.logger_manager = new LoggerManager()
 		
 		this.info('Runtime is created')
 	}
@@ -119,13 +112,16 @@ class Runtime extends Settingsable
 		this.separate_level_1()
 		this.enter_group('load')
 		
-		const runtime_settings = Object.assign(default_settings, arg_settings)
 		
+		const runtime_settings = Object.assign(default_settings, arg_settings)
+		// console.log(context + ':load:runtime_settings', runtime_settings)
+
 		runtime_settings.logger_manager = this.logger_manager
 		this.$settings = fromJS(runtime_settings)
 		// console.log(this.$settings, 'runtime.$settings')
 		
 		this.is_master = this.get_setting('is_master', false)
+		// console.log(context + ':load:is_master', this.is_master)
 		
 		const stage0 = new exec.RuntimeStage0Executable(this.logger_manager)
 		const stage1 = new exec.RuntimeStage1Executable(this.logger_manager)
@@ -134,10 +130,18 @@ class Runtime extends Settingsable
 		const stage4 = new exec.RuntimeStage4Executable(this.logger_manager)
 		const stage5 = new exec.RuntimeStage5Executable(this.logger_manager)
 		const execs = [stage0, stage1, stage2, stage3, stage4, stage5]
+		// console.log(context + ':load:before tx new')
+
 		const tx = new Transaction('runtime', 'startup', 'loading', { logger_manager:this.logger_manager }, execs, Transaction.SEQUENCE)
+		// console.log(context + ':load:before tx new')
+
 		tx.prepare({runtime:this})
+		// console.log(context + ':load:after tx prepare')
+
 		const tx_promise = tx.execute(null)
-		
+		// console.log(context + ':load:after tx execute')
+
+
 		this.leave_group('load')
 		this.separate_level_1()
 		return tx_promise
@@ -319,6 +323,7 @@ class Runtime extends Settingsable
 				socket.on('disconnect',
 					function()
 					{
+						console.info(context + ':add_socketio:new disconnection on /')
 						self.on_socketio_disconnect()
 					}
 				)
@@ -337,6 +342,9 @@ class Runtime extends Settingsable
 	 */
 	on_socketio_connect(arg_socketio, arg_socket)
 	{
+		assert( T.isObject(arg_socketio) && arg_socketio.emit && arg_socketio.on, context + ':on_socketio_connect:bad socketio server')
+		assert( T.isObject(arg_socket) && arg_socket.emit && arg_socket.on, context + ':on_socketio_connect:bad socketio socket client')
+
 		// const self = this
 		console.info(context + ':on_socketio_connect:socket connected')
 		

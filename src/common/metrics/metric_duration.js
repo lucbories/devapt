@@ -1,5 +1,5 @@
 
-import Metric from '../base/metric'
+import MetricsRecord from './base/metrics_record'
 
 
 /**
@@ -7,7 +7,7 @@ import Metric from '../base/metric'
  * @author Luc BORIES
  * @license Apache-2.0
  */
-export default class MetricDuration extends Metric
+export default class MetricDuration extends MetricsRecord
 {
     /**
      * MetricDuration constructor.

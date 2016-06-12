@@ -24,7 +24,7 @@ function load_config_apps(logs, arg_config, arg_config_modules, arg_config_plugi
 			function(app_name)
 			{
 				let app = arg_config[app_name]
-				arg_config[app_name] = load_config_apps_app(logs, app, arg_config_modules, arg_config_plugins, arg_base_dir)
+				arg_config[app_name] = load_config_apps_app(logs, app, arg_config_modules, arg_config_plugins, arg_config_resources, arg_base_dir)
 				
 				// PROCESS ERROR
 				if (arg_config[app_name].error)

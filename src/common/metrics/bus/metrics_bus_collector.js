@@ -37,9 +37,9 @@ export default class MetricsBusCollector extends MetricsCollector
 		
 		this.scheduler = undefined
 		
-		this.metrics_msg_bus = new MetricsBusRecord('msg_bus', runtime.node.msg_bus)
-		this.metrics_metrics_bus = new MetricsBusRecord('metrics_bus', runtime.node.metrics_bus)
-		this.metrics_logs_bus = new MetricsBusRecord('logs_bus', runtime.node.logs_bus)
+		this.metrics_msg_bus = new MetricsBusRecord('msg_bus', runtime.node.get_msg_bus())
+		this.metrics_metrics_bus = new MetricsBusRecord('metrics_bus', runtime.node.get_metrics_bus())
+		this.metrics_logs_bus = new MetricsBusRecord('logs_bus', runtime.node.get_logs_bus())
 	}
 	
 	
@@ -58,6 +58,7 @@ export default class MetricsBusCollector extends MetricsCollector
 		this.metrics_state = new MetricsBusState()
 		
 		// SCHEDULE HOST METRICS
+		const self = this
 		const delay_in_sec = 3
 		
 		this.metrics_msg_bus.before()
@@ -65,13 +66,13 @@ export default class MetricsBusCollector extends MetricsCollector
 		this.metrics_logs_bus.before()
 		
 		const handler = () => {
-			this.metrics_msg_bus.iteration()
-			this.metrics_metrics_bus.iteration()
-			this.metrics_logs_bus.iteration()
+			self.metrics_msg_bus.iteration()
+			self.metrics_metrics_bus.iteration()
+			self.metrics_logs_bus.iteration()
 			
-			runtime.node.metrics_server.send_metrics(this.metrics_msg_bus.get_name(), this.metrics_msg_bus.get_values())
-			runtime.node.metrics_server.send_metrics(this.metrics_metrics_bus.get_name(), this.metrics_metrics_bus.get_values())
-			runtime.node.metrics_server.send_metrics(this.metrics_logs_bus.get_name(), this.metrics_logs_bus.get_values())
+			self.send_metrics(self.metrics_msg_bus.get_name(),     [self.metrics_msg_bus.get_values()])
+			self.send_metrics(self.metrics_metrics_bus.get_name(), [self.metrics_metrics_bus.get_values()])
+			self.send_metrics(self.metrics_logs_bus.get_name(),    [self.metrics_logs_bus.get_values()])
 			
 			// console.log(this.metrics_msg_bus.get_values(), 'metrics_msg_bus')
 			// console.log(this.metrics_metrics_bus.get_values(), 'metrics_metrics_bus')

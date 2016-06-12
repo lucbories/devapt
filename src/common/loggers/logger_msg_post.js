@@ -1,10 +1,11 @@
-import T from 'typr'
-import assert from 'assert'
+// import T from 'typr'
+// import assert from 'assert'
 
 import Logger from './logger'
+import DistributedLogs from '../base/distributed_logs'
 
 
-const context = 'common/loggers/logger_msg_post'
+// const context = 'common/loggers/logger_msg_post'
 
 
 
@@ -43,14 +44,15 @@ export default class LoggerMessagePost extends Logger
 		if ( this.get_trace() )
 		{
 			const logs_record = {
-				ts:new Date().getTime(),
+				ts:new Date().getTime().toString(),
 				level:arg_level,
 				logs:[arg_text]
 			}
 			
 			// console.log('LoggerMessagePost.process:level=%s text=%s', arg_level, arg_text)
-			
-			this.logs_stream.push(logs_record)
+			const msg = new DistributedLogs('this', 'logs_server', logs_record.ts, logs_record.level, logs_record.logs)
+
+			this.logs_stream.push(msg)
 			// this.logs_stream.subscribe(
 			// 	(logs_record) => {
 			// 		console.log('LoggerMessagePost: new logs record on the bus', logs_record)

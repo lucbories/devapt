@@ -4,7 +4,7 @@ import assert from 'assert'
 import restify from 'restify'
 
 import Server from './server'
-import MetricsMiddleware from '../metrics/metric_http'
+import MetricsMiddleware from '../metrics/http/metrics_http_collector'
 
 
 

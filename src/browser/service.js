@@ -182,7 +182,8 @@ export default class Service
 						request: {
 							operation:op_name,
 							operands:[value]
-						}
+						},
+						credentials:arg_settings.credentials
 					}
 					
 					// SEND REQUEST

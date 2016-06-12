@@ -128,6 +128,13 @@ export default class ClientRuntime extends Loggable
 			return
 		}
 		
+		// TODO CHECK CREDENTIAL FORMAT STRING -> MAP ?
+		// console.log(this.store.getState(), 'state')
+		arg_svc_settings.credentials = this.store.getState().get('credentials')
+		if ( T.isString(arg_svc_settings.credentials ) )
+		{
+			arg_svc_settings.credentials = JSON.parse(arg_svc_settings.credentials)
+		}
 		const svc = new Service(arg_svc_name, arg_svc_settings)
 		this.services[arg_svc_name] = svc
 		

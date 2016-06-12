@@ -138,7 +138,7 @@ export default class Service extends Instance
 			assert(T.isString(server_name), context + ':bad server name string')
 			// this.info('server_name ' + server_name)
 			
-			const server = runtime.node.servers.find_by_name(server_name)
+			const server = runtime.node.get_servers().find_by_name(server_name)
 			if ( T.isObject(server) )
 			{
 				this.activate_on_server(arg_application, server, arg_app_svc_cfg)

@@ -65,74 +65,33 @@ export default class MetricsServer extends Server
 		
 		assert( this.server_protocole == 'bus', context + ':bad protocole for metric server [' + this.server_protocole + ']')
 		
-		const self = this
-		
-		this.node.metrics_bus.subscribe(
-			(arg_value) => {
-				assert( T.isObject(arg_value), context + ':subscribe:bad value object')
-				assert( T.isString(arg_value.sender), context + ':subscribe:bad sender string')
-				assert( T.isString(arg_value.target), context + ':subscribe:bad target string')
-				assert( T.isObject(arg_value.payload), context + ':subscribe:bad payload object')
-				assert( T.isString(arg_value.payload.metric), context + ':subscribe:bad payload.metric string')
-				assert( T.isArray(arg_value.payload.metrics), context + ':subscribe:bad payload.metrics array')
-				
-				try
-				{
-					self.process_metric(arg_value.payload.metric, arg_value.payload.metrics)
-				}
-				catch(e)
-				{
-					console.error(context + ':exception:' + e)
-				}
-			}
-		)
-		
 		this.leave_group('build_server')
 	}
-	
-	
-	
+
+
+
 	/**
-	 * Process received message.
+	 * Process received metrics message (to override in sub classes).
 	 * 
-	 * @param {string} arg_sender - message emitter name.
-	 * @param {object} arg_payload - message content.
+	 * @param {DistributedMetrics} arg_msg - metrics message instance.
 	 * 
 	 * @returns {nothing}
 	 */
-	receive_msg(arg_sender, arg_payload)
+	receive_metrics(arg_msg)
 	{
-		this.enter_group('receive_msg')
-        
-        // DEBUG
-		// console.log(arg_payload, 'arg_payload from ' + arg_sender)
-        
-        // CHECK SENDER
-		assert( T.isString(arg_sender), context + ':receive_msg:bad sender string')
-		this.info('receiving a message from ' + arg_sender)
-		
-        // CHECK PAYLOAD
-		assert( T.isObject(arg_payload), context + ':receive_msg:bad payload object')
-		if (! arg_payload.is_metrics_message)
+		this.enter_group('receive_metrics')
+		console.log(context + ':receive_metrics:from=%s type=%s', arg_msg.sender, arg_msg.payload.metric)
+
+		// DO NOT PROCESS MESSAGES FROM SELF
+		if (arg_msg.sender == this.get_name())
 		{
-			console.error('bad metrics payload')
-			this.leave_group('receive_msg')
+			this.leave_group('receive_metrics:ignore message from itself')
 			return
 		}
 
-		assert( T.isArray(arg_payload.metrics), context + ':receive_msg:bad payload.metrics object')
+		this.process_metric(arg_msg.get_metrics_type(), arg_msg.get_metrics_values())
 
-		try
-		{
-			this.process_metric(arg_payload.metric, arg_payload.metrics)
-		}
-		catch(e)
-		{
-			console.error(context + ':exception:' + e)
-		}
-
-
-		this.leave_group('receive_msg')
+		this.leave_group('receive_metrics')
 	}
     
 	

@@ -33,7 +33,7 @@ export default class MessagesSvcProvider extends SocketIOServiceProvider
 		this.is_messages_service_provider = true
 		
 		// CREATE A BUS CLIENT
-		this.messages_bus_stream = runtime.node.msg_bus.get_output_stream()
+		this.messages_bus_stream = runtime.node.get_msg_bus().get_output_stream()
 		this.init_messages_bus_stream()
 		// this.messages_bus_stream.subscribe(
 		// 	(messages_record) => {
@@ -75,12 +75,17 @@ export default class MessagesSvcProvider extends SocketIOServiceProvider
 	}
 	
 	
+	
 	/**
-	 * Produce service datas on request
-	 * @param {object} arg_data - query datas (optional)
-	 * @returns {Promise} - promise of results
+	 * Process request and returns datas.
+	 * 
+	 * @param {string} arg_method - method name
+	 * @param {array} arg_operands - request operands
+	 * @param {object} arg_credentials - request credentials
+	 * 
+	 * @returns {Promise}
 	 */
-	produce(/*arg_data*/)
+	process(/*arg_method, arg_operands, arg_credentials*/)
 	{
 		return Promise.reject('not yet implemented')
 	}

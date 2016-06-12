@@ -19,9 +19,11 @@ export default class Bus extends Instance
 {
 	/**
 	 * Create a bus.
+	 * 
 	 * @param {string} arg_name - instance name.
 	 * @param {object} arg_settings - settings.
 	 * @param {string} arg_log_context - trace context.
+	 * 
 	 * @returns {nothing}
 	 */
 	constructor(arg_name, arg_settings, arg_log_context)
@@ -32,6 +34,9 @@ export default class Bus extends Instance
 		
 		this.input = new Stream()
 		this.output = this.input
+
+		this.targets = {}
+		this.gateways = []
 	}
 	
 	
@@ -55,41 +60,29 @@ export default class Bus extends Instance
 	{
 		return this.output
 	}
-	
-	
-	
+
+
+
 	/**
-	 * Send a payload to an other client with a Message format.
-	 * @param {string} arg_sender - sender node name.
-	 * @param {string} arg_target - recipient node name.
-	 * @param {object} arg_payload - message payload plain object.
-	 * @returns {nothing}
-	 */
-	send_msg(arg_sender, arg_target, arg_payload)
-	{
-		assert( T.isString(arg_sender), context + ':send_msg:bad sender string')
-		assert( T.isString(arg_target), context + ':send_msg:bad target string')
-		assert( T.isObject(arg_payload), context + ':send_msg:bad payload object')
-		
-		const msg = {
-			sender:arg_sender,
-			target:arg_target,
-			payload:arg_payload
-		}
-		
-		this.post(msg)
-	}
-	
-	
-	
-	/**
-	 * Post a message on the bus.
-	 * @param {object} arg_msg - formatted message: {sender:'', target:'', payload:any }.
-	 * @returns {nothing}
+	 * Send a DistributedMessage instance.
+	 * 
+	 * @param {DistributedMessage} arg_msg - message object.
+	 * 
+	 * @returns {boolean} - true:message posted or dispatched, false:msg not processed
 	 */
 	post(arg_msg)
 	{
-		this.input.push(arg_msg)
+		assert( T.isObject(arg_msg) && arg_msg.is_distributed_message, context + ':post:bad message object')
+		
+		if ( this.has_locale_target(arg_msg.get_target()) )
+		{
+			console.log(context + ':post:dispatch on locale bus from=%s to=%s', arg_msg.sender, arg_msg.target)
+			this.input.push(arg_msg)
+			return true
+		}
+
+		console.log(context + ':post:dispatch_on_gateways from=%s to=%s', arg_msg.sender, arg_msg.target)
+		return this.dispatch_on_gateways(arg_msg)
 	}
 	
 	
@@ -102,6 +95,8 @@ export default class Bus extends Instance
 	 */
 	subscribe(arg_filter, arg_handler)
 	{
+		console.error(context + ':subscribe', arg_filter)
+
 		if (arguments.length == 1)
 		{
 			arg_handler = arg_filter
@@ -111,7 +106,7 @@ export default class Bus extends Instance
 		
 		this.output.subscribe(
 			(value) => {
-				// console.log(value,  context + ':subscribe:value')
+				// console.log(context + ':subscribe:received value', value)
 				
 				// FILTER BY PREDICATE
 				if ( T.isFunction(arg_filter) )
@@ -132,6 +127,8 @@ export default class Bus extends Instance
 						arg_handler(value)
 						return
 					}
+
+					return
 				}
 				
 				// NO VALID FILTER
@@ -139,16 +136,72 @@ export default class Bus extends Instance
 			}
 		)
 	}
-	
-	
-	
+
+
+
 	/**
-	 * Get metrics messages count.
+	 * Has target recipient?
 	 * 
-	 * @returns {number} - messages count number.
+	 * @param {string} arg_target - recipient name.
+	 * 
+	 * @returns {boolean} - true:bus has recipient, false:bus hasn't recipient.
 	 */
-	get_msg_count()
+	has_locale_target(arg_target)
 	{
-		
+		return arg_target in this.targets
+	}
+
+
+
+	/**
+	 * Add a target recipient.
+	 * 
+	 * @param {string} arg_target - recipient name.
+	 * 
+	 * @returns {nothing}
+	 */
+	add_locale_target(arg_target)
+	{
+		this.targets[arg_target] = true
+	}
+
+
+
+	/**
+	 * Add a bus gateway.
+	 * 
+	 * @param {BusGateway} arg_gateway - bus gateway.
+	 * 
+	 * @returns {nothing}
+	 */
+	add_gateway(arg_gateway)
+	{
+		this.gateways.push(arg_gateway)
+	}
+
+
+
+	/**
+	 * Dispach given message to bus gateways.
+	 * 
+	 * @param {DistributedMessage} arg_msg - message object.
+	 * 
+	 * @returns {boolean} - true:message posted or dispatched, false:msg not processed
+	 */
+	dispatch_on_gateways(arg_msg)
+	{
+		this.gateways.forEach(
+			(gw) => {
+				console.log(context + ':dispatch_on_gateways:from=%s to=%s on gw=%s', arg_msg.sender, arg_msg.target, gw.get_name())
+				if ( gw.has_remote_target(arg_msg.get_target()) )
+				{
+					console.log(context + ':dispatch_on_gateway:has_remote_target:from=%s to=%s on gw=%s', arg_msg.sender, arg_msg.target, gw.get_name())
+					gw.post_remote(arg_msg)
+					return true
+				}
+			}
+		)
+
+		return false
 	}
 }

@@ -1,10 +1,10 @@
 
-// import T from 'typr'
-// import assert from 'assert'
+import T from 'typr'
+import assert from 'assert'
 
 import Simplebus from 'simplebus'
 
-import BusServer from './bus_server'
+import BusGateway from './bus_gateway'
 
 
 
@@ -17,7 +17,7 @@ let context = 'common/messaging/simplebus_server'
  * @author Luc BORIES
  * @license Apache-2.0
  */
-export default class SimpleBusServer extends BusServer
+export default class SimpleBusServer extends BusGateway
 {
 	/**
 	 * Create a Simplebus server instance.
@@ -34,13 +34,20 @@ export default class SimpleBusServer extends BusServer
 		this.is_simplebus_server = true
 		this.simplebus_bus = undefined
 		this.simplebus_server = undefined
-		
+
 		this.load()
+
+		this.locale_targets = {}
+
+		// DEBUG
+		// this.enable_trace()
 	}
 	
+
 	
 	/**
 	 * Build server.
+	 * 
 	 * @returns {nothing}
 	 */
 	load()
@@ -49,30 +56,53 @@ export default class SimpleBusServer extends BusServer
 		
 		super.load()
 		
+		// GET REMOTE SERVER SETTINGS
+		this.server_host = this.get_setting('host', undefined)
+		this.server_port = this.get_setting('port', undefined)
+		
 		const host = this.server_host
 		const port = this.server_port
 		const size = this.get_setting('size', 1000)
 		
 		
-		console.log(context + ':load: bus of size %s',  size)
+		console.log(context + ':load: bus of size %s', size)
 		this.simplebus_bus = Simplebus.createBus(size)
 		
 		console.log(context + ':load: server listen on %s:%s', host, port)
-		this.simplebus_server = Simplebus.createServer(this.bus, port, host)
-		
-		
-        // SET SOCKET SERVER HANDLERS
-		// this.simplebus_server.server.on('connection', BusServer.on_server_connection)
-		// this.simplebus_server.server.on('close', BusServer.on_client_close)
-		// this.simplebus_server.server.on('error', BusServer.on_client_error)
-		// this.simplebus_server.server.on('listening', BusServer.on_client_listening)
+		this.simplebus_server = Simplebus.createServer(this.simplebus_bus, port, host)
         
 		this.leave_group('load')
 	}
 	
 	
+	
+	/**
+	 * Send a value to a remote recipient.
+	 * @protected
+	 * 
+	 * @param {DistributedMessage} arg_msg - message object to send.
+	 * 
+	 * @returns {nothing}
+	 */
+	post_remote(arg_msg)
+	{
+		assert( T.isObject(arg_msg) && arg_msg.is_distributed_message, context + ':post_remote:bad msg object')
+
+		console.info(context + ':post_remote:from=%s to=%s', arg_msg.get_sender(), arg_msg.get_target())
+
+		if (arg_msg.get_sender() == arg_msg.get_target())
+		{
+			return
+		}
+
+		this.simplebus_bus.post(arg_msg)
+	}
+	
+	
+
 	/**
 	 * Enable server (start it).
+	 * 
 	 * @returns {nothing}
 	 */
 	enable()
@@ -82,14 +112,22 @@ export default class SimpleBusServer extends BusServer
 		if (this.simplebus_server)
 		{
 			this.simplebus_server.start()
+
+			// SET SOCKET SERVER HANDLERS
+			// this.simplebus_server.server.on('connection', BusServer.on_server_connection)
+			// this.simplebus_server.server.on('close', BusServer.on_client_close)
+			// this.simplebus_server.server.on('error', BusServer.on_client_error)
+			// this.simplebus_server.server.on('listening', BusServer.on_client_listening)
 		}
 		
 		this.leave_group('enable Bus server')
 	}
 	
+
 	
 	/**
 	 * Disable server (stop it).
+	 * 
 	 * @returns {nothing}
 	 */
 	disable()
@@ -104,53 +142,20 @@ export default class SimpleBusServer extends BusServer
 		this.leave_group('disable Bus server')
 	}
 	
-	
-	
+
+
 	/**
-	 * Post a message on the bus.
-	 * @param {object} arg_msg - message payload.
+	 * Subscribe to messages for a recipient.
+	 * 
+	 * @param {string} arg_recipient_name - recipient name.
+	 * 
 	 * @returns {nothing}
 	 */
-	// post(arg_msg)
-	// {
-	// 	this.bus.post(arg_msg)
-	// 	this.msg_bus_stream.push(arg_msg)
-	// }
-	
-	
-	/**
-	 * Send a message to an other client.
-	 * @param {string} arg_node_name - recipient node name.
-	 * @param {object} arg_payload - message payload plain object.
-	 * @returns {nothing}
-	 */
-	// send_msg(arg_node_name, arg_payload)
-	// {
-	// 	if ( T.isString(arg_payload) )
-	// 	{
-	// 		arg_payload = { msg:arg_payload }
-	// 	}
-	// 	assert( T.isString(arg_node_name), context + ':send_msg:bad node name string')
-	// 	assert( T.isObject(arg_payload), context + ':send_msg:bad payload object')
-		
-	// 	this.info('sending a message to [' + arg_node_name + ']')
-		
-	// 	const msg =  { 'target':arg_node_name, 'sender':this.get_name(), 'payload':arg_payload }
-	// 	this.bus.post(msg)
-	// 	this.msg_bus_stream.push(msg)
-	// }
-	
-	
-	/**
-	 * Subscribe to messages of the bus.
-	 * @param {string|object} arg_filter - messages criteria for filtering.
-	 * @param {function} arg_handler - subscription callback as f(msg).
-	 * @returns {nothing}
-	 */
-	// subscribe(arg_filter, arg_handler)
-	// {
-	// 	this.bus.subscribe(arg_filter, arg_handler)
-	// }
+	subscribe(arg_recipient_name)
+	{
+		// console.log(context + ':subscribe:bus=%s, recipient=%s', this.get_name(), arg_recipient_name)
+		this.subscribe_to_bus(arg_recipient_name, this.simplebus_bus)
+	}
 	
 	
     

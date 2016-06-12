@@ -105,6 +105,34 @@ export default class Context
 	// *************************************************** URL ********************************************************
 	
     /**
+     * Get credentials.
+	 * 
+     * @param {object} arg_request - request object.
+	 * 
+     * @returns {object} credentials plain object.
+     */
+	get_credentials(arg_request)
+	{
+		// logs.debug('get_credentials')
+
+		const auth_mgr = this.$runtime ? this.$runtime.security().authentication() : null
+		if (! auth_mgr)
+		{
+			return undefined
+		}
+		
+		if ( ! arg_request )
+		{
+			return undefined
+		}
+		
+		const credentials = auth_mgr.get_credentials(arg_request)
+		return credentials
+	}
+	
+	
+	
+    /**
      * Get credentials string.
 	 * 
      * @param {object} arg_request - request object.
@@ -153,7 +181,7 @@ export default class Context
 		
 		if ( ! arg_request )
 		{
-			return arg_url + '?{{credentials}}'
+			return arg_url + '?{{credentials_url}}'
 		}
 		
 		const credentials_str = this.get_credentials_string(arg_request)
@@ -178,12 +206,32 @@ export default class Context
      */
 	render_credentials_template(arg_html, arg_request)
 	{
-		const credentials_str = this.get_credentials_string(arg_request)
+		let credentials_str = this.get_credentials_string(arg_request)
+		let credentials_url = this.get_credentials_string(arg_request)
+		let credentials_obj = this.get_credentials(arg_request)
 		// console.log(credentials_str, 'credentials_str')
+		
+		
+		// TODO 2 cases:
+		/*
+			url:string
+			var:JSON.stringiy(object)
+		*/
+		
+		
 		
 		if (credentials_str)
 		{
-			return mustache.render(arg_html, { credentials:credentials_str })
+			const credentials_datas = {
+				credentials_str:credentials_str,
+				credentials_url:credentials_url,
+				credentials_username:credentials_obj.username,
+				credentials_password:credentials_obj.password,
+				credentials_token:credentials_obj.token,
+				credentials_expire:credentials_obj.expire
+				// credentials_obj: `{ \"username\":\"${credentials_obj.username}\", "password":"${credentials_obj.password}" }`
+			}
+			return mustache.render(arg_html, credentials_datas)
 		}
 		
 		return arg_html

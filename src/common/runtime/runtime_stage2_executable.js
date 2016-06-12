@@ -43,6 +43,7 @@ export default class RuntimeStage2Executable extends RuntimeExecutable
 		this.separate_level_1()
 		this.enter_group('execute')
 		
+
 		// CREATE PLUGINS MANAGERS AND LOAD DEFAULT PLUGINS
 		this.runtime.plugins_factory = new PluginsFactory(this.runtime)
 		
@@ -66,11 +67,20 @@ export default class RuntimeStage2Executable extends RuntimeExecutable
 			const node_settings = store.get_collection_item('nodes', this.runtime.node.get_name())
 			// console.log(context + ':config', config().get('nodes'))
 			
-			this.runtime.node.load_master_settings(node_settings)
+			this.runtime.node.load_topology_settings(node_settings)
 			
 			this.info('Create services for all master node servers')
 			this.make_services()
 		}
+		else
+		{
+			this.enter_group('register_to_master')
+
+			setTimeout( () => { this.runtime.node.register_to_master() }, 200)
+			
+			this.leave_group('register_to_master')
+		}
+
 		
 		this.leave_group('execute')
 		this.separate_level_1()

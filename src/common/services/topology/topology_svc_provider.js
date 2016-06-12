@@ -30,140 +30,105 @@ export default class TopologySvcProvider extends SocketIOServiceProvider
 		super(arg_provider_name, arg_service_instance, arg_context ? arg_context : context)
 		
 		assert(this.service.is_topology_service, context + ':bad topology service')
-		
-		// CREATE A STREAM
-		// this.metrics_stream = new Stream()
-		// this.init_stream()
-		
-		// DEBUG STREAM
-		// this.metrics_bus_stream.subscribe(
-		// 	(metrics_record) => {
-		// 		console.log('MetricsSvcProvider: new metrics record on the bus', metrics_record)
-		// 	}
-		// )
 	}
 	
 	
 	
 	/**
-	 * Init output stream.
-	 * @returns {nothing}
-	 */
-	/*init_stream()
-	{
-		const self = this
-		this.metric_reducer = new MetricHostReducer()
-		this.metric_state = new MetricHostState()
-		
-		
-		// SCHEDULE HOST METRICS
-		const delay_in_sec = 3
-		const handler = () => {
-			const metric = new MetricHost()
-			const reduced_values = self.metric_reducer.reduce(self.metric_state, [metric.get_values()])
-			self.metric_state.set_values(reduced_values)
-			
-			const metrics_record = {
-				is_metrics_message:true,
-				metric:'host',
-				metrics:[self.metric_state.get_values()],
-				'metrics_count':1
-			}
-			self.metrics_stream.push(metrics_record)
-		}
-		
-		this.scheduler = setInterval(handler, delay_in_sec * 1000)
-		
-		
-		// SEND METRICS TO SOCKETIO SUBSCRIBERS
-		self.metrics_stream.subscribe(
-			(metrics_record) => {
-				// console.log(metrics_record, 'metrics_record')
-				self.provided_values_stream.push(metrics_record)
-			}
-		)
-	}*/
-	
-	
-	
-	/**
-	 * Produce service datas as requested.
+	 * Process request and returns datas.
 	 * Query filter: {
 	 * 	 mode:'logical' or 'physical'
 	 *   root_type:'*' or 'node' or 'server' or 'application'
 	 *   root_name:node/server/application name
 	 * }
 	 * 
-	 * @param {object} arg_data - query datas (optional)
-	 * @returns {Promise} - promise of results
+	 * @param {string} arg_method - method name
+	 * @param {array} arg_operands - request operands
+	 * @param {object} arg_credentials - request credentials
+	 * 
+	 * @returns {Promise}
 	 */
-	produce(arg_data)
+	process(arg_method, arg_operands, arg_credentials)
 	{
-		// CHECK OPERANDS
-		if ( ! T.isObject(arg_data) || ! T.isObject(arg_data.request) || ! T.isArray(arg_data.request.operands)  )
-		{
-			return Promise.reject(context + ':produce:bad operands object')
-		}
+		assert( T.isString(arg_method), context + ':process:bad method string')
+		assert( T.isArray(arg_operands), context + ':process:bad operands array')
+		assert( T.isObject(arg_credentials), context + ':process:bad credentials object')
 		
-		// GET QUERY
-		const query = arg_data.request.operands[0]
-		if ( ! T.isObject(query) || ! T.isString(query.mode) )
-		{
-			console.log(query, context + ':produce:query')
-			return Promise.reject(context + ':produce:bad query object')
-		}
+		const metrics_server = runtime.node.metrics_server
 		
-		// PHYSICAL TOPOLOGY
-		if (query.mode == 'physical')
+		switch(arg_method)
 		{
-			let topology = { nodes:{} }
-			
-			runtime.nodes.forEach(
-				(node) => {
-					let node_topology = { servers:{} }
-					node.servers.forEach(
-						(server) => {
-							node_topology.servers[server.get_name()] = {
-								host:server.server_host,
-								port:server.server_port,
-								protocole:server.server_protocole,
-								type:server.server_type
-							}
-						}
-					)
-					topology.nodes[node.get_name()] = node_topology
+			case 'get': {
+				// GET WITHOUT OPERANDS
+				if ( arg_operands.length == 0)
+				{
+					const nodejs_state_values = metrics_server.get_nodejs_metrics_state_values()
+					// console.log(nodejs_state_values, context + ':produce:get:no opds:nodejs_state_values')
+					
+					return Promise.resolve(nodejs_state_values)
 				}
-			)
-			
-			return Promise.resolve(topology)
-		}
-		
-		// LOGICAL TOPOLOGY
-		if (query.mode == 'logical')
-		{
-			let topology = { applications:{} }
-			
-			runtime.applications.forEach(
-				(app) => {
-					let app_topology = { provided_services:{}, consumed_services:{} }
-					
-					app.provided_services.forEach(
-						(svc) => {
-							app_topology.provided_services[svc.get_name()] = {}
-						}
-					)
-					
-					app.consumed_services.forEach(
-						(svc) => {
-							app_topology.consumed_services[svc.get_name()] = {}
-						}
-					)
-					
-					topology.applications[app.get_name()] = app_topology
+				
+				// GET WITH OPERANDS
+				const query = arg_operands[0]
+				if ( ! T.isObject(query) || ! T.isString(query.mode) )
+				{
+					console.log(query, context + ':produce:query')
+					return Promise.reject(context + ':produce:bad query object')
 				}
-			)
-			
-			return Promise.resolve(topology)
+				
+				// PHYSICAL TOPOLOGY
+				if (query.mode == 'physical')
+				{
+					let topology = { nodes:{} }
+					
+					runtime.nodes.forEach(
+						(node) => {
+							let node_topology = { servers:{} }
+							node.servers.forEach(
+								(server) => {
+									node_topology.servers[server.get_name()] = {
+										host:server.server_host,
+										port:server.server_port,
+										protocole:server.server_protocole,
+										type:server.server_type
+									}
+								}
+							)
+							topology.nodes[node.get_name()] = node_topology
+						}
+					)
+					
+					return Promise.resolve(topology)
+				}
+				
+				// LOGICAL TOPOLOGY
+				if (query.mode == 'logical')
+				{
+					let topology = { applications:{} }
+					
+					runtime.applications.forEach(
+						(app) => {
+							let app_topology = { provided_services:{}, consumed_services:{} }
+							
+							app.provided_services.forEach(
+								(svc) => {
+									app_topology.provided_services[svc.get_name()] = {}
+								}
+							)
+							
+							app.consumed_services.forEach(
+								(svc) => {
+									app_topology.consumed_services[svc.get_name()] = {}
+								}
+							)
+							
+							topology.applications[app.get_name()] = app_topology
+						}
+					)
+					
+					return Promise.resolve(topology)
+				}
+			}
 		}
 		
 		return Promise.reject(context + ':produce:bad query mode')

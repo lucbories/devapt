@@ -33,7 +33,7 @@ export default class LogsSvcProvider extends SocketIOServiceProvider
 		this.is_logs_service_provider = true
 		
 		// CREATE A BUS CLIENT
-		this.logs_bus_stream = runtime.node.logs_bus.get_output_stream()
+		this.logs_bus_stream = runtime.node.get_logs_bus().get_output_stream()
 		this.init_logs_bus_stream()
 		// this.logs_bus_stream.subscribe(
 		// 	(logs_record) => {
@@ -122,13 +122,18 @@ export default class LogsSvcProvider extends SocketIOServiceProvider
 	}
 	
 	
+	
 	/**
-	 * Produce service datas on request
-	 * @param {object} arg_data - query datas (optional)
-	 * @returns {Promise} - promise of results
+	 * Process request and returns datas.
+	 * 
+	 * @param {string} arg_method - method name
+	 * @param {array} arg_operands - request operands
+	 * @param {object} arg_credentials - request credentials
+	 * 
+	 * @returns {Promise}
 	 */
-	produce(/*arg_data*/)
+	process(/*arg_method, arg_operands, arg_credentials*/)
 	{
-		return Promise.reject('not yet implemented')
+		return Promise.reject('nothing to do')
 	}
 }

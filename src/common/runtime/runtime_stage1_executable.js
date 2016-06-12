@@ -16,6 +16,7 @@ let context = 'common/executables/runtime_stage1_executable'
  * Runtime Stage 1 consists of:
  * 	  - load master apps settings
  *	  - load security settings
+ *    - load logger settings
 */
 export default class RuntimeStage1Executable extends RuntimeExecutable
 {
@@ -35,7 +36,7 @@ export default class RuntimeStage1Executable extends RuntimeExecutable
 		// console.log(config, 'config')
 		
 		const saved_trace = this.get_trace()
-		const has_trace = this.runtime.get_setting(['trace', 'stages', 'RuntimeStage1', 'enabled'], false)
+		const has_trace = true || this.runtime.get_setting(['trace', 'stages', 'RuntimeStage1', 'enabled'], false)
 		this.set_trace(has_trace)
 		
 		// DEBUG

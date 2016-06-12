@@ -2,6 +2,7 @@
 import T from 'typr'
 import assert from 'assert'
 
+import runtime from '../../base/runtime'
 import Settingsable from '../../base/settingsable'
 
 
@@ -39,6 +40,8 @@ export default class MetricsCollector extends Settingsable
 		
 		this.$state = STATUS_CREATED
 		
+		this.metrics_server_name = undefined
+
 		this.metrics_reducer = undefined
 		this.metrics_state = undefined
 	}
@@ -54,7 +57,28 @@ export default class MetricsCollector extends Settingsable
 	{
 		this.$state = STATUS_INITIALIZED
 	}
-	
+
+
+
+	/**
+	 * Send metrics message.
+	 * 
+	 * @param {string} arg_type - metrics type string.
+	 * @param {array} arg_values - metrics values array.
+	 * 
+	 * @returns {boolean}
+	 */
+	send_metrics(arg_type, arg_values)
+	{
+		if (!this.metrics_server_name)
+		{
+			this.metrics_server_name = runtime.node.get_metrics_server().get_name()
+			// console.log(context + ':send_metrics:metrics_server_name:type=%s srv=%s', arg_type, this.metrics_server_name)
+		}
+
+		// console.log(context + ':send_metrics:type=%s srv=%s', arg_type, this.metrics_server_name)
+		return runtime.node.send_metrics(this.metrics_server_name, arg_type, arg_values)
+	}
 	
     
 	/**

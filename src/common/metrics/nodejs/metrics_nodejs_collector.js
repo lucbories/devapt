@@ -55,12 +55,13 @@ export default class MetricsNodeJsCollector extends MetricsCollector
 		this.metrics_record = new MetricsNodeJsRecord()
 		
 		// SCHEDULE HOST METRICS
+		const self = this
 		const delay_in_sec = 3
 		this.metrics_record.before()
 		const handler = () => {
 			this.metrics_record.iteration()
 			
-			runtime.node.metrics_server.send_metrics(this.metrics_record.get_name(), this.metrics_record.get_values())
+			self.send_metrics(self.metrics_record.get_name(), [self.metrics_record.get_values()])
 		}
 		
 		this.scheduler = setInterval(handler, delay_in_sec * 1000)

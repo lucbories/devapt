@@ -26,11 +26,13 @@ export default class Instance extends Settingsable
 	 * Create an instance.
 	 * @extends Settingsable
 	 * @abstract
+	 * 
 	 * @param {string} arg_collection - collection name.
 	 * @param {string} arg_class - class name.
 	 * @param {string} arg_name - instance name.
 	 * @param {object} arg_settings - settings plain object
 	 * @param {string} arg_log_context - log context.
+	 * 
 	 * @returns {nothing}
 	 */
 	constructor(arg_collection, arg_class, arg_name, arg_settings, arg_log_context)
@@ -75,11 +77,16 @@ export default class Instance extends Settingsable
 		if ( ! this.is_runtime )
 		{
 			const logger = this.get_logger_manager()
+
+			// console.log(context + ':constructor:logger settings', logger.$settings)
+
 			// const traces = logger.get_setting('traces') // TODO
-			if ( T.isObject(logger.$settings) && T.isObject(logger.$settings.traces) )
+			// if ( T.isObject(logger.$settings) && T.isObject( logger.$settings.has('traces') ) )
+			if ( T.isObject(logger.$settings) && T.isObject( logger.$settings['traces'] ) )
 			{
 				const traces = logger.$settings['traces']
 				this.is_trace_enabled = this.should_trace(traces)
+				// console.log(context + ':constructor:name=%s, is_trace_enabled', arg_name, this.is_trace_enabled)
 			}
 			// else
 			// {
@@ -109,10 +116,10 @@ export default class Instance extends Settingsable
 		should_trace = should_trace || this.should_trace_class(arg_traces_cfg)
 		should_trace = should_trace || this.should_trace_name(arg_traces_cfg)
 		
-		// if (should_trace)
-		// {
-		// 	console.log(context + ':should_trace(instance):name=' + this.get_name() + ',value=' + should_trace)
-		// }
+		if (should_trace)
+		{
+			console.log(context + ':should_trace(instance):name=' + this.get_name() + ',value=' + should_trace)
+		}
 		
 		return should_trace
 	}

@@ -315,7 +315,7 @@ export default class AuthenticationLowDbPlugin extends AuthenticationPlugin
 		
 		// console.log('authenticate user NOT found')
 		
-		this.debug('authenticate:failure')
+		this.debug('authenticate:failure for', arg_credentials)
 		return Promise.resolve(false)
 	}
 	

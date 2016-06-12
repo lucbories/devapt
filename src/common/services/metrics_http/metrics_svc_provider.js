@@ -33,7 +33,7 @@ export default class MetricsSvcProvider extends SocketIOServiceProvider
 		assert(this.service.is_metrics_service, context + ':bad Metrics service')
 		
 		// CREATE A BUS CLIENT
-		this.metrics_bus_stream = runtime.node.metrics_bus.get_output_stream()
+		this.metrics_bus_stream = runtime.node.get_metrics_bus().get_output_stream()
 		this.init_msg_bus_stream()
 		
 		// DEBUG STREAM
@@ -117,32 +117,30 @@ export default class MetricsSvcProvider extends SocketIOServiceProvider
 	
 	
 	/**
-	 * Produce service datas on request.
+	 * Process request and returns datas.
 	 * 
-	 * @param {object} arg_data - query datas (optional).
+	 * @param {string} arg_method - method name
+	 * @param {array} arg_operands - request operands
+	 * @param {object} arg_credentials - request credentials
 	 * 
-	 * @returns {Promise} - promise of results.
-	 * 
-	 * @todo implements metrics filtering with arg_data.
+	 * @returns {Promise}
 	 */
-	produce(arg_data)
+	process(arg_method, arg_operands, arg_credentials)
 	{
-		const metrics_server = runtime.node.metrics_server
+		assert( T.isString(arg_method), context + ':process:bad method string')
+		assert( T.isArray(arg_operands), context + ':process:bad operands array')
+		assert( T.isObject(arg_credentials), context + ':process:bad credentials object')
 		
-		// NO DATA REQUEST
-		if ( ! T.isObject(arg_data) || ! T.isObject(arg_data.request) || ! T.isString(arg_data.request.operation))
+		const metrics_server = runtime.node.get_metrics_server()
+		
+		switch(arg_method)
 		{
-			return Promise.reject('bad data request')
+			case 'get': {
+				const http_state_values = metrics_server.get_http_metrics_state_values()
+				return Promise.resolve(http_state_values)
+			}
 		}
 		
-		
-		// DATA REQUEST METHOD EXISTS: GET
-		if (arg_data.request.operation == 'get')
-		{
-			const http_state_values = metrics_server.get_http_metrics_state_values()
-			return Promise.resolve(http_state_values)
-		}
-		
-		return Promise.reject('bad data request operation [' + arg_data.request.operation + ']')
+		return Promise.reject('bad data request operation [' + arg_method + ']')
 	}
 }

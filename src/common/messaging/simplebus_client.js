@@ -3,7 +3,7 @@ import T from 'typr'
 import assert from 'assert'
 import Simplebus from 'simplebus'
 
-import BusClient from './bus_client'
+import BusGateway from './bus_gateway'
 
 
 
@@ -17,13 +17,15 @@ let context = 'common/messaging/simplebus_client'
  * @author Luc BORIES
  * @license Apache-2.0
  */
-export default class SimpleBusClient extends BusClient
+export default class SimpleBusClient extends BusGateway
 {
 	/**
 	 * Create a bus client.
+	 * 
 	 * @param {string} arg_name - instance name.
 	 * @param {string} arg_log_context - trace context.
 	 * @param {LoggerManager} arg_logger_manager - logger manager object (optional).
+	 * 
 	 * @returns {nothing}
 	 */
 	constructor(arg_name, arg_log_context, arg_logger_manager)
@@ -34,6 +36,12 @@ export default class SimpleBusClient extends BusClient
 		this.simplebus_client = undefined
 		
 		this.load()
+
+		this.locale_targets = {}
+		this.is_started = false
+		
+		// DEBUG
+		this.enable_trace()
 	}
 	
 	
@@ -44,35 +52,18 @@ export default class SimpleBusClient extends BusClient
 	 */
 	load()
 	{
-		const self = this
+		// const self = this
 		this.enter_group('load')
 		
 		super.load()
 		
-		// CREATE CLIENT OF REMOTE BUS
-		this.simplebus_client = Simplebus.createClient(this.server_host, this.server_port)
+		// GET REMOTE SERVER SETTINGS
+		this.server_host = this.get_setting('host', undefined)
+		this.server_port = this.get_setting('port', undefined)
 		
-        // SET SOCKET CLIENT HANDLERS
-		self.simplebus_client.on('connect', self.on_client_connect)
-		self.simplebus_client.on('close', self.on_client_close)
-		self.simplebus_client.on('data', self.on_client_data)
-		self.simplebus_client.on('end', self.on_client_end)
-		self.simplebus_client.on('error', self.on_client_error)
-		self.simplebus_client.on('timeout', self.on_client_timeout)
-	}
-	
-	
-	
-	/**
-	 * Test if a target is on the remote bus.
-	 * @protected
-	 * @param {string} arg_target - target name.
-	 * @returns {boolean}
-	 */
-	has_remote_target(arg_target)
-	{
-		this.info(context + ':has_remote_target:default implementation, returns always true')
-		return true || arg_target
+		// CREATE CLIENT OF REMOTE BUS
+		console.log(context + ':load:host=%s port=%s', this.server_host, this.server_port)
+		this.simplebus_client = Simplebus.createClient(this.server_port, this.server_host)
 	}
 	
 	
@@ -80,55 +71,82 @@ export default class SimpleBusClient extends BusClient
 	/**
 	 * Send a value to a remote recipient.
 	 * @protected
-	 * @param {object} arg_value - value to send.
+	 * 
+	 * @param {DistributedMessage} arg_msg - message object to send.
+	 * 
 	 * @returns {nothing}
 	 */
-	post_to_remote(arg_value)
+	post_remote(arg_msg)
 	{
 		this.info('sending a message on the remote bus')
 		
-		this.simplebus_client.post(arg_value)
+		assert( T.isObject(arg_msg) && arg_msg.is_distributed_message, context + ':post_remote:bad msg object')
+
+		console.info(context + ':post_remote:from=%s to=%s', arg_msg.get_sender(), arg_msg.get_target())
+
+		if (arg_msg.get_sender() == arg_msg.get_target())
+		{
+			return
+		}
+
+		if (! this.is_started)
+		{
+			console.info(context + ':post_remote:NOT STARTED, from=%s to=%s', arg_msg.get_sender(), arg_msg.get_target())
+			return
+		}
+
+		assert( T.isFunction(this.simplebus_client.post), context + ':post_remote:bad this.simplebus_client.post function')
+		this.simplebus_client.post(arg_msg)
 	}
 	
 	
+
 	/**
 	 * Enable server (start it).
+	 * 
 	 * @returns {nothing}
 	 */
 	enable()
 	{
+		const self = this
 		this.enter_group('enable Bus client')
 		
 		if (this.simplebus_client)
 		{
+			console.log(context + ':enable:start simplebus client')
+			
 			// START CLIENT
-			this.simplebus_client.start(
-				function ()
-				{
-					self.simplebus_client.subscribe( { 'target': this.get_name() },
-						(arg_msg) => {
-							assert( T.isObject(arg_msg), context + ':subscribe:bad msg object')
-							assert( T.isString(arg_msg.sender), context + ':subscribe:bad sender string')
-							assert( T.isString(arg_msg.target), context + ':subscribe:bad target string')
-							assert( T.isObject(arg_msg.payload), context + ':subscribe:bad payload object')
-							
-							self.info('receiving a message from ' + arg_msg.sender)
-							
-							self.receive_from_remote(arg_msg)
-						}
-					)
-					
-					self.info('Messages bus client is started')
-				}
-			)
+			this.simplebus_client.start()
+			
+			const on_started = () => {
+				console.log(context + ':enable:subscribe to simplebus client message for %s', self.get_name())
+
+				self.subscribe(self.get_name())
+
+				// SET SOCKET CLIENT HANDLERS
+				self.simplebus_client.on('connect', self.on_client_connect)
+				self.simplebus_client.on('close', self.on_client_close)
+				self.simplebus_client.on('data', self.on_client_data)
+				self.simplebus_client.on('end', self.on_client_end)
+				self.simplebus_client.on('error', self.on_client_error)
+				self.simplebus_client.on('timeout', self.on_client_timeout)
+				
+				self.is_started = true
+
+				self.info('Messages bus client is started')
+			}
+
+			setTimeout(on_started, 200)
 		}
 		
 		this.leave_group('enable Bus client')
 	}
 	
 	
+
 	/**
 	 * Disable server (stop it).
+	 * 
 	 * @returns {nothing}
 	 */
 	disable()
@@ -142,40 +160,55 @@ export default class SimpleBusClient extends BusClient
 		
 		this.leave_group('disable Bus client')
 	}
+	
+
+
+	/**
+	 * Subscribe to messages for a recipient.
+	 * 
+	 * @param {string} arg_recipient_name - recipient name.
+	 * 
+	 * @returns {nothing}
+	 */
+	subscribe(arg_recipient_name)
+	{
+		// console.log(context + ':subscribe:bus=%s, recipient=%s', this.get_name(), arg_recipient_name)
+		this.subscribe_to_bus(arg_recipient_name, this.simplebus_client)
+	}
     
 	
 	
-	static on_client_connect()
+	on_client_connect()
 	{
 		console.log(context + ':connect on bus client')
 	}
 
 
-	static on_client_data()
+	on_client_data()
 	{
 		console.log(context + ':data on bus client')
 	}
 
 
-	static on_client_error(e)
+	on_client_error(e)
 	{
 		console.log(context + ':error on bus client', e)
 	}
 
 
-	static on_client_close()
+	on_client_close()
 	{
 		console.log(context + ':close on bus client')
 	}
 
 
-	static on_client_end()
+	on_client_end()
 	{
 		console.log(context + ':end on bus client')
 	}
 
 
-	static on_client_timeout()
+	on_client_timeout()
 	{
 		console.log(context + ':timeout on bus client')
 	}

@@ -2,7 +2,7 @@
 // import T from 'typr'
 import assert from 'assert'
 
-import Node from '../servers/node'
+import Node from '../nodes/node'
 import RuntimeExecutable from './runtime_executable'
 
 
@@ -27,13 +27,14 @@ export default class RuntimeStage0Executable extends RuntimeExecutable
 	execute()
 	{
 		const saved_trace = this.get_trace()
-		const has_trace = this.runtime.get_setting(['trace', 'stages', 'RuntimeStage0', 'enabled'], false)
+		const has_trace = true || this.runtime.get_setting(['trace', 'stages', 'RuntimeStage0', 'enabled'], false)
 		this.set_trace(has_trace)
 		
 		// DEBUG
-		// this.set_trace(true)
+		this.set_trace(true)
+		this.enable_trace()
 		// this.is_trace_enabled = true
-		
+
 		this.separate_level_1()
 		this.enter_group('execute')
 		
@@ -43,6 +44,7 @@ export default class RuntimeStage0Executable extends RuntimeExecutable
 		if (this.runtime.is_master)
 		{
 			this.info('Node is master')
+			// console.log(context + ':execute:Node is master')
 			assert(node_name == master_name, context + ':node name [' + node_name + '] not equals master name [' + master_name + ']')
 			
 			// CREATE MASTER NODE
@@ -54,10 +56,14 @@ export default class RuntimeStage0Executable extends RuntimeExecutable
 		else
 		{
 			this.info('Node is not master')
+			// console.log(context + ':execute:Node is not master')
 			
 			// CREATE SIMPLE NODE
 			this.runtime.node = new Node(node_name, this.runtime.get_settings())
+			// console.log(context + ':execute:Node is created')
+
 			this.runtime.node.load()
+			// console.log(context + ':execute:Node is loaded')
 		}
 		
 		this.leave_group('execute')

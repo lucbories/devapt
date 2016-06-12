@@ -236,7 +236,7 @@ export default class Page extends Container
 	render_state_store()
 	{
 		let initial_state = this.get_children_state()
-		initial_state.credentials = '{{credentials}}'
+		initial_state.credentials = { "username":"{{{credentials_username}}}", "password":"{{{credentials_password}}}", "token":"{{{credentials_token}}}", "expire":"{{{credentials_expire}}}" }
 		const stored_state = JSON.stringify(initial_state)
 		return `<script>window.__INITIAL_STATE__ = ${stored_state}</script>\n`
 	}

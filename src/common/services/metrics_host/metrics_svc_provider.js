@@ -94,6 +94,7 @@ export default class MetricsHostSvcProvider extends SocketIOServiceProvider
 		}
 		
 		const msg_filter_cb = (arg_msg) => {
+			// console.log(context + ':msg_filter_cb:', arg_msg)
 			return arg_msg.payload.metric == 'host'
 		}
 		
@@ -108,7 +109,7 @@ export default class MetricsHostSvcProvider extends SocketIOServiceProvider
 			return metrics_record
 		}
 		
-		this.metrics_bus_stream = runtime.node.metrics_bus.get_output_stream()
+		this.metrics_bus_stream = runtime.node.get_metrics_bus().get_output_stream()
 		self.msg_bus_stream_transfomed = self.metrics_bus_stream.transformed_stream.filter(msg_filter_cb).map(msg_cb).groupBy(key_cb, limit_cb).flatMap(flatmap_cb)
 		
 		self.msg_bus_stream_transfomed.onValue(
@@ -129,71 +130,61 @@ export default class MetricsHostSvcProvider extends SocketIOServiceProvider
 	
 	
 	/**
-	 * Produce service datas on request.
+	 * Process request and returns datas.
 	 * 
-	 * @param {object} arg_data - query datas (optional).
+	 * @param {string} arg_method - method name
+	 * @param {array} arg_operands - request operands
+	 * @param {object} arg_credentials - request credentials
 	 * 
-	 * @returns {Promise} - promise of results.
-	 * 
-	 * @todo implements metrics filtering with arg_data.
+	 * @returns {Promise}
 	 */
-	produce(arg_data)
+	process(arg_method, arg_operands, arg_credentials)
 	{
-		const metrics_server = runtime.node.metrics_server
+		assert( T.isString(arg_method), context + ':process:bad method string')
+		assert( T.isArray(arg_operands), context + ':process:bad operands array')
+		assert( T.isObject(arg_credentials), context + ':process:bad credentials object')
 		
-		// NO DATA REQUEST
-		if ( ! T.isObject(arg_data) || ! T.isObject(arg_data.request) || ! T.isString(arg_data.request.operation))
+		const metrics_server = runtime.node.get_metrics_server()
+		
+		switch(arg_method)
 		{
-			return Promise.reject('bad data request')
-		}
-		// console.log(arg_data.request.operation, context + ':produce:operation')
-		
-		
-		// DATA REQUEST METHOD EXISTS: GET
-		if (arg_data.request.operation == 'get')
-		{
-			// console.log(arg_data.request.operands, context + ':produce:get:operands')
-			// console.log(arg_data.request.operands.length, context + ':produce:get:operands.length')
-			
-			// GET WITHOUT OPERANDS
-			if (! T.isArray(arg_data.request.operands) || arg_data.request.operands.length == 0)
-			{
-				const host_state_values = metrics_server.get_host_metrics_state_values()
-				// console.log(host_state_values, context + ':produce:get:no opds:host_state_values')
-				
-				return Promise.resolve(host_state_values)
-			}
-			
-			// GET WITH OPERANDS
-			const operands = arg_data.request.operands
-			const first_operand = operands[0]
-			
-			if ( T.isObject(first_operand) && T.isObject(first_operand.args) )
-			{
-				if ( T.isString(first_operand.args.hostname) )
+			case 'get': {
+				// GET WITHOUT OPERANDS
+				if ( arg_operands.length == 0)
 				{
-					const host_state_values = metrics_server.get_host_metrics_state_values_for(first_operand.args.hostname)
-					// console.log(host_state_values, context + ':produce:get:hostname=' + first_operand.args.hostname + ':host_state_values')
+					const host_state_values = metrics_server.get_host_metrics_state_values()
+					// console.log(host_state_values, context + ':produce:get:no opds:host_state_values')
 					
 					return Promise.resolve(host_state_values)
 				}
+				
+				// GET WITH OPERANDS
+				const first_operand = arg_operands[0]
+				
+				if ( T.isObject(first_operand) && T.isObject(first_operand.args) )
+				{
+					if ( T.isString(first_operand.args.hostname) )
+					{
+						const host_state_values = metrics_server.get_host_metrics_state_values_for(first_operand.args.hostname)
+						// console.log(host_state_values, context + ':produce:get:hostname=' + first_operand.args.hostname + ':host_state_values')
+						
+						return Promise.resolve(host_state_values)
+					}
+				}
+				
+				const host_state_values = metrics_server.get_host_metrics_state_values()
+				// console.log(host_state_values, context + ':produce:get:bad opds:host_state_values')
+				return Promise.resolve(host_state_values)
 			}
-			
-			const host_state_values = metrics_server.get_host_metrics_state_values()
-			// console.log(host_state_values, context + ':produce:get:bad opds:host_state_values')
-			return Promise.resolve(host_state_values)
+		
+			case 'list': {
+				const host_state_items = metrics_server.get_host_metrics_state_values_items()
+				// console.log(host_state_items, context + ':produce:list:host_state_items')
+				
+				return Promise.resolve(host_state_items)
+			}
 		}
 		
-		
-		// DATA REQUEST METHOD EXISTS: LIST
-		if (arg_data.request.operation == 'list')
-		{
-			const host_state_items = metrics_server.get_host_metrics_state_values_items()
-			// console.log(host_state_items, context + ':produce:list:host_state_items')
-			
-			return Promise.resolve(host_state_items)
-		}
-		
-		return Promise.reject('bad data request operation [' + arg_data.request.operation + ']')
+		return Promise.reject('bad data request operation [' + arg_method + ']')
 	}
 }

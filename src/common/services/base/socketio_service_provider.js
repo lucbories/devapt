@@ -22,9 +22,11 @@ export default class SocketIOServiceProvider extends ServiceProvider
 {
 	/**
 	 * Create a service provider.
-	 * @param {string} arg_provider_name - consumer name
-	 * @param {Service} arg_service_instance - service instance
-	 * @param {string} arg_context - logging context label
+	 * 
+	 * @param {string} arg_provider_name - consumer name.
+	 * @param {Service} arg_service_instance - service instance.
+	 * @param {string} arg_context - logging context label.
+	 * 
 	 * @returns {nothing}
 	 */
 	constructor(arg_provider_name, arg_service_instance, arg_context)
@@ -38,6 +40,8 @@ export default class SocketIOServiceProvider extends ServiceProvider
 		
 		this.subscribers_sockets = []
 		
+		// TRACE
+		// this.enable_trace()
 		
 		// ACTIVATE SERVICE ON SOCKETIO SERVER FOR BROWSER REQUEST
 		this.activate_on_socketio_servers()
@@ -58,9 +62,33 @@ export default class SocketIOServiceProvider extends ServiceProvider
 	}
 	
 	
+	
+	/**
+	 * Post a message on the bus.
+	 * 
+	 * @param {object} arg_msg - message payload.
+	 * 
+	 * @returns {nothing}
+	 */
+	post_provided_values_to_subscribers(arg_datas)
+	{
+		const svc_name = this.service.get_name()
+		// console.log(context + ':post:emit datas for ' + svc_name + ' with subscribers:' + this.subscribers_sockets.length)
+		this.subscribers_sockets.forEach(
+			(socket) => {
+				// console.log(context + ':post:emit datas for ' + svc_name)
+				socket.emit('post', { service:svc_name, operation:'post', result:'done', datas:arg_datas })
+			}
+		)
+		
+	}
+	
+	
 	/**
 	 * Get service provider operations.
+	 * 
 	 * @param {object} arg_socket - client socket.
+	 * 
 	 * @returns {object} - plain object of operations as name:callback
 	 */
 	get_io_operations(arg_socket)
@@ -85,6 +113,32 @@ export default class SocketIOServiceProvider extends ServiceProvider
 					arg_socket.emit('pong', '/' + svc_name + '/ping response')
 				},
 			
+			// SECURITY OPERATIONS
+			'login':
+				(data) => {
+					self.on_method('login', arg_socket, data)
+				},
+			'signup':
+				(data) => {
+					self.on_method('signup', arg_socket, data)
+				},
+			'logout':
+				(data) => {
+					self.on_method('logout', arg_socket, data)
+				},
+			'renew':
+				(data) => {
+					self.on_method('renew', arg_socket, data)
+				},
+			'change_password':
+				(data) => {
+					self.on_method('change_password', arg_socket, data)
+				},
+			'reset_password':
+				(data) => {
+					self.on_method('reset_password', arg_socket, data)
+				},
+				
 			// SUBSCRIPTION OPERATIONS
 			'subscribe':
 				(data) => {
@@ -98,15 +152,15 @@ export default class SocketIOServiceProvider extends ServiceProvider
 			// OTHERS OPERATIONS
 			'get':
 				(data) => {
-					self.on_get(arg_socket, data)
+					self.on_method('get', arg_socket, data)
 				},
 			'list':
 				(data) => {
-					self.on_list(arg_socket, data)
+					self.on_method('list', arg_socket, data)
 				},
 			'push':
 				(data) => {
-					self.on_push(arg_socket, data)
+					self.on_method('push', arg_socket, data)
 				}
 		}
 	}
@@ -161,7 +215,79 @@ export default class SocketIOServiceProvider extends ServiceProvider
 				Object.keys(ops).forEach(
 					(key) => {
 						const callback = ops[key]
-						socket.on(key, callback)
+						const check_cb = (data) => {
+							// LOGIN SPECIAL CASE: NO CREDENTIALS YET!
+							const no_credentials_ops = ['login', 'disconnect', 'end', 'ping']
+							if ( no_credentials_ops.indexOf(key) > -1 )
+							{
+								// console.info(context + ':activate_on_socketio_server:operation %s of svc %s without credentials with data:', key, svc_name, data)
+								callback(data)
+								return
+							}
+							
+							// console.info(context + ':activate_on_socketio_server:operation %s indexOf:', key, no_credentials_ops.indexOf(key))
+							
+							// CHECK CREDENTIALS
+							if ( ! data.credentials )
+							{
+								self.error('bad credentials')
+								console.error(context + ':activate_on_socketio_server:bad credentials for method %s of svc %s with data:', key, svc_name, data)
+								return
+							}
+							
+							// console.log(context + ':on: svc=%s op=%s :arg_credentials', svc_name, key, data.credentials.username)
+							
+							let authenticate_promise = runtime.security().authenticate(data.credentials)
+							authenticate_promise = authenticate_promise.then(
+								(authenticate_result) => {
+									if (authenticate_result)
+									{
+										self.debug('authentication success')
+										// console.log(context + 'authentication success')
+										
+										const permission = { resource:svc_name, operation:key }
+										let authorization_promise = runtime.security().authorize(permission, data.credentials)
+										return authorization_promise.then(
+											(authorize_result) => {
+												if (authorize_result)
+												{
+													self.debug('authorization success')
+													// console.log(context + 'authorization success')
+													callback(data)
+													return
+												}
+												
+												self.debug('authorization failure')
+												console.log(context + 'authorization failure')
+												socket.emit(key, { service:svc_name, operation:key, result:'authorization failure' })
+												return
+											}
+										)
+										.catch(
+											(reason) => {
+												self.debug('authorization error:' + reason)
+												console.log(context + 'authorization error:' + reason)
+												socket.emit(key, { service:svc_name, operation:key, result:'authorization error'} )
+											}
+										)
+									}
+									
+									self.debug('authentication failure')
+									console.log(context + 'authentication failure')
+									socket.emit(key, { service:svc_name, operation:key, result:'authentication failure' })
+									return
+								}
+							)
+							.catch(
+								(reason) => {
+									self.debug('authentication error:' + reason)
+									console.log(context + 'authentication error:' + reason)
+									socket.emit(key, { service:svc_name, operation:key, result:'authentication error'} )
+								}
+							)
+						}
+						
+						socket.on(key, check_cb)
 					}
 				)
 				
@@ -174,10 +300,13 @@ export default class SocketIOServiceProvider extends ServiceProvider
 	}
 	
 	
+	
 	/**
 	 * Add a subscriber socket.
+	 * 
 	 * @param {object} arg_socket - subscribing socket.
 	 * @param {object} arg_data - subscribing filter or datas (optional).
+	 * 
 	 * @returns {nothing}
 	 */
 	subscribe(arg_socket/*, arg_data*/)
@@ -190,10 +319,13 @@ export default class SocketIOServiceProvider extends ServiceProvider
 	}
 	
 	
+	
 	/**
 	 * Remove a subscriber socket.
+	 * 
 	 * @param {object} arg_socket - subscribing socket.
 	 * @param {object} arg_data - subscribing filter or datas (optional).
+	 * 
 	 * @returns {nothing}
 	 */
 	unsubscribe(arg_socket, arg_data)
@@ -205,30 +337,14 @@ export default class SocketIOServiceProvider extends ServiceProvider
 	}
 	
 	
-	/**
-	 * Post a message on the bus.
-	 * @param {object} arg_msg - message payload.
-	 * @returns {nothing}
-	 */
-	post_provided_values_to_subscribers(arg_datas)
-	{
-		const svc_name = this.service.get_name()
-		// console.log(context + ':post:emit datas for ' + svc_name + ' with subscribers:' + this.subscribers_sockets.length)
-		this.subscribers_sockets.forEach(
-			(socket) => {
-				// console.log(context + ':post:emit datas for ' + svc_name)
-				socket.emit('post', { service:svc_name, operation:'post', result:'done', datas:arg_datas })
-			}
-		)
-		
-	}
-	
 	
 	/**
 	 * Get operation handler on socket.
+	 * 
 	 * @param {string} arg_method - method name
 	 * @param {object} arg_socket - subscribing socket.
 	 * @param {object} arg_data - query filter or datas (optional).
+	 * 
 	 * @returns {nothing}
 	 */
 	on_method(arg_method, arg_socket, arg_data)
@@ -236,7 +352,14 @@ export default class SocketIOServiceProvider extends ServiceProvider
 		const svc_name = this.service.get_name()
 		// console.info(context + ':on_get:socket get on /' + svc_name, arg_socket.id, arg_data)
 		
-		const datas_promise = this.produce(arg_data)
+		// CHECK REQUEST
+		if ( ! T.isObject(arg_data) || ! T.isObject(arg_data.request) || ! T.isArray(arg_data.request.operands))
+		{
+			return Promise.reject('bad data request')
+		}
+		
+		// PROCESS REQUEST
+		const datas_promise = this.process(arg_method, arg_data.request.operands, arg_data.credentials)
 		datas_promise.then(
 			(produced_datas) => {
 				arg_socket.emit(arg_method, { 'service':svc_name, 'operation':arg_method, 'result':'done', 'datas':produced_datas })
@@ -251,39 +374,17 @@ export default class SocketIOServiceProvider extends ServiceProvider
 	
 	
 	/**
-	 * Get operation handler on socket.
-	 * @param {object} arg_socket - subscribing socket.
-	 * @param {object} arg_data - query filter or datas (optional).
-	 * @returns {nothing}
+	 * Process request and returns datas.
+	 * @abstract
+	 * 
+	 * @param {string} arg_method - method name
+	 * @param {array} arg_operands - request operands
+	 * @param {object} arg_credentials - request credentials
+	 * 
+	 * @returns {Promise}
 	 */
-	on_get(arg_socket, arg_data)
+	process(/*arg_method, arg_operands, arg_credentials*/)
 	{
-		this.on_method('get', arg_socket, arg_data)
-	}
-	
-	
-	
-	/**
-	 * List operation handler on socket.
-	 * @param {object} arg_socket - subscribing socket.
-	 * @param {object} arg_data - query filter or datas (optional).
-	 * @returns {nothing}
-	 */
-	on_list(arg_socket, arg_data)
-	{
-		this.on_method('list', arg_socket, arg_data)
-	}
-	
-	
-	
-	/**
-	 * Push operation handler on socket.
-	 * @param {object} arg_socket - subscribing socket.
-	 * @param {object} arg_data - query filter or datas (optional).
-	 * @returns {nothing}
-	 */
-	on_push(arg_socket, arg_data)
-	{
-		this.on_method('push', arg_socket, arg_data)
+		return Promise.reject('not yet implemented')
 	}
 }
