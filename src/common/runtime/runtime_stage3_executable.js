@@ -30,7 +30,10 @@ export default class RuntimeStage3Executable extends RuntimeExecutable
 	{
 		const saved_trace = this.get_trace()
 		const has_trace = this.runtime.get_setting(['trace', 'stages', 'RuntimeStage3', 'enabled'], false)
-		this.set_trace(has_trace)
+		if (has_trace)
+		{
+			this.enable_trace()
+		}
 		
 		// DEBUG
 		// this.set_trace(true)
@@ -39,19 +42,25 @@ export default class RuntimeStage3Executable extends RuntimeExecutable
 		this.separate_level_1()
 		this.enter_group('execute')
 		
-		if (this.runtime.is_master)
-		{
+		// if (this.runtime.is_master)
+		// {
 			// BUILD MASTER RESOURCES
-			this.info('Load master')
+			// this.info('Load master')
 			
-			this.make_connexions()
-			this.make_modules()
-			this.make_plugins()
-		}
+		this.make_connexions()
+		this.make_modules()
+		this.make_plugins()
+		// }
 		
 		this.leave_group('execute')
 		this.separate_level_1()
-		this.set_trace(saved_trace)
+		
+		// RESTORE TRACES STATE
+		if (! saved_trace && has_trace)
+		{
+			this.disable_trace()
+		}
+		
 		return Promise.resolve()
 	}
 	

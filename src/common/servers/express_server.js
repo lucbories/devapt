@@ -50,6 +50,7 @@ export default class ExpressServer extends Server
 		
 		// USE SECURITY MIDDLEWARE (https://www.npmjs.com/package/helmet)
 		// this.server.use(helmet)
+		this.server.disable('x-powered-by')
 		
 		
 		// USE METRICS MIDDLEWARE

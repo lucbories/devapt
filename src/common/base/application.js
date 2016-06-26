@@ -172,19 +172,24 @@ export default class Application extends Instance
 		assert( T.isObject(provides), context + ':bad settings.services.provides object')
 		provides.forEach(
 			(provide_svc_cfg, service_name) => {
-				this.info('loop on service [' + service_name + ']')
+				// this.info('loop on service [' + service_name + ']')
 				let service = runtime.services.find_by_name(service_name)
 				
 				// assert( T.isObject(service) && service.is_service, context + ':bad service object')
 				
 				if (service)
 				{
-					// this.info('activate service [' + service_name + ']')
+					this.info('activate service [' + service_name + ']')
+
 					service.activate(this, provide_svc_cfg.toJS())
 					
 					service.enable()
 					
 					this.provided_services.add(service)
+				}
+				else
+				{
+					this.info('can not activate: no service found [' + service_name + ']')
 				}
 			}
 		)

@@ -2,6 +2,7 @@
 import T from 'typr'
 import assert from 'assert'
 
+// import { store } from '../../store'
 import ComponentBase from './component_base'
 
 
@@ -67,64 +68,80 @@ export default class Component extends ComponentBase
 		this.dom_node = null
 		this.dom_is_rendered_on_node = false
 		
-		// INIT STATE
-		this.state = {}
-		if ( T.isFunction(this.get_initial_state) )
-		{
-			this.state = this.get_initial_state()
-		}
-		
-		
         // INIT SETTINGS AND UPDATE STATE IF 'settings.state' EXISTS
 		this.settings_is_immutable = false
-		if ( ! T.isObject(arg_settings) )
-		{
-			if ( T.isFunction(this.get_default_settings) )
-			{
-				arg_settings = this.get_default_settings()
-				// console.log('with default arg_settings for %s', arg_name, arg_settings)
-			}
-			else
-			{
-				arg_settings = {}
-			}
-		}
-		assert( T.isObject(arg_settings), context + ':constructor:bad settings object')
-		
-		arg_settings = Component.normalize_settings(arg_settings)
-		// console.log('normalized arg_settings.children for %s', arg_name, arg_settings.children)
-		
-		const js_init = `
-			$(document).ready(
-				function()
-				{
-					window.devapt().ui('${arg_name}')
-				}
-			)
-		`
-		assert( T.isArray(arg_settings.scripts), context + ':constructor:bad settings.scripts array')
-		arg_settings.scripts = arg_settings.scripts.concat([js_init])
-		
-		this.update_settings(arg_settings)
+		this.init_settings(arg_settings)
 		this.settings_is_immutable = true
 		
 		
-		// INIT STATE IF 'settings.state' EXISTS
+		// INIT STATE
+		this.state = {}
 		const settings_state = this.get_setting(['state'], undefined)
-		if ( T.isFunction(this.update_state) && T.isObject(settings_state) )
-		{
-			this.update_state(settings_state)
-		}
+		this.init_state(settings_state)
 	}
-	
-	
+
+
+
+	/**
+	 * Get rendering type.
+	 * 
+	 * @returns {string}
+	 */
+	get_rendering_type()
+	{
+		const state = this.get_state()
+
+		let type = state.type ? state.type : undefined
+		type = type ? type : this.get_setting('type', this.get_type())
+
+		// DEBUG
+		// console.log(context + ':get_rendering_type:name:%s state.type=%s', this.get_name(), state.type)
+		// console.log(context + ':get_rendering_type:name:%s setting.type=%s', this.get_name(), this.get_setting('type', 'no setting type'))
+		// console.log(context + ':get_rendering_type:name:%s type=%s', this.get_name(), type)
+
+		return type
+	}
+
+
+
 	
 	// ***************** MUTABLE STATE *****************
 	
 	/**
-	 * Replace current state with new state and update the UI
-	 * @param {object} arg_settings - state plain object
-	 * @returns {object} this object
+	 * Init state at creation.
+	 * 
+	 * @param {object} arg_state
+	 * 
+	 * @returns {nothing}
+	 */
+	init_state(arg_state)
+	{
+		if ( ! arg_state )
+		{
+			if ( T.isFunction(this.get_initial_state) )
+			{
+				arg_state = this.get_initial_state()
+			}
+			else
+			{
+				arg_state = {}
+			}
+		}
+		// console.log(context + ':init_state:name=%s isObject=%s arg_state=', this.get_name(), T.isObject(arg_state), arg_state)
+		assert( T.isObject(arg_state), context + ':init_state:bad state object')
+
+		this.update_state(arg_state)
+		// console.log(context + ':init_state:name=%s this.state=', this.get_name(), this.state)
+	}
+
+
+
+	/**
+	 * Replace current state with new state and update the UI.
+	 * 
+	 * @param {object} arg_settings - state plain object.
+	 * 
+	 * @returns {object} this object.
 	 */
 	set_state(arg_new_state)
 	{
@@ -134,10 +151,13 @@ export default class Component extends ComponentBase
 	}
 	
 	
+
 	/**
-	 * Update current state with new state and update the UI
-	 * @param {object} arg_settings - state plain object
-	 * @returns {object} this object
+	 * Update current state with new state and update the UI.
+	 * 
+	 * @param {object} arg_settings - state plain object.
+	 * 
+	 * @returns {object} this object.
 	 */
 	update_state(arg_new_state)
 	{
@@ -148,31 +168,36 @@ export default class Component extends ComponentBase
 	}
 	
 	
+
 	/**
-	 * Get current state
-	 * @returns {object} state plain object
+	 * Get current state.
+	 * 
+	 * @returns {object} state plain object.
 	 */
 	get_state()
 	{
 		return this.state ? this.state : { name:undefined, type:undefined, children:undefined }
 	}
 	
+
 	
 	/**
 	 * Get current deep state.
-	 * @returns {object} state plain object
+	 * 
+	 * @returns {object} state plain object.
 	 */
 	get_children_state()
 	{
 		let state = this.get_state()
 		state.children = state.children ? state.children : {}
 		state.name = state.name ? state.name : this.get_name()
-		state.type = state.type ? state.type : this.get_type()
+		state.type = this.get_rendering_type()
 		state.dom_id = state.dom_id ? state.dom_id : this.get_dom_id()
 		
 		return state
 	}
 	
+
 	
 	/**
 	 * Get default component state (only implemented in child classes)

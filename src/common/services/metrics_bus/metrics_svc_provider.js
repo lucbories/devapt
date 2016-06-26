@@ -148,6 +148,12 @@ export default class MetricsBusSvcProvider extends SocketIOServiceProvider
 		switch(arg_method)
 		{
 			case 'get': {
+				// NO LOCAL METRICS SERVER
+				if (! metrics_server)
+				{
+					return Promise.reject('node has no metrics server for operation [' + arg_method + ']')
+				}
+
 				// GET WITHOUT OPERANDS
 				if ( arg_operands.length == 0)
 				{
@@ -177,6 +183,12 @@ export default class MetricsBusSvcProvider extends SocketIOServiceProvider
 			}
 			
 			case 'list': {
+				// NO LOCAL METRICS SERVER
+				if (! metrics_server)
+				{
+					return Promise.reject('node has no metrics server for operation [' + arg_method + ']')
+				}
+				
 				const bus_state_items = metrics_server.get_bus_metrics_state_values_items()
 				// console.log(bus_state_items, context + ':produce:list:bus_state_items')
 				

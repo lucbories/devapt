@@ -97,7 +97,7 @@ export default class ServersNodeFeature extends NodeFeature
 				const server_name = server.get_name()
 				
 				self.node.info(':ServersNodeFeature.start:starting server [' + server_name + ']')
-				console.info(context + ':ServersNodeFeature.start:starting server [' + server_name + ']')
+				// console.info(context + ':ServersNodeFeature.start:starting server [' + server_name + ']')
 				
 				server.enable()
 				server.enable_msg()

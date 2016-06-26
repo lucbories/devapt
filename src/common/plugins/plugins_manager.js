@@ -43,6 +43,8 @@ export default class PluginsManager extends Errorable
      */
 	load(arg_plugins)
 	{
+		this.update_trace_enabled()
+		
 		// console.log(arg_plugins, 'arg_plugins')
 		// const base_dir = get_base_dir()
         

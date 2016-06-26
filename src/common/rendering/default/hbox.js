@@ -33,7 +33,7 @@ export default class HBox extends Component
 	// RENDERING
 	render_main()
 	{
-		// console.log(this.state, 'state2')
+		// console.log(this.state, context + ':render_main:state')
 		assert( T.isObject(this.state), context + ':bad state object')
 		assert( T.isArray(this.state.items), context + ':bad state items array')
 		

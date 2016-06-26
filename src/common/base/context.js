@@ -3,6 +3,7 @@ import T from 'typr'
 import assert from 'assert'
 import path from 'path'
 import mustache from 'mustache'
+import forge from 'node-forge'
 
 
 let context = 'common/base/context'
@@ -222,13 +223,16 @@ export default class Context
 		
 		if (credentials_str)
 		{
+			const base64_encoded = forge.util.encode64(credentials_obj.username + ':' + credentials_obj.password)
+
 			const credentials_datas = {
 				credentials_str:credentials_str,
 				credentials_url:credentials_url,
 				credentials_username:credentials_obj.username,
 				credentials_password:credentials_obj.password,
 				credentials_token:credentials_obj.token,
-				credentials_expire:credentials_obj.expire
+				credentials_expire:credentials_obj.expire,
+				credentials_basic_base64:base64_encoded
 				// credentials_obj: `{ \"username\":\"${credentials_obj.username}\", "password":"${credentials_obj.password}" }`
 			}
 			return mustache.render(arg_html, credentials_datas)

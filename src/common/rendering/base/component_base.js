@@ -107,6 +107,52 @@ export default class ComponentBase extends Instance
 		return arg_settings
 	}
 	
+
+	
+	/**
+	 * Init settings at creation.
+	 * 
+	 * @param {object} arg_settings
+	 * 
+	 * @returns {nothing}
+	 */
+	init_settings(arg_settings)
+	{
+		if ( ! T.isObject(arg_settings) )
+		{
+			if ( T.isFunction(this.get_default_settings) )
+			{
+				arg_settings = this.get_default_settings()
+			}
+			else
+			{
+				arg_settings = {}
+			}
+		}
+		// console.log(context + ':init_settings:name=%s arg_settings=', this.get_name(), arg_settings)
+		assert( T.isObject(arg_settings), context + ':init_settings:bad settings object')
+		
+		// NORMALIZE SETTINGS
+		arg_settings = ComponentBase.normalize_settings(arg_settings)
+		// console.log(context + ':init_settings:name=%s normalized_settings=', this.get_name(), arg_settings)
+		
+		// APPEND INIT SCRIPT SETTING
+		const name = this.get_name()
+		const js_init = `
+			$(document).ready(
+				function()
+				{
+					window.devapt().ui('${name}')
+				}
+			)
+		`
+		assert( T.isArray(arg_settings.scripts), context + ':init_settings:bad settings.scripts array')
+		arg_settings.scripts = arg_settings.scripts.concat([js_init])
+		
+		this.update_settings(arg_settings)
+	}
+
+	
 	
 	/**
 	 * Set component initial settings

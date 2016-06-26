@@ -32,6 +32,11 @@ export default class Bindable extends Loggable
 		const log_context = arg_log_context ? arg_log_context : context
 		super(log_context, window.devapt().runtime().get_logger_manager())
 		this.is_bindable = true
+		
+		if ( ! this.is_runtime )
+		{
+			this.update_trace_enabled()
+		}
 	}
 	
 	
@@ -67,7 +72,9 @@ export default class Bindable extends Loggable
 		
 		const method_cfg = T.isObject(arg_options) ? arg_options.method : undefined
 		// const operands = T.isObject(arg_options) ? arg_options.operands : undefined
+
 		const stream = svc[arg_svc_method](method_cfg)
+		// stream.subscribe( (datas) => {console.log(datas) } )
 		
 		this.bind_stream(stream, arg_values_xform, arg_bound_object, arg_bound_method)
 	}
@@ -145,11 +152,19 @@ export default class Bindable extends Loggable
 			const datas_xform = (arg_stream_record) => {
 				if (arg_stream_record.datas)
 				{
+					// console.log(context + ':bind_stream:datas', arg_stream_record.datas)
 					return arg_stream_record.datas
 				}
 				return arg_stream_record
 			}
-			arg_stream.map(datas_xform).map( transform(arg_values_xform) ).toProperty().assign(arg_bound_object, arg_bound_method)
+			const s = arg_stream.map(datas_xform).map( transform(arg_values_xform) )
+			// s.onValue(
+			// 	(values) => {
+			// 		console.log(context + ':bind_stream:values', values)
+			// 		arg_bound_object[arg_bound_method](values)
+			// 	}
+			// )
+			s.onValue(arg_bound_object, arg_bound_method)
 		}
 		else
 		{

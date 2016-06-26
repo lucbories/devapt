@@ -50,20 +50,21 @@ class Runtime extends Settingsable
 	/**
 	 * Create a Runtime instance.
 	 * @extends Settingsable
+	 * 
 	 * @returns {nothing}
 	 */
 	constructor()
 	{
-		const settings = fromJS( default_settings )
+		const settings = fromJS( {} )
 		const loggers_settings = undefined
 		settings.logger_manager = new LoggerManager(loggers_settings)
 		super(settings, context)
 		
 		
+		// SET DEFAULT ATTRIBUTES VALUES
 		this.is_runtime = true
-		this.is_master = this.get_setting('is_master', false)
+		this.is_master = false
 		this.uid = os.hostname() + '_' + process.pid
-		// console.log(context + ':constructor:is_master', this.is_master)
 		
 		this.node = null
 		
@@ -84,7 +85,6 @@ class Runtime extends Settingsable
 		
 		this.security_mgr = new Security(context, { 'logger_manager':this.logger_manager } )
 		
-		
 		this.info('Runtime is created')
 	}
 	
@@ -104,21 +104,47 @@ class Runtime extends Settingsable
 	
 	/**
 	 * Load runtime settings.
-	 * @param {object} arg_settings - runtime settings
+	 * 
+	 * @param {object} arg_settings - runtime settings.
+	 * 
 	 * @returns {object} promise
 	 */
 	load(arg_settings)
 	{
+		const self = this
+
+		// MERGE DEFAULT AND RUNTIME SETTINGS
+		this.$settings = fromJS( Object.assign(default_settings, arg_settings) )
+		// console.log(context + ':load:runtime.$settings', this.$settings)
+
+		// SET DEFAULT LOGGER
+		const trace_stages_enabled = this.$settings.getIn(['trace', 'stages', 'enabled'], false)
+		let console_logger_index = undefined
+		let console_logger_uid = undefined
+		if ( trace_stages_enabled )
+		{
+			const LoggerConsole = require('../loggers/logger_console').default
+
+			// console.log(context + ':load:add console logger')
+			
+			const console_settings = {
+				enabled:true
+			}
+			const logger = new LoggerConsole(true, console_settings)
+			console_logger_uid = logger.uid
+			this.logger_manager.loggers.push(logger)
+			console_logger_index = this.logger_manager.loggers.length - 1
+			// console.log(context + ':load:add console logger index=' + console_logger_index)
+
+			this.enable_trace()
+		}
+
+		// TRACES ARE ACTIVE IF ENABLED
 		this.separate_level_1()
 		this.enter_group('load')
-		
-		
-		const runtime_settings = Object.assign(default_settings, arg_settings)
-		// console.log(context + ':load:runtime_settings', runtime_settings)
 
-		runtime_settings.logger_manager = this.logger_manager
-		this.$settings = fromJS(runtime_settings)
-		// console.log(this.$settings, 'runtime.$settings')
+		// TODO USEFULL ???
+		// this.$settings.logger_manager = this.logger_manager
 		
 		this.is_master = this.get_setting('is_master', false)
 		// console.log(context + ':load:is_master', this.is_master)
@@ -141,6 +167,19 @@ class Runtime extends Settingsable
 		const tx_promise = tx.execute(null)
 		// console.log(context + ':load:after tx execute')
 
+		if (console_logger_index >= 0)
+		{
+			// console.log(context + ':load:remove runtime loading console logger')
+			tx_promise.then(
+				() => {
+					if (self.logger_manager.loggers.length > console_logger_index && self.logger_manager.loggers[console_logger_index].get_id() == console_logger_uid)
+					{
+						console.log(context + ':load:remove console logger at ' + console_logger_index)
+						self.logger_manager.loggers.splice(console_logger_index, 1)
+					}
+				}
+			)
+		}
 
 		this.leave_group('load')
 		this.separate_level_1()
@@ -150,11 +189,13 @@ class Runtime extends Settingsable
 	
 	/**
 	 * Register a running service.
-	 * @param {string} arg_node_name - node name
-	 * @param {string} arg_svc_name - service name
-	 * @param {string} arg_server_name - server name
-	 * @param {string} arg_server_host - server host name
-	 * @param {string|number} arg_server_port - server host port
+	 * 
+	 * @param {string} arg_node_name - node name.
+	 * @param {string} arg_svc_name - service name.
+	 * @param {string} arg_server_name - server name.
+	 * @param {string} arg_server_host - server host name.
+	 * @param {string|number} arg_server_port - server host port.
+	 * 
 	 * @returns {nothing}
 	 */
 	register_service(arg_node_name, arg_svc_name, arg_server_name, arg_server_host, arg_server_port)
@@ -177,10 +218,13 @@ class Runtime extends Settingsable
 		this.leave_group('register_service')
 	}
 	
+
 	
 	/**
 	 * Get a node by its name.
-	 * @param {string} arg_name - node name
+	 * 
+	 * @param {string} arg_name - node name.
+	 * 
 	 * @returns {Node}
 	 */
 	node(arg_name)
@@ -188,10 +232,13 @@ class Runtime extends Settingsable
 		return this.nodes.item(arg_name)
 	}
 	
+
 	
 	/**
 	 * Get a server by its name.
-	 * @param {string} arg_name - server name
+	 * 
+	 * @param {string} arg_name - server name.
+	 * 
 	 * @returns {Server}
 	 */
 	server(arg_name)
@@ -199,10 +246,13 @@ class Runtime extends Settingsable
 		return this.servers.item(arg_name)
 	}
 	
+
 	
 	/**
 	 * Get a service by its name.
-	 * @param {string} arg_name - service name
+	 * 
+	 * @param {string} arg_name - service name.
+	 * 
 	 * @returns {Service}
 	 */
 	service(arg_name)
@@ -211,9 +261,12 @@ class Runtime extends Settingsable
 	}
 	
 	
+
 	/**
 	 * Get a registered service by its name.
-	 * @param {string} arg_name - registered service name
+	 * 
+	 * @param {string} arg_name - registered service name.
+	 * 
 	 * @returns {Service}
 	 */
 	registered_service(arg_name)
@@ -221,10 +274,13 @@ class Runtime extends Settingsable
 		return this.registered_services.item(arg_name)
 	}
 	
+
 	
 	/**
 	 * Get a module by its name.
-	 * @param {string} arg_name - module name
+	 * 
+	 * @param {string} arg_name - module name.
+	 * 
 	 * @returns {Module}
 	 */
 	module(arg_name)
@@ -232,16 +288,20 @@ class Runtime extends Settingsable
 		return this.modules.item(arg_name)
 	}
 	
+
 	
 	/**
 	 * Get a plugin by its name.
-	 * @param {string} arg_name - plugin name
+	 * 
+	 * @param {string} arg_name - plugin name.
+	 * 
 	 * @returns {Plugin}
 	 */
 	plugin(arg_name)
 	{
 		return this.plugins.item(arg_name)
 	}
+	
 	
 	
 	/**

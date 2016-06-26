@@ -55,7 +55,7 @@ export default class SocketIOServiceProvider extends ServiceProvider
 			this.init_provided_values_stream()
 		}
 		const post_cb = (v) => {
-			// console.log('on metrics stream value:' + v.metrics.length)
+			// console.log(context + ':on stream value for provider %s',  arg_provider_name)
 			self.post_provided_values_to_subscribers(v)
 		}
 		self.provided_values_stream.onValue(post_cb)

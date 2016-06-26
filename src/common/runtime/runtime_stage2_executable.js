@@ -38,7 +38,10 @@ export default class RuntimeStage2Executable extends RuntimeExecutable
 	{
 		const saved_trace = this.get_trace()
 		const has_trace = this.runtime.get_setting(['trace', 'stages', 'RuntimeStage2', 'enabled'], false)
-		this.set_trace(has_trace)
+		if (has_trace)
+		{
+			this.enable_trace()
+		}
 		
 		this.separate_level_1()
 		this.enter_group('execute')
@@ -47,44 +50,52 @@ export default class RuntimeStage2Executable extends RuntimeExecutable
 		// CREATE PLUGINS MANAGERS AND LOAD DEFAULT PLUGINS
 		this.runtime.plugins_factory = new PluginsFactory(this.runtime)
 		
-		if (this.runtime.is_master)
+		// if (this.runtime.is_master)
+		// {
+		this.info('Create master node servers')
+		
+		const nodes_cfg = config().get('nodes')
+		assert( T.isFunction(nodes_cfg.has), context + ':execute:bad nodes_cfg object')
+		if ( nodes_cfg.has('error') )
 		{
-			this.info('Create master node servers')
+			this.info('master settings loading failure', nodes_cfg.get('error'))
+			this.error('master settings loading failure')
 			
-			const nodes_cfg = config().get('nodes')
-			assert( T.isFunction(nodes_cfg.has), context + ':execute:bad nodes_cfg object')
-			if ( nodes_cfg.has('error') )
-			{
-				this.info('master settings loading failure', nodes_cfg.get('error'))
-				this.error('master settings loading failure')
-				
-				this.leave_group('execute:error')
-				this.separate_level_1()
-				this.set_trace(saved_trace)
-				return Promise.reject('master settings loading failure')
-			}
-			
-			const node_settings = store.get_collection_item('nodes', this.runtime.node.get_name())
-			// console.log(context + ':config', config().get('nodes'))
-			
-			this.runtime.node.load_topology_settings(node_settings)
-			
-			this.info('Create services for all master node servers')
-			this.make_services()
+			this.leave_group('execute:error')
+			this.separate_level_1()
+			this.set_trace(saved_trace)
+			return Promise.reject('master settings loading failure')
 		}
-		else
-		{
-			this.enter_group('register_to_master')
+		
+		const node_settings = store.get_collection_item('nodes', this.runtime.node.get_name())
+		// console.log(context + ':node_settings', node_settings)
+		// console.log(context + ':config.nodes', config().get('nodes'))
+		// console.log(context + ':config.nodes', config())
+		
+		this.runtime.node.load_topology_settings(node_settings)
+		
+		this.info('Create services for all master node servers')
+		this.make_services()
+		// }
+		// else
+		// {
+		// 	this.enter_group('register_to_master')
 
-			setTimeout( () => { this.runtime.node.register_to_master() }, 200)
+			// setTimeout( () => { this.runtime.node.register_to_master() }, 200)
 			
-			this.leave_group('register_to_master')
-		}
+		// 	this.leave_group('register_to_master')
+		// }
 
 		
 		this.leave_group('execute')
 		this.separate_level_1()
-		this.set_trace(saved_trace)
+		
+		// RESTORE TRACES STATE
+		if (! saved_trace && has_trace)
+		{
+			this.disable_trace()
+		}
+		
 		return Promise.resolve()
 	}
 	

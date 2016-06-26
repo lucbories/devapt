@@ -37,8 +37,11 @@ export default class RuntimeStage1Executable extends RuntimeExecutable
 		
 		const saved_trace = this.get_trace()
 		const has_trace = true || this.runtime.get_setting(['trace', 'stages', 'RuntimeStage1', 'enabled'], false)
-		this.set_trace(has_trace)
-		
+		if (has_trace)
+		{
+			this.enable_trace()
+		}
+
 		// DEBUG
 		this.set_trace(true)
 		this.is_trace_enabled = true
@@ -46,63 +49,58 @@ export default class RuntimeStage1Executable extends RuntimeExecutable
 		this.separate_level_1()
 		this.enter_group('execute')
 		
+
 		let promise = null
 		const runtime = this.runtime
-		if (runtime.is_master)
+		
+			
+		const settings_provider = runtime.get_setting('settings_provider', null)
+		// console.log(settings_provider, 'settings_provider')
+		
+		if ( T.isObject(settings_provider) )
 		{
-			this.info('Node is master')
+			this.info('Settings provider found for master')
 			
-			const settings_provider = runtime.get_setting('settings_provider', null)
-			// console.log(settings_provider, 'settings_provider')
-			
-			if ( T.isObject(settings_provider) )
-			{
-				this.info('Settings provider found for master')
-				
-				const provider = new Provider(settings_provider)
-				promise = provider.provide_json()
-				.then(
-					// SUCCESS
-					function(arg_json)
+			const provider = new Provider(settings_provider)
+			promise = provider.provide_json()
+			.then(
+				// SUCCESS
+				function(arg_json)
+				{
+					self.info('Dispatching master settings into store')
+					// console.info('Dispatching master settings into store')
+					
+					// console.log(arg_json, 'arg_json')
+					runtime.config_init_json = arg_json
+					runtime.config_store = store
+					if ( ! runtime.config_store.load(arg_json) )
 					{
-						self.info('Dispatching master settings into store')
-						// console.info('Dispatching master settings into store')
-						
-						// console.log(arg_json, 'arg_json')
-						runtime.config_store = store
-						if ( ! runtime.config_store.load(arg_json) )
-						{
-							const error = runtime.config_store.get_error()
-							const str = runtime.config_store.format_error(error)
-							console.error(context + ':runtime.config_store.load:error', str)
-							self.error(context + ':runtime.config_store.load:error:' + str)
-							return false
-						}
-						// console.log(config(), 'config()')
-						
-						return true
-					}
-				)
-				.catch(
-					// FAILURE
-					function(arg_reason)
-					{
-						self.error(context + ':Master settings loading failure:' + arg_reason)
+						const error = runtime.config_store.get_error()
+						const str = runtime.config_store.format_error(error)
+						console.error(context + ':runtime.config_store.load:error', str)
+						self.error(context + ':runtime.config_store.load:error:' + str)
 						return false
 					}
-				)
-			}
-			else
-			{
-				this.error('Settings provider not found')
-				promise = Promise.reject('Settings provider not found for master')
-			}
+					// console.log(config(), 'config()')
+					
+					return true
+				}
+			)
+			.catch(
+				// FAILURE
+				function(arg_reason)
+				{
+					self.error(context + ':Master settings loading failure:' + arg_reason)
+					return false
+				}
+			)
 		}
 		else
 		{
-			this.info('Node is not master')
-			promise = Promise.resolve(true)
+			this.error('Settings provider not found')
+			promise = Promise.reject('Settings provider not found for master')
 		}
+
 		
 		// LOAD LOGGERS SETTINGS
 		this.info('LOAD LOGGERS SETTINGS')
@@ -160,7 +158,13 @@ export default class RuntimeStage1Executable extends RuntimeExecutable
 		
 		this.leave_group('execute')
 		this.separate_level_1()
-		this.set_trace(saved_trace)
+		
+		// RESTORE TRACES STATE
+		if (! saved_trace && has_trace)
+		{
+			this.disable_trace()
+		}
+		
 		return promise
 	}
 }

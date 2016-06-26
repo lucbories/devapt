@@ -76,154 +76,10 @@ export default class Instance extends Settingsable
 		
 		if ( ! this.is_runtime )
 		{
-			const logger = this.get_logger_manager()
+			this.update_trace_enabled()
+		}
+	}
 
-			// console.log(context + ':constructor:logger settings', logger.$settings)
-
-			// const traces = logger.get_setting('traces') // TODO
-			// if ( T.isObject(logger.$settings) && T.isObject( logger.$settings.has('traces') ) )
-			if ( T.isObject(logger.$settings) && T.isObject( logger.$settings['traces'] ) )
-			{
-				const traces = logger.$settings['traces']
-				this.is_trace_enabled = this.should_trace(traces)
-				// console.log(context + ':constructor:name=%s, is_trace_enabled', arg_name, this.is_trace_enabled)
-			}
-			// else
-			// {
-			// 	console.log(context + ':undefined logger settings for ' + this.get_descriptor_string())
-			// }
-		}
-	}
-	
-	
-	/**
-	 * Should trace flag.
-	 * @param {object} arg_traces_cfg - traces settings object as { modules:{}, classes:{}, instances:{} }
-	 * @returns {boolean} - trace flag.
-	 */
-	should_trace(arg_traces_cfg)
-	{
-		if ( ! T.isObject(arg_traces_cfg) )
-		{
-			console.error(context + ':should_trace(instance):no traces cfg')
-			return false
-		}
-		
-		let should_trace = false
-		
-		// TRACES MODULE ?
-		should_trace = should_trace || this.should_trace_module(arg_traces_cfg)
-		should_trace = should_trace || this.should_trace_class(arg_traces_cfg)
-		should_trace = should_trace || this.should_trace_name(arg_traces_cfg)
-		
-		if (should_trace)
-		{
-			console.log(context + ':should_trace(instance):name=' + this.get_name() + ',value=' + should_trace)
-		}
-		
-		return should_trace
-	}
-	
-	
-	/**
-	 * Should trace flag for classes.
-	 * @param {object} arg_traces_cfg - traces settings object as { modules:{}, classes:{}, instances:{} }
-	 * @returns {boolean} - trace flag.
-	 */
-	should_trace_class(arg_traces_cfg)
-	{
-		if ( ! T.isObject(arg_traces_cfg) )
-		{
-			return false
-		}
-		
-		let should_trace = false
-		
-		// TRACES MODULE ?
-		if ( T.isObject(arg_traces_cfg.classes) )
-		{
-			const class_name = this.$class
-			
-			if ( (class_name in arg_traces_cfg.classes) )
-			{
-				// console.log(context + ':class name found')
-				should_trace = arg_traces_cfg.classes[class_name]
-			}
-			else
-			{
-				Object.keys(arg_traces_cfg.classes).forEach(
-					function(arg_class_name)
-					{
-						const loop_value = arg_traces_cfg.classes[arg_class_name]
-						
-						// REGEX
-						if (arg_class_name.indexOf('*') > -1 || arg_class_name.indexOf('.') > -1 || arg_class_name.indexOf('[') > -1 || arg_class_name.indexOf('{') > -1)
-						{
-							const re = new RegExp(arg_class_name, 'gi')
-							const found = re.test(class_name)
-							if (found)
-							{
-								should_trace = loop_value ? true : false
-								return
-							}
-						}
-					}
-				)
-			}
-		}
-		
-		return should_trace
-	}
-	
-	
-	/**
-	 * Should trace flag for instances names.
-	 * @param {object} arg_traces_cfg - traces settings object as { modules:{}, classes:{}, instances:{} }
-	 * @returns {boolean} - trace flag.
-	 */
-	should_trace_name(arg_traces_cfg)
-	{
-		if ( ! T.isObject(arg_traces_cfg) )
-		{
-			return false
-		}
-		
-		let should_trace = false
-		
-		// TRACES MODULE ?
-		if ( T.isObject(arg_traces_cfg.instances) )
-		{
-			const name = this.$name
-			
-			if ( (name in arg_traces_cfg.instances) )
-			{
-				should_trace = arg_traces_cfg.instances[name]
-			}
-			else
-			{
-				Object.keys(arg_traces_cfg.instances).forEach(
-					function(arg_class_name)
-					{
-						const loop_value = arg_traces_cfg.instances[arg_class_name]
-						
-						// REGEX
-						if (arg_class_name.indexOf('*') > -1 || arg_class_name.indexOf('.') > -1 || arg_class_name.indexOf('[') > -1 || arg_class_name.indexOf('{') > -1)
-						{
-							const re = new RegExp(arg_class_name, 'gi')
-							const found = re.test(name)
-							if (found)
-							{
-								should_trace = loop_value ? true : false
-								return
-							}
-						}
-					}
-				)
-			}
-		}
-		
-		return should_trace
-	}
 	
 	
 	/**
@@ -330,5 +186,9 @@ export default class Instance extends Settingsable
 	load()
 	{
 		this.is_loaded = true
+		if ( ! this.is_runtime )
+		{
+			this.update_trace_enabled()
+		}
 	}
 }

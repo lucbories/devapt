@@ -80,7 +80,8 @@ export default class MetricsServer extends Server
 	receive_metrics(arg_msg)
 	{
 		this.enter_group('receive_metrics')
-		console.log(context + ':receive_metrics:from=%s type=%s', arg_msg.sender, arg_msg.payload.metric)
+
+		// console.log(context + ':receive_metrics:from=%s type=%s', arg_msg.sender, arg_msg.payload.metric)
 
 		// DO NOT PROCESS MESSAGES FROM SELF
 		if (arg_msg.sender == this.get_name())

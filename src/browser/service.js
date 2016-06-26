@@ -159,6 +159,8 @@ export default class Service
 		// this.separate_level_1()
 		// this.enter_group('load')
 		
+		// console.log(context + ':load:settings=', arg_settings)
+
 		let ops = DEFAULT_OPS
 		
 		if ('operations' in arg_settings)

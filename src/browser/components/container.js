@@ -243,6 +243,8 @@ export default class Container extends Component
 	{
 		assert( T.isArray(arg_items_array), context + ':do_action_prepend:bad items array')
 		
+		// console.log(context + ':do_action_prepend:arg_items_array', arg_items_array)
+
 		this.dispatch_action('prepend', {values:arg_items_array})
 	}
 	
@@ -454,7 +456,7 @@ export default class Container extends Component
 				
 				if ( T.isFunction(this.strategy_update) )
 				{
-					
+					// console.info(context + ':handle_state_change:strategy_update')
 					this.strategy_update(new_items)
 				}
 				

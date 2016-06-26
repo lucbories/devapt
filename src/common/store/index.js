@@ -180,6 +180,25 @@ class Store
 	{
 		return this.root.getIn( ['applications', arg_name] ).toMap().toJS()
 	}
+
+
+
+	// CONFIG: GET PLUGINS SETS
+	get_plugins()
+	{
+		return this.root.getIn( ['plugins'] ).toMap().keySeq().toArray()
+	}
+	
+	has_plugins_set(arg_name)
+	{
+		return this.root.hasIn( ['plugins', arg_name] )
+	}
+	
+	get_plugins_set(arg_name)
+	{
+		const set = this.root.getIn( ['plugins', arg_name] )
+		return set ? set.toJS() : []
+	}
 	
 
 	// CONFIG: GET RESOURCES LIST

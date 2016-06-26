@@ -194,7 +194,7 @@ function load_config(arg_state, arg_initial_config, arg_base_dir, arg_trace)
 			{
 				arg_state.config.error.suberrors = []
 			}
-			const msg = arg_error.error_msg ? arg_error.error_msg : arg_error.e
+			const msg = arg_error.error_msg ? arg_error.error_msg : arg_error.exception
 			arg_state.config.error.suberrors.push( {type:arg_type, context:arg_error.context, error_msg:msg} )
 			
 		}

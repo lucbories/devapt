@@ -84,10 +84,10 @@ export default class Module extends Instance
 	create_resource(arg_name, arg_settings)
 	{
 		assert( T.isObject(arg_settings), context + ':bad settings object')
-		const res_type =arg_settings.get('type')
-		assert( T.isString(res_type), context + ':bad type string')
+		const res_collection =arg_settings.get('collection')
+		assert( T.isString(res_collection), context + ':bad collection string')
 		
-		switch(res_type)
+		switch(res_collection)
 		{
 			case 'connexions': return new Database(arg_name, arg_settings)
 			case 'views': return new View(arg_name, arg_settings)

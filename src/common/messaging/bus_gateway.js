@@ -52,8 +52,22 @@ export default class BusGateway extends Instance
 		
 		this.remote_targets = {}
 		this.recipients_buses = []
-		// this.unsubscribers = {}
 		this.recipients_buses_unsubscribe = {}
+
+		this.is_started = false
+		this.started_promise = undefined
+	}
+
+
+
+	/**
+	 * Get gateway output stream.
+	 * 
+	 * @returns {object} - output stream
+	 */
+	get_output_stream()
+	{
+		return undefined
 	}
 
 
@@ -89,7 +103,6 @@ export default class BusGateway extends Instance
 	 */
 	has_locale_target(arg_target)
 	{
-		// const buses_names = Object.keys(this.recipients_buses)
 		for(let bus of this.recipients_buses)
 		{
 			if ( bus.has_locale_target(arg_target) )
@@ -140,19 +153,8 @@ export default class BusGateway extends Instance
 	add_remote_target(arg_target)
 	{
 		this.remote_targets[arg_target] = true
-		const self = this
-		// const forward = (msg) => {
-		// 	self.post_remote(msg)
-		// }
 		
 		console.log(context + ':add_remote_target:%s', arg_target)
-
-		// this.recipients_buses.forEach(
-		// 	(bus) => {
-		// 		assert( T.isFunction(bus.subscribe), context + ':add_remote_target:bad bus.subscribe function')
-		// 		bus.subscribe(arg_target, forward)
-		// 	}
-		// )
 	}
 
 
@@ -182,78 +184,22 @@ export default class BusGateway extends Instance
 	 */
 	receive_from_remote(arg_msg)
 	{
-		console.log(context + ':receive_from_remote:from %s to %s', arg_msg.sender, arg_msg.target)
+		this.enter_group('receive_from_remote')
+		// console.log(context + ':receive_from_remote:from %s to %s', arg_msg.sender, arg_msg.target)
 
 		this.add_remote_target(arg_msg.get_sender())
 
 		for(let bus of this.recipients_buses)
 		{
-			console.log(context + ':receive_from_remote:from %s to %s on bus %s', arg_msg.sender, arg_msg.target, bus.get_name())
+			this.debug('receive_from_remote:post on bus', bus.get_name())
+			// console.log(context + ':receive_from_remote:from %s to %s on bus %s', arg_msg.sender, arg_msg.target, bus.get_name())
 
 			// TODO FILTER TARGETS ???
 			bus.post(arg_msg)
 		}
+
+		this.leave_group('receive_from_remote')
 	}
-	
-	
-	
-	/**
-	 * Connect remote bus client to local bus.
-	 * @param {Bus} arg_bus - local bus.
-	 * @returns {nothing}
-	 */
-	/*bind_to_locale_bus(arg_bus)
-	{
-		const self = this
-		const bus_name = arg_bus.get_name()
-		
-		// UNSUBSCRIBE EXISTING BINDING
-		if (bus_name in this.unsubscribers)
-		{
-			this.unbind_from_locale_bus(arg_bus)
-			delete this.unsubscribers[bus_name]
-		}
-		this.unsubscribers[bus_name] = {}
-		
-		// SUBSCRIBE TO LOCAL OUTPUT STREAM
-		const predicate = (arg_msg) => {
-			return ( ! self.has_locale_target(arg_msg.target) && T.isObject(arg_msg) && T.isString(arg_msg.target) ) && self.has_remote_target(arg_msg.target)
-		}
-		this.unsubscribers[bus_name].output = arg_bus.subscribe(
-			predicate,
-			(arg_msg) => { self.post_remote(arg_msg) }
-		)
-		
-		// SUBSCRIBE TO LOCAL INPUT STREAM
-		this.recipients_buses[bus_name] = arg_bus.input
-		this.unsubscribers[bus_name].input = () => {
-			delete self.recipients[bus_name]
-		}
-	}*/
-	
-	
-	/**
-	 * Disconnect remote bus client from local bus.
-	 * @param {Bus} arg_bus - local bus.
-	 * @returns {nothing}
-	 */
-	/*unbind_from_locale_bus(arg_bus)
-	{
-		const bus_name = arg_bus.get_name()
-		if (bus_name in this.unsubscribers)
-		{
-			const unsubscriber = this.unsubscribers[bus_name]
-			if ( T.isFunction(unsubscriber.input) )
-			{
-				unsubscriber.input()
-			}
-			
-			if ( T.isFunction(unsubscriber.output) )
-			{
-				unsubscriber.output()
-			}
-		}
-	}*/
 	
 
 
@@ -267,7 +213,10 @@ export default class BusGateway extends Instance
 	 */
 	subscribe_to_bus(arg_recipient_name, arg_bus)
 	{
+		this.enter_group('subscribe_to_bus')
+
 		const self = this
+		assert( T.isObject(arg_bus), context + ':subscribe:bad bus object')
 		assert( T.isFunction(arg_bus.subscribe), context + ':subscribe:bad bus.subscribe function')
 
 		console.log(context + ':subscribe_to_bus:bus=%s, recipient=%s', this.get_name(), arg_recipient_name)
@@ -281,7 +230,7 @@ export default class BusGateway extends Instance
 				assert( T.isObject(arg_msg.payload), context + ':subscribe:bad payload object')
 				
 				self.info('subscribe:receiving a message from ' + arg_msg.sender)
-				console.info(context + ':subscribe:receiving a message from ' + arg_msg.sender, arg_msg.payload)
+				// console.info(context + ':subscribe:receiving a message from ' + arg_msg.sender, arg_msg.payload)
 				
 				let msg = undefined
 				if (arg_msg.is_distributed_metrics)
@@ -303,6 +252,8 @@ export default class BusGateway extends Instance
 				}
 			}
 		)
+
+		this.leave_group('subscribe_to_bus')
 	}
 	
 
@@ -316,11 +267,15 @@ export default class BusGateway extends Instance
 	 */
 	unsubscribe(arg_recipient_name)
 	{
+		this.enter_group('unsubscribe')
+
 		if ( T.isFunction(this.recipients_buses_unsubscribe[arg_recipient_name]) )
 		{
 			console.log(context + ':unsubscribe_to_bus:bus=%s, recipient=%s', this.get_name(), arg_recipient_name)
 
 			this.recipients_buses_unsubscribe[arg_recipient_name]()
 		}
+
+		this.leave_group('unsubscribe')
 	}
 }

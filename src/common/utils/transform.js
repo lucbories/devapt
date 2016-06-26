@@ -326,7 +326,7 @@ export const transform = (arg_xform) => {
 		if ( T.isObject(arg_value) )
 		{
 			const output_value = output_xformer(arg_value)
-			// console.log(output_value, 'output_value')
+			// console.log(context + ':output_extractor:isObject:output_value', output_value)
 			return output_value
 		}
 		
@@ -339,6 +339,7 @@ export const transform = (arg_xform) => {
 					results.push(output_value)
 				}
 			)
+			// console.log(context + ':output_extractor:isArray:results', results)
 			return results
 		}
 		

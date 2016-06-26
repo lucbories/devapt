@@ -2,7 +2,8 @@
 import T from 'typr'
 import assert from 'assert'
 
-import { config } from '../store/index'
+// import { config } from '../store/index'
+import runtime from '../base/runtime'
 import NodeMessaging from './node_messaging'
 import MetricsNodeFeature from './metrics_node_feature'
 import ServersNodeFeature from './servers_node_feature'
@@ -75,7 +76,7 @@ export default class Node extends NodeMessaging
 	{
 		this.enter_group('load()')
 		
-		// console.log(context + ':load:Node')
+		console.log(context + ':load:Node')
 
 		super.load()
 
@@ -99,6 +100,9 @@ export default class Node extends NodeMessaging
 	 */
 	load_features()
 	{
+		// UODATE TRACE FLAG
+		this.update_trace_enabled()
+		
 		const self = this
 
 		// DEBUG
@@ -123,8 +127,12 @@ export default class Node extends NodeMessaging
 				self.info('Feature is loaded [' + feature.get_name() + ']')
 			}
 		)
-		this.features.push(this.metrics_feature)
-		
+
+		if (this.is_master)
+		{
+			this.features.push(this.metrics_feature)
+		}
+
 		this.leave_group('load_features()')
 	}
 	
@@ -139,17 +147,20 @@ export default class Node extends NodeMessaging
 	 */
 	load_topology_settings(arg_settings)
 	{
-		// DEBUG
-		this.enable_trace()
+		// UODATE TRACE FLAG
+		this.update_trace_enabled()
 
 		this.enter_group('load_topology_settings')
 		this.switch_state(STATE_LOADING)
-		
-		// GET NODE SERVERS SETTINGS
+
 		// console.log(arg_settings, 'node.loading_master_settings:arg_settings')
+		
+		// CHECK NODE SERVERS SETTINGS
 		assert( T.isObject(arg_settings), context + ':load_topology_settings:bad master settings object')
 		assert( T.isFunction(arg_settings.has), context + ':load_topology_settings:bad settings object')
 		assert( arg_settings.has('servers'), context + ':load_topology_settings:unknow settings.servers')
+		
+		// GET NODE SERVERS SETTINGS
 		const servers = arg_settings.get('servers')
 		assert( T.isObject(servers), context + ':load_topology_settings:bad settings.servers object')
 		
@@ -162,7 +173,17 @@ export default class Node extends NodeMessaging
 		this.switch_state(STATE_LOADED)
 		this.leave_group('load_topology_settings')
 	}
-	
+
+
+
+	/**
+	 * TODO get_metrics_server_name
+	 */
+	get_metrics_server_name()
+	{
+		return 'metrics_server'
+	}
+
 	
 	
 	/**
@@ -172,6 +193,10 @@ export default class Node extends NodeMessaging
 	 */
 	get_metrics_server()
 	{
+		if ( ! this.metrics_feature)
+		{
+			return undefined
+		}
 		const srv = this.metrics_feature.get_metrics_server()
 		assert( T.isObject(srv), context + ':get_metrics_server:bad metrics_server object')
 		return srv
@@ -267,13 +292,13 @@ export default class Node extends NodeMessaging
 		// REGISTER A NEW NODE ON MASTER TOPOLOGY
 		if (arg_payload.action == 'NODE_ACTION_REGISTERING' && this.get_name() != arg_payload.node.name)
 		{
-			const cfg = config().toJS()
+			const cfg = runtime.config_init_json
 			const response_msg = {
 				action:'NODE_ACTION_REGISTERING',
 				master:this.get_name(),
-				store:cfg
+				settings:cfg
 			}
-			console.log(context + ':receive_master_msg:send response', response_msg)
+			// console.log(context + ':receive_master_msg:send response', response_msg)
 
 			this.remote_nodes[arg_payload.node.name] = arg_payload.node
 			this.send_msg(arg_sender, response_msg)
@@ -298,11 +323,16 @@ export default class Node extends NodeMessaging
         
 		console.log(context + ':receive_node_msg:send response from %s', arg_sender, arg_payload)
 
-		if (arg_payload.action == 'NODE_ACTION_REGISTERING' && T.isObject(arg_payload.store))
+		if (arg_payload.action == 'NODE_ACTION_REGISTERING' && T.isObject(arg_payload.settings))
 		{
-			console.log(context + ':receive_node_msg:load_topology_settings')
-
-			const settings = arg_payload.store
+			// console.log(context + ':receive_node_msg:load_topology_settings')
+			const settings = arg_payload.settings
+			if ( T.isFunction(this.on_registering_callback) )
+			{
+				this.on_registering_callback(settings)
+				this.leave_group('receive_node_msg:call on_registering_callback')
+				return
+			}
 			this.load_topology_settings(settings)
 		}
 
@@ -328,8 +358,9 @@ export default class Node extends NodeMessaging
 				console.info(context + ':starting feature [' + feature.get_name() + ']')
 				
 				feature.start()
-				
-				self.info('Feature is stopped [' + feature.get_name() + ']')
+
+				console.info('Feature is started [' + feature.get_name() + ']')
+				self.info('Feature is started [' + feature.get_name() + ']')
 			}
 		)
 		

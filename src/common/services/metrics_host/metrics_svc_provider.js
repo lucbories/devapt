@@ -149,8 +149,14 @@ export default class MetricsHostSvcProvider extends SocketIOServiceProvider
 		switch(arg_method)
 		{
 			case 'get': {
+				// NO LOCAL METRICS SERVER
+				if (! metrics_server)
+				{
+					return Promise.reject('node has no metrics server for operation [' + arg_method + ']')
+				}
+				
 				// GET WITHOUT OPERANDS
-				if ( arg_operands.length == 0)
+				if (arg_operands.length == 0)
 				{
 					const host_state_values = metrics_server.get_host_metrics_state_values()
 					// console.log(host_state_values, context + ':produce:get:no opds:host_state_values')
@@ -178,6 +184,12 @@ export default class MetricsHostSvcProvider extends SocketIOServiceProvider
 			}
 		
 			case 'list': {
+				// NO LOCAL METRICS SERVER
+				if (! metrics_server)
+				{
+					return Promise.reject('node has no metrics server for operation [' + arg_method + ']')
+				}
+				
 				const host_state_items = metrics_server.get_host_metrics_state_values_items()
 				// console.log(host_state_items, context + ':produce:list:host_state_items')
 				

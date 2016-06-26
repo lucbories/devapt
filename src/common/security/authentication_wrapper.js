@@ -115,7 +115,7 @@ export default class AuthenticationWrapper extends Settingsable
 			res.contentType = 'json'
 			res.send({ message: 'Authentication failure' })
 			
-			// console.log('apply_middlewares:last_mw:auth failure')
+			// console.log('apply_middlewares:last_mw:auth failure', req.originalUrl)
 			next('Authentication failure')
 		}
 		

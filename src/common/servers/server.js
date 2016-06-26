@@ -300,7 +300,7 @@ export default class Server extends DistributedInstance
 		this.build_server()
 		this.is_build = true
 		
-
+		
 		super.load()
 		
 		// SUBSCRIBE TO MESSAGES BUS

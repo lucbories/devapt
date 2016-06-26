@@ -9,12 +9,13 @@ import runtime from '../../base/runtime'
 const context = 'common/datas/providers/provider'
 
 export const SOURCE_LOCAL_FILE = 'local_file'
+export const SOURCE_MASTER = 'master'
 export const SOURCE_MSG_BUS = 'message_bus'
 export const SOURCE_REMOTE_URL = 'remote_url'
 export const SOURCE_SQL_DATABASE = 'sql_database'
 export const SOURCE_NOSQL_DATABASE = 'nosql_database'
 
-const SOURCES = [SOURCE_LOCAL_FILE, SOURCE_MSG_BUS, SOURCE_REMOTE_URL, SOURCE_SQL_DATABASE, SOURCE_NOSQL_DATABASE]
+const SOURCES = [SOURCE_LOCAL_FILE, SOURCE_MASTER, SOURCE_MSG_BUS, SOURCE_REMOTE_URL, SOURCE_SQL_DATABASE, SOURCE_NOSQL_DATABASE]
 
 
 
@@ -74,8 +75,7 @@ export default class JsonProvider
 
 		switch(this.source)
 		{
-			case SOURCE_LOCAL_FILE:
-			{
+			case SOURCE_LOCAL_FILE: {
 				assert( T.isString(this.$settings.relative_path), context + ':bad settings.relative_path string')
 
 				const file_path = this.$settings.relative_path
@@ -100,24 +100,42 @@ export default class JsonProvider
 				break
 			}
 			
-			case SOURCE_MSG_BUS:
-			{
+			case SOURCE_MASTER: {
+				console.log(context + ':provide_json_self:SOURCE_MASTER begin')
+				const node = runtime.node
+				const master_name = node.master_name
+				assert( T.isString(master_name), context + ':provide_json_self:bad master name string')
+				const delay = T.isNumber(this.$settings.delay) ? this.$settings.delay : 0
 
+				// WAIT FOR BUS GATEWAY IS STARTED AND CONNECTED TO THE LOCAL BUS
+				const do_cb = () => {
+					node.on_registering_callback = resolve
+					node.register_to_master()
+					console.log(context + ':provide_json_self:SOURCE_MASTER end')
+				}
+				setTimeout(do_cb, delay)
+
+				return
+			}
+			
+			case SOURCE_MSG_BUS: {
+				// TODO
+				break
 			}
 
-			case SOURCE_REMOTE_URL:
-			{
-
+			case SOURCE_REMOTE_URL: {
+				// TODO
+				break
 			}
 
-			case SOURCE_SQL_DATABASE:
-			{
-
+			case SOURCE_SQL_DATABASE: {
+				// TODO
+				break
 			}
 
-			case SOURCE_NOSQL_DATABASE:
-			{
-
+			case SOURCE_NOSQL_DATABASE: {
+				// TODO
+				break
 			}
 
 			default:{

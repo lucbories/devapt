@@ -77,7 +77,7 @@ export default class Service extends Instance
 	
 	// STATUS TEST
 	is_unknow()   { return this.status === STATUS_UNKNOW }
-	is_error()	{ return this.status === STATUS_ERROR }
+	is_error()	  { return this.status === STATUS_ERROR }
 	is_created()  { return this.status === STATUS_CREATED }
 	is_enabled()  { return this.status === STATUS_ENABLED }
 	is_disabled() { return this.status === STATUS_DISABLED }
@@ -136,7 +136,7 @@ export default class Service extends Instance
 		{
 			const server_name = arg_app_svc_cfg.servers[i]
 			assert(T.isString(server_name), context + ':bad server name string')
-			// this.info('server_name ' + server_name)
+			this.info('activate on server:' + server_name)
 			
 			const server = runtime.node.get_servers().find_by_name(server_name)
 			if ( T.isObject(server) )
@@ -272,7 +272,7 @@ export default class Service extends Instance
 	create_consumer()
 	{
 		// this.error('create_consumer is not implemented')
-		return new ServiceConsumer(this.get_name() + '_consumer_' + this.get_id(), this)
+		return new ServiceConsumerByUrl(this.get_name() + '_consumer_' + this.get_id(), this)
 	}
 	
 	

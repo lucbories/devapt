@@ -137,7 +137,7 @@ export default class Stateable extends Bindable
 			action.component = this.get_name()
 		}
 		
-		// console.info(context + ':dispatch_action:type=' + action.type + ' for ' + action.component)
+		// console.info(context + ':dispatch_action:type=' + action.type + ' for ' + action.component, action)
 		
 		this.runtime.dispatch_action(action)
 	}

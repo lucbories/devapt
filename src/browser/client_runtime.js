@@ -49,6 +49,11 @@ export default class ClientRuntime extends Loggable
 		this.ui = undefined
 		this.current_state = undefined
 		
+		if ( ! this.is_runtime )
+		{
+			this.update_trace_enabled()
+		}
+		
 		this.info('Client Runtime is created')
 	}
 	
@@ -82,7 +87,7 @@ export default class ClientRuntime extends Loggable
 		// this.loggers.push( new LoggerSvc(true, svc_logger_settings) )
 		
 		const initial_state = window ? window.__INITIAL_STATE__ : {error:'no browser window object'}
-		// console.log(initialState, 'initialState')
+		// console.log(initial_state, 'initialState')
 		
 		if ( T.isFunction(arg_settings.reducers) )
 		{

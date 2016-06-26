@@ -4,6 +4,7 @@ import assert from 'assert'
 
 import Simplebus from 'simplebus'
 
+import Stream from './stream'
 import BusGateway from './bus_gateway'
 
 
@@ -38,6 +39,7 @@ export default class SimpleBusServer extends BusGateway
 		this.load()
 
 		this.locale_targets = {}
+		this.output_stream = new Stream()
 
 		// DEBUG
 		// this.enable_trace()
@@ -71,7 +73,27 @@ export default class SimpleBusServer extends BusGateway
 		console.log(context + ':load: server listen on %s:%s', host, port)
 		this.simplebus_server = Simplebus.createServer(this.simplebus_bus, port, host)
         
+		this.simplebus_bus.subscribe(
+			undefined,
+			(msg) => {
+				console.log(context + ':output bus:transporter=%s sender=%s target=%s', msg.transporter, msg.sender, msg.target)
+				this.output_stream.push(msg)
+			}
+		)
+
 		this.leave_group('load')
+	}
+
+
+
+	/**
+	 * Get gateway output stream.
+	 * 
+	 * @returns {object} - output stream
+	 */
+	get_output_stream()
+	{
+		return this.output_stream
 	}
 	
 	
@@ -88,13 +110,14 @@ export default class SimpleBusServer extends BusGateway
 	{
 		assert( T.isObject(arg_msg) && arg_msg.is_distributed_message, context + ':post_remote:bad msg object')
 
-		console.info(context + ':post_remote:from=%s to=%s', arg_msg.get_sender(), arg_msg.get_target())
+		// console.info(context + ':post_remote:from=%s to=%s', arg_msg.get_sender(), arg_msg.get_target())
 
 		if (arg_msg.get_sender() == arg_msg.get_target())
 		{
 			return
 		}
 
+		assert( T.isObject(this.simplebus_bus), context + ':post_remote:bad this.simplebus_bus object')
 		this.simplebus_bus.post(arg_msg)
 	}
 	
@@ -103,24 +126,39 @@ export default class SimpleBusServer extends BusGateway
 	/**
 	 * Enable server (start it).
 	 * 
-	 * @returns {nothing}
+	 * @returns {Promise}
 	 */
 	enable()
 	{
 		this.enter_group('enable Bus server')
 		
+		if (this.is_started)
+		{
+			this.started_promise = Promise.resolve()
+
+			this.leave_group('enable Bus server:already enabled')
+			return this.started_promise
+		}
+
 		if (this.simplebus_server)
 		{
-			this.simplebus_server.start()
+			this.started_promise = new Promise(
+				(resolve/*, reject*/) => {
+					this.simplebus_server.start()
+					this.is_started = true
+					resolve()
 
-			// SET SOCKET SERVER HANDLERS
-			// this.simplebus_server.server.on('connection', BusServer.on_server_connection)
-			// this.simplebus_server.server.on('close', BusServer.on_client_close)
-			// this.simplebus_server.server.on('error', BusServer.on_client_error)
-			// this.simplebus_server.server.on('listening', BusServer.on_client_listening)
+					// SET SOCKET SERVER HANDLERS
+					// this.simplebus_server.server.on('connection', BusServer.on_server_connection)
+					// this.simplebus_server.server.on('close', BusServer.on_client_close)
+					// this.simplebus_server.server.on('error', BusServer.on_client_error)
+					// this.simplebus_server.server.on('listening', BusServer.on_client_listening)
+				}
+			)
 		}
 		
 		this.leave_group('enable Bus server')
+		return this.started_promise
 	}
 	
 

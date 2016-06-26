@@ -33,7 +33,8 @@ export default class Table extends Container
 		
 		this.is_table_component = true
 		
-		this.enable_trace()
+		// DEBUG
+		// this.enable_trace()
 	}
 	
 	
@@ -76,6 +77,10 @@ export default class Table extends Container
 		// console.log(context + ':ui_items_append:arg_items_array', arg_items_array)
 		this.info('append a row')
 		
+		// this.ui_items_clear()
+		
+		// const current_items_count = this.ui_items_get_count()
+
 		let arg_options = arg_options ? arg_options : {}
 		arg_options.mode = 'append'
 		this.update_rows(arg_items_array, arg_options)
@@ -95,9 +100,17 @@ export default class Table extends Container
 		// console.log(context + ':ui_items_prepend:arg_items_array', arg_items_array)
 		this.info('prepend a row')
 		
+		// TODO : update strategy: cleat and replace, update by counts comparison, update by ids comparison...
+		// this.ui_items_clear()
+		
+		const current_items_count = this.ui_items_get_count()
+		const delta_count = arg_items_array.length - current_items_count
+		const items_to_prepend = (delta_count > 0 && current_items_count > 0) ? arg_items_array.slice(0, delta_count) : arg_items_array
+		// console.log(context + ':ui_items_prepend:items_to_prepend', items_to_prepend)
+
 		let arg_options = arg_options ? arg_options : {}
 		arg_options.mode = 'prepend'
-		this.update_rows(arg_items_array, arg_options)
+		this.update_rows(items_to_prepend, arg_options)
 	}
 	
 	
@@ -188,6 +201,9 @@ export default class Table extends Container
 		const max_rows = T.isNumber(state.max_rows) ? state.max_rows : undefined
 		const max_rows_action = T.isString(state.max_rows_action) ? state.max_rows_action : undefined
 		const rows_count = $('tr', table_body).length
+
+		// DEBUG
+		// console.log( context + ':update_rows:arg_rows_array=', arg_rows_array)
 		// console.log( context + ':update_rows:rows_count=%i', rows_count)
 		
 		arg_rows_array.forEach(

@@ -127,7 +127,7 @@ export default class MetricsHttpCollector extends MetricsCollector
 						let metric = res.devapt_metrics
                         // console.log(metric, 'metric')
                         
-						const metrics_server_name = runtime.node.get_metrics_server().get_name()
+						const metrics_server_name = runtime.node.get_metrics_server_name()
 						// console.log(context + ':create_middleware:metrics srv=%s', metrics_server_name)
 
 						if (metric)

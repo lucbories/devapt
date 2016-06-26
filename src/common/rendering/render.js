@@ -42,6 +42,11 @@ export default class Render extends Loggable
 		this.assets_html_service_consumer = null
 		this.assets_scripts_service_consumer = null
 		this.assets_styles_service_consumer = null
+		
+		if ( ! this.is_runtime )
+		{
+			this.update_trace_enabled()
+		}
 	}
 	
     
@@ -173,8 +178,10 @@ export default class Render extends Loggable
 	}
     
 	
+	
     /**
      * Move up to the rendered components stack.
+	 * 
      * @returns {object} the Render instance.
      */
 	up()
@@ -183,9 +190,11 @@ export default class Render extends Loggable
 		return this
 	}
 	
+
 	
     /**
      * Push a Component instance on the rendering stack.
+	 * 
      * @param {object} arg_component - Component instance.
      * @returns {object} this.
      */
@@ -196,23 +205,49 @@ export default class Render extends Loggable
 	}
 	
 	
+
     /**
      * Add a Component instance to the current component children and push it on the rendering stack.
-     * @param {object} arg_component - Component instance.
+	 * 
+     * @param {object|string} arg_component - Component instance or Component instance name.
+	 * 
      * @returns {object} this.
      */
 	add(arg_component)
 	{
-		assert( T.isObject(arg_component) && arg_component.is_component, context + ':bad component object')
-		
-		if ( this.current().is_container )
+		// NOT A CONTAINER
+		if ( ! this.current().is_container )
+		{
+			console.warn(context + ':add:bad container')
+			return this
+		}
+
+		// COMPONENT NAME
+		if ( T.isString(arg_component) )
+		{
+			const component_name = arg_component
+			
+			this.current().create_and_add_child(component_name)
+			arg_component = this.current().get_component(component_name)
+			
+			this.push(arg_component)
+			return this
+		}
+
+		// COMPONENT INSTANCE
+		// assert( T.isObject(arg_component) && arg_component.is_component, context + ':bad component object')
+		if ( T.isObject(arg_component) && arg_component.is_component )
 		{
 			this.current().add_child(arg_component)
+			
+			this.push(arg_component)
+			return this
 		}
-		this.push(arg_component)
 		
+		console.warn(context + ':add:bad child instance')
 		return this
 	}
+
 	
 	
     /**

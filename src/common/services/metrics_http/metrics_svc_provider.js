@@ -136,6 +136,12 @@ export default class MetricsSvcProvider extends SocketIOServiceProvider
 		switch(arg_method)
 		{
 			case 'get': {
+				// NO LOCAL METRICS SERVER
+				if (! metrics_server)
+				{
+					return Promise.reject('node has no metrics server for operation [' + arg_method + ']')
+				}
+				
 				const http_state_values = metrics_server.get_http_metrics_state_values()
 				return Promise.resolve(http_state_values)
 			}

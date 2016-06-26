@@ -45,6 +45,18 @@ export default class LoggerManager
 		if (! this.is_client_runtime)
 		{
 			const runtime = require('../base/runtime').default
+			
+			if (this.loggers.length > 0)
+			{
+				const old_loggers = this.loggers
+				old_loggers.forEach(
+					(logger, index) => {
+						delete this.loggers[index]
+					}
+				)
+				this.loggers = []
+			}
+
 			this.loggers.push( new LoggerMsgPost(true, runtime.node.get_logs_bus().get_input_stream()) )
 			// this.info('msg logger created')
 			
@@ -64,7 +76,24 @@ export default class LoggerManager
 		
 		this.$settings = arg_settings
 	}
-	
+
+
+
+	/**
+	 * Get tracez settings for Loggable.should_trace.
+	 */
+	get_traces_settings()
+	{
+		if ( T.isObject(this.$settings) && T.isObject(this.$settings.traces) )
+		{
+			return this.$settings.traces
+		}
+
+		return undefined
+
+		// TODO INHERIT FROM SETTINGSABLE
+		// return this.get_setting('traces', undefined)
+	}
 	
 	
 	/**

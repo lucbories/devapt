@@ -38,6 +38,45 @@ export default class Stream
 			}
 		)
 	}
+
+
+
+	/**
+	 * Get input stream.
+	 * 
+	 * @returns {Baconjs.Bus}
+	 */
+	get_source_stream()
+	{
+		return this.source_stream
+	}
+
+
+
+	/**
+	 * Get output stream.
+	 * 
+	 * @returns {Baconjs.Bus}
+	 */
+	get_transformed_stream()
+	{
+		return this.transformed_stream
+	}
+
+
+
+	/**
+	 * Set output stream.
+	 * 
+	 * @param {Baconjs.Bus} arg_stream - transformed stream.
+	 * 
+	 * @returns {Stream} - this
+	 */
+	set_transformed_stream(arg_stream)
+	{
+		this.transformed_stream = arg_stream
+		return this
+	}
 	
 	
 	

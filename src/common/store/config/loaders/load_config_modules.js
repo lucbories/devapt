@@ -106,7 +106,7 @@ function load_config_modules(logs, arg_modules_config, arg_base_dir)
 												assert(T.isString(res_obj.class_name), error_msg_bad_resource_config + ' for file ' + resource_file + ' for resource ' + res_name)
 											}
 											
-											res_obj.type = type_name
+											res_obj.collection = type_name
 											
 											module_obj.resources_by_name[res_name] = res_obj
 											module_obj.resources_by_type[type_name][res_name] = res_obj

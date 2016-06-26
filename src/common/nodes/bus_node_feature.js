@@ -38,6 +38,7 @@ export default class BusNodeFeature extends NodeFeature
 		
 		this.bus = undefined
 		this.bus_gateway = undefined
+		this.started_promise = undefined
 	}
 
 
@@ -63,6 +64,12 @@ export default class BusNodeFeature extends NodeFeature
 		const self = this
 		this.node.enter_group(':BusNodeFeature.load()')
 		
+		if (this.bus)
+		{
+			this.node.leave_group(':BusNodeFeature.load():already loaded')
+			return
+		}
+
 		super.load()
 		
 		// BUS TYPE IS "simplebus_client" OR "simplebus_server"
@@ -86,25 +93,29 @@ export default class BusNodeFeature extends NodeFeature
 				const gw_settings = this.node.get_setting(['master', bus_name]).toJS()
 				const gw_name = this.get_bus_unique_name() + '_gateway'
 				
-				console.log(context + ':load:bus_type != local and gw_settings=%o', gw_settings)
+				// console.log(context + ':load:bus_type != local and gw_settings=%o', gw_settings)
 
 				this.bus_gateway = this.create_bus_gateway(bus_type, gw_name, gw_settings, context)
-				this.bus_gateway.enable()
-				this.bus_gateway.add_locale_bus(this.bus)
-				this.bus.add_gateway(this.bus_gateway)
+				const gw_started_promise = this.bus_gateway.enable()
 
-				const subscription = () => {
-					// self.bus_gateway.bind_to_locale_bus(self.bus)
-					assert( T.isFunction(self.bus_gateway.subscribe), context + ':load:bad self.bus_gateway.subscribe function')
-					self.bus_gateway.subscribe(self.node.get_name())
-				}
-				setTimeout(subscription, 100 )
+				assert(gw_started_promise, context + ':load:bad gateway started promise')
+				
+				this.started_promise = this.bus_gateway.started_promise.then(
+					() => {
 
-				if (! this.node.is_master)
-				{
-					this.bus_gateway.add_remote_target(this.node.master_name)
-					this.node.remote_nodes[this.node.master_name] = this.node.get_setting(['master']).toJS()
-				}
+						self.bus_gateway.add_locale_bus(self.bus)
+						self.bus.add_gateway(self.bus_gateway)
+
+						assert( T.isFunction(self.bus_gateway.subscribe), context + ':load:bad self.bus_gateway.subscribe function')
+						self.bus_gateway.subscribe(self.node.get_name())
+
+						if (! self.node.is_master)
+						{
+							self.bus_gateway.add_remote_target(self.node.master_name)
+							self.node.remote_nodes[self.node.master_name] = self.node.get_setting(['master']).toJS()
+						}
+					}
+				)
 			}
 		}
 		

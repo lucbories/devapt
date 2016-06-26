@@ -3,7 +3,7 @@ import T from 'typr'
 import assert from 'assert'
 
 import Component from './component'
-import { get_or_create_component, get_component, create_component } from './factory'
+import { get_or_create_component, /*get_component, */create_component } from './factory'
 
 
 const context = 'common/rendering/base/container'
@@ -269,10 +269,9 @@ export default class Container extends Component
 	{
 		let state = this.get_state()
 		// delete state.request
-		state.type = this.get_type()
+		state.type = this.get_rendering_type()
 		state.children = state.children ? state.children : {}
 		state.name = state.name ? state.name : this.get_name()
-		state.type = state.type ? state.type : this.get_type()
 		state.dom_id = state.dom_id ? state.dom_id : this.get_dom_id()
 		
 		const children = this.get_children()
@@ -281,7 +280,7 @@ export default class Container extends Component
 				const children_state = child.get_children_state()
 				state.children[child.get_name()] = children_state
 				children_state.name = children_state.name ? children_state.name : child.get_name()
-				children_state.type = children_state.type ? children_state.type : child.get_type()
+				children_state.type = child.get_rendering_type()
 				children_state.dom_id = children_state.dom_id ? children_state.dom_id : child.get_dom_id()
 			}
 		)

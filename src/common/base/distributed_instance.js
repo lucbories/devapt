@@ -26,7 +26,8 @@ export default class DistributedInstance extends Instance
 	 * @extends Instance
 	 * 
 	 * API:
-	 * 		->load()
+	 * 		->load():nothing
+	 * 	    ->load_topology_settings(arg_settings):nothing
 	 * 		->send(DistributedMessage|DistributedMetrics|DistributedLogs):boolean
 	 *      ->enable_on_bus(arg_bus):nothing
 	 *      ->disable_on_bus(arg_bus):nothing
@@ -67,6 +68,9 @@ export default class DistributedInstance extends Instance
 		this.msg_bus= undefined
 		this.metrics_bus= undefined
 		this.logs_bus= undefined
+
+		// DEBUG
+		// this.enable_trace()
 	}
 
 
@@ -78,7 +82,7 @@ export default class DistributedInstance extends Instance
 	 */
 	load()
 	{
-		console.log(context + ':load:DistributedInstance')
+		// console.log(context + ':load:DistributedInstance')
 
 		super.load()
 
@@ -87,6 +91,21 @@ export default class DistributedInstance extends Instance
 		this.logs_bus = runtime.node.get_logs_bus()
 
 		// console.log(context + ':load:name=%s this.metrics_bus', this.get_name(), this.metrics_bus.get_name())
+	}
+
+
+	
+	/**
+	 * Load topology settings.
+	 * 
+	 * @param {object} arg_settings - master node settings.
+	 * 
+	 * @returns {nothing}
+	 */
+	load_topology_settings(/*arg_settings*/)
+	{
+		this.enter_group('load_topology_settings')
+		this.leave_group('load_topology_settings')
 	}
 
 
@@ -169,6 +188,9 @@ export default class DistributedInstance extends Instance
 	 */
 	send_msg(arg_target_name, arg_payload)
 	{
+		// DEBUG
+		// this.enable_trace()
+
 		this.enter_group('send_msg')
 
 		let msg = new DistributedMessage(this.get_name(), arg_target_name, arg_payload)
@@ -196,7 +218,7 @@ export default class DistributedInstance extends Instance
 	receive_msg(arg_msg)
 	{
 		this.enter_group('receive_msg')
-		console.log(context + ':receive_msg:from=%s', arg_msg.sender, arg_msg.payload)
+		// console.log(context + ':receive_msg:from=%s', arg_msg.sender, arg_msg.payload)
 
 		// DO NOT PROCESS MESSAGES FROM SELF
 		if (arg_msg.sender == this.get_name())
@@ -260,13 +282,13 @@ export default class DistributedInstance extends Instance
 		{
 			this.metrics_bus.post(msg)
 
-			console.log(context + ':send_metrics:from=%s, to=%s, type=%s', this.get_name(), arg_target_name, arg_metric_type)
+			// console.log(context + ':send_metrics:from=%s, to=%s, type=%s', this.get_name(), arg_target_name, arg_metric_type)
 			
 			this.leave_group('send_metrics')
 			return true
 		}
 		
-		console.log(context + ':send_metrics:BAD FORMAT:from=%s, to=%s, type=%s, values=', this.get_name(), arg_target_name, arg_metric_type, arg_metrics)
+		console.error(context + ':send_metrics:BAD FORMAT:from=%s, to=%s, type=%s, values=', this.get_name(), arg_target_name, arg_metric_type, arg_metrics)
 
 		this.leave_group('send_metrics:bad format')
 		return false
@@ -284,7 +306,7 @@ export default class DistributedInstance extends Instance
 	receive_metrics(arg_msg)
 	{
 		this.enter_group('receive_metrics')
-		console.log(context + ':receive_metrics:from=%s', arg_msg.sender, arg_msg.payload)
+		// console.log(context + ':receive_metrics:from=%s', arg_msg.sender, arg_msg.payload)
 
 		// DO NOT PROCESS MESSAGES FROM SELF
 		if (arg_msg.sender == this.get_name())
@@ -306,7 +328,9 @@ export default class DistributedInstance extends Instance
 	enable_metrics()
 	{
 		var self = this
-		console.log(context + ':enable_metrics:name=%s, bus=%s', this.get_name(), this.metrics_bus.get_name())
+
+		// console.log(context + ':enable_metrics:name=%s, bus=%s', this.get_name(), this.metrics_bus.get_name())
+		
 		this.metrics_bus.subscribe(this.get_name(), self.receive_metrics.bind(self))
 	}
 
@@ -365,7 +389,8 @@ export default class DistributedInstance extends Instance
 	receive_logs(arg_msg)
 	{
 		this.enter_group('receive_logs')
-		console.log(context + ':receive_logs:from=%s', arg_msg.sender, arg_msg.payload)
+
+		// console.log(context + ':receive_logs:from=%s', arg_msg.sender, arg_msg.payload)
 
 		// DO NOT PROCESS MESSAGES FROM SELF
 		if (arg_msg.sender == this.get_name())

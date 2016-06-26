@@ -72,17 +72,25 @@ export default class Bus extends Instance
 	 */
 	post(arg_msg)
 	{
+		this.enter_group('post')
 		assert( T.isObject(arg_msg) && arg_msg.is_distributed_message, context + ':post:bad message object')
 		
 		if ( this.has_locale_target(arg_msg.get_target()) )
 		{
-			console.log(context + ':post:dispatch on locale bus from=%s to=%s', arg_msg.sender, arg_msg.target)
+			this.debug(':post:dispatch on locale bus from=%s to=%s', arg_msg.sender, arg_msg.target)
+			// console.log(context + ':post:dispatch on locale bus from=%s to=%s', arg_msg.sender, arg_msg.target)
+			
 			this.input.push(arg_msg)
+			
 			return true
 		}
 
-		console.log(context + ':post:dispatch_on_gateways from=%s to=%s', arg_msg.sender, arg_msg.target)
-		return this.dispatch_on_gateways(arg_msg)
+		this.debug(':post:dispatch_on_gateways from=%s to=%s', arg_msg.sender, arg_msg.target)
+		// console.log(context + ':post:dispatch_on_gateways from=%s to=%s', arg_msg.sender, arg_msg.target)
+
+		const dispatched = this.dispatch_on_gateways(arg_msg)
+		this.leave_group('post:dispatched=' + dispatched)
+		return dispatched
 	}
 	
 	
@@ -95,7 +103,7 @@ export default class Bus extends Instance
 	 */
 	subscribe(arg_filter, arg_handler)
 	{
-		console.error(context + ':subscribe', arg_filter)
+		this.enter_group('subscribe')
 
 		if (arguments.length == 1)
 		{
@@ -135,6 +143,8 @@ export default class Bus extends Instance
 				arg_handler(value)
 			}
 		)
+
+		this.leave_group('subscribe')
 	}
 
 
@@ -182,6 +192,18 @@ export default class Bus extends Instance
 
 
 	/**
+	 * Get bus gateways.
+	 * 
+	 * @returns {array}
+	 */
+	get_gateways()
+	{
+		return this.gateways
+	}
+
+
+
+	/**
 	 * Dispach given message to bus gateways.
 	 * 
 	 * @param {DistributedMessage} arg_msg - message object.
@@ -190,18 +212,30 @@ export default class Bus extends Instance
 	 */
 	dispatch_on_gateways(arg_msg)
 	{
+		this.enter_group('dispatch_on_gateways with gateways count', this.gateways.length)
+		// console.log(context + ':dispatch_on_gateway:count=%s', this.gateways.length)
+
+		const dispatched = false
 		this.gateways.forEach(
 			(gw) => {
-				console.log(context + ':dispatch_on_gateways:from=%s to=%s on gw=%s', arg_msg.sender, arg_msg.target, gw.get_name())
+				if (dispatched)
+				{
+					this.info('skip gateway', gw.get_name())
+					return
+				}
+
+				// console.log(context + ':dispatch_on_gateways:from=%s to=%s on gw=%s', arg_msg.sender, arg_msg.target, gw.get_name())
 				if ( gw.has_remote_target(arg_msg.get_target()) )
 				{
-					console.log(context + ':dispatch_on_gateway:has_remote_target:from=%s to=%s on gw=%s', arg_msg.sender, arg_msg.target, gw.get_name())
+					this.info('dispatch on gateway', gw.get_name())
+					// console.log(context + ':dispatch_on_gateway:has_remote_target:from=%s to=%s on gw=%s', arg_msg.sender, arg_msg.target, gw.get_name())
+					
 					gw.post_remote(arg_msg)
-					return true
 				}
 			}
 		)
 
-		return false
+		this.leave_group('dispatch_on_gateways:dispatched=' + dispatched)
+		return dispatched
 	}
 }
