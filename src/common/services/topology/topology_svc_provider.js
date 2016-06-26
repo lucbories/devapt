@@ -81,10 +81,15 @@ export default class TopologySvcProvider extends SocketIOServiceProvider
 				{
 					let topology = { nodes:{} }
 					
+					assert( T.isObject(runtime.nodes), context + ':process:bad runtime.nodes object')
+
 					runtime.nodes.forEach(
 						(node) => {
 							let node_topology = { servers:{} }
-							node.servers.forEach(
+
+							assert( T.isObject(node.servers_feature.servers), context + ':process:bad node.servers object')
+
+							node.servers_feature.servers.forEach(
 								(server) => {
 									node_topology.servers[server.get_name()] = {
 										host:server.server_host,

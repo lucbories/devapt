@@ -1,5 +1,6 @@
 
 import T from 'typr'
+import uid from '../utils/uid'
 
 
 
@@ -29,6 +30,20 @@ export default class Logger
 		this.is_trace_enabled_error = true
 		
 		this.set_trace(arg_enabled)
+
+		this.uid = uid()
+	}
+
+
+
+	/**
+	 * Get logger uid.
+	 * 
+	 * @returns {string}
+	 */
+	get_uid()
+	{
+		return this.uid
 	}
 	
 	

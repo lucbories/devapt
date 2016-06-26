@@ -258,7 +258,7 @@ export default class SocketIOServiceProvider extends ServiceProvider
 												}
 												
 												self.debug('authorization failure')
-												console.log(context + 'authorization failure')
+												console.log(context + ':authorization failure')
 												socket.emit(key, { service:svc_name, operation:key, result:'authorization failure' })
 												return
 											}
@@ -266,7 +266,7 @@ export default class SocketIOServiceProvider extends ServiceProvider
 										.catch(
 											(reason) => {
 												self.debug('authorization error:' + reason)
-												console.log(context + 'authorization error:' + reason)
+												console.log(context + ':authorization error:' + reason)
 												socket.emit(key, { service:svc_name, operation:key, result:'authorization error'} )
 											}
 										)

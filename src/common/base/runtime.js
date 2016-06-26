@@ -172,7 +172,7 @@ class Runtime extends Settingsable
 			// console.log(context + ':load:remove runtime loading console logger')
 			tx_promise.then(
 				() => {
-					if (self.logger_manager.loggers.length > console_logger_index && self.logger_manager.loggers[console_logger_index].get_id() == console_logger_uid)
+					if (self.logger_manager.loggers.length > console_logger_index && self.logger_manager.loggers[console_logger_index].get_uid() == console_logger_uid)
 					{
 						console.log(context + ':load:remove console logger at ' + console_logger_index)
 						self.logger_manager.loggers.splice(console_logger_index, 1)
