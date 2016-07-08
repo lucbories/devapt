@@ -95,7 +95,7 @@ A topology contains:
 * nodes: A node is a nodejs process with an unique name. You can have many nodes on the same machine.
 Each node communicates with other node through messaging buses (messages, metrics, logs).
 
-![Messaging](docs/features/buses.png)
+![Messaging](docs/features/Buses.png)
 
 
 A node can have one or many servers.
@@ -112,7 +112,7 @@ An application contains:
 * plugins: technical fearures for applications (a rendering provider for example).
 * security: defines authentication and authorization rules.
 
-![Distributed](docs/features/host.png)
+![Distributed](docs/features/Host.png)
 
 
 The rendering engines are plugins and rendering classes are stateless: state is stored in a Redux store.
