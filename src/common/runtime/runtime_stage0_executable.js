@@ -26,9 +26,7 @@ export default class RuntimeStage0Executable extends RuntimeExecutable
 	
 	execute()
 	{
-		// console.log(context + ':settings', this.runtime.get_setting(['trace', 'stages', 'RuntimeStage0', 'enabled']) )
-
-		// ACTIVE TRACE IF ENABLED
+		// SAVE TRACES STATE
 		const saved_trace = this.get_trace()
 		const has_trace = true || this.runtime.get_setting(['trace', 'stages', 'RuntimeStage0', 'enabled'], false)
 		if (has_trace)
@@ -36,6 +34,8 @@ export default class RuntimeStage0Executable extends RuntimeExecutable
 			this.enable_trace()
 		}
 
+
+		// EXECUTES ACTIONS
 		this.separate_level_1()
 		this.enter_group('execute')
 		
@@ -69,6 +69,7 @@ export default class RuntimeStage0Executable extends RuntimeExecutable
 		
 		this.leave_group('execute')
 		this.separate_level_1()
+
 
 		// RESTORE TRACES STATE
 		if (! saved_trace && has_trace)

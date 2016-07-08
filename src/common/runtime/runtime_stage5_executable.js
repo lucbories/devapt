@@ -27,7 +27,7 @@ export default class RuntimeStage5Executable extends RuntimeExecutable
 	
 	execute()
 	{
-		// INIT TRACES STATE
+		// SAVE TRACES STATE
 		const saved_trace = this.get_trace()
 		const has_trace = this.runtime.get_setting(['trace', 'stages', 'RuntimeStage5', 'enabled'], false)
 		if (has_trace)
@@ -36,6 +36,7 @@ export default class RuntimeStage5Executable extends RuntimeExecutable
 		}
 		
 
+		// EXECUTE ACTIONS
 		this.separate_level_1()
 		this.enter_group('execute')
 		

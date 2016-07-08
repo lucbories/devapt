@@ -1,7 +1,7 @@
 
 # Devapt
 
-Dynamic, reactive, configurable application builder for Node.js.
+Dynamic, reactive, configurable application for Node.js.
 
 
 ## Installation

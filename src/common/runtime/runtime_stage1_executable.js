@@ -31,21 +31,16 @@ export default class RuntimeStage1Executable extends RuntimeExecutable
 	{
 		const self = this
 		
-		// DEBUG STORE
-		// console.log(store, 'store')
-		// console.log(config, 'config')
-		
+		// SAVE TRACES STATE
 		const saved_trace = this.get_trace()
 		const has_trace = true || this.runtime.get_setting(['trace', 'stages', 'RuntimeStage1', 'enabled'], false)
 		if (has_trace)
 		{
 			this.enable_trace()
 		}
-
-		// DEBUG
-		this.set_trace(true)
-		this.is_trace_enabled = true
 		
+
+		// EXECUTE ACTIONS
 		this.separate_level_1()
 		this.enter_group('execute')
 		
@@ -158,6 +153,7 @@ export default class RuntimeStage1Executable extends RuntimeExecutable
 		
 		this.leave_group('execute')
 		this.separate_level_1()
+		
 		
 		// RESTORE TRACES STATE
 		if (! saved_trace && has_trace)

@@ -3,15 +3,6 @@ import T from 'typr'
 import assert from 'assert'
 
 import { store, config } from '../store/index'
-
-// import MiddlewareService from '../services/middleware/mw_service'
-// import CrudService from '../services/crud/crud_service'
-// import ResourcesService from '../services/resource/resources_service'
-// import AssetsService from '../services/assets/assets_service'
-// import MetricsService from '../services/metrics/metrics_service'
-
-// import DefaultServicePlugin from '../../plugins/default/services_default_plugin'
-// import ServicesManager from '../plugins/services_manager'
 import RuntimeExecutable from './runtime_executable'
 import PluginsFactory from '../plugins/plugins_factory'
 
@@ -36,6 +27,7 @@ export default class RuntimeStage2Executable extends RuntimeExecutable
 	
 	execute()
 	{
+		// SAVE TRACES STATE
 		const saved_trace = this.get_trace()
 		const has_trace = this.runtime.get_setting(['trace', 'stages', 'RuntimeStage2', 'enabled'], false)
 		if (has_trace)
@@ -43,6 +35,8 @@ export default class RuntimeStage2Executable extends RuntimeExecutable
 			this.enable_trace()
 		}
 		
+
+		// EXECUTE ACTIONS
 		this.separate_level_1()
 		this.enter_group('execute')
 		
@@ -69,26 +63,16 @@ export default class RuntimeStage2Executable extends RuntimeExecutable
 		
 		const node_settings = store.get_collection_item('nodes', this.runtime.node.get_name())
 		// console.log(context + ':node_settings', node_settings)
-		// console.log(context + ':config.nodes', config().get('nodes'))
-		// console.log(context + ':config.nodes', config())
 		
 		this.runtime.node.load_topology_settings(node_settings)
 		
 		this.info('Create services for all master node servers')
 		this.make_services()
-		// }
-		// else
-		// {
-		// 	this.enter_group('register_to_master')
-
-			// setTimeout( () => { this.runtime.node.register_to_master() }, 200)
-			
-		// 	this.leave_group('register_to_master')
-		// }
 
 		
 		this.leave_group('execute')
 		this.separate_level_1()
+		
 		
 		// RESTORE TRACES STATE
 		if (! saved_trace && has_trace)
