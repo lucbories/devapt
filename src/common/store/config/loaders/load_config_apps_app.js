@@ -4,7 +4,6 @@ import T from 'typr'
 import path from 'path'
 
 import parser from '../../../parser/parser'
-import logs from '../../../utils/logs'
 
 
 
@@ -41,7 +40,7 @@ let error_msg_resource_not_found = context + ':bad config - config.applications.
  * Load the 'config.applications.*' keys of the final state
  * Pure function: (Plain Object) => (mutated Plain Object)
  */
-function load_config_apps_app(arg_app_config, arg_config_modules, arg_config_plugins, arg_config_resources, arg_base_dir)
+function load_config_apps_app(logs, arg_app_config, arg_config_modules, arg_config_plugins, arg_config_resources, arg_base_dir)
 {
 	logs.info(context, 'loading config.applications.[app]')
 	

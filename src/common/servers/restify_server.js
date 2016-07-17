@@ -1,23 +1,27 @@
 
-import T from 'typr'
+// import T from 'typr'
 import assert from 'assert'
 import restify from 'restify'
-import bunyan from 'bunyan'
 
-import runtime from '../base/runtime'
-import Server from '../base/server'
-import MetricsMiddleware from '../metrics/metric_http'
+import Server from './server'
+import MetricsMiddleware from '../metrics/http/metrics_http_collector'
 
 
 
 let context = 'common/servers/restify_server'
 
 
+
+/**
+ * @file Restify server class.
+ * @author Luc BORIES
+ * @license Apache-2.0
+ */
 export default class RestifyServer extends Server
 {
 	constructor(arg_name, arg_settings, arg_context)
 	{
-		super(arg_name, arg_settings, arg_context ? arg_context : context)
+		super(arg_name, 'RestifyServer', arg_settings, arg_context ? arg_context : context)
 		
 		this.is_restify_server = true
 	}
@@ -31,15 +35,25 @@ export default class RestifyServer extends Server
 		
 		// CREATE REST SERVER
 		const server_settings = {}
-		this.server = restify.createServer(server_settings);
+		this.server = restify.createServer(server_settings)
 		let server = this.server
 		
 		
+		
+		
+		// USE AUTHENTICATION MIDDLEWARE
+		this.authentication.apply_middlewares(this)
+		
+		
+		// TODO: USE AUTHORIZATION MIDDLEWARE
+		// this.server.use( this.authorization.create_middleware() )
+		
+		
         // USE AUTHENTICATION MIDDLEWARE
-        // const authentication_mgr = runtime.security.get_authentication_manager()
-        // console.log(authentication_mgr)
-        // authentication_mgr.apply_on_server(this)
-        this.server.use( runtime.security.get_authentication_manager().create_middleware(this) )
+			// const authentication_mgr = runtime.security().get_authentication_manager()
+			// console.log(authentication_mgr)
+			// authentication_mgr.apply_on_server(this)
+        // this.server.use( runtime.security().get_authentication_manager().create_middleware(this) )
         
         // TODO: USE AUTHORIZATION MIDDLEWARE
         // AuthorizationManager.apply_on_server(this)

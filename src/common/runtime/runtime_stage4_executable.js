@@ -1,8 +1,8 @@
 
-import T from 'typr'
-import assert from 'assert'
+// import T from 'typr'
+// import assert from 'assert'
 
-import { store, config } from '../store/index'
+import { store } from '../store/index'
 import Application from '../base/application'
 
 import RuntimeExecutable from './runtime_executable'
@@ -18,33 +18,41 @@ let context = 'common/executables/runtime_stage4_executable'
 */
 export default class RuntimeStage4Executable extends RuntimeExecutable
 {
-	constructor()
+	constructor(arg_logger_manager)
 	{
-		super(context)
+		super(context, arg_logger_manager)
+		this.$name = 'stage 4'
 	}
 	
 	
 	execute()
 	{
+		// SAVE TRACES STATE
 		const saved_trace = this.get_trace()
 		const has_trace = this.runtime.get_setting(['trace', 'stages', 'RuntimeStage4', 'enabled'], false)
-		this.set_trace(has_trace)
+		if (has_trace)
+		{
+			this.enable_trace()
+		}
 		
+
+		// EXECUTE ACTIONS
 		this.separate_level_1()
 		this.enter_group('execute')
 		
-		if (this.runtime.is_master)
-		{
-			// BUILD MASTER RESOURCES
-			this.info('Load master')
-			
-			this.make_applications()
-		}
+		this.make_applications()
 		
 		this.leave_group('execute')
 		this.separate_level_1()
-		this.set_trace(saved_trace)
-        return Promise.resolve()
+		
+		
+		// RESTORE TRACES STATE
+		if (! saved_trace && has_trace)
+		{
+			this.disable_trace()
+		}
+		
+		return Promise.resolve()
 	}
 	
 	
@@ -52,9 +60,11 @@ export default class RuntimeStage4Executable extends RuntimeExecutable
 	{
 		this.enter_group('make_applications')
 		
-		let applications = config.get_collection_names('applications')
+		let applications = store.get_collection_names('applications')
 		applications.forEach(
 			(application_name) => {
+				this.info('Create application:' + application_name)
+				
 				let application = new Application(application_name)
 				
 				application.load()

@@ -15,10 +15,6 @@ export default class HBox extends Component
 	{
 		arg_settings = T.isObject(arg_settings) ? arg_settings : {}
 		
-		arg_settings.page_styles = []
-		
-		arg_settings.page_headers = ['<meta keywords="hbox" />']
-		
 		super(arg_name, arg_settings)
 		
 		this.$type = 'HBox'
@@ -29,46 +25,51 @@ export default class HBox extends Component
 	get_initial_state()
 	{
 		return {
-			items: [],
-			label:'no label'
+			items: []
 		}
 	}
 	
 	
 	// RENDERING
-	render()
+	render_main()
 	{
-		// console.log(this.state, 'state2')
+		// console.log(this.state, context + ':render_main:state')
 		assert( T.isObject(this.state), context + ':bad state object')
 		assert( T.isArray(this.state.items), context + ':bad state items array')
-		assert( T.isString(this.state.label), context + ':bad state label string')
 		
 		
 		// BUILD HTML ROWS
-		let html_rows = '<tr>'
+		let html_thead_content = '<tr>'
+		let html_tbody_content = ''
+		let html_tfoot_content = ''
+		
 		for(let i = 0 ; i < this.state.items.length ; i++)
 		{
 			const row = this.state.items[i]
 			
-			// if (T.isObject(row))
-			// {
-			// 	const keys = Object.keys(row)
-			// 	for(let key of keys)
-			// 	{
-			// 		const value = row[key]
-					
-					html_rows += '<td>' + row + '</td>'
-			// 	}
-			// }
+			html_thead_content += '<td>' + row + '</td>'
 		}
-		html_rows += '</tr>'
+		html_thead_content += '</tr>\n'
 		
 		
-		// BUILD HTML TABLE
-		let html_table = '<table id="' + this.get_dom_id() + '"><thead><tr><th>' + this.state.label + '</th></tr><thead>'
-		html_table += html_rows
-		html_table += '<tfoot></tfoot></table>'
+		// GET ATTRIBUTES
+		const css_class1 = T.isString(this.state.css_class) ? this.state.css_class : undefined
+		const css_class2 = this.get_css_classes_for_tag('button')
+		const css_class = (css_class1 ? css_class1 + ' ' : '') + (css_class2 ? css_class2 : '')
+		const css_attributes1 = T.isString(this.state.css_attributes) ? this.state.css_attributes : undefined
+		const css_attributes2 = this.get_css_attributes_for_tag('button')
+		const css_attributes = (css_attributes1 ? css_attributes1 + ' ' : '') + (css_class2 ? css_attributes2 : '')
 		
-		return html_table
+		// BUILD HTML ELEMENT
+		const html_id = 'id="' + this.get_dom_id() + '"'
+		const html_css_class = (css_class && css_class != '') ? `class="${css_class}"` : ''
+		const html_css_attributes = (css_attributes && css_attributes != '') ? `class="${css_attributes}"` : ''
+		const html_thead = `<thead>\n${html_thead_content}<thead>\n`
+		const html_tbody = `<tbody>\n${html_tbody_content}<tbody/>\n`
+		const html_tfoot = `<tfoot>\n${html_tfoot_content}<tfoot/>`
+		
+		const html = `<table ${html_id} ${html_css_class} ${html_css_attributes}>\n${html_thead}${html_tbody}${html_tfoot}</table>\n`
+		
+		return html
 	}
 }

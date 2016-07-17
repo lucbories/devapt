@@ -10,16 +10,32 @@ let context = 'common/executables/runtime_sexecutable'
 
 
 /**
- * Runtime Stages base class
+ * @file Runtime stages base class.
+ * @author Luc BORIES
+ * @license Apache-2.0
 */
 export default class RuntimeExecutable extends Executable
 {
-	constructor(arg_context)
+    /**
+     * Create a runtime executable base class.
+	 * @extends Executable
+	 * @abstract
+     * @param {string|undefined} arg_log_context - (optional).
+	 * @param {LoggerManager} arg_logger_manager - logger manager object (optional).
+     * @returns {nothing}
+     */
+	constructor(arg_log_context, arg_logger_manager)
 	{
-		super(arg_context ? arg_context : context)
+		super(arg_log_context ? arg_log_context : context, arg_logger_manager)
+		this.$name = 'no name'
 	}
 	
 	
+	/**
+     * Prepare an execution with contextual informations.
+     * @param {object} arg_settings - execution settings.
+     * @returns {nothing}
+     */
 	prepare(arg_settings)
 	{
 		assert( T.isObject(arg_settings), context + ':prepare:bad settings object')
@@ -28,6 +44,11 @@ export default class RuntimeExecutable extends Executable
 	}
 	
 	
+	/**
+     * Execution with contextual informations.
+     * @abstract
+     * @returns {Promise} - promise of a result.
+     */
 	execute()
 	{
 		this.enter_group('execute')
@@ -35,6 +56,6 @@ export default class RuntimeExecutable extends Executable
 		this.info('not yet implemented')
 		
 		this.leave_group('execute')
-        return Promise.reject(context + ':execute:not yet implemented')
+		return Promise.reject(context + ':execute:not yet implemented')
 	}
 }

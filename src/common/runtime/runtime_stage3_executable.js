@@ -1,16 +1,15 @@
 
-import T from 'typr'
+// import T from 'typr'
 import assert from 'assert'
 
 import { store, config } from '../store/index'
 import Module from '../base/module'
-import Plugin from '../base/plugin'
 import Database from '../resources/database'
 
 import RuntimeExecutable from './runtime_executable'
 
 
-let context = 'common/executables/runtime_stage3_executable'
+let context = 'common/runtime/runtime_stage3_executable'
 
 
 
@@ -20,35 +19,43 @@ let context = 'common/executables/runtime_stage3_executable'
 */
 export default class RuntimeStage3Executable extends RuntimeExecutable
 {
-	constructor()
+	constructor(arg_logger_manager)
 	{
-		super(context)
+		super(context, arg_logger_manager)
+		this.$name = 'stage 3'
 	}
 	
 	
 	execute()
 	{
+		// SAVE TRACES STATE
 		const saved_trace = this.get_trace()
 		const has_trace = this.runtime.get_setting(['trace', 'stages', 'RuntimeStage3', 'enabled'], false)
-		this.set_trace(has_trace)
+		if (has_trace)
+		{
+			this.enable_trace()
+		}
 		
+		
+		// EXECUTE ACTIONS
 		this.separate_level_1()
 		this.enter_group('execute')
 		
-		if (this.runtime.is_master)
-		{
-			// BUILD MASTER RESOURCES
-			this.info('Load master')
-			
-			this.make_connexions()
-			this.make_modules()
-			this.make_plugins()
-		}
+		this.make_connexions()
+		this.make_modules()
+		this.make_plugins()
 		
 		this.leave_group('execute')
 		this.separate_level_1()
-		this.set_trace(saved_trace)
-        return Promise.resolve()
+		
+		
+		// RESTORE TRACES STATE
+		if (! saved_trace && has_trace)
+		{
+			this.disable_trace()
+		}
+		
+		return Promise.resolve()
 	}
 	
 	
@@ -81,7 +88,7 @@ export default class RuntimeStage3Executable extends RuntimeExecutable
 		
 		
 		// CREATE MODULES
-		let cfg_modules = config.get_collection('modules')
+		let cfg_modules = store.get_collection('modules')
 		cfg_modules.forEach(
 			(module_cfg, module_name) => {
 				if (module_name == 'error')
@@ -101,16 +108,16 @@ export default class RuntimeStage3Executable extends RuntimeExecutable
 		
 		
 		// LOOP MODULES RESOURCES AND LOAD MODELS ASSOCIATIONS AFTER ALL MODELS ARE CREATED
-		for(let module_obj of this.runtime.modules)
+		for(let module_obj of this.runtime.modules.get_all())
 		{
 			this.info('make_modules for [' + module_obj.$name + ']')
 			
-			for(let res_obj of module_obj.resources)
+			for(let res_obj of module_obj.resources.get_all() )
 			{
 				this.runtime.resources.add(res_obj)
 			}
 			
-			for(let res_obj of module_obj.resources)
+			for(let res_obj of module_obj.resources.get_all() )
 			{
 				if (res_obj.is_model)
 				{
@@ -131,7 +138,9 @@ export default class RuntimeStage3Executable extends RuntimeExecutable
 	{
 		this.enter_group('make_plugins')
 		
-		let cfg_plugins = config.get_collection('plugins')
+		// TODO
+		/*
+		let cfg_plugins = store.get_collection('plugins')
 		cfg_plugins.forEach(
 			(plugin_cfg, plugin_name) => {
 				this.info('Processing plugin creation of:' + plugin_name)
@@ -140,7 +149,7 @@ export default class RuntimeStage3Executable extends RuntimeExecutable
 				plugin.load()
 				this.runtime.plugins.add(plugin)
 			}
-		)
+		)*/
 		
 		this.leave_group('make_plugins')
 	}

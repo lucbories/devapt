@@ -2,9 +2,9 @@
 // import T from 'typr'
 import assert from 'assert'
 
-import ExecutableRouteCrud from '../../executables/executable_route_model_crud'
+import ExecutableRouteCrud from './executable_route_model_crud'
 
-import ServiceProvider from '../base/service_provider'
+import ServiceExecProvider from '../base/service_exec_provider'
 
 
 let context = 'common/services/crud/crud_svc_provider'
@@ -16,7 +16,7 @@ let context = 'common/services/crud/crud_svc_provider'
  * @author Luc BORIES
  * @license Apache-2.0
  */
-export default class CrudSvcProvider extends ServiceProvider
+export default class CrudSvcProvider extends ServiceExecProvider
 {
 	/**
 	 * Create a crud service provider.
@@ -32,9 +32,6 @@ export default class CrudSvcProvider extends ServiceProvider
 		assert(this.service.is_crud_service, context + ':bad crud service')
 		
 		this.exec = new ExecutableRouteCrud()
-		this.server = null
-		this.application = null
-		this.application_server = null
 	}
 	
 	

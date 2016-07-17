@@ -1,6 +1,7 @@
 
 import T from 'typr'
 import assert from 'assert'
+import { fromJS } from 'immutable'
 
 import Loggable from './loggable'
 
@@ -9,32 +10,66 @@ import Loggable from './loggable'
 let context = 'common/base/settingsable'
 
 
+/**
+ *@file Settingsable base class: child classes are able to manage settings.
+ * @author Luc BORIES
+ * @license Apache-2.0
+ */
 export default class Settingsable extends Loggable
 {
+	/**
+	 * Create a Settingsable instance.
+	 * @extends Loggable
+	 * @param {Immutable.Map} arg_settings - instance settings map.
+	 * @param {string} arg_log_context - trace context string.
+	 * @returns {nothing}
+	 */
 	constructor(arg_settings, arg_log_context)
 	{
 		const my_context = arg_log_context ? arg_log_context : context
-		
-		super(my_context)
+		const logger_manager = (arg_settings && arg_settings.logger_manager) ? arg_settings.logger_manager : undefined
+		super(my_context, logger_manager)
 		
 		this.set_settings(arg_settings)
 	}
 	
 	
+	/**
+	 * Set instance settings.
+	 * @param {Immutable.Map} arg_settings - instance settings map.
+	 * @returns {nothing}
+	 */
 	set_settings(arg_settings)
 	{
-		this.$settings = arg_settings
+		if (arg_settings.has && arg_settings.set & arg_settings.hasIn && arg_settings.setIn && arg_settings.get && arg_settings.getIn)
+		{
+			this.$settings = arg_settings
+		}
+		else
+		{
+			this.$settings = fromJS(arg_settings)
+		}
 	}
 	
-	
+	/**
+	 * Get instance settings.
+	 * @returns {Immutable.Map}
+	 */
 	get_settings()
 	{
 		return this.$settings
 	}
 	
 	
+	/**
+	 * Test if a key exists in settings.
+	 * @param {string} arg_name - settings value key.
+	 * @returns {boolean}
+	 */
 	has_setting(arg_name)
 	{
+		assert( T.isFunction(this.$settings.has), context + ':has:bad settings object')
+		
 		if ( T.isArray(arg_name) )
 		{
 			return this.$settings.hasIn(arg_name)
@@ -43,8 +78,16 @@ export default class Settingsable extends Loggable
 	}
 	
 	
+	/**
+	 * Get a value in settings for given key.
+	 * @param {string|array} arg_name - settings value key.
+	 * @param {any} arg_default - default value.
+	 * @returns {any} - found value or given default value
+	 */
 	get_setting(arg_name, arg_default)
 	{
+		assert( T.isFunction(this.$settings.has), context + ':has:bad settings object')
+		
 		if ( T.isArray(arg_name) )
 		{
 			return this.$settings.hasIn(arg_name) ? this.$settings.getIn(arg_name) : (arg_default ? arg_default : null)
@@ -53,6 +96,12 @@ export default class Settingsable extends Loggable
 	}
 	
 	
+	/**
+	 * Set a value in settings for given key.
+	 * @param {string} arg_name - settings value key.
+	 * @param {any} arg_value - settings value.
+	 * @returns {nothing}
+	 */
 	set_setting(arg_name, arg_value)
 	{
 		if ( T.isArray(arg_name) )

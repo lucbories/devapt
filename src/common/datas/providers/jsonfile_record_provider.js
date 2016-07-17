@@ -5,7 +5,6 @@ import lowdb from 'lowdb'
 
 import RecordProvider from './record_provider'
 
-import logs from '../../utils/logs'
 import runtime from '../../base/runtime'
 
 
@@ -67,11 +66,11 @@ export default class JsonFileRecordProvider extends RecordProvider
      */
 	build_query(arg_query)
 	{
-		logs.debug(context, 'build_query:enter')
+		// logs.debug(context, 'build_query:enter')
 		assert(this.is_ready, context + ':build_query:db not ready')
 
 
-		logs.debug(context, 'build_query:leave')
+		// logs.debug(context, 'build_query:leave')
 		return arg_query
 	}
 
@@ -83,7 +82,7 @@ export default class JsonFileRecordProvider extends RecordProvider
      */
 	find_all_records(arg_query)
 	{
-		logs.debug(context, 'find_all_records:enter')
+		// logs.debug(context, 'find_all_records:enter')
 		assert(this.is_ready, context + ':find_all_records:db not ready')
 
 		const query = this.build_query(arg_query)
@@ -93,7 +92,7 @@ export default class JsonFileRecordProvider extends RecordProvider
 			const records = this.file_db(this.modelname).find(query)
 			if (records)
 			{
-				logs.debug(context, 'find_all_records:leave')
+				// logs.debug(context, 'find_all_records:leave')
 				return Promise.resolve(records)
 			}
 		}
@@ -102,7 +101,7 @@ export default class JsonFileRecordProvider extends RecordProvider
 			//  console.log('authenticate user error', e)
 		}
 
-		logs.debug(context, 'find_all_records:leave not found')
+		// logs.debug(context, 'find_all_records:leave not found')
 		return Promise.resolve(null)
 	}
     
@@ -114,7 +113,7 @@ export default class JsonFileRecordProvider extends RecordProvider
      */
 	find_records_by_id(arg_id)
 	{
-		logs.debug(context, 'find_record_by_id:enter')
+		// logs.debug(context, 'find_record_by_id:enter')
 		assert(this.is_ready, context + ':find_records_by_id:db not ready')
 		assert( T.isString(arg_id) || T.isNumber(arg_id), context + ':find_record_by_id:bad id string or number')
 
@@ -122,7 +121,7 @@ export default class JsonFileRecordProvider extends RecordProvider
 		query[this.pkname] = arg_id
 		const records_promise = this.find_record_by_values(query)
 
-		logs.debug(context, 'find_record_by_id:leave')
+		// logs.debug(context, 'find_record_by_id:leave')
 		return records_promise
 	}
     
@@ -135,7 +134,7 @@ export default class JsonFileRecordProvider extends RecordProvider
      */
 	find_records_by_values(arg_values_map, arg_query)
 	{
-		logs.debug(context, 'find_records_by_values:enter')
+		// logs.debug(context, 'find_records_by_values:enter')
 		assert(this.is_ready, context + ':build_query:db not ready')
 		assert( T.isObject(arg_values_map), context + ':find_record_by_values:bad values object')
 
@@ -153,16 +152,20 @@ export default class JsonFileRecordProvider extends RecordProvider
 			const records = this.file_db(this.modelname).find(query)
 			if (records)
 			{
-				logs.debug(context, 'find_record_by_values:leave')
+				// logs.debug(context, 'find_record_by_values:leave')
+				// console.debug(context, 'find_record_by_values:leave')
 				return Promise.resolve(records)
 			}
+			
+			console.error( this.file_db(this.modelname) )
 		}
 		catch(e)
 		{
 			//  console.log('authenticate user error', e)
 		}
 
-		logs.debug(context, 'find_record_by_values:leave not found')
+		// logs.debug(context, 'find_record_by_values:leave not found')
+		// console.debug(context, 'find_record_by_values:leave not found', arg_values_map)
 		return Promise.resolve(null)
 	}
 }

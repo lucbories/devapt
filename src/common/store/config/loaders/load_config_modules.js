@@ -3,7 +3,6 @@ import assert from 'assert'
 import T from 'typr'
 import path from 'path'
 
-import logs from '../../../utils/logs'
 import parser from '../../../parser/parser'
 
 
@@ -28,7 +27,7 @@ let error_msg_bad_resource_config = context + ':bad resource config'
 
 
 
-function load_config_modules(arg_modules_config, arg_base_dir)
+function load_config_modules(logs, arg_modules_config, arg_base_dir)
 {
 	logs.info(context, 'loading config.modules')
 	
@@ -43,7 +42,7 @@ function load_config_modules(arg_modules_config, arg_base_dir)
 			{
 				if (module_name === 'files')
 				{
-					return;
+					return
 				}
 				
 				logs.info(context, 'loading config.modules.' + module_name)
@@ -100,12 +99,14 @@ function load_config_modules(arg_modules_config, arg_base_dir)
 											// logs.info(context, 'loading config.modules.' + module_name + ' resources file:' + resource_file + ' of type:' + type_name + ' for ' + res_name)
 											
 											let res_obj = config.application[type_name][res_name]
-											res_obj.type = type_name
 											
 											if (type_name !== 'menus' && type_name !== 'models')
 											{
+												res_obj.class_name = res_obj.class_name ? res_obj.class_name : res_obj.type
 												assert(T.isString(res_obj.class_name), error_msg_bad_resource_config + ' for file ' + resource_file + ' for resource ' + res_name)
 											}
+											
+											res_obj.collection = type_name
 											
 											module_obj.resources_by_name[res_name] = res_obj
 											module_obj.resources_by_type[type_name][res_name] = res_obj
@@ -126,7 +127,8 @@ function load_config_modules(arg_modules_config, arg_base_dir)
 	}
 	catch(e)
 	{
-		arg_modules_config = { error: { context:context, exception:e }, error_msg:e.toString() }
+		arg_modules_config = { error: { context:context, exception:e, error_msg:e.toString() } }
+		// console.error(context, arg_modules_config)
 	}
 	
 	return arg_modules_config

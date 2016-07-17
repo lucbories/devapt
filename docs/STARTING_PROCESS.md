@@ -11,13 +11,33 @@ var runtime_settings = {
 	'is_master':true,
 	'name':'NodeA',
 	
-	'master':{
-		'name':'NodeA',
-		'host':"localhost",
-		'port':5000
+	// BUSES SERVERS (for inter nodex communication)
+	"master":{
+		"name":"NodeA",
+		
+		"msg_bus":{
+			"type":"simplebus_server",
+			"host":"localhost",
+			"port":5000
+		},
+		"logs_bus":{
+			"type":"simplebus_server",
+			"host":"localhost",
+			"port":5001
+		},
+		"metrics_bus":{
+			"type":"simplebus_server",
+			"host":"localhost",
+			"port":5002
+		}
 	},
 	
-	'apps_settings_file': 'apps/apps.json'
+	"base_dir": "",
+	
+	"settings_provider": {
+		"source":"local_file",
+		"relative_path":"resources/apps.json"
+	}
 }
 
 runtime.load(runtime_settings)
@@ -100,6 +120,7 @@ Node.load (not for a master node)
 ### Runtime loading stage 1 - RuntimeStage1Executable
 * load master apps settings
 * load security settings
+* load loggers settings
 
 dispatch_store_config_set_all(settings) for master node only
 

@@ -1,7 +1,19 @@
 
 # Devapt
 
-Dynamic, reactive, configurable application builder for Node.js.
+With DEVAPT you can easily develop powerfull application.
+Built-in features cover many important subjects as: authentication, restfull, http server, distributed services, logs, metrics...
+Main characteristics of DEVAPT architecture is dynamic behaviors, reactive programming, object oriented ES6 javascript, gulp build chain
+All of this on NodeJS.
+
+A usefull application is DEVTOOLS which actualy display settings, logs, buses messages, metrics and topology.
+[DEVTOOLS project](https://github.com/lucbories/devapt-devtools/)
+
+In a near futur, DEVTOOLS will act as a configurable application builder for DEVAPT applications.
+
+devapt and devapt-* github repositories have the same structure: a master branch with the last tagged tree, a develop branch with latest comited updates and tags.
+
+Versionning use standard method: M.m.p with M is a major change, m a minor change, p a patch.
 
 
 
@@ -20,20 +32,45 @@ npm install devapt
 Reference in your program:
 
 ```js
-var devapt = require('devapt/base/runtime'); // for ES5
-import runtime from 'devapt/base/runtime' // for ES6 / ES2015
+// For ES5
+var devapt = require('devapt').default
+var runtime = devapt.runtime
+
+// for ES6 / ES2015
+import devapt from 'devapt'
+const runtime = devapt.runtime
 
 var runtime_settings = {
 	'is_master':true,
 	'name':'NodeA',
 	
-	'master':{
-		'name':'NodeA',
-		'host':"localhost",
-		'port':5000
+	// BUSES SERVERS (for inter nodex communication)
+	"master":{
+		"name":"NodeA",
+		
+		"msg_bus":{
+			"type":"simplebus_server",
+			"host":"localhost",
+			"port":5000
+		},
+		"logs_bus":{
+			"type":"simplebus_server",
+			"host":"localhost",
+			"port":5001
+		},
+		"metrics_bus":{
+			"type":"simplebus_server",
+			"host":"localhost",
+			"port":5002
+		}
 	},
 	
-	'apps_settings_file': 'apps/apps.json'
+	"base_dir": "",
+	
+	"settings_provider": {
+		"source":"local_file",
+		"relative_path":"resources/apps.json"
+	}
 }
 
 runtime.load(runtime_settings)
@@ -58,11 +95,16 @@ npm test
 Coming soon.
 - [...](https://github.com/lucbories/Devapt/tree/master/samples/XXXX)
 
+See DEVTOOLS project for a complete DEVAPT application:
+[DEVTOOLS project](https://github.com/lucbories/devapt-devtools/)
+
 
 
 ## Versions
 
 - 1.0.0: Published
+
+
 
 ## Contribution
 

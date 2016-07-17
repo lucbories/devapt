@@ -19,7 +19,7 @@ export default class RenderStack
      */
 	constructor()
 	{
-		this.has_trace = true
+		this.has_trace = false
 		this.stack = []
 		this.components = {}
 	}

@@ -5,7 +5,7 @@ import assert from 'assert'
 import RoutesServiceConsumer from '../base/routes_svc_consumer'
 
 
-let context = 'common/services/middleware/crud_svc_consumer'
+let context = 'common/services/crud/crud_svc_consumer'
 
 
 
@@ -18,7 +18,7 @@ export default class CrudSvcConsumer extends RoutesServiceConsumer
 {
 	
 	/**
-	 * Create a service consumer for middleware routes.
+	 * Create a service consumer for CRUD routes.
 	 * @param {string} arg_consumer_name - consumer name
 	 * @param {Service} arg_service_instance - service instance
 	 * @param {string} arg_context - logging context label

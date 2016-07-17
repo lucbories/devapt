@@ -1,12 +1,12 @@
 
 import T from 'typr'
-import assert from 'assert'
+// import assert from 'assert'
 
 import Component from '../base/component'
 
 
 
-const context = 'common/rendering/default/script'
+// const context = 'common/rendering/default/script'
 
 
 export default class Script extends Component
@@ -15,9 +15,9 @@ export default class Script extends Component
 	{
 		arg_settings = T.isObject(arg_settings) ? arg_settings : {}
 		
-		arg_settings.page_styles = []
+		arg_settings.styles = []
 		
-		arg_settings.page_headers = ['<meta keywords="script" />']
+		arg_settings.headers = ['<meta keywords="script" />']
 		
 		super(arg_name, arg_settings)
 		

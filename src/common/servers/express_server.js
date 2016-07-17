@@ -2,25 +2,36 @@
 // import T from 'typr'
 import assert from 'assert'
 import express from 'express'
+import http from 'http'
+import socketio from 'socket.io'
+import compression from 'compression'
 // import helmet from 'helmet'
 import favicon from 'express-favicon'
 
 import runtime from '../base/runtime'
-import Server from '../base/server'
-import MetricsMiddleware from '../metrics/metric_http'
+import Server from './server'
+import MetricsMiddleware from '../metrics/http/metrics_http_collector'
 
 
 
 let context = 'common/servers/express_server'
 
 
+
+/**
+ * @file Express server class.
+ * @author Luc BORIES
+ * @license Apache-2.0
+ */
 export default class ExpressServer extends Server
 {
 	constructor(arg_name, arg_settings, arg_context)
 	{
-		super(arg_name, arg_settings, arg_context ? arg_context : context)
+		super(arg_name, 'ExpressServer', arg_settings, arg_context ? arg_context : context)
 		
 		this.is_express_server = true
+		
+		this.serverio = null
 	}
 	
 	
@@ -34,9 +45,12 @@ export default class ExpressServer extends Server
 		// CREATE SERVER
 		this.server = express()
 		
+		// USE COMPRESSED RESPONSE WITH GZIP
+		this.server.use(compression())
 		
 		// USE SECURITY MIDDLEWARE (https://www.npmjs.com/package/helmet)
 		// this.server.use(helmet)
+		this.server.disable('x-powered-by')
 		
 		
 		// USE METRICS MIDDLEWARE
@@ -49,20 +63,32 @@ export default class ExpressServer extends Server
 		this.server.use( favicon(favicon_path) )
 		
 		
-		// USE AUTHENTICATION MIDDLEWARE
-		// runtime.security.get_authentication_manager().apply_on_server(this)
-		this.server.use( runtime.security.get_authentication_manager().create_middleware(this) )
-		// this.server.use( runtime.security.get_authentication_manager().create_auth_middleware(this) )
+		// USE AUTHENTICATION MIDDLEWARES
+		this.authentication.apply_middlewares(this)
 		
 		
 		// TODO: USE AUTHORIZATION MIDDLEWARE
-		// AuthorizationManager.apply_on_server(this)
+		// this.server.use( this.authorization.create_middleware() )
 		
 		
 		// DEFAULT VIEW ENGINE
 		// this.server.use( express.bodyParser() )
 		this.server.set('views', runtime.context.get_absolute_path('jade'))
 		this.server.set('view engine', 'jade')
+		
+		
+		// BUILD SOCKETIO
+		const use_socketio = this.get_setting('use_socketio', false)
+		
+		if (use_socketio)
+		{
+			// console.log(context + ':creating socket io')
+			
+			this.server_http = http.Server(this.server)
+			this.serverio = socketio(this.server_http)
+			
+			runtime.add_socketio(this.get_name(), this.serverio)
+		}
 		
 		
 		this.leave_group('build_server')

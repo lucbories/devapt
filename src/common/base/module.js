@@ -2,7 +2,7 @@
 import T from 'typr'
 import assert from 'assert'
 
-import { store, config, runtime } from '../store/index'
+import { store, config } from '../store/index'
 
 import Instance from './instance'
 import Collection from './collection'
@@ -18,11 +18,23 @@ import Menubar from '../resources/menubar'
 let context = 'common/base/module'
 
 
+
+/**
+ * @file Module resource class.
+ * @author Luc BORIES
+ * @license Apache-2.0
+ */
 export default class Module extends Instance
 {
+	/**
+	 * Create a module resource instance.
+	 * @extends Instance
+	 * @param {string} arg_name - module name
+	 * @returns {nothing}
+	 */
 	constructor(arg_name)
 	{
-		assert( config.has_collection('modules'), context + ':not found config.modules')
+		assert( store.has_collection('modules'), context + ':not found store.modules')
 		const cfg = config()
 		let settings = cfg.hasIn(['modules', arg_name]) ? cfg.getIn(['modules', arg_name]) : {}
 		
@@ -33,9 +45,14 @@ export default class Module extends Instance
 	}
 	
 	
+	/**
+	 * Load module settings.
+	 * @returns {nothing}
+	 */
 	load()
 	{
 		assert( T.isObject(this.$settings), context + ':bad settings object')
+		assert( T.isFunction(this.$settings.has), context + ':load:bad settings object')
 		
 		// ENABLE APP SERVICES
 		if (! this.$settings.has('resources_by_name') )
@@ -58,13 +75,19 @@ export default class Module extends Instance
 	}
 	
 	
+	/**
+	 * Create a module resource.
+	 * @param {string} arg_name - resource name.
+	 * @param {object} arg_settings - resource settings.
+	 * @returns {Resource|Database|View|Model|Menu|Menubar} - an Resource instance.
+	 */
 	create_resource(arg_name, arg_settings)
 	{
 		assert( T.isObject(arg_settings), context + ':bad settings object')
-		const res_type =arg_settings.get('type')
-		assert( T.isString(res_type), context + ':bad type string')
+		const res_collection =arg_settings.get('collection')
+		assert( T.isString(res_collection), context + ':bad collection string')
 		
-		switch(res_type)
+		switch(res_collection)
 		{
 			case 'connexions': return new Database(arg_name, arg_settings)
 			case 'views': return new View(arg_name, arg_settings)

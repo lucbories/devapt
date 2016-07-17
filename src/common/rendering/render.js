@@ -5,7 +5,6 @@ import assert from 'assert'
 import Loggable from '../base/loggable'
 import runtime from '../base/runtime'
 import RenderStack from './base/render_stack'
-import RenderingManager from './base/rendering_manager'
 
 
 const context = 'common/rendering/render'
@@ -32,13 +31,8 @@ export default class Render extends Loggable
 		
 		this.request = arg_request ? arg_request : undefined
 		
-		// const plugins = undefined
-		// const f6_plugin_path = runtime.context.get_absolute_plugin_path('backend-foundation-6', 'plugin/rendering_plugin')
-		const f6_plugin_path = runtime.context.get_absolute_plugin_path(__dirname, '../../plugins/backend-foundation-6/plugin/rendering_plugin')
-		const plugins = [f6_plugin_path]
-		// const plugins = [ path.join(__dirname, '../../plugins/backend-foundation6/plugin/rendering_plugin') ]
-		this.rendering_manager = new RenderingManager(plugins)
-
+		this.rendering_manager = runtime.plugins_factory.rendering_manager
+		
 		this.assets_images_service_name = arg_assets_img ? arg_assets_img : null
 		this.assets_html_service_name = arg_assets_html ? arg_assets_html : null
 		this.assets_scripts_service_name = arg_assets_scripts ? arg_assets_scripts : null
@@ -48,6 +42,11 @@ export default class Render extends Loggable
 		this.assets_html_service_consumer = null
 		this.assets_scripts_service_consumer = null
 		this.assets_styles_service_consumer = null
+		
+		if ( ! this.is_runtime )
+		{
+			this.update_trace_enabled()
+		}
 	}
 	
     
@@ -146,7 +145,7 @@ export default class Render extends Loggable
 	{
 		this.enter_group('get_assets_url')
 
-		console.log(typeof arg_url, 'arg_url', arg_url)
+		// console.log(typeof arg_url, 'arg_url', arg_url)
 		assert( T.isString(arg_url), context + ':get_assets_url:bad url string for svc [' + arg_svc_name + '] for url [' + arg_url + ']')
 
 		const has_consumer = T.isObject(arg_consumer) && arg_consumer.is_service_consumer
@@ -179,8 +178,10 @@ export default class Render extends Loggable
 	}
     
 	
+	
     /**
      * Move up to the rendered components stack.
+	 * 
      * @returns {object} the Render instance.
      */
 	up()
@@ -189,9 +190,11 @@ export default class Render extends Loggable
 		return this
 	}
 	
+
 	
     /**
      * Push a Component instance on the rendering stack.
+	 * 
      * @param {object} arg_component - Component instance.
      * @returns {object} this.
      */
@@ -202,20 +205,49 @@ export default class Render extends Loggable
 	}
 	
 	
+
     /**
      * Add a Component instance to the current component children and push it on the rendering stack.
-     * @param {object} arg_component - Component instance.
+	 * 
+     * @param {object|string} arg_component - Component instance or Component instance name.
+	 * 
      * @returns {object} this.
      */
 	add(arg_component)
 	{
-		assert( T.isObject(arg_component) && arg_component.is_component, context + ':bad component object')
+		// NOT A CONTAINER
+		if ( ! this.current().is_container )
+		{
+			console.warn(context + ':add:bad container')
+			return this
+		}
+
+		// COMPONENT NAME
+		if ( T.isString(arg_component) )
+		{
+			const component_name = arg_component
+			
+			this.current().create_and_add_child(component_name)
+			arg_component = this.current().get_component(component_name)
+			
+			this.push(arg_component)
+			return this
+		}
+
+		// COMPONENT INSTANCE
+		// assert( T.isObject(arg_component) && arg_component.is_component, context + ':bad component object')
+		if ( T.isObject(arg_component) && arg_component.is_component )
+		{
+			this.current().add_child(arg_component)
+			
+			this.push(arg_component)
+			return this
+		}
 		
-		this.current().add_child(arg_component)
-		this.push(arg_component)
-		
+		console.warn(context + ':add:bad child instance')
 		return this
 	}
+
 	
 	
     /**
@@ -229,6 +261,37 @@ export default class Render extends Loggable
 	
 	
     /**
+     * Create a component instance and push it on the rendering stack.
+     * @param {string} arg_class_name - component class name.
+     * @param {string} arg_name - component name.
+     * @param {object} arg_settings - component settings plain object.
+     * @param {object} arg_state - component initial state plain object.
+     * @returns {object} this.
+     */
+	new_component(arg_class_name, arg_name, arg_settings, arg_state)
+	{
+		assert( T.isString(arg_class_name) && arg_class_name.length > 0, context + ':new_component:bad class name string')
+		assert( T.isString(arg_name) && arg_name.length > 0, context + ':new_component:bad name string')
+		
+		arg_settings = arg_settings ? arg_settings : {}
+		arg_settings.state = arg_state
+		
+		let component = this.rendering_manager.create(arg_class_name, arg_name, arg_settings)
+		assert( T.isObject(component) && component.is_component, context + ':bad ' + arg_class_name + ' component object')
+		component.renderer = this
+		
+		const current = this.current()
+		if ( current && current.is_container )
+		{
+			current.add_child(component)
+		}
+		this.push(component)
+		
+		return this
+	}
+	
+	
+    /**
      * Create a Page component instance and push it on the rendering stack.
      * @param {string} arg_name - component name.
      * @param {object} arg_settings - component settings plain object.
@@ -236,8 +299,8 @@ export default class Render extends Loggable
      */
 	page(arg_name, arg_settings)
 	{
-        arg_settings = arg_settings ? arg_settings : {}
-        arg_settings.render = this
+		arg_settings = arg_settings ? arg_settings : {}
+		arg_settings.render = this
         
 		let component = this.rendering_manager.create('Page', arg_name, arg_settings)
 		assert( T.isObject(component) && component.is_component, context + ':bad Page component object')
@@ -257,16 +320,7 @@ export default class Render extends Loggable
      */
 	button(arg_name, arg_settings, arg_state)
 	{
-		arg_settings = arg_settings ? arg_settings : {}
-		arg_settings.state = arg_state
-		
-		let component = this.rendering_manager.create('Button', arg_name, arg_settings)
-		assert( T.isObject(component) && component.is_component, context + ':bad Button component object')
-		
-		this.current().add_child(component)
-		this.push(component)
-		
-		return this
+		return this.new_component('Button', arg_name, arg_settings, arg_state)
 	}
 	
 	
@@ -279,16 +333,7 @@ export default class Render extends Loggable
      */
 	tree(arg_name, arg_settings, arg_state)
 	{
-		arg_settings = arg_settings ? arg_settings : {}
-		arg_settings.state = arg_state
-		
-		let component = this.rendering_manager.create('Tree', arg_name, arg_settings)
-		assert( T.isObject(component) && component.is_component, context + ':bad Tree component object')
-		
-		this.current().add_child(component)
-		this.push(component)
-		
-		return this
+		return this.new_component('Tree', arg_name, arg_settings, arg_state)
 	}
 	
 	
@@ -301,16 +346,7 @@ export default class Render extends Loggable
      */
 	hbox(arg_name, arg_settings, arg_state)
 	{
-		arg_settings = arg_settings ? arg_settings : {}
-		arg_settings.state = arg_state
-		
-		let component = this.rendering_manager.create('HBox', arg_name, arg_settings)
-		assert( T.isObject(component) && component.is_component, context + ':bad HBox component object')
-		
-		this.current().add_child(component)
-		this.push(component)
-		
-		return this
+		return this.new_component('HBox', arg_name, arg_settings, arg_state)
 	}
 	
 	
@@ -323,16 +359,7 @@ export default class Render extends Loggable
      */
 	vbox(arg_name, arg_settings, arg_state)
 	{
-		arg_settings = arg_settings ? arg_settings : {}
-		arg_settings.state = arg_state
-		
-		let component = this.rendering_manager.create('VBox', arg_name, arg_settings)
-		assert( T.isObject(component) && component.is_component, context + ':bad VBox component object')
-		
-		this.current().add_child(component)
-		this.push(component)
-		
-		return this
+		return this.new_component('VBox', arg_name, arg_settings, arg_state)
 	}
 	
 	
@@ -345,16 +372,20 @@ export default class Render extends Loggable
      */
 	list(arg_name, arg_settings, arg_state)
 	{
-		arg_settings = arg_settings ? arg_settings : {}
-		arg_settings.state = arg_state
-		
-		let component = this.rendering_manager.create('List', arg_name, arg_settings)
-		assert( T.isObject(component) && component.is_component, context + ':bad List component object')
-		
-		this.current().add_child(component)
-		this.push(component)
-		
-		return this
+		return this.new_component('List', arg_name, arg_settings, arg_state)
+	}
+	
+	
+    /**
+     * Create a Menubar component instance and push it on the rendering stack.
+     * @param {string} arg_name - component name.
+     * @param {object} arg_settings - component settings plain object.
+     * @param {object} arg_state - component initial state plain object.
+     * @returns {object} this.
+     */
+	menubar(arg_name, arg_settings, arg_state)
+	{
+		return this.new_component('Menubar', arg_name, arg_settings, arg_state)
 	}
 	
 	
@@ -367,16 +398,33 @@ export default class Render extends Loggable
      */
 	table(arg_name, arg_settings, arg_state)
 	{
-		arg_settings = arg_settings ? arg_settings : {}
-		arg_settings.state = arg_state
-		
-		let component = this.rendering_manager.create('Table', arg_name, arg_settings)
-		assert( T.isObject(component) && component.is_component, context + ':bad Table component object')
-		
-		this.current().add_child(component)
-		this.push(component)
-		
-		return this
+		return this.new_component('Table', arg_name, arg_settings, arg_state)
+	}
+	
+	
+    /**
+     * Create a Tabs component instance and push it on the rendering stack.
+     * @param {string} arg_name - component name.
+     * @param {object} arg_settings - component settings plain object.
+     * @param {object} arg_state - component initial state plain object.
+     * @returns {object} this.
+     */
+	tabs(arg_name, arg_settings, arg_state)
+	{
+		return this.new_component('Tabs', arg_name, arg_settings, arg_state)
+	}
+	
+	
+    /**
+     * Create a InputField component instance and push it on the rendering stack.
+     * @param {string} arg_name - component name.
+     * @param {object} arg_settings - component settings plain object.
+     * @param {object} arg_state - component initial state plain object.
+     * @returns {object} this.
+     */
+	input_field(arg_name, arg_settings, arg_state)
+	{
+		return this.new_component('InputField', arg_name, arg_settings, arg_state)
 	}
 	
 	
@@ -389,17 +437,7 @@ export default class Render extends Loggable
      */
 	script(arg_name, arg_settings, arg_state)
 	{
-		arg_settings = arg_settings ? arg_settings : {}
-		arg_settings.state = arg_state
-		
-		let component = this.rendering_manager.create('Script', arg_name, arg_settings)
-		assert( T.isObject(component) && component.is_component, context + ':bad Script component object')
-		
-		this.current().add_child(component)
-		this.push(component)
-		// this.up()
-		
-		return this
+		return this.new_component('Script', arg_name, arg_settings, arg_state)
 	}
 	
 	
@@ -414,7 +452,6 @@ export default class Render extends Loggable
 			return null
 		}
 		
-		console.log('render ' + (this.current().get_type()) )
 		return this.current().render()
 	}
 }

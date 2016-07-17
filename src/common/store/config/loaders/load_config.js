@@ -3,8 +3,7 @@ import assert from 'assert'
 import T from 'typr'
 import path from 'path'
 
-// import { base_dir, get_absolute_path } from '../../../utils/paths'
-import logs from '../../../utils/logs'
+import LoggerConsole from '../../../loggers/logger_console'
 
 import load_config_apps from './load_config_apps'
 import load_config_modules from './load_config_modules'
@@ -14,9 +13,6 @@ import load_config_nodes from './load_config_nodes'
 
 
 let context = 'common/store/config/loaders/load_config'
-let error_msg_bad_config = context + ':bad config'
-
-// const base_dir = '../../../..'
 
 
 
@@ -24,15 +20,18 @@ let error_msg_bad_config = context + ':bad config'
  * Load the 'config' key of the final state
  * Pure function: (Plain Object) => (new Plain Object)
  */
-function load_config(arg_state, arg_initial_config, arg_base_dir)
+function load_config(arg_state, arg_initial_config, arg_base_dir, arg_world_dir, arg_trace)
 {
+	const logs = new LoggerConsole(arg_trace ? arg_trace : false)
+	
 	logs.info(context, 'loading config')
 	
-    const base_dir = arg_base_dir
-    // console.log(base_dir, 'load_config:base_dir')
+	
+	arg_world_dir = arg_world_dir ? arg_world_dir : (arg_base_dir ? path.join(arg_base_dir, 'resources') : undefined)
+
 	
 	// LOAD APPS.JSON
-	try{
+	try {
 		// GET CONFIG JSON
 		if (! arg_initial_config)
 		{
@@ -41,39 +40,47 @@ function load_config(arg_state, arg_initial_config, arg_base_dir)
 		
 		let config = arg_initial_config
 		config.resources = config.resources || {}
-		// config.changes_history = config.changes_history || [{ ts: Date.now(), }]
-        // console.log(config, 'load_config:config')
 		
 		// LOAD OTHERS FILES
 		if (T.isString(config.nodes))
 		{
-			const file_path_name = path.join(base_dir, 'resources', config.nodes)
+			const file_path_name = path.join(arg_world_dir, config.nodes)
 			config.nodes = require(file_path_name).nodes
 		}
 		if (T.isString(config.services))
 		{
-			const file_path_name = path.join(base_dir, 'resources', config.services)
+			const file_path_name = path.join(arg_world_dir, config.services)
 			config.services = require(file_path_name).services
 		}
 		if (T.isString(config.applications))
 		{
-			const file_path_name = path.join(base_dir, 'resources', config.applications)
+			const file_path_name = path.join(arg_world_dir, config.applications)
 			config.applications = require(file_path_name).applications
 		}
 		if (T.isString(config.modules))
 		{
-			const file_path_name = path.join(base_dir, 'resources', config.modules)
+			const file_path_name = path.join(arg_world_dir, config.modules)
 			config.modules = require(file_path_name).modules
 		}
 		if (T.isString(config.plugins))
 		{
-			const file_path_name = path.join(base_dir, 'resources', config.plugins)
+			const file_path_name = path.join(arg_world_dir, config.plugins)
 			config.plugins = require(file_path_name).plugins
 		}
 		if (T.isString(config.security))
 		{
-			const file_path_name = path.join(base_dir, 'resources', config.security)
+			const file_path_name = path.join(arg_world_dir, config.security)
 			config.security = require(file_path_name).security
+		}
+		if (T.isString(config.loggers))
+		{
+			const file_path_name = path.join(arg_world_dir, config.loggers)
+			config.loggers = require(file_path_name).loggers
+		}
+		if (T.isString(config.traces))
+		{
+			const file_path_name = path.join(arg_world_dir, config.traces)
+			config.traces = require(file_path_name).traces
 		}
 		
         
@@ -85,6 +92,8 @@ function load_config(arg_state, arg_initial_config, arg_base_dir)
 		assert(T.isObject(config.modules), 'apps.json:modules should be a plain object')
 		assert(T.isObject(config.plugins), 'apps.json:plugins should be a plain object')
 		assert(T.isObject(config.security), 'apps.json:security should be a plain object')
+		assert(T.isObject(config.loggers), 'apps.json:loggers should be a plain object')
+		assert(T.isObject(config.traces), 'apps.json:traces should be a plain object')
 		
 		
 		// LOAD CONFIG PARTS
@@ -103,12 +112,14 @@ function load_config(arg_state, arg_initial_config, arg_base_dir)
 		arg_state.config.resources.by_type.connexions = {} // Resource names (map name:name)
 		arg_state.config.resources.by_type.loggers = {} // Resource names (map name:name)
 		
-		arg_state.config.nodes        = load_config_nodes(config.nodes, arg_base_dir)
+		arg_state.config.nodes        = load_config_nodes(logs, config.nodes, arg_base_dir)
 		arg_state.config.services     = config.services // TODO: bload_config_services(config.services, arg_base_dir)
-		arg_state.config.modules      = load_config_modules(config.modules, arg_base_dir)
-		arg_state.config.plugins      = load_config_plugins(config.plugins, arg_base_dir)
-		arg_state.config.applications = load_config_apps(config.applications, arg_state.config.modules, arg_state.config.plugins, arg_state.config.resources, arg_base_dir)
-		arg_state.config.security     = load_config_security(config.security, arg_base_dir)
+		arg_state.config.modules      = load_config_modules(logs, config.modules, arg_base_dir)
+		arg_state.config.plugins      = load_config_plugins(logs, config.plugins, arg_base_dir)
+		arg_state.config.applications = load_config_apps(logs, config.applications, arg_state.config.modules, arg_state.config.plugins, arg_state.config.resources, arg_base_dir)
+		arg_state.config.security     = load_config_security(logs, config.security, arg_base_dir)
+		arg_state.config.loggers      = config.loggers
+		arg_state.config.traces       = config.traces
 		
 		
 		// POPULATE STORE RESOURCES
@@ -173,43 +184,41 @@ function load_config(arg_state, arg_initial_config, arg_base_dir)
 		
 		// PROCESS ERROR
 		logs.info(context, 'processing errors')
-		if (arg_state.config.modules.error)
-		{
+		const add_sub_error = (arg_type, arg_error) => {
+			if (! arg_state.config.error)
+			{
+				arg_state.config.error = { context:context, exception:'has sub errors', error_msg:'see sub errors' }
+			}
 			if (! arg_state.config.suberrors)
 			{
-				arg_state.config.suberrors = []
+				arg_state.config.error.suberrors = []
 			}
-			arg_state.config.suberrors.push(arg_state.config.modules.error)
+			const msg = arg_error.error_msg ? arg_error.error_msg : arg_error.exception
+			arg_state.config.error.suberrors.push( {type:arg_type, context:arg_error.context, error_msg:msg} )
+			
+		}
+		
+		if (arg_state.config.modules.error)
+		{
+			add_sub_error('modules', arg_state.config.modules.error)
 		}
 		if (arg_state.config.plugins.error)
 		{
-			if (! arg_state.config.suberrors)
-			{
-				arg_state.config.suberrors = []
-			}
-			arg_state.config.suberrors.push(arg_state.config.plugins.error)
+			add_sub_error('plugins', arg_state.config.plugins.error)
 		}
 		if (arg_state.config.applications.error)
 		{
-			if (! arg_state.config.suberrors)
-			{
-				arg_state.config.suberrors = []
-			}
-			arg_state.config.suberrors.push(arg_state.config.applications.error)
+			add_sub_error('applications', arg_state.config.applications.error)
 		}
 		if (arg_state.config.security.error)
 		{
-			if (! arg_state.config.suberrors)
-			{
-				arg_state.config.suberrors = []
-			}
-			arg_state.config.suberrors.push(arg_state.config.security.error)
+			add_sub_error('security', arg_state.config.security.error)
 		}
 	}
 	catch(e)
 	{
 		arg_state.config = { error: { context:context, exception:e, error_msg:e.toString() } }
-		console.error(e, context)
+		// console.error(e, context)
 	}
 	
     // console.log( Object.keys(arg_state.config.resources.by_name), 'resources' )

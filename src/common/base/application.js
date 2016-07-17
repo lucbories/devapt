@@ -46,18 +46,24 @@ let context = 'common/base/application'
 */
 
 /**
- * Application class
+ * @file Application class.
+ * @author Luc BORIES
+ * @license Apache-2.0
  */
 export default class Application extends Instance
 {
     /**
-     * Application constructor
-     * {string} Application name
+     * Application constructor.
+	 * @extends Instance
+	 * 
+     * @param {string} arg_name - Application name.
+	 * 
+	 * @returns {nothing}
      */
 	constructor(arg_name)
 	{
 		const cfg = config()
-		assert( config.has_collection('applications'), context + ':not found config.applications')
+		assert( store.has_collection('applications'), context + ':not found store.applications')
 		let settings = cfg.hasIn(['applications', arg_name]) ? cfg.getIn(['applications', arg_name]) : {}
 		
 		super('applications', 'Application', arg_name, settings, context)
@@ -80,8 +86,11 @@ export default class Application extends Instance
 	}
 	
     
+	
 	/**
-     * Load configuration and build application
+     * Load configuration and build application.
+	 * 
+	 * @returns {nothing}
      */
 	load()
 	{
@@ -98,8 +107,9 @@ export default class Application extends Instance
 		assert( T.isObject(consumes), context + ':bad settings.services.consumes object')
 		consumes.forEach(
 			(service_cfg, service_name) => {
-				let service = runtime.services.find_by_name(service_name)
+				/*let service =*/ runtime.services.find_by_name(service_name)
 				
+				// TODO PROCESS CONSUMED SERVICES
 				// assert( T.isObject(service) && service.is_service, context + ':bad service object')
 				
 				// if (service)
@@ -114,6 +124,7 @@ export default class Application extends Instance
 		
 		// ENABLE USED MODULES
 		this.info('enable used modules')
+		assert( T.isFunction(this.$settings.has), context + ':load:bad settings object')
 		assert( this.$settings.has('modules'), context + ':bad settings.modules key')
 		const cfg_modules = this.$settings.get('modules')
 		assert( T.isObject(cfg_modules), context + ':bad settings.modules object')
@@ -126,7 +137,7 @@ export default class Application extends Instance
 				this.modules.add(module_obj)
 				
 				// LOOP ON MODULE RESOURCES
-				for(let res_obj of module_obj.resources)
+				for(let res_obj of module_obj.resources.get_all() )
 				{
 					this.resources.add(res_obj)
 				}
@@ -161,19 +172,24 @@ export default class Application extends Instance
 		assert( T.isObject(provides), context + ':bad settings.services.provides object')
 		provides.forEach(
 			(provide_svc_cfg, service_name) => {
-				this.info('loop on service [' + service_name + ']')
+				// this.info('loop on service [' + service_name + ']')
 				let service = runtime.services.find_by_name(service_name)
 				
 				// assert( T.isObject(service) && service.is_service, context + ':bad service object')
 				
 				if (service)
 				{
-					// this.info('activate service [' + service_name + ']')
+					this.info('activate service [' + service_name + ']')
+
 					service.activate(this, provide_svc_cfg.toJS())
 					
 					service.enable()
 					
 					this.provided_services.add(service)
+				}
+				else
+				{
+					this.info('can not activate: no service found [' + service_name + ']')
 				}
 			}
 		)
@@ -187,9 +203,11 @@ export default class Application extends Instance
 	}
 	
 	
+	
     /**
-     * Get all application models names
-     * return Array of String
+     * Get all application models names.
+	 * 
+     * @{returns} - Array of String.
      */
 	get_models_names()
 	{
@@ -197,9 +215,11 @@ export default class Application extends Instance
 	}
 	
 	
+	
     /**
-     * Get all application views names
-     * return Array of String
+     * Get all application views names.
+	 * 
+     * @{returns} - Array of String.
      */
 	get_views_names()
 	{
@@ -207,9 +227,11 @@ export default class Application extends Instance
 	}
 	
 	
+	
     /**
-     * Get all application menubars names
-     * return Array of String
+     * Get all application menubars names.
+	 * 
+     * @{returns} - Array of String.
      */
 	get_menubars_names()
 	{
@@ -217,9 +239,11 @@ export default class Application extends Instance
 	}
 	
 	
+	
     /**
-     * Get all application menus names
-     * return Array of String
+     * Get all application menus names.
+	 * 
+     * @{returns} - Array of String.
      */
 	get_menus_names()
 	{
@@ -227,10 +251,13 @@ export default class Application extends Instance
 	}
 	
 	
+	
     /**
-     * Get all application resources of given type names
-     * {string} Resource type
-     * return Array of String
+     * Get all application resources of given type names.
+	 * 
+     * @param {string} arg_type - resource type.
+	 * 
+     * @{returns} - Array of String
      */
 	get_resources_names(arg_type)
 	{
@@ -241,9 +268,9 @@ export default class Application extends Instance
 				let module_resources = null
 				if (arg_type)
 				{
-					module_resources = config.getIn('modules', module_name, 'resources_by_type', arg_type).toArray()
+					module_resources = store.getIn('modules', module_name, 'resources_by_type', arg_type).toArray()
 				} else {
-					module_resources = config.getIn('modules', module_name, 'resources_by_name').toArray()
+					module_resources = store.getIn('modules', module_name, 'resources_by_name').toArray()
 				}
 				module_resources.forEach(
 					(resource_name) => {

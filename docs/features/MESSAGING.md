@@ -3,7 +3,24 @@
 ## Description
 A distributed application needs to provide a communication between its nodes.
 
-Devapt provides a messages bus to ensure JSON messages exchange.
+Devapt provides messages buses to ensure JSON messages exchange.
+
+![Messaging](https://github.com/lucbories/Devapt/tree/master/docs/features/buses.png)
+
+Each topology node has 3 buses to communicate inside a node or between nodes:
+* metrics bus: metrics collectors push metrics messages on this bus and metrics server listen on it to reduce metrics values.
+* messages bus nodes servers and services communicate through messages.
+* logs bus: each node part can log its activity on this bus.
+
+Each browser has a socketio bus for communication between browser and topology.
+
+
+Example for message communication inside a Node
+
+Node A
+
+Server A1			Server A2
+
 
 
 

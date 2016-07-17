@@ -14,7 +14,7 @@ let context = 'common/services/resources/resources_svc_consumer'
  * @author Luc BORIES
  * @license Apache-2.0
  */
-export default class MiddlewareSvcConsumer extends RoutesServiceConsumer
+export default class ResourcesSvcConsumer extends RoutesServiceConsumer
 {
 	/**
 	 * Create a service consumer for resources routes.
