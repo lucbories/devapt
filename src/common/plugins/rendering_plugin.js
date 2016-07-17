@@ -37,6 +37,7 @@ export default class RenderingPlugin extends FeaturesPlugin
 		this.public_assets = {
 			css:{},
 			js:{},
+			img:{},
 			html:{}
 		}
 	}
@@ -88,6 +89,16 @@ export default class RenderingPlugin extends FeaturesPlugin
 	get_public_js_assets()
 	{
 		return this.public_assets['js'] ? this.public_assets['js'] : {}
+	}
+	
+	
+	/**
+	 * Get all plugin public image assets.
+	 * @returns {object} - a map of assets:public name => absolute file path
+	 */
+	get_public_img_assets()
+	{
+		return this.public_assets['img'] ? this.public_assets['img'] : {}
 	}
 	
 	

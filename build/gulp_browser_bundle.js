@@ -30,32 +30,32 @@ module.exports = function (gulp, plugins)
 					.ignore('socket.io')
 					.require('./dist/browser/client_runtime.js', { expose:'client_runtime' } )
 				
-				try
-				{
-					var stream = bundler.bundle()
-						.on('error',
-							function(err)
-							{
-								console.error(err)
-								this.emit('end')
-							}
-						)
-						.pipe( source(DST_BROWSER_BUNDLE) )
-						// .pipe( plugins.changed(DST) )
-						.pipe( buffer() )
-						.pipe( plugins.sourcemaps.init() )
-						.pipe( plugins.sourcemaps.write('.') )
-						.pipe( gulp.dest(DST) )
-						.pipe( plugins.livereload() )
-					return stream
-				}
-				catch(e)
-				{
-					console.log('build_browser_bundle:an error occures', Object.keys(e) )
-					// Error: Cannot find module 'fsevents' from 'D:\DATAS\GitHub\devapt\node_modules\chokidar\lib'
-				}
+				// try
+				// {
+				var stream = bundler.bundle()
+					.on('error',
+						function(err)
+						{
+							console.error(err)
+							this.emit('end')
+						}
+					)
+					.pipe( source(DST_BROWSER_BUNDLE) )
+					// .pipe( plugins.changed(DST) )
+					.pipe( buffer() )
+					.pipe( plugins.sourcemaps.init() )
+					.pipe( plugins.sourcemaps.write('.') )
+					.pipe( gulp.dest(DST) )
+					.pipe( plugins.livereload() )
+				return stream
+				// }
+				// catch(e)
+				// {
+				// 	console.log('build_browser_bundle:an error occures', Object.keys(e) )
+				// 	// Error: Cannot find module 'fsevents' from 'D:\DATAS\GitHub\devapt\node_modules\chokidar\lib'
+				// }
 				
-				return undefined
+				// return undefined
 			}
 		)
 	}

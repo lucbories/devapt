@@ -1,5 +1,6 @@
 
 import T from 'typr'
+import path from 'path'
 import {fromJS, Map} from 'Immutable'
 
 import rt from '../base/runtime'
@@ -28,8 +29,9 @@ class Store
 	load(arg_config)
 	{
 		const base_dir = rt && rt.get_setting ? rt.get_setting('base_dir', null) : undefined
+		const world_dir = rt && rt.get_setting ? rt.get_setting('world_dir', null) : undefined
 			
-		let checked_config = load_config({}, arg_config, base_dir,TRACE)
+		let checked_config = load_config({}, arg_config, base_dir, world_dir, TRACE)
 		
 		if (checked_config.config.error)
 		{

@@ -20,16 +20,15 @@ let context = 'common/store/config/loaders/load_config'
  * Load the 'config' key of the final state
  * Pure function: (Plain Object) => (new Plain Object)
  */
-function load_config(arg_state, arg_initial_config, arg_base_dir, arg_trace)
+function load_config(arg_state, arg_initial_config, arg_base_dir, arg_world_dir, arg_trace)
 {
 	const logs = new LoggerConsole(arg_trace ? arg_trace : false)
 	
 	logs.info(context, 'loading config')
 	
-	// console.log(logs.should_trace('ttt'), context + ':logs.should_trace()')
 	
-	const base_dir = arg_base_dir
-    // console.log(base_dir, 'load_config:base_dir')
+	arg_world_dir = arg_world_dir ? arg_world_dir : (arg_base_dir ? path.join(arg_base_dir, 'resources') : undefined)
+
 	
 	// LOAD APPS.JSON
 	try {
@@ -45,42 +44,42 @@ function load_config(arg_state, arg_initial_config, arg_base_dir, arg_trace)
 		// LOAD OTHERS FILES
 		if (T.isString(config.nodes))
 		{
-			const file_path_name = path.join(base_dir, 'resources', config.nodes)
+			const file_path_name = path.join(arg_world_dir, config.nodes)
 			config.nodes = require(file_path_name).nodes
 		}
 		if (T.isString(config.services))
 		{
-			const file_path_name = path.join(base_dir, 'resources', config.services)
+			const file_path_name = path.join(arg_world_dir, config.services)
 			config.services = require(file_path_name).services
 		}
 		if (T.isString(config.applications))
 		{
-			const file_path_name = path.join(base_dir, 'resources', config.applications)
+			const file_path_name = path.join(arg_world_dir, config.applications)
 			config.applications = require(file_path_name).applications
 		}
 		if (T.isString(config.modules))
 		{
-			const file_path_name = path.join(base_dir, 'resources', config.modules)
+			const file_path_name = path.join(arg_world_dir, config.modules)
 			config.modules = require(file_path_name).modules
 		}
 		if (T.isString(config.plugins))
 		{
-			const file_path_name = path.join(base_dir, 'resources', config.plugins)
+			const file_path_name = path.join(arg_world_dir, config.plugins)
 			config.plugins = require(file_path_name).plugins
 		}
 		if (T.isString(config.security))
 		{
-			const file_path_name = path.join(base_dir, 'resources', config.security)
+			const file_path_name = path.join(arg_world_dir, config.security)
 			config.security = require(file_path_name).security
 		}
 		if (T.isString(config.loggers))
 		{
-			const file_path_name = path.join(base_dir, 'resources', config.loggers)
+			const file_path_name = path.join(arg_world_dir, config.loggers)
 			config.loggers = require(file_path_name).loggers
 		}
 		if (T.isString(config.traces))
 		{
-			const file_path_name = path.join(base_dir, 'resources', config.traces)
+			const file_path_name = path.join(arg_world_dir, config.traces)
 			config.traces = require(file_path_name).traces
 		}
 		

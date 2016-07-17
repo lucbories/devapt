@@ -15,7 +15,9 @@
   "homepage": "https://github.com/lucbories/devapt#readme.md",
   "main": "dist/index.js",
   "engines": [],
-  "directories": ["dist"],
+  "directories": [
+    "dist"
+  ],
   "scripts": {
     "build": "gulp",
     "test": "gulp ; mocha --reporter spec dist/common/test",

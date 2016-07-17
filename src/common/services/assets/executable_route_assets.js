@@ -119,12 +119,12 @@ export default class ExecutableRouteAssets extends ExecutableRoute
 		
 		const plugins_names = arg_cfg_route.plugins
 		const rendering_manager = runtime.get_plugins_factory().get_rendering_manager()
-		// const assets = rendering_manager.get_public_assets()
 		
-		return (req, res, next) => {
-			const asset_name = req.path
-			// console.log('MIDDLEWARE: ROUTE FOR ASSETS IN PLUGINS MODE for ', asset_name)
-			
+		return (req, res/*, next*/) => {
+			const asset_name_parts = req.path.split('?', 2)
+			const asset_name = asset_name_parts[0]
+			// console.log('MIDDLEWARE: ROUTE FOR ASSETS IN PLUGINS MODE for ', asset_name, plugins_names)
+
 			// BAD METHOD
 			if (req.method !== 'GET' && req.method !== 'HEAD')
 			{

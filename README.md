@@ -80,7 +80,7 @@ See [ROADMAP](docs/ROADMAP.md)
 
 ## BUGS
 
-See [LICENSE](https://github.com/lucbories/Devapt/issues) TO CHECK
+See [BUGS](https://github.com/lucbories/Devapt/issues)
 
 
 

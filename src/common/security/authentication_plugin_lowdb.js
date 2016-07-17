@@ -129,7 +129,7 @@ export default class AuthenticationLowDbPlugin extends AuthenticationPlugin
 				(reason) => {
 					self.leave_group('enable (async:error)')
 					self.error('failed to load db file:' + reason)
-					// console.log('failed to load db file:' + reason)
+					console.error('failed to load db file:' + reason)
 				}
 			)
 		}

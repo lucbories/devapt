@@ -49,21 +49,21 @@ module.exports = function (gulp, plugins)
 		*/
 		gulp.task('build_server_transpile',
 			() => {
-				try
-				{
-					return gulp.src(SRC_SERVER)
-						.pipe( plugins.changed(DST_SERVER) )
-						.pipe( plugins.sourcemaps.init() )
-						.pipe( plugins.babel(BABEL_CONFIG) )
-						.pipe( plugins.sourcemaps.write('.') )
-						.pipe( gulp.dest(DST_SERVER) )
-				}
-				catch(e)
-				{
-					console.log('build_server_transpile:an error occures', Object.keys(e) )
-					// Error: Cannot find module 'fsevents' from 'D:\DATAS\GitHub\devapt\node_modules\chokidar\lib'
-				}
-				return undefined
+				// try
+				// {
+				return gulp.src(SRC_SERVER)
+					.pipe( plugins.changed(DST_SERVER) )
+					.pipe( plugins.sourcemaps.init() )
+					.pipe( plugins.babel(BABEL_CONFIG) )
+					.pipe( plugins.sourcemaps.write('.') )
+					.pipe( gulp.dest(DST_SERVER) )
+				// }
+				// catch(e)
+				// {
+				// 	console.log('build_server_transpile:an error occures', Object.keys(e) )
+				// 	// Error: Cannot find module 'fsevents' from 'D:\DATAS\GitHub\devapt\node_modules\chokidar\lib'
+				// }
+				// return undefined
 			}
 		)
 	}
