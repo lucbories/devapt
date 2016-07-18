@@ -106,7 +106,11 @@ export function render_node(arg_value, arg_depth, arg_label)
 		return render_expandable_node(arg_label, str)
 	}
 	
-	
-	console.log(arg_value, 'value is unknow')
+	if ( T.isNull(arg_value))
+	{
+		return ''
+	}
+
+	console.error(arg_value, 'value is unknow')
 	return '<p>unknow node of type [' + (typeof arg_value) + ']</p>\n'
 }
