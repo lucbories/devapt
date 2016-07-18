@@ -161,9 +161,25 @@ export default class Node extends NodeMessaging
 		assert( arg_settings.has('servers'), context + ':load_topology_settings:unknow settings.servers')
 		
 		// GET NODE SERVERS SETTINGS
-		const servers = arg_settings.get('servers')
+		let servers = arg_settings.get('servers')
 		assert( T.isObject(servers), context + ':load_topology_settings:bad settings.servers object')
-		
+		const bindings = runtime.get_setting('servers_bindings', undefined)
+		if (bindings)
+		{
+			const bindings_js = bindings.toJS()
+			// console.log(context + ':load_topology_settings:settings.servers_bindings', bindings_js)
+			// assert( T.isArray(bindings_js), context + ':load_topology_settings:bad settings.servers_bindings array')
+			bindings_js.forEach(
+				(binding_record) => {
+					if (binding_record.node == this.get_name() && servers.has(binding_record.server) )
+					{
+						servers = servers.setIn([binding_record.server, 'host'], binding_record.host )
+						servers = servers.setIn([binding_record.server, 'port'], binding_record.port )
+					}
+				}
+			)
+		}
+
 		// UDPATE NODE SETTINGS WITH SERVERS
 		this.$settings = this.$settings.set('servers', servers)
 		

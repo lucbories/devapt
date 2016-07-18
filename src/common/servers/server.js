@@ -263,7 +263,7 @@ export default class Server extends DistributedInstance
 		{
 			this.server_port = cfg.getIn(['servers', 'default', 'port'])
 		}
-		assert( T.isNumber(this.server_port), context + ':bad server port string:[' + this.server_port + ']')
+		assert( T.isString(this.server_port) || T.isNumber(this.server_port), context + ':bad server port string|number:[' + this.server_port + ']')
 		
 		// SET SERVER PROTOCOLE
 		this.server_protocole = this.$settings.has('protocole') ? this.$settings.get('protocole') : null
