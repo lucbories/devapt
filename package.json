@@ -1,6 +1,6 @@
 {
   "name": "devapt",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Developpers Application Toolkit - build application (RESTfull, API, distributed nodes, reactive...) from configuration",
   "author": "Luc BORIES (https://github.com/lucbories)",
   "license": "Apache-2.0",

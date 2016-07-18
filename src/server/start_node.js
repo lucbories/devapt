@@ -24,13 +24,20 @@ commander
 
 
 
+const root_dir = process.env.OPENSHIFT_HOMEDIR ? process.env.OPENSHIFT_HOMEDIR : process.cwd()
+const topology_dir = root_dir ? path.join(root_dir, commander.topologyDirectory) : commander.topologyDirectory
 
 
 const DEVAPT_NODE_NAME = commander.nodeName
-const DEVAPT_NODE_CFG = path.join(commander.topologyDirectory, '../nodes', DEVAPT_NODE_NAME + '.json')
+const DEVAPT_NODE_CFG = path.join(topology_dir, '../nodes', DEVAPT_NODE_NAME + '.json')
 
 
 // DEBUG
+// console.log(process.env, 'process.env')
+// console.log(process.env.OPENSHIFT_HOMEDIR, 'process.env.OPENSHIFT_HOMEDIR')
+// console.log(root_dir, 'root_dir')
+// console.log(process.env.OPENSHIFT_NODEJS_IP, 'process.env.OPENSHIFT_NODEJS_IP')
+// console.log(process.env.OPENSHIFT_NODEJS_PORT, 'process.env.OPENSHIFT_NODEJS_PORT')
 // console.log(commander.nodeName, 'commander.nodeName')
 // console.log(commander.resourcesDirectory, 'commander.resourcesDirectory')
 // console.log(DEVAPT_NODE_CFG, 'DEVAPT_NODE_CFG')
@@ -45,8 +52,8 @@ if (!DEVAPT_NODE_NAME)
 
 
 const runtime_settings = require(DEVAPT_NODE_CFG)
-runtime_settings.base_dir = commander.baseDirectory
-runtime_settings.world_dir = commander.topologyDirectory
+runtime_settings.base_dir = root_dir ? path.join(root_dir, commander.baseDirectory) : commander.baseDirectory
+runtime_settings.world_dir = topology_dir
 runtime_settings.is_master = true
 runtime_settings.servers_bindings = undefined
 if (commander.serversBindings)
@@ -55,7 +62,16 @@ if (commander.serversBindings)
 	const bindings = commander.serversBindings.split('|')
 	bindings.forEach(
 		(binding) => {
-			const parts = binding.split(':')
+			let parts = binding.split(':')
+			if (parts.length == 2 && process.env.OPENSHIFT_NODEJS_IP && process.env.OPENSHIFT_NODEJS_PORT)
+			{
+				parts.push(process.env.OPENSHIFT_NODEJS_IP)
+				parts.push(process.env.OPENSHIFT_NODEJS_PORT)
+			}
+			if (parts.length == 3 && process.env.OPENSHIFT_NODEJS_PORT)
+			{
+				parts.push(process.env.OPENSHIFT_NODEJS_PORT)
+			}
 			if (parts.length == 4)
 			{
 				const binding_record = {
