@@ -5,7 +5,11 @@ import chokidar from 'chokidar'
 import runtime from '../common/base/runtime'
 import commander from 'commander'
 
-// const runtime = devapt.runtime
+
+
+// POLYFILLS FOR NODE 0.10
+require('./es5-compat.js')
+
 
 
 function parse_files_list(list)
@@ -24,7 +28,7 @@ commander
 
 
 
-const root_dir = process.env.OPENSHIFT_HOMEDIR ? process.env.OPENSHIFT_HOMEDIR : process.cwd()
+const root_dir = process.env.OPENSHIFT_REPO_DIR ? process.env.OPENSHIFT_REPO_DIR : process.cwd()
 const topology_dir = root_dir ? path.join(root_dir, commander.topologyDirectory) : commander.topologyDirectory
 
 

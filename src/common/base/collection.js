@@ -137,11 +137,11 @@ export default class Collection
 	// }
 	
 	
-	
-	[Symbol.iterator]()
-	{
-		return this.$items.iterator()
-	}
+	// NOT COMPATIBLE WITH NODE 0.10
+	// [Symbol.iterator]()
+	// {
+	// 	return this.$items.iterator()
+	// }
 	
 	
 	
