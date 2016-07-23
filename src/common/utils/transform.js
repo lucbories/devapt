@@ -354,8 +354,12 @@ export const transform = (arg_xform) => {
 			let results = []
 			const keys = Object.keys(arg_values)
 			
-			for(let loop_key of keys)
+			// PROBLEM WITH NODEJS 0.10
+			// for(let loop_key of keys)
+			// {
+			for(let loop_index = 0 ; loop_index < keys.length ; loop_index++)
 			{
+				const loop_key = keys[loop_index]
 				// console.log(context + ':loop_on_keys:key', loop_key)
 				const loop_value = arg_values[loop_key]
 				const loop_extracted = output_extractor(loop_value)

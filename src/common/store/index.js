@@ -1,6 +1,6 @@
 
 import T from 'typr'
-import path from 'path'
+// import path from 'path'
 import {fromJS, Map} from 'immutable'
 
 import rt from '../base/runtime'

@@ -2,19 +2,22 @@
 
 // POLYFILL FOR PROMISE
 // FOR NODE 0.10
-if (! Promise)
+// if (! Promise)
+if (!Array.prototype.find)
 {
 	// var Promise = require('es6-promise').Promise
-	require('es6-promise').polyfill()
+	// require('es6-promise').polyfill()
+	require("babel-polyfill")
 }
 
 
 
 // POLYFILL FOR SYMBOL
 // FOR NODE 0.10
-if (! Symbol)
+// if (! Symbol)
+if (!Array.prototype.find)
 {
-	var Symbol = require('es6-symbol')
+	// var Symbol = require('es6-symbol')
 	require('es6-symbol/implement')
 }
 

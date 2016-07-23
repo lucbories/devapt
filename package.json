@@ -2,9 +2,13 @@
   "name": "devapt",
   "version": "1.0.3",
   "description": "Developpers Application Toolkit - build application (RESTfull, API, distributed nodes, reactive...) from configuration",
-  "author": "Luc BORIES (https://github.com/lucbories)",
+  "author": {
+    "name":"Luc BORIES",
+    "email":"luc.bories@gmail.com",
+    "url": "https://github.com/lucbories"
+  },
+  "contributors":[],
   "license": "Apache-2.0",
-  "license2": "Apache License 2.0",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/lucbories/devapt.git"
@@ -14,14 +18,20 @@
   },
   "homepage": "https://github.com/lucbories/devapt#readme.md",
   "main": "dist/index.js",
-  "engines": [],
-  "directories": [
-    "dist"
-  ],
+  "engines": { "node" : ">=4.4.4" },
+  "directories": { "dist":"./dist" },
   "scripts": {
     "build": "gulp",
     "test": "gulp ; mocha --reporter spec dist/common/test",
-    "test:watch": "npm run test -- --watch"
+    "test:watch": "npm run test -- --watch",
+    "postversion": "unix2dos package.json",
+    "commit": "unix2dos package.json && git status && pause && git commit -am ",
+    "patch": "npm version patch && unix2dos package.json && git status && pause && git commit -am ",
+    "minor": "npm version minor && unix2dos package.json && git status && pause && git commit -am ",
+    "major": "npm version major && unix2dos package.json && git status && pause && git commit -am ",
+    "push-dev": "git push devapt develop",
+    "merge": "git checkout master && git merge develop && git push devapt master && git checkout develop",
+    "release": "git push devapt develop && git checkout master && git merge develop && git push devapt master && git checkout develop"
   },
   "browser": [
     "sequelize",

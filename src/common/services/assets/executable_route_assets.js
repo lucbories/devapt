@@ -51,11 +51,19 @@ export default class ExecutableRouteAssets extends ExecutableRoute
 			// console.log('ROUTE FOR ASSETS IN PLUGINS MODE for ', arg_cfg_route.plugins)
 			return this.get_route_plugins_cb(arg_application, arg_cfg_route, arg_data)
 		}
+
+
+		if ( T.isString(arg_cfg_route.redirect) )
+		{
+			// console.log('REDIRECT ROUTE FOR ASSETS', arg_cfg_route.redirect)
+			return this.get_route_redirect_cb(arg_application, arg_cfg_route, arg_data)
+		}
 		
 		// UNKNOW SERVER TO SERVE STATIC FILES
 		console.error('UNKNOW ROUTE MODE', arg_cfg_route)
 		return null
 	}
+
 	
 	
 	/**

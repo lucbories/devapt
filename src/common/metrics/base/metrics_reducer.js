@@ -48,8 +48,12 @@ export default class MetricsReducer
 		let state_values = arg_state.get_values()
 		// console.log(state_values, context + ':reduce:state_values for ' + arg_state.get_name())
 		
-		for(let loop_metric of arg_metrics_values)
+		// PROBLEM WITH NODEJS 0.10
+		for(let loop_metric_index = 0 ; loop_metric_index < arg_metrics_values.length ; loop_metric_index++)
 		{
+			let loop_metric = arg_metrics_values[loop_metric_index]
+		// for(let loop_metric of arg_metrics_values)
+		// {
 			// console.log(loop_metric, context + ':reduce:loop_metric for ' + arg_state.get_name())
 			
 			assert( T.isObject(loop_metric) && loop_metric.metric == arg_state.get_name(), context + ':reduce:bad metrics object')

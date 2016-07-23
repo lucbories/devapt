@@ -460,8 +460,16 @@ export default class Collection
 	 */
 	forEach(arg_cb)
 	{
-		for(let item of this.$items)
+		// FOR NODEJS 0.10
+		// POLYFILL PROBLEM
+		// for(let item of this.$items)
+		// {
+		// 	arg_cb(item)
+		// }
+		const count = this.$items.length
+		for(let i = 0 ; i < count ; i++)
 		{
+			const item = this.$items[i]
 			arg_cb(item)
 		}
 	}

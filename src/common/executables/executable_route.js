@@ -3,6 +3,7 @@ import T from 'typr'
 import assert from 'assert'
 
 import Executable from '../base/executable'
+import runtime from '../base/runtime'
 
 
 let context = 'common/executables/executable_route'
@@ -69,27 +70,37 @@ export default class ExecutableRoute extends Executable
 		
 		this.info('Execute: add server route for ' + application.$name)
 		
+		
 		// CHECK SERVER
 		const server_instance = this.server
 		assert(T.isString(server_instance.server_type), context + ':bad server_instance.server_type string')
 		assert(this.store_config.server_types.indexOf(server_instance.server_type) > -1, context + ':server_instance.server_type not valid')
 		assert(T.isObject(server_instance.server) || T.isFunction(server_instance.server), context + ':bad server_instance.server object or function')
 		
+
 		// LOOP ON ROUTES
 		let routes_registering_promises = []
 		assert(T.isArray(this.store_config.routes), context + ':bad server_instance.routes object')
 		const cfg_routes = this.store_config.routes
-		for(let cfg_route of cfg_routes)
+
+		// PROBLEM WITH NODEJS 0.10
+		// for(let cfg_route of cfg_routes)
+		// {
+		for(let cfg_route_index = 0 ; cfg_route_index < cfg_routes.length ; cfg_route_index++)
 		{
+			let cfg_route = cfg_routes[cfg_route_index]
 			assert(T.isObject(cfg_route), context + ':bad cfg_route object')
 			assert(T.isString(cfg_route.route), context + ':bad route string')
 			
 			const app_route = T.isString(application.url) ? application.url : ''
 			
-			let route = app_route + cfg_route.route
+			let route = (cfg_route.is_global && cfg_route.is_global == true) ? cfg_route.route : app_route + cfg_route.route
+			// let route = app_route + cfg_route.route
 			route = (route[0] == '/' ? '' : '/') + route
-			// console.log(route, 'route')
-				
+			
+			// DEBUG
+			// console.log('route=%s, app_route=%s, cfg.route=%s, is_global=%s, cond=%s', route, app_route, cfg_route.route, cfg_route.is_global, (cfg_route.is_global && cfg_route.is_global == true))
+			
 			if ( route.indexOf('.*') > -1 )
 			{
 				route = route.replace('/', '\/')
@@ -173,8 +184,27 @@ export default class ExecutableRoute extends Executable
      * @param {object} arg_data - plain object contextual datas.
      * @param {function} route handler.
      */
-	get_route_cb(arg_application, arg_cfg_route, arg_data)
+	get_route_cb(/*arg_application, arg_cfg_route, arg_data*/)
 	{
 		assert(false, context + ':get_route_cb(cfg_route) should be implemented')
+	}
+	
+	
+	
+	/**
+	 * Callback for redirect route handling.
+	 * @param {object} arg_application - Application instance.
+	 * @param {object} arg_cfg_route - plain object route configuration.
+	 * @param {object} arg_data - plain object contextual datas.
+	 * @param {function} route handler.
+	 */
+	get_route_redirect_cb(arg_application, arg_cfg_route/*, arg_data*/)
+	{
+		assert(T.isString(arg_cfg_route.redirect), context + ':bad redirect route string')
+		
+		return (req, res/*, next*/) => {
+			const url = runtime.context.get_url_with_credentials(arg_cfg_route.redirect, req)
+			res.redirect(url)
+		}
 	}
 }

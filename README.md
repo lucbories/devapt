@@ -7,6 +7,8 @@ All of this on NodeJS.
 
 A usefull application is DEVTOOLS which actualy display settings, logs, buses messages, metrics and topology.
 [DEVTOOLS project](https://github.com/lucbories/devapt-devtools/)
+[DEVTOOLS demo](http://vps300527.ovh.net:8080/devtools/metrics)
+
 
 In a near futur, DEVTOOLS will act as a configurable application builder for DEVAPT applications.
 
@@ -15,11 +17,9 @@ devapt and devapt-* github repositories have the same structure: a master branch
 Versionning use standard method: M.m.p with M is a major change, m a minor change, p a patch.
 
 
-Current version: 0.9.5 (do not use in production environment)
-
-NPM module isn't available yet, please download devapt source insteed and make a NPM link (npm -l).
-
-Module would be available before version 1.0.0 final.
+Current version: 1.0.x
+[GitHub project](https://github.com/lucbories/devapt)
+[NPM package](https://www.npmjs.com/package/devapt)
 
 
 

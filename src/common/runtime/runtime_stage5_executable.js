@@ -1,6 +1,7 @@
 
 import T from 'typr'
 import assert from 'assert'
+import fs from 'fs'
 
 import { store } from '../store/index'
 import RuntimeExecutable from './runtime_executable'
@@ -65,12 +66,13 @@ export default class RuntimeStage5Executable extends RuntimeExecutable
 
 	load_rendering_plugins()
 	{
-		this.enter_group('load_rendering_plugins')
+		const self = this
+		self.enter_group('load_rendering_plugins')
 
-		const plugins_mgr = this.runtime.get_plugins_factory().get_rendering_manager()
+		const plugins_mgr = self.runtime.get_plugins_factory().get_rendering_manager()
 
 		const rendering_plugins = store.get_plugins_set('rendering')
-		//this.runtime.get_setting(['plugins', 'rendering'], undefined)
+		//self.runtime.get_setting(['plugins', 'rendering'], undefined)
 		console.log(context + ':load_rendering_plugins:rendering_plugins', rendering_plugins)
 
 		rendering_plugins.forEach(
@@ -83,13 +85,44 @@ export default class RuntimeStage5Executable extends RuntimeExecutable
 				if ( T.isString(plugin_cfg.package) )
 				{
 					// TODO : loading packages without full path?
-					const file_path = this.runtime.context.get_absolute_path('../node_modules/', plugin_cfg.package)
-					console.log(context + ':load_rendering_plugins:package=%s for plugin=%s at=%s', plugin_cfg.package, plugin_cfg.name, file_path)
-					plugin_class = require(file_path)
+					let file_path = undefined
+
+					file_path = self.runtime.context.get_absolute_path('./node_modules/', plugin_cfg.package)
+					let file_path_stats = file_path ? fs.statSync(file_path) : undefined
+					if ( ! file_path_stats || ! file_path_stats.isDirectory())
+					{
+						file_path = self.runtime.context.get_absolute_path('../node_modules/', plugin_cfg.package)
+						file_path_stats = file_path ? fs.statSync(file_path) : undefined
+						if ( ! file_path_stats || ! file_path_stats.isDirectory())
+						{
+							file_path = self.runtime.context.get_absolute_path('../../node_modules/', plugin_cfg.package)
+							file_path_stats = file_path ? fs.statSync(file_path) : undefined
+							if ( ! file_path_stats || ! file_path_stats.isDirectory())
+							{
+								file_path = self.runtime.context.get_absolute_path('../../../node_modules/', plugin_cfg.package)
+								file_path_stats = file_path ? fs.statSync(file_path) : undefined
+								if ( ! file_path_stats || ! file_path_stats.isDirectory())
+								{
+									file_path = undefined
+								}
+							}
+						}
+					}
+
+					if (file_path)
+					{
+						console.log(context + ':load_rendering_plugins:package=%s for plugin=%s at=%s', plugin_cfg.package, plugin_cfg.name, file_path)
+						plugin_class = require(file_path)
+					}
+					else
+					{
+						file_path = undefined
+						console.error(context + ':load_rendering_plugins:not found package=%s for plugin=%s at=%s', plugin_cfg.package, plugin_cfg.name)
+					}
 				}
 				else if ( T.isString(plugin_cfg.file) )
 				{
-					const file_path = this.runtime.context.get_absolute_path(plugin_cfg.file)
+					const file_path = self.runtime.context.get_absolute_path(plugin_cfg.file)
 					console.log(context + ':load_rendering_plugins:file_path=%s for plugin=%s', file_path, plugin_cfg.name)
 
 					plugin_class = require(file_path)
@@ -111,6 +144,6 @@ export default class RuntimeStage5Executable extends RuntimeExecutable
 		)
 			
 			
-		this.leave_group('load_rendering_plugins')
+		self.leave_group('load_rendering_plugins')
 	}
 }

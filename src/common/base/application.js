@@ -137,8 +137,14 @@ export default class Application extends Instance
 				this.modules.add(module_obj)
 				
 				// LOOP ON MODULE RESOURCES
-				for(let res_obj of module_obj.resources.get_all() )
+				// PROBLEM WITH NODEJS 0.10
+				// for(let res_obj of module_obj.resources.get_all() )
+				// {
+				var all_ressources = module_obj.resources.get_all()
+				for(var res_obj_index = 0 ; res_obj_index < all_ressources.length ; res_obj_index++)
 				{
+					var res_obj = all_ressources[res_obj_index]
+
 					this.resources.add(res_obj)
 				}
 			}

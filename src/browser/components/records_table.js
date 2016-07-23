@@ -1,5 +1,5 @@
 
-// import T from 'typr'
+import T from 'typr'
 // import assert from 'assert'
 
 import Table from './table'
@@ -69,12 +69,16 @@ export default class RecordsTable extends Table
 			return
 		}
 		
-		arg_records[this.records_key].forEach(
-			function(record)
-			{
-				self.add_record(record)
-			}
-		)
+		const records_of_key = arg_records[this.records_key]
+		if ( T.isArray(records_of_key) )
+		{
+			records_of_key.forEach(
+				function(record)
+				{
+					self.add_record(record)
+				}
+			)
+		}
 	}
 	
 	
