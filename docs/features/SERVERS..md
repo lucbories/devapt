@@ -5,12 +5,14 @@
 Servers provide featured services.
 
 
+
 ## Status
 Express server: make middlewares use configurables.
 
 Restify server: make middlewares use configurables, check authorizations.
 
 Need Test, Optimization and code review.
+
 
 
 ## Builtin servers
@@ -23,11 +25,6 @@ Serve static pages or middleware generated content.
 ### RESTIFY
 Serve RESTfull content.
 
-### SOCKET.IO
-Exchange datas between server and clients.
-
-### MESSAGES BUS
-Exchange messages on a bus.
 
 
 ### For Devapt users:
@@ -40,18 +37,33 @@ A JSON nodes servers declaration:
 			"host":"localhost",
 			"is_master":true,
 			"servers":{
-				"serverA1":{
-					"type":"restify",
+				"NodeALocal8080":{
+					"type":"express",
 					"port":8080,
 					"protocole":"http",
-					"middlewares":[]
+					"middlewares":[],
+					"use_socketio":true,
+					
+					"security": {
+						"authentication": {
+							"enabled":true,
+							"plugins":["file_users"]
+						}
+					}
 				},
-				
-				"serverA2":{
-					"type":"express",
+				"NodeALocal8081":{
+					"type":"restify",
 					"port":8081,
 					"protocole":"http",
-					"middlewares":[]
+					"middlewares":[],
+					"use_socketio":true,
+					
+					"security": {
+						"authentication": {
+							"enabled":true,
+							"plugins":["file_users"]
+						}
+					}
 				}
 			}
 		},
@@ -60,33 +72,48 @@ A JSON nodes servers declaration:
 			"host":"localhost",
 			"is_master":false,
 			"servers":{
-				"serverB1":{
+				"NodeBLocal8080":{
+					"type":"express",
+					"port":8080,
+					"protocole":"http",
+					"middlewares":[],
+					"use_socketio":true,
+					
+					"security": {
+						"authentication": {
+							"enabled":true,
+							"plugins":["file_users"]
+						}
+					}
+				},
+				"NodeBLocal8081":{
 					"type":"restify",
-					"port":7080,
+					"port":8081,
 					"protocole":"http",
-					"middlewares":[]
+					"middlewares":[],
+					"use_socketio":true,
+					
+					"security": {
+						"authentication": {
+							"enabled":true,
+							"plugins":["file_users"]
+						}
+					}
 				},
-				
-				"clusterB2":{
-					"type":"cluster",
-					"port":7081,
-					"protocole":"http",
-					"servers":["serverB21", "serverB22"]
-				},
-				
-				"serverB21":{
+				"NodeBLocal8082":{
 					"type":"express",
-					"port":7082,
+					"port":8082,
 					"protocole":"http",
-					"middlewares":[]
+					"middlewares":[],
+					"use_socketio":true,
+					
+					"security": {
+						"authentication": {
+							"enabled":true,
+							"plugins":["file_users"]
+						}
+					}
 				},
-				
-				"serverB22":{
-					"type":"express",
-					"port":7083,
-					"protocole":"http",
-					"middlewares":[]
-				}
 			}
 		}
 	}
@@ -97,10 +124,18 @@ Each node contains one or more servers.
 A server declaration:
 ```
 "serverA2":{
-    "type":"express",
-    "port":8081,
-    "protocole":"http",
-    "middlewares":[]
+	"type":"express",
+	"port":8082,
+	"protocole":"http",
+	"middlewares":[],
+	"use_socketio":true,
+	
+	"security": {
+		"authentication": {
+			"enabled":true,
+			"plugins":["file_users"]
+		}
+	}
 }
 ```
 A server has 
@@ -109,6 +144,10 @@ A server has
 * a port integer (8081), should be unique on a node.
 * a protocole string ("http"), others will arrive later.
 * a middlewares array ([]), not used yet but it will give configurable middleware uses.
+* a flag: use or not socketio between browser and server.
+* a security record.
+
+
 
 
 ## For Devapt contributers:

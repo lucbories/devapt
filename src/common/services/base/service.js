@@ -141,7 +141,10 @@ export default class Service extends Instance
 			const server = runtime.node.get_servers().find_by_name(server_name)
 			if ( T.isObject(server) )
 			{
-				this.activate_on_server(arg_application, server, arg_app_svc_cfg)
+				// this.activate_on_server(arg_application, server, arg_app_svc_cfg)
+
+				// TODO
+				server.use_service_on_loading(arg_application, this, arg_app_svc_cfg)
 			}
 			else
 			{

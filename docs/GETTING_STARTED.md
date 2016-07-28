@@ -39,7 +39,12 @@ var runtime = devapt.runtime
 // for ES6 / ES2015
 import devapt from 'devapt'
 const runtime = devapt.runtime
+```
 
+
+Write a configuration file for your node (the runner):
+
+```js
 var runtime_settings = {
 	'is_master':true,
 	'name':'NodeA',
@@ -72,8 +77,233 @@ var runtime_settings = {
 		"relative_path":"resources/apps.json"
 	}
 }
+```
 
+
+Launch your runtime nodes and servers:
+
+```js
 runtime.load(runtime_settings)
+```
+
+
+What contains "resources/apps.json" ?
+It's you're runtime resources settings: servers, services, applications, security, plugins are defined here.
+[See Devtools example](https://github.com/lucbories/devapt-app-devtools/tree/develop/dist)
+
+Each resource is defined with a json object.
+Settings can be placed in one or many files.
+To include a json file set a file path name (relative to the base directory) in place of a json object.
+
+
+Example with settings in one file:
+
+```js
+"resources/apps.json":
+
+{
+	"nodes":{
+		"NodeA":{
+			"host":"localhost",
+			"is_master":true,
+			"servers":{
+				"NodeALocal8080":{
+					"type":"express",
+					"port":8080,
+					"protocole":"http",
+					"middlewares":[],
+					"use_socketio":true,
+					
+					"security": {
+						"authentication": {
+							"enabled":true,
+							"plugins":["file_users"]
+						}
+					}
+				}
+			}
+		}
+	},
+	
+	"services":{
+		"html_assets_1":{
+			"type":"html_assets",
+			"routes":[
+				{
+					"is_global":true,
+					"route":"/",
+					"directory":".../devapt-app-devtools/dist/assets",
+					"default":"index.html"
+				},
+
+				{
+					"route":"/css/.*.css",
+					"directory":"./public"
+				}
+			]
+		}
+	},
+	
+	"applications":{
+		"assets":{
+			"url":"assets",
+			
+			"services":{
+				"provides":{
+					"html_assets_1": { "servers":["NodeALocal8080"] }
+				},
+				"consumes":{
+				}
+			},
+			
+			"modules": [],
+			"plugins":[],
+			"resources":[],
+			
+			"assets":{
+				"css":[],
+				"js":[],
+				"img":[],
+				"index":""
+			},
+			"license":"APACHE-LICENSE-2.0"
+		}
+	},
+	
+	"modules":{},
+	
+	"plugins":{},
+	
+	"security":{
+		"is_readonly":false,
+		
+		"connexions":[],
+		
+		"authentication": {
+			"enabled":true,
+			
+			"plugins":{
+				"token123": {
+					"mode":"token",
+					"expiration":60,
+					"secret":"APPPPPPP449++((éç(à"
+				},
+				
+				"file_users": {
+					"mode":"jsonfile",
+					"file_name":"users.json",
+					"username_fieldname":"login",
+					"password_fieldname":"password"
+				}
+			},
+			
+			"default_plugins": ["file_users"]
+		},
+		
+		"authorization": {
+			"enabled":true,
+			"mode":"database",
+			
+			"model":"MODEL_AUTH_USERS_ROLES",
+			"role":"label",
+			"username":"users_login",
+			
+			"alt": {
+				"mode":"jsonfile",
+				"file":"users.json"
+			},
+			
+			"roles":{
+				"*": {
+					"list_resources":"ROLE_RESOURCES_LIST",
+					"get_resource":"ROLE_RESOURCE_GET"
+				},
+				"views": {
+					"list_resources":"ROLE_RESOURCES_LIST",
+					"get_resource":"ROLE_RESOURCE_GET"
+				}
+			}
+		}
+	},
+	
+	"loggers":{
+		"winston":{
+			"transports":{
+				"file_1":{
+					"type":"file",
+					"level": "debug",
+					"filename": "./tmp/debug_by_json.log",
+					"maxsize":100000,
+					"maxFiles":2
+				},
+				"console_1":{
+					"type":"console",
+					"level":"debug"
+				}
+			}
+		}
+	},
+	
+	"traces":{
+		"enabled":true,
+		
+		"modules":{
+			".*":false
+		},
+		
+		"classes":{
+			"Application":false,
+			"Service":false,
+			"ServiceProvider":false,
+			".*":false
+		},
+		
+		"instances":{
+			"NodeA":false,
+			"NodeB":true,
+			"NodeB_msg_bus":true,
+			"NodeB_msg_bus_gateway":true,
+			".*":false
+		}
+	}
+}
+```
+
+
+Example with settings in separate files:
+
+```js
+"resources/apps.json":
+
+{
+	"nodes":"nodes.json",
+	
+	"services":"services.json",
+	
+	"applications":"applications.json",
+	
+	"modules":"modules.json",
+	
+	"plugins":"plugins.json",
+	
+	"security":"security.json",
+	
+	"loggers":"loggers.json",
+	
+	"traces":"traces.json"
+}
+
+"nodes.json":
+{
+	"nodes":{ same settings than above }
+}
+
+"services.json":
+{
+	"services":{ same settings than above }
+}
+
+Repeat on each files on the same manner.
 
 ```
 

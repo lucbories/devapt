@@ -103,7 +103,7 @@ export default class AuthenticationWrapper extends Settingsable
 		// LAST MIDDLEWARE
 		const last_mw = (req, res, next) => {
 			// AUTHENTICATION IS VALID
-			if ( auth_mgr.check_request_authentication(req) )
+			if ( ! this.authentication_is_enabled || auth_mgr.check_request_authentication(req) )
 			{
 				// console.log('apply_middlewares:last_mw:auth success')
 				next()

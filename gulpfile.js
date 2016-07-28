@@ -4,7 +4,7 @@
 // var del = require('del');
 var gulp = require('gulp')
 var del = require('del')
-var debounce = require('debounce')
+// var debounce = require('debounce')
 // var sourcemaps = require('gulp-sourcemaps');
 // var babel = require('gulp-babel');
 // var concat = require('gulp-concat');
@@ -120,7 +120,6 @@ gulp.task('build_server_transpile', getTask('gulp_server_transpile') )
 gulp.task('build_server', ['build_server_transpile'] )
 
 
-gulp.task('build_docs', getTask('gulp_doc') )
 gulp.task('build_all_transpile', getTask('gulp_all_transpile') )
 gulp.task('build_json_copy', getTask('gulp_json_copy') )
 
@@ -175,6 +174,20 @@ gulp.task('clean',
 )
 
 
+
+// **************************************************************************************************
+// DEVAPT - DOCUMENTATION
+// **************************************************************************************************
+
+gulp.task('build_doc_api', getTask('gulp_doc_api') )
+gulp.task('build_doc_md', getTask('gulp_doc_md') )
+gulp.task('build_docs', ['gulp_doc_api', 'build_doc_md'] )
+
+
+
+// **************************************************************************************************
+// DEVAPT - MAIN
+// **************************************************************************************************
 var default_tasks = ['build_common_transpile', 'build_server_transpile', 'build_plugins_transpile', 'build_index_transpile', 'build_browser']
 var server_tasks = ['build_common_transpile', 'build_server_transpile', 'build_plugins_transpile', 'build_index_transpile']
 var browser_tasks = ['build_common_transpile', 'build_browser']

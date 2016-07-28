@@ -69,13 +69,50 @@ export default class Server extends DistributedInstance
 		this.server = null
 		this.serverio = null
 		
-		this.services_without_security = new Collection()
-		this.services_with_security = new Collection()
+		this.services_without_security = [] // STORE PLAIN OBJECTS WITH THIS FORMAT: { app:application instance, svc:service instance, cfg:application service config }
+		this.services_with_security = [] // STORE PLAIN OBJECTS WITH THIS FORMAT: { app:application instance, svc:service instance, cfg:application service config }
 		
 		this.authentication = new AuthenticationWrapper(arg_log_context ? arg_log_context : context)
 		// this.authorization = new AuthorizationWrapper(arg_log_context ? arg_log_context : context)
 	}
-	
+
+
+
+	/**
+	 * Add a service to use before or after security check.
+	 * 
+	 * @param {Application}	arg_application
+	 * @param {Service}		arg_service
+	 * @param {object}		arg_app_svc_cfg (default:{})
+	 * 
+	 * @returns {nothing}
+	 */
+	use_service_on_loading(arg_application, arg_service, arg_app_svc_cfg = {})
+	{
+		assert( T.isObject(arg_application) && arg_application.is_application, context + ':bad application object')
+		assert( T.isObject(arg_service) && arg_service.is_service, context + ':bad service object')
+		assert( T.isObject(arg_app_svc_cfg) , context + ':bad application service config object')
+
+		const security_enabled = arg_service.get_setting(['security', 'enabled'], true)
+		const authentication_enabled = arg_service.get_setting(['security', 'authentication', 'enabled'], true)
+		const authorization_enabled = arg_service.get_setting(['security', 'authorization', 'enabled'], true)
+		const use_security_check = security_enabled ? (authentication_enabled || authorization_enabled) : false
+
+		const record = {
+			app:arg_application,
+			svc:arg_service,
+			cfg:arg_app_svc_cfg
+		}
+
+		if (use_security_check)
+		{
+			this.services_with_security.push(record)
+			return
+		}
+
+		this.services_without_security.push(record)
+	}
+
 	
 	
 	/**
@@ -296,9 +333,9 @@ export default class Server extends DistributedInstance
 		
 		
 		// BUILD SERVER
-		assert( T.isFunction(this.build_server), context + ':bad build_server function')
-		this.build_server()
-		this.is_build = true
+		// assert( T.isFunction(this.build_server), context + ':bad build_server function')
+		// this.build_server()
+		// this.is_build = true
 		
 		
 		super.load()
@@ -318,6 +355,15 @@ export default class Server extends DistributedInstance
 	 */
 	enable()
 	{
+		// BUILD SERVER
+		if ( ! this.is_build)
+		{
+			assert( T.isFunction(this.build_server), context + ':bad build_server function')
+			this.build_server()
+			this.is_build = true
+		}
+
+		// ENABLE LISTENER
 		const name = this.$name
 		const host = this.server_host
 		const port = this.server_port

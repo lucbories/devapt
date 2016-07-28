@@ -81,8 +81,12 @@ export default class BusGateway extends Instance
 	 */
 	post_locale(arg_msg)
 	{
-		for(let bus of this.recipients_buses)
+		// PROBLEM WITH NODEJS 0.10
+		// for(let bus of this.recipients_buses)
+		// {
+		for(let bus_index = 0 ; bus_index < this.recipients_buses.length ; bus_index++)
 		{
+			let bus = this.recipients_buses[bus_index]
 			if ( bus.has_locale_target(arg_msg.target) )
 			{
 				bus.post(arg_msg)
@@ -103,8 +107,12 @@ export default class BusGateway extends Instance
 	 */
 	has_locale_target(arg_target)
 	{
-		for(let bus of this.recipients_buses)
+		// PROBLEM WITH NODEJS 0.10
+		// for(let bus of this.recipients_buses)
+		// {
+		for(let bus_index = 0 ; bus_index < this.recipients_buses.length ; bus_index++)
 		{
+			let bus = this.recipients_buses[bus_index]
 			if ( bus.has_locale_target(arg_target) )
 			{
 				return true
@@ -189,8 +197,12 @@ export default class BusGateway extends Instance
 
 		this.add_remote_target(arg_msg.get_sender())
 
-		for(let bus of this.recipients_buses)
+		// PROBLEM WITH NODEJS 0.10
+		// for(let bus of this.recipients_buses)
+		// {
+		for(let bus_index = 0 ; bus_index < this.recipients_buses.length ; bus_index++)
 		{
+			let bus = this.recipients_buses[bus_index]
 			this.debug('receive_from_remote:post on bus', bus.get_name())
 			// console.log(context + ':receive_from_remote:from %s to %s on bus %s', arg_msg.sender, arg_msg.target, bus.get_name())
 

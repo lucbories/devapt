@@ -1,10 +1,14 @@
 {
   "name": "devapt",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Developpers Application Toolkit - build application (RESTfull, API, distributed nodes, reactive...) from configuration",
-  "author": "Luc BORIES (https://github.com/lucbories)",
+  "author": {
+    "name": "Luc BORIES",
+    "email": "luc.bories@gmail.com",
+    "url": "https://github.com/lucbories"
+  },
+  "contributors": [],
   "license": "Apache-2.0",
-  "license2": "Apache License 2.0",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/lucbories/devapt.git"
@@ -14,14 +18,24 @@
   },
   "homepage": "https://github.com/lucbories/devapt#readme.md",
   "main": "dist/index.js",
-  "engines": [],
-  "directories": [
-    "dist"
-  ],
+  "engines": {
+    "node": ">=4.4.4"
+  },
+  "directories": {
+    "dist": "./dist"
+  },
   "scripts": {
     "build": "gulp",
     "test": "gulp ; mocha --reporter spec dist/common/test",
-    "test:watch": "npm run test -- --watch"
+    "test:watch": "npm run test -- --watch",
+    "postversion": "unix2dos package.json",
+    "commit": "unix2dos package.json && git status && pause && git commit -am ",
+    "patch": "npm version patch && unix2dos package.json && git status && pause && git commit -am ",
+    "minor": "npm version minor && unix2dos package.json && git status && pause && git commit -am ",
+    "major": "npm version major && unix2dos package.json && git status && pause && git commit -am ",
+    "push-dev": "git push devapt develop",
+    "merge": "git checkout master && git merge develop && git push devapt master && git checkout develop",
+    "release": "git push devapt develop && git checkout master && git merge develop && git push devapt master && git checkout develop"
   },
   "browser": [
     "sequelize",
@@ -50,6 +64,7 @@
     "es6-symbol": "^3.1.0",
     "express": "^4.13.3",
     "express-favicon": "^1.0.1",
+    "express-session": "^1.8.2",
     "feathers-memory": "^0.6.3",
     "feathers-mongoose": "^3.3.6",
     "feathers-sequelize": "^1.1.4",
@@ -66,6 +81,9 @@
     "node-uuid": "^1.4.7",
     "object-sizeof": "^1.0.10",
     "passport": "^0.2.2",
+    "passport-facebook": "^1.0.3",
+    "passport-google": "^0.3.0",
+    "passport-twitter": "^1.0.2",
     "passport-http": "^0.2.2",
     "passport-local": "^1.0.0",
     "passport-restify": "^1.0.1",
@@ -103,15 +121,18 @@
     "gulp-cached": "^1.1.0",
     "gulp-changed": "^1.3.0",
     "gulp-concat": "^2.6.0",
+    "gulp-headerfooter": "^1.0.3",
     "gulp-jsdoc3": "^0.2.1",
     "gulp-livereload": "^3.8.1",
     "gulp-load-plugins": "^1.2.0",
     "gulp-remember": "^0.3.0",
     "gulp-rename": "^1.2.2",
+    "gulp-showdown": "0.0.3",
     "gulp-sourcemaps": "^1.6.0",
     "ink-docstrap": "^1.1.4",
     "mocha": "^2.4.5",
     "requirejs": "^2.1.20",
-    "run-sequence": "^1.1.5"
+    "run-sequence": "^1.1.5",
+    "showdown": "^1.4.2"
   }
 }

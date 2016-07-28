@@ -63,20 +63,6 @@ export default class ExpressServer extends Server
 		this.server.use( favicon(favicon_path) )
 		
 		
-		// USE AUTHENTICATION MIDDLEWARES
-		this.authentication.apply_middlewares(this)
-		
-		
-		// TODO: USE AUTHORIZATION MIDDLEWARE
-		// this.server.use( this.authorization.create_middleware() )
-		
-		
-		// DEFAULT VIEW ENGINE
-		// this.server.use( express.bodyParser() )
-		this.server.set('views', runtime.context.get_absolute_path('jade'))
-		this.server.set('view engine', 'jade')
-		
-		
 		// BUILD SOCKETIO
 		const use_socketio = this.get_setting('use_socketio', false)
 		
@@ -89,6 +75,36 @@ export default class ExpressServer extends Server
 			
 			runtime.add_socketio(this.get_name(), this.serverio)
 		}
+
+		
+		// USE ALL MIDDLEWARES WITHOUT SECURITY
+		this.services_without_security.forEach(
+			(arg_record) => {
+				arg_record.svc.activate_on_server(arg_record.app, this, arg_record.cfg)
+			}
+		)
+
+
+		// USE AUTHENTICATION MIDDLEWARES
+		this.authentication.apply_middlewares(this)
+		
+		
+		// TODO: USE AUTHORIZATION MIDDLEWARE
+		// this.server.use( this.authorization.create_middleware() )
+		
+
+		// USE ALL MIDDLEWARES WITH SECURITY
+		this.services_with_security.forEach(
+			(arg_record) => {
+				arg_record.svc.activate_on_server(arg_record.app, this, arg_record.cfg)
+			}
+		)
+
+		
+		// DEFAULT VIEW ENGINE
+		// this.server.use( express.bodyParser() )
+		this.server.set('views', runtime.context.get_absolute_path('jade'))
+		this.server.set('view engine', 'jade')
 		
 		
 		this.leave_group('build_server')

@@ -8,7 +8,7 @@ import { create_component } from '../../rendering/base/factory'
 import ExecutableRoute from '../../executables/executable_route'
 
 
-let context = 'common/services/base/executable_route_middleware'
+let context = 'common/services/middleware/executable_route_middleware'
 
 
 
@@ -42,14 +42,22 @@ export default class ExecutableRouteMiddleware extends ExecutableRoute
 	{
 		let self = this
 		
+		// REDIRECT
+		if ( T.isString(arg_cfg_route.redirect) )
+		{
+			// console.log('REDIRECT ROUTE FOR ASSETS', arg_cfg_route.redirect)
+			return this.get_route_redirect_cb(arg_application, arg_cfg_route, arg_data)
+		}
+		
+		// MIDDLEWARE
 		return function exec_http(req, res, next)
 		{
 			self.enter_group('ExecutableRouteMiddleware.exec_http')
 			
 			
 			let mw_cb = null
-			
-			
+
+
 			// GET CUSTOM MIDDLEWARE FROM FILE
 			if ( T.isString(arg_cfg_route.mw_file) )
 			{
@@ -112,6 +120,11 @@ export default class ExecutableRouteMiddleware extends ExecutableRoute
 			
 			
 			// EXECUTE MIDDLEWARE FUNCTION
+			// if ( ! T.isFunction(mw_cb) )
+			// {
+			// 	console.error(context + ':ExecutableRouteMiddleware.exec_http')
+			// 	console.log(context + ':ExecutableRouteMiddleware.exec_http:req', req)
+			// }
 			assert(T.isFunction(mw_cb), context + ':bad middleware function')
 			try
 			{

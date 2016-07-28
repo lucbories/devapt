@@ -37,26 +37,35 @@ export default class RestifyServer extends Server
 		const server_settings = {}
 		this.server = restify.createServer(server_settings)
 		let server = this.server
+
 		
-		
-		
-		
-		// USE AUTHENTICATION MIDDLEWARE
+		// METRICS MIDDLEWARE
+		server.use( MetricsMiddleware.create_middleware(this) )
+
+
+		// USE ALL MIDDLEWARES WITHOUT SECURITY
+		this.services_without_security.forEach(
+			(arg_record) => {
+				arg_record.svc.activate_on_server(arg_record.app, this, arg_record.cfg)
+			}
+		)
+
+
+		// USE AUTHENTICATION MIDDLEWARES
 		this.authentication.apply_middlewares(this)
 		
 		
 		// TODO: USE AUTHORIZATION MIDDLEWARE
 		// this.server.use( this.authorization.create_middleware() )
 		
+
+		// USE ALL MIDDLEWARES WITH SECURITY
+		this.services_with_security.forEach(
+			(arg_record) => {
+				arg_record.svc.activate_on_server(arg_record.app, this, arg_record.cfg)
+			}
+		)
 		
-        // USE AUTHENTICATION MIDDLEWARE
-			// const authentication_mgr = runtime.security().get_authentication_manager()
-			// console.log(authentication_mgr)
-			// authentication_mgr.apply_on_server(this)
-        // this.server.use( runtime.security().get_authentication_manager().create_middleware(this) )
-        
-        // TODO: USE AUTHORIZATION MIDDLEWARE
-        // AuthorizationManager.apply_on_server(this)
         
         
 		
@@ -81,7 +90,6 @@ export default class RestifyServer extends Server
 		// server.use(restify.acceptParser(acceptable));
 		server.use( restify.acceptParser(server.acceptable) )
 		
-		server.use( MetricsMiddleware.create_middleware(this) )
 		server.use( restify.authorizationParser()) 
 		server.use( restify.queryParser() )
 		server.use( restify.jsonp() )

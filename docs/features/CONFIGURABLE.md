@@ -10,7 +10,7 @@ It is best to concentrate on the business code.
 
 
 ## Status
-Configuration Redux store: 1.0
+
 
 Configuration providers:
 * JSON file: 1.0
