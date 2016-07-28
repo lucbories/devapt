@@ -180,4 +180,4 @@ Please see the file called INSTALL.md.
 Contacts
 --------
 
-To subscribe to news or report a bug or contribute to the project, use the project website at https://github.com/lucbories/Devapt.
+To subscribe to news or report a bug or contribute to the project, use the project website at https://github.com/lucbories/devapt.
