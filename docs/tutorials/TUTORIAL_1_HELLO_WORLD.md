@@ -37,9 +37,23 @@ var runtime_settings = {
 	'name':'NodeA',
 	
 	'master':{
-		'name':'NodeA',
-		'host':"localhost",
-		'port':5000
+		"name":"NodeA",
+		
+		"msg_bus":{
+			"type":"simplebus_server",
+			"host":"localhost",
+			"port":5000
+		},
+		"logs_bus":{
+			"type":"simplebus_server",
+			"host":"localhost",
+			"port":5001
+		},
+		"metrics_bus":{
+			"type":"simplebus_server",
+			"host":"localhost",
+			"port":5002
+		}
 	},
 	
 	'apps_settings_file': 'apps/helloworld.json'
@@ -62,12 +76,22 @@ The modules (application features), plugins (technicals addons) and security par
 {
 	"nodes":{
 		"NodeA":{
+			"host":"localhost",
+			"is_master":true,
 			"servers":{
-				"server1":{
+				"NodeALocal8080":{
 					"type":"express",
-					"port":8081,
+					"port":8080,
 					"protocole":"http",
-					"middlewares":[]
+					"middlewares":[],
+					"use_socketio":true,
+					
+					"security": {
+						"authentication": {
+							"enabled":true,
+							"plugins":["file_users"]
+						}
+					}
 				}
 			}
 		}

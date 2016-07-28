@@ -5,7 +5,7 @@ A distributed application needs to provide a communication between its nodes.
 
 Devapt provides messages buses to ensure JSON messages exchange.
 
-![Messaging](https://github.com/lucbories/Devapt/tree/master/docs/features/buses.png)
+![Messaging](https://github.com/lucbories/devapt/blob/master/docs/features/buses.png)
 
 Each topology node has 3 buses to communicate inside a node or between nodes:
 * metrics bus: metrics collectors push metrics messages on this bus and metrics server listen on it to reduce metrics values.

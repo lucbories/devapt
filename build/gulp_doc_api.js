@@ -1,30 +1,16 @@
 
 'use strict'
 
-// var del = require('del');
-// var gulp = require('gulp');
-// var del = require('del');
-// var sourcemaps = require('gulp-sourcemaps');
-// var babel = require('gulp-babel');
-// var concat = require('gulp-concat');
-// var changed = require('gulp-changed');
-// var browserSync = require('browser-sync').create();
-// var runseq = require('run-sequence');
-var jsdoc = require('gulp-jsdoc3');
 
-// var source = require('vinyl-source-stream');
-// var buffer = require('vinyl-buffer');
-// var browserify = require('browserify');
-// var watchify = require('watchify');
-// var babelify = require('babelify');
-// var path = require('path')
+var jsdoc = require('gulp-jsdoc3')
 
 
 var SRC_BROWSER  = 'src/browser/**/*.js'
 var SRC_COMMON  = 'src/common/**/*.js'
 var SRC_SERVER  = 'src/server/**/*.js'
+var SRC_TUTORIALS  = 'docs/'
 
-// var DOCS_API  = 'docs/api/'
+var DST_DOCS_API  = 'docs/html/api/'
 
 
 
@@ -36,7 +22,8 @@ const jsconfig = {
 		"excludePattern": "(^|\\/|\\\\|unused_.*|todo_.*)_"
 	},
 	"opts": {
-		"destination": "./docs/api"
+		"tutorials":SRC_TUTORIALS,
+		"destination": DST_DOCS_API
 	},
 	"plugins": [
 		"plugins/markdown"
@@ -61,7 +48,7 @@ module.exports = function (gulp/*, plugins*/)
 {
 	return function ()
 	{
-		gulp.task('build_docs',
+		gulp.task('build_doc_api',
 			function(cb)
 			{
 				gulp.src([SRC_COMMON, SRC_BROWSER, SRC_SERVER])

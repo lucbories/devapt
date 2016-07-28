@@ -97,34 +97,36 @@ See devapt-devtools project for a full example of metrics services usage.
 ## For Devapt contributers:
 
 Metrics classes are:
-* common/metrics/metric_duration.js - MetricDuration: metrics values collector for a simple time interval.
-
-* common/metrics/base/metrics_collector.js - MetricsCollector: metrics values collector base class.
-* common/metrics/base/metrics_record.js - MetricsRecord: metrics values snapshot base class.
-* common/metrics/base/metrics_reducer.js - MetricsHost: metrics values reducer base class.
-* common/metrics/base/metrics_state.js - MetricsState: metrics values persistent state base class.
-
-* common/metrics/bus/metrics_bus_collector.js - MetricsBusCollector: metrics values collector class for bus metrics feature.
-* common/metrics/bus/metrics_bus_record.js - MetricsBusRecord: metrics values snapshot class for bus metrics feature.
-* common/metrics/bus/metrics_bus_reducer.js - MetricsBusHost: metrics values reducer class for bus metrics feature.
-* common/metrics/bus/metrics_bus_state.js - MetricsBusState: metrics values persistent state class for bus metrics feature.
-
-* common/metrics/host/metrics_host_collector.js - MetricsCollector: metrics values collector class for host metrics feature.
-* common/metrics/host/metrics_host_record.js - MetricsRecord: metrics values snapshot class for host metrics feature.
-* common/metrics/host/metrics_host_reducer.js - MetricsHost: metrics values reducer class for host metrics feature.
-* common/metrics/host/metrics_host_state.js - MetricsState: metrics values persistent state class for host metrics feature.
-
-* common/metrics/http/metrics_http_collector.js - MetricsHttpCollector: metrics values collector class for Http metrics feature.
-* common/metrics/http/metrics_http_record.js - MetricsHttpRecord: metrics values snapshot class for Http metrics feature.
-* common/metrics/http/metrics_http_reducer.js - MetricsHttpHost: metrics values reducer class for Http metrics feature.
-* common/metrics/http/metrics_http_state.js - MetricsHttpState: metrics values persistent state class for Http metrics feature.
-
-* common/metrics/nodejs/metrics_nodejs_collector.js - MetricsNodeJsCollector: metrics values collector class for NodeJs metrics feature.
-* common/metrics/nodejs/metrics_nodejs_record.js - MetricsNodeJsRecord: metrics values snapshot class for NodeJs metrics feature.
-* common/metrics/nodejs/metrics_nodejs_reducer.js - MetricsNodeJsHost: metrics values reducer class for NodeJs metrics feature.
-* common/metrics/nodejs/metrics_nodejs_state.js - MetricsNodeJsState: metrics values persistent state class for NodeJs metrics feature.
-
-* common/servers/metric_server.js - MetricsServer: server which reveive metrics message and call a reducer to update statistics
+| Class file | Class name and description |
+|:-----------|:--------------------------:|
+| /metric_duration.js | MetricDuration: metrics values collector for a simple time interval.|
+| | |
+| /base/metrics_collector.js | MetricsCollector: metrics values collector base class.|
+| /base/metrics_record.js | MetricsRecord: metrics values snapshot base class.|
+| /base/metrics_reducer.js | MetricsHost: metrics values reducer base class.|
+| /base/metrics_state.js | MetricsState: metrics values persistent state base class.|
+| | |
+| /bus/metrics_bus_collector.js | MetricsBusCollector: metrics values collector class for bus metrics feature.|
+| /bus/metrics_bus_record.js | MetricsBusRecord: metrics values snapshot class for bus metrics feature.|
+| /bus/metrics_bus_reducer.js | MetricsBusHost: metrics values reducer class for bus metrics feature.|
+| /bus/metrics_bus_state.js | MetricsBusState: metrics values persistent state class for bus metrics feature.|
+| | |
+| /host/metrics_host_collector.js | MetricsCollector: metrics values collector class for host metrics feature.|
+| /host/metrics_host_record.js | MetricsRecord: metrics values snapshot class for host metrics feature.|
+| /host/metrics_host_reducer.js | MetricsHost: metrics values reducer class for host metrics feature.|
+| /host/metrics_host_state.js | MetricsState: metrics values persistent state class for host metrics feature.|
+| | |
+| /http/metrics_http_collector.js | MetricsHttpCollector: metrics values collector class for Http metrics feature.|
+| /http/metrics_http_record.js | MetricsHttpRecord: metrics values snapshot class for Http metrics feature.|
+| /http/metrics_http_reducer.js | MetricsHttpHost: metrics values reducer class for Http metrics feature.|
+| /http/metrics_http_state.js | MetricsHttpState: metrics values persistent state class for Http metrics feature.|
+| | |
+| /nodejs/metrics_nodejs_collector.js | MetricsNodeJsCollector: metrics values collector class for NodeJs metrics feature.|
+| /nodejs/metrics_nodejs_record.js | MetricsNodeJsRecord: metrics values snapshot class for NodeJs metrics feature.|
+| /nodejs/metrics_nodejs_reducer.js | MetricsNodeJsHost: metrics values reducer class for NodeJs metrics feature.|
+| /nodejs/metrics_nodejs_state.js | MetricsNodeJsState: metrics values persistent state class for NodeJs metrics feature.|
+| | |
+| common/servers/metric_server.js | MetricsServer: server which reveive metrics message and call a reducer to update statistics|
 
 
 Metrics bus message format:

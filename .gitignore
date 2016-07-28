@@ -14,6 +14,8 @@ jsconfig.json
 
 .vscode
 docs/api
+docs/html
+docs/html_part
 dist
 tmp
 unused

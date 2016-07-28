@@ -39,6 +39,10 @@ export default class RestifyServer extends Server
 		let server = this.server
 
 		
+		// METRICS MIDDLEWARE
+		server.use( MetricsMiddleware.create_middleware(this) )
+
+
 		// USE ALL MIDDLEWARES WITHOUT SECURITY
 		this.services_without_security.forEach(
 			(arg_record) => {
@@ -86,7 +90,6 @@ export default class RestifyServer extends Server
 		// server.use(restify.acceptParser(acceptable));
 		server.use( restify.acceptParser(server.acceptable) )
 		
-		server.use( MetricsMiddleware.create_middleware(this) )
 		server.use( restify.authorizationParser()) 
 		server.use( restify.queryParser() )
 		server.use( restify.jsonp() )
