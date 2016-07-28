@@ -138,7 +138,7 @@ export default class Security extends Errorable
 		
 		const auth_mgr = this.authentication()
 		
-		let promise = Promise.resolved(true)
+		let promise = Promise.resolve(true)
 		if (auth_mgr.authentication_is_enabled)
 		{
 			promise = auth_mgr.authenticate(arg_credentials)
@@ -177,7 +177,7 @@ export default class Security extends Errorable
 		
 		const auth_mgr = this.authorization()
 
-		let promise = Promise.resolved(true)
+		let promise = Promise.resolve(true)
 		if (auth_mgr.authorization_is_enabled)
 		{
 			promise = auth_mgr.authorize(arg_permission, arg_credentials)
