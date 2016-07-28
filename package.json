@@ -1,6 +1,6 @@
 {
   "name": "devapt",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "Developpers Application Toolkit - build application (RESTfull, API, distributed nodes, reactive...) from configuration",
   "author": {
     "name": "Luc BORIES",

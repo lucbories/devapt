@@ -136,8 +136,14 @@ export default class Security extends Errorable
 	{
 		this.enter_group('authenticate')
 		
-		const promise = this.authentication().authenticate(arg_credentials)
+		const auth_mgr = this.authentication()
 		
+		let promise = Promise.resolved(true)
+		if (auth_mgr.authentication_is_enabled)
+		{
+			promise = auth_mgr.authenticate(arg_credentials)
+		}
+
 		this.leave_group('authenticate')
 		return promise
 	}
@@ -169,7 +175,15 @@ export default class Security extends Errorable
 	{
 		this.enter_group('authorize')
 		
-		const promise = this.authorization().authorize(arg_permission, arg_credentials)
+		const auth_mgr = this.authorization()
+
+		let promise = Promise.resolved(true)
+		if (auth_mgr.authorization_is_enabled)
+		{
+			promise = auth_mgr.authorize(arg_permission, arg_credentials)
+		}
+
+		// const promise = this.authorization().authorize(arg_permission, arg_credentials)
 		
 		this.leave_group('authorize')
 		return promise
