@@ -3,6 +3,7 @@
 import T from 'typr'
 import assert from 'assert'
 import Baconjs from 'baconjs'
+import { config } from '../../store/index'
 
 import ServiceProvider from './service_provider'
 import runtime from '../../base/runtime'
@@ -97,6 +98,14 @@ export default class SocketIOServiceProvider extends ServiceProvider
 		const svc_name = self.service.get_name()
 		
 		return {
+			// SETTINGS
+			'request_settings':
+				() => {
+					const svc_settings = config().getIn(['services', svc_name, 'browser'])
+					const svc_settings_js = svc_settings ? svc_settings.toJS() : {}
+					arg_socket.emit('reply_settings', { svc: svc_name, settings:svc_settings_js })
+				},
+			
 			// SOCKET OPERATIONS
 			'disconnect':
 				() => {
@@ -228,8 +237,9 @@ export default class SocketIOServiceProvider extends ServiceProvider
 							// console.info(context + ':activate_on_socketio_server:operation %s indexOf:', key, no_credentials_ops.indexOf(key))
 							
 							// CHECK CREDENTIALS
-							if ( ! data.credentials )
+							if ( ! data || ! data.credentials )
 							{
+								socket.emit(key, { service:svc_name, operation:key, result:'authorization failure' })
 								self.error('bad credentials')
 								console.error(context + ':activate_on_socketio_server:bad credentials for method %s of svc %s with data:', key, svc_name, data)
 								return

@@ -2,14 +2,14 @@
 import T from 'typr'
 import assert from 'assert'
 
-import Component from '../base/component'
+import Container from '../base/container'
 
 
 
 const context = 'common/rendering/default/table_base'
 
 
-export default class TableBase extends Component
+export default class TableBase extends Container
 {
 	constructor(arg_name, arg_settings)
 	{
@@ -127,7 +127,7 @@ export default class TableBase extends Component
 		for(let i = 0 ; i < max ; i++)
 		{
 			const row = this.state.items[i]
-			html_tbody_content += this.render_tbody_row(row)
+			html_tbody_content += this.render_tbody_row(i, row)
 		}
 		
 		return `<tbody>\n${html_tbody_content}</tbody/>\n`
@@ -138,13 +138,17 @@ export default class TableBase extends Component
 	/**
 	 * Render table body row.
 	 * 
-	 * @param {string} arg_row - body row.
+	 * @param {number} arg_index - body row index.
+	 * @param {string} arg_row - body row html.
 	 * 
 	 * @returns {string} - html
 	 */
-	render_tbody_row(arg_row)
+	render_tbody_row(arg_index, arg_row)
 	{
+		// console.log('render_tbody_row:index=%s row=%s', arg_index, arg_row)
+
 		let row_content = ''
+		const row_id = this.get_dom_id() + '_body_row_' + arg_index
 		
 		if ( T.isObject(arg_row) )
 		{
@@ -152,7 +156,8 @@ export default class TableBase extends Component
 			for(let key of keys)
 			{
 				const value = arg_row[key]
-				row_content += '<td>' + value + '</td>\n'
+				// row_content += '<td id="' + this.get_dom_id() + '_' + key + '">' + value + '</td>\n'
+				row_content += this.render_tbody_item(value, this.get_dom_id() + '_' + key)
 			}
 		}
 		else if ( T.isArray(arg_row) )
@@ -160,11 +165,12 @@ export default class TableBase extends Component
 			for(let i = 0 ; i < arg_row.length ; i++)
 			{
 				const value = arg_row[i]
-				row_content += '<td>' + value + '</td>\n'
+				// row_content += '<td id="' + row_id + '_column_' + i + '">' + value + '</td>\n'
+				row_content += this.render_tbody_item(value, row_id + '_column_' + i)
 			}
 		}
 		
-		return '<tr>' + row_content + '</tr>'
+		return '<tr id="' + row_id + '">' + row_content + '</tr>'
 	}
 	
 	
@@ -172,13 +178,48 @@ export default class TableBase extends Component
 	/**
 	 * Render table body item.
 	 * 
-	 * @param {string} arg_item - header item.
+	 * @param {string|object} arg_item - body row item.
+	 * @param {string} arg_item_id - body row item id.
 	 * 
 	 * @returns {string} - html
 	 */
-	render_tbody_item(arg_item)
+	render_tbody_item(arg_item, arg_item_id)
 	{
-		return '<td>' + T.isString(arg_item) ? arg_item : arg_item.toString() + '</td>'
+		// console.log('render_tbody_item:id=%s item=', arg_item_id, arg_item)
+		
+		let item_id = arg_item_id
+		let item_value = arg_item
+
+		// ITEM IS A RECORD WITH A KEY AND A VALUE
+		if ( T.isObject(arg_item) && T.isString(arg_item.key) )
+		{
+			item_id = this.get_dom_id() + '_' + arg_item.key
+			item_value = arg_item.value
+		}
+
+		let html = T.isString(item_value) ? item_value : undefined
+
+		if ( T.isObject(item_value) )
+		{
+			if ( T.isString(item_value.view) )
+			{
+				let view = undefined
+				if ( ! this.has_child(item_value.view))
+				{
+					this.create_and_add_child(item_value.view)
+				}
+				view = this.get_child(item_value.view)
+				// console.log('render_tbody_item:id=%s view=%s', arg_item_id, arg_item.view, view)
+				html = view.render()
+			}
+		}
+
+		if ( ! html)
+		{
+			html = item_value.toString()
+		}
+		
+		return '<td id="' + item_id + '">' + html + '</td>\n'
 	}
 	
 	

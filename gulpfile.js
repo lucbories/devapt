@@ -190,7 +190,7 @@ gulp.task('build_docs', ['gulp_doc_api', 'build_doc_md'] )
 // **************************************************************************************************
 var default_tasks = ['build_common_transpile', 'build_server_transpile', 'build_plugins_transpile', 'build_index_transpile', 'build_browser']
 var server_tasks = ['build_common_transpile', 'build_server_transpile', 'build_plugins_transpile', 'build_index_transpile']
-var browser_tasks = ['build_common_transpile', 'build_browser']
+var browser_tasks = ['build_common_transpile', 'build_browser_transpile', 'build_browser_bundle']
 var watch_tasks = ['watch_browser', 'watch_common', 'watch_plugins', 'watch_server']
 
 gulp.task('browser', (/*cb*/) => runseq(browser_tasks) )

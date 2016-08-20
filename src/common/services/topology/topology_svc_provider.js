@@ -54,7 +54,7 @@ export default class TopologySvcProvider extends SocketIOServiceProvider
 		assert( T.isArray(arg_operands), context + ':process:bad operands array')
 		assert( T.isObject(arg_credentials), context + ':process:bad credentials object')
 		
-		const metrics_server = runtime.node.metrics_server
+		// const metrics_server = runtime.node.metrics_server
 		
 		switch(arg_method)
 		{
@@ -62,10 +62,10 @@ export default class TopologySvcProvider extends SocketIOServiceProvider
 				// GET WITHOUT OPERANDS
 				if ( arg_operands.length == 0)
 				{
-					const nodejs_state_values = metrics_server.get_nodejs_metrics_state_values()
+					// const nodejs_state_values = metrics_server.get_nodejs_metrics_state_values()
 					// console.log(nodejs_state_values, context + ':produce:get:no opds:nodejs_state_values')
 					
-					return Promise.resolve(nodejs_state_values)
+					return Promise.reject('bad query mode')
 				}
 				
 				// GET WITH OPERANDS

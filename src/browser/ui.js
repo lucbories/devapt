@@ -4,6 +4,7 @@ import assert from 'assert'
 
 import Component from './components/component'
 import Table from './components/table'
+import Tree from './components/tree'
 import Topology from './components/topology'
 import RecordsTable from './components/records_table'
 
@@ -111,8 +112,18 @@ export default class UI
 					return comp
 				}
 			
-			case 'Button':
 			case 'Tree':
+				{
+					const comp_state = component_state.toJS()
+					const comp = new Tree(this.runtime, comp_state)
+					comp.state_path = state_path
+					// console.log('ui:create:path', state_path, comp_state)
+					this.cache[arg_name] = comp
+					comp.load()
+					return comp
+				}
+			
+			case 'Button':
 			case 'HBox':
 			case 'VBox':
 			case 'List':
