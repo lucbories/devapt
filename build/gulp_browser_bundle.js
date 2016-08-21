@@ -17,9 +17,9 @@ var DST_BROWSER_BUNDLE = 'devapt-browser.js'
 */
 module.exports = function (gulp, plugins)
 {
-	return function ()
+	return function (arg_task_name)
 	{
-		gulp.task('build_browser_bundle',
+		gulp.task(arg_task_name,
 			() => {
 				const browserify_settings = {
 					entries: [DST_BROWSER_INDEX]
@@ -30,8 +30,6 @@ module.exports = function (gulp, plugins)
 					.ignore('socket.io')
 					.require('./dist/browser/client_runtime.js', { expose:'client_runtime' } )
 				
-				// try
-				// {
 				var stream = bundler.bundle()
 					.on('error',
 						function(err)
@@ -48,14 +46,6 @@ module.exports = function (gulp, plugins)
 					.pipe( gulp.dest(DST) )
 					.pipe( plugins.livereload() )
 				return stream
-				// }
-				// catch(e)
-				// {
-				// 	console.log('build_browser_bundle:an error occures', Object.keys(e) )
-				// 	// Error: Cannot find module 'fsevents' from 'D:\DATAS\GitHub\devapt\node_modules\chokidar\lib'
-				// }
-				
-				// return undefined
 			}
 		)
 	}

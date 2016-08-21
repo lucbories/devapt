@@ -9,9 +9,9 @@ var DST_PLUGINS_JS  = 'dist/plugins/**/*.js'
 
 module.exports = function (gulp, plugins)
 {
-	return function ()
+	return function (arg_task_name)
 	{
-		gulp.task('build_plugins_bundle',
+		gulp.task(arg_task_name,
 			() => {
 				return gulp.src(DST_PLUGINS_JS)
 					// .pipe( plugins.changed(DST_PLUGINS_JS) )

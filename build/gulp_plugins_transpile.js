@@ -14,13 +14,13 @@ const BABEL_CONFIG = {
 
 module.exports = function (gulp, plugins)
 {
-	return function ()
+	return function (arg_task_name)
 	{
 		/*
 			COPY ALL SRC/PLUGINS FILES TO DIST/
 				build all files
 		*/
-		gulp.task('build_plugins_transpile',
+		gulp.task(arg_task_name,
 			() => {
 				return gulp.src(SRC_PLUGINS_JS)
 					.pipe( plugins.changed(DST_PLUGINS) )

@@ -32,9 +32,9 @@ var footer = fs.readFileSync(FILE_HTML_FOOTER)
 */
 module.exports = function (gulp/*, plugins*/)
 {
-	return function ()
+	return function (arg_task_name)
 	{
-		gulp.task('build_doc_md',
+		gulp.task(arg_task_name,
 			function(/*cb*/)
 			{
 				gulp.src(SRC_README)
