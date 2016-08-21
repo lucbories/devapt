@@ -253,4 +253,64 @@ export default class Table extends Container
 			}
 		)
 	}
+
+
+
+	/**
+	 * Update values on a table part.
+	 * 
+	 * @param {object} arg_collection_def - plain object map of collection definition ({collection_name:"", collection_dom_id:""}.
+	 * @param {object} arg_collection_values - plain object map of collection key/value pairs.
+	 * 
+	 * @returns {nothing}
+	 */
+	update_section_collection(arg_collection_def, arg_collection_values)
+	{
+		const table_id = this.get_dom_id()
+
+		// console.log('update_metric_collection2:def= values=', arg_collection_def, arg_collection_values)
+
+		if (arg_collection_def && arg_collection_def.collection_name && arg_collection_def.collection_dom_id && arg_collection_values)
+		{
+			var arg_collection_name = arg_collection_def.collection_name
+			var arg_collection_jqo = $(arg_collection_def.collection_dom_id)
+			
+			var collection_dom_template_default = "<tr> <td></td> <td> {collection_key} </td> <td id='{collection_id}'>{collection_value}</td> </tr>"
+			var collection_dom_template = arg_collection_def.collection_dom_template ? arg_collection_def.collection_dom_template : collection_dom_template_default
+
+			var collection_key_safe = undefined
+			var collection_value = undefined
+			var collection_id = undefined
+			var collection_value_jqo = undefined
+			var collection_value_html = undefined
+			var collection_keys = Object.keys(arg_collection_values)
+			var re = /[^a-zA-Z0-9]/gi
+
+			// console.log('update_metric_collection2:collection=%s keys= jqo=', arg_collection_name, collection_keys, arg_collection_jqo)
+			
+			collection_keys.forEach(
+				function(collection_key)
+				{
+					collection_key_safe = collection_key.replace(re, '_')
+					// console.log('update_metric_collection2:collection=%s loop on key=', arg_collection_name, collection_key)
+
+					collection_value = arg_collection_values[collection_key]
+					collection_id = table_id + "_" + arg_collection_name + "_" + collection_key_safe
+					collection_value_jqo = $("#" + collection_id)
+					// console.log('update_metric_collection2:key jqo', collection_value_jqo)
+
+					if (! collection_value_jqo || collection_value_jqo.length == 0)
+					{
+						// console.log('update_metric_collection2:collection=%s loop on key=', collection_key)
+
+						// collection_value_html = "<tr> <td></td> <td>" + collection_key + "</td> <td id='" + collection_id + "'>" + collection_value + "</td> </tr>"
+						collection_value_html = collection_dom_template.replace('{collection_key}', collection_key).replace('{collection_id}', collection_id).replace('{collection_value}', collection_value)
+						arg_collection_jqo.after(collection_value_html)
+						collection_value_jqo = $("#" + collection_id)
+					}
+					collection_value_jqo.text(collection_value)
+				}
+			)
+		}
+	}
 }

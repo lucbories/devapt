@@ -65,7 +65,7 @@ export default class MetricsHttpRecord extends MetricsRecord
 	
 		// SERVICE IDENTIFICATION
 		this.values.service = {}
-		this.values.service.name = null
+		this.values.service.name = 'unknow service'
 		this.values.service.url = this.req.originalUrl || this.req.url
 		this.values.service.method = this.req.method
 		this.values.service.http_version = this.req.httpVersion 

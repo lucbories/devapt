@@ -9,7 +9,7 @@ import Instance from '../../base/instance'
 import Collection from '../../base/collection'
 import runtime from '../../base/runtime'
 
-import ServiceConsumer from './service_consumer'
+// import ServiceConsumer from './service_consumer'
 import ServiceProvider from './service_provider'
 
 

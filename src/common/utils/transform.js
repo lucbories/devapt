@@ -15,7 +15,7 @@ const prop = Ramda.prop // f(field_name, value_to_query)
 const prop_default = Ramda.propOr // f(default_value, field_name, value_to_query)
 const deep_prop = Ramda.path // f(field_path, value_to_query)
 // const clone = Ramda.clone
-const map = Ramda.map
+// const map = Ramda.map
 const merge = Ramda.merge
 
 
@@ -279,7 +279,15 @@ export const out = (arg_extractors, arg_results_type) => {
 	{
 		output_xformer = xform_array
 	}
-	
+
+	else if (arg_results_type == 'single' && arg_extractors.length == 1)
+	{
+		const field_xform = arg_extractors[0]
+		output_xformer = (arg_stream_value) => {
+			return field_xform.extract(arg_stream_value)
+		}			
+	}
+
 	return output_xformer
 }
 

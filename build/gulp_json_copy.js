@@ -41,13 +41,13 @@ const BABEL_CONFIG = {
 
 module.exports = function (gulp, plugins)
 {
-	return function ()
+	return function (arg_task_name)
 	{
 		/*
 			COPY ALL SRC/ JSON FILES TO DIST/
 				build only changed files
 		*/
-		gulp.task('build_json_copy',
+		gulp.task(arg_task_name,
 			() => {
 				return gulp.src(SRC_ALL_JSON)
 					.pipe( plugins.changed(DST) )

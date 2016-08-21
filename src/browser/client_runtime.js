@@ -2,6 +2,7 @@ import T from 'typr'
 import assert from 'assert'
 import { createStore/*, combineReducers*/ } from 'redux'
 import { fromJS } from 'immutable'
+import Bacon from 'baconjs'
 
 import Loggable from '../common/base/loggable'
 import LoggerManager from '../common/loggers/logger_manager'
@@ -45,6 +46,7 @@ export default class ClientRuntime extends Loggable
 		this.is_browser_runtime = true
 		
 		this.services = {}
+		this.services_promises = {}
 		this.store = undefined
 		this.ui = undefined
 		this.current_state = undefined
@@ -117,36 +119,141 @@ export default class ClientRuntime extends Loggable
 	/**
 	 * Register a remote service.
 	 * @param {string} arg_svc_name - service name
-	 * @param {object} arg_svc_settings - service settiings
-	 * @returns {nothing}
+	 * @param {object} arg_svc_settings - service settings
+	 * @returns {Promise}
 	 */
 	register_service(arg_svc_name, arg_svc_settings)
 	{
+		const self = this
 		// this.enter_group('register_service')
 		
-		
-		assert( T.isString(arg_svc_name), context + ':register_service:bad service name string')
-		assert( T.isObject(arg_svc_settings), context + ':register_service:bad service settings object')
-		
-		if (arg_svc_name in this.services)
+		if (arg_svc_name in this.services_promises)
 		{
+			return this.services_promises[arg_svc_name]
+		}
+
+		this.services_promises[arg_svc_name] = new Promise(
+			function(resolve, reject)
+			{
+				self.register_service_self(resolve, reject, arg_svc_name, arg_svc_settings)
+			}
+		)
+		
+		this.info('Client Service is created (async):' + arg_svc_name)
+	
+		// this.leave_group('register_service')
+		return this.services_promises[arg_svc_name]
+	}
+
+	
+	
+	/**
+	 * Register a remote service.
+	 * @param {string} arg_svc_name - service name
+	 * @param {object} arg_svc_settings - service settings
+	 * @param {Function} arg_resolve_cb - function to call when promise is resolved
+	 * @param {Function} arg_reject_cb - function to call when promise is rejected
+	 * @returns {nothing}
+	 */
+	register_service_self(arg_resolve_cb, arg_reject_cb, arg_svc_name, arg_svc_settings)
+	{
+		const self = this
+
+		// this.enter_group('register_service_self')
+		
+
+		const app_credentials = this.store.getState().get('credentials')
+		const request_svc_settings = 'request_settings'
+		const reply_svc_settings = 'reply_settings'
+
+		// CHECK SERVICE NAME
+		if ( ! T.isString(arg_svc_name) )
+		{
+			arg_reject_cb(context + ':register_service:bad service name string [' + arg_svc_name + ']')
 			return
 		}
-		
-		// TODO CHECK CREDENTIAL FORMAT STRING -> MAP ?
-		// console.log(this.store.getState(), 'state')
-		arg_svc_settings.credentials = this.store.getState().get('credentials')
-		if ( T.isString(arg_svc_settings.credentials ) )
+
+		// TEST IF SERVICE IS ALREADY REGISTERED
+		if (this.services && (arg_svc_name in this.services) )
 		{
-			arg_svc_settings.credentials = JSON.parse(arg_svc_settings.credentials)
+			const svc = this.services[arg_svc_name]
+			// console.log(context + ':register_service_self:SERVICE IS ALREADY REGISTERED:svc', svc)
+			arg_resolve_cb(svc)
+			// this.leave_group('register_service_self')
+			return
 		}
-		const svc = new Service(arg_svc_name, arg_svc_settings)
-		this.services[arg_svc_name] = svc
+
+		// GET SERVICE SETTINGS FROM GIVEN SETTINGS
+		if ( T.isObject(arg_svc_settings) )
+		{
+			// console.log(context + ':register_service_self:SERVICE FROM GIVEN SETTINGS:arg_svc_settings', arg_svc_settings)
+
+			// GET APPLICATION CREDENTIALS
+			// TODO CHECK CREDENTIAL FORMAT STRING -> MAP ?
+			arg_svc_settings.credentials = app_credentials
+			assert( T.isObject(arg_svc_settings), context + ':register_service:bad service settings object')
+			
+			if ( T.isString(arg_svc_settings.credentials ) )
+			{
+				arg_svc_settings.credentials = JSON.parse(arg_svc_settings.credentials)
+			}
+			const svc = new Service(arg_svc_name, arg_svc_settings)
+			// console.log(context + ':register_service_self:SERVICE FROM GIVEN SETTINGS:svc', svc)
+			self.services[arg_svc_name] = svc
+			arg_resolve_cb(svc)
+
+			// this.leave_group('register_service_self')
+			return
+		}
+
+		// GET SERVICE SETTINGS FROM SERVER SETTINGS: PROCESS RESPONSE
 		
-		this.info('Client Service is created:' + arg_svc_name)
+		const svc_path = '/' + arg_svc_name
+		const svc_socket = io(svc_path)
+		const get_settings_stream = Bacon.fromEvent(svc_socket, reply_svc_settings)
 		
-		
-		// this.leave_group('register_service')
+		get_settings_stream.onValue(
+			(response) => {
+				// console.log(context + ':register_service_self:SERVICE FROM SERVER SETTINGS:response', response)
+				arg_svc_settings = response.settings
+				assert( T.isObject(arg_svc_settings), context + ':register_service:bad service settings object')
+				
+				// GET APPLICATION CREDENTIALS
+				// TODO CHECK CREDENTIAL FORMAT STRING -> MAP ?
+				arg_svc_settings.credentials = app_credentials
+				if ( T.isString(arg_svc_settings.credentials ) )
+				{
+					arg_svc_settings.credentials = JSON.parse(arg_svc_settings.credentials)
+				}
+
+				const svc = new Service(arg_svc_name, arg_svc_settings)
+				// console.log(context + ':register_service_self:SERVICE FROM SERVER SETTINGS:svc', svc)
+
+				self.services[arg_svc_name] = svc
+				delete this.services_promises[arg_svc_name]
+
+				arg_resolve_cb(svc)
+			}
+		)
+
+		get_settings_stream.onError(
+			(error) => {
+				console.error(context + ':register_service:error:' + error)
+			}
+		)
+
+		// GET SERVICE SETTINGS FROM SERVER SETTINGS: REQUEST SETTINGS
+		const payload = {
+			request: {
+				operation:request_svc_settings,
+				operands:[]
+			},
+			credentials:app_credentials
+		}
+		svc_socket.emit(request_svc_settings, payload)
+
+
+		// this.leave_group('register_service_self')
 	}
 	
 	

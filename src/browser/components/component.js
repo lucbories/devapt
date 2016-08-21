@@ -70,13 +70,66 @@ export default class Component extends Stateable
 						const svc_name = ('service' in bind_cfg) ? bind_cfg['service'] : undefined
 						const svc_method = ('method' in bind_cfg) ? bind_cfg['method'] : undefined
 						const xform = ('transform' in bind_cfg) ? bind_cfg['transform'] : undefined
+						const timeline = ('timeline' in bind_cfg) ? bind_cfg['timeline'] : undefined
 						const target_view = ('target_view' in bind_cfg) ? bind_cfg['target_view'] : undefined
+						const target_views = ('target_views' in bind_cfg) ? bind_cfg['target_views'] : undefined
+						const target_dom_selector = ('target_dom_selector' in bind_cfg) ? bind_cfg['target_dom_selector'] : undefined
+						const target_dom_selectors = ('target_dom_selectors' in bind_cfg) ? bind_cfg['target_dom_selectors'] : undefined
 						const target_method = ('target_method' in bind_cfg) ? bind_cfg['target_method'] : undefined
 						const options = ('options' in bind_cfg) ? bind_cfg['options'] : undefined
 						
-						const target_object = T.isString(target_view) ? this.runtime.ui.get(target_view) : this
+						let target_object = this
+						if ( T.isString(target_view) && target_view != 'this' )
+						{
+							target_object = this.runtime.ui.get(target_view)
+						}
+						else if ( T.isString(target_dom_selector) )
+						{
+							if (target_dom_selector == 'this')
+							{
+								target_object = $('#' + this.get_dom_id() )
+							}
+							else
+							{
+								target_object = $(target_dom_selector)
+							}
+						}
 						
-						this.bind_svc(svc_name, svc_method, xform, target_object, target_method, options)
+						
+						if ( T.isString(timeline) && T.isArray(target_dom_selectors) )
+						{
+							// console.log(context + ':load:timeline bindings for ' + timeline)
+
+							let timeline_objects = []
+							target_dom_selectors.forEach(
+								(dom_selector) => {
+									timeline_objects.push( $(dom_selector) )
+								}
+							)
+							this.bind_timeline(svc_name, svc_method, timeline, timeline_objects, target_method, options)
+						}
+
+						else if ( T.isString(timeline) && T.isArray(target_views) )
+						{
+							// console.log(context + ':load:timeline bindings for ' + timeline)
+
+							let timeline_objects = []
+							target_views.forEach(
+								(view_name) => {
+									const view = this.runtime.ui.get(view_name)
+									if (view)
+									{
+										timeline_objects.push(view)
+									}
+								}
+							)
+							this.bind_timeline(svc_name, svc_method, timeline, timeline_objects, target_method, options)
+						}
+
+						else
+						{
+							this.bind_svc(svc_name, svc_method, xform, target_object, target_method, options)
+						}
 					}
 				)
 			}
@@ -95,16 +148,9 @@ export default class Component extends Stateable
 						const options = ('options' in bind_cfg) ? bind_cfg['options'] : undefined
 						
 						let target_object = this
-						if ( T.isString(target_view) )
+						if ( T.isString(target_view) && target_view != 'this' )
 						{
-							if (target_view == 'this')
-							{
-								target_object = this
-							}
-							else
-							{
-								target_object = this.runtime.ui.get(target_view)
-							}
+							target_object = this.runtime.ui.get(target_view)
 						}
 						else if ( T.isString(target_dom_selector) )
 						{

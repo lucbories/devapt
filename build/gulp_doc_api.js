@@ -46,9 +46,9 @@ const jsconfig = {
 */
 module.exports = function (gulp/*, plugins*/)
 {
-	return function ()
+	return function (arg_task_name)
 	{
-		gulp.task('build_doc_api',
+		gulp.task(arg_task_name,
 			function(cb)
 			{
 				gulp.src([SRC_COMMON, SRC_BROWSER, SRC_SERVER])
