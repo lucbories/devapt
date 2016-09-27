@@ -1,0 +1,95 @@
+{
+	"plural":"users",
+	"single":"user",
+
+	"datasource": "cx_auth",
+	"container": "users",
+	"pk_field": "users_id_user",
+
+	"security":{
+		"role_read": "ROLE_AUTH_USERS_READ",
+		"role_create": "ROLE_AUTH_USERS_CREATE",
+		"role_update": "ROLE_AUTH_USERS_UPDATE",
+		"role_delete": "ROLE_AUTH_USERS_DELETE"
+	},
+	
+	"fields": {
+		"users_id_user": {
+			"type": "integer",
+			"auto_increment":false,
+			"allow_null":false,
+			"column": "id_user",
+			"is_primary_key": true,
+			"is_expression": false,
+
+			"label": "Id",
+			"is_editable": "0",
+			"is_visible": "0"
+		},
+		"users_login": {
+			"type": "string",
+			"auto_increment":false,
+			"allow_null":false,
+			"column": "login",
+			"is_primary_key": false,
+			"is_expression": false,
+
+			"label": "Login",
+			"is_editable": true,
+			"is_visible": true,
+
+			"field_value.validate": "alphaALPHAnum_-"
+		},
+		"users_lastname": {
+			"type": "string",
+			"auto_increment":false,
+			"allow_null":false,
+			"column": "lastname",
+			"is_primary_key": false,
+			"is_expression": false,
+
+			"label": "Lastname",
+			"placeholder": "Enter lastname",
+			"is_editable": true,
+			"is_visible": true,
+
+			"field_value.validate": "alphaALPHAnum_-space",
+			"field_value.validate_error_label": "upper or lower alphanumeric and - and _ and space"
+		},
+		"users_firstname": {
+			"type": "string",
+			"column": "firstname",
+			"is_primary_key": false,
+			"is_expression": false,
+
+			"label": "Firstname",
+			"placeholder": "Enter firstname",
+			"is_editable": true,
+			"is_visible": true
+		},
+		"users_email": {
+			"type": "email",
+			"column": "email",
+			"is_primary_key": false,
+			"is_expression": false,
+
+			"label": "Email",
+			"is_editable": true,
+			"is_visible": true,
+
+			"field_value.validate_error_label": "you should enter a valid email"
+		},
+		"users_password": {
+			"type": "password",
+			"column": "password",
+			"is_primary_key": false,
+			"is_expression": false,
+
+			"label": "Password",
+			"placeholder": "Enter password",
+			"hash": "md5",
+			"is_editable": true,
+			"is_visible": true
+		}
+	}
+}
