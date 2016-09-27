@@ -1,4 +1,4 @@
-import {describe, it} from 'mocha';
+/*import {describe, it} from 'mocha';
 import {expect} from 'chai';
 import {List, Map} from 'immutable';
 import T from 'typr'
@@ -61,7 +61,7 @@ describe('store',
 				// let config_present = state.config_reducer.present
 				// let runtime_present = state.runtime_reducer.present
 				
-				let store_config = config()
+				let store_config = devapt.runtime.get_registry().root
 				// let store_runtime = runtime()
 				
 				expect( T.isObject(store_config) ).to.be.true
@@ -193,3 +193,4 @@ describe('store',
 		)
 	}
 )
+*/

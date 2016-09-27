@@ -1,10 +1,12 @@
-
+// NPM IMPORTS
 import T from 'typr'
 import assert from 'assert'
 
+// BROWSER IMPORTS
 import Component from './components/component'
 import Table from './components/table'
 import Tree from './components/tree'
+import TableTree from './components/table_tree'
 import Topology from './components/topology'
 import RecordsTable from './components/records_table'
 
@@ -35,6 +37,14 @@ export default class UI
 		this.store = arg_store
 		this.cache = {}
 		this.state_by_path = {}
+
+		this.page = {
+			menubar:undefined,
+			header:undefined,
+			breadcrumbs:undefined,
+			content:undefined,
+			footer:undefined
+		}
 	}
 	
 	
@@ -67,7 +77,7 @@ export default class UI
 	 */
 	create(arg_name)
 	{
-		const current_state = this.store.getState()
+		const current_state = this.store.get_state()
 		let state_path = []
 		const component_state = this.find_state(current_state, arg_name, state_path)
 		assert( T.isObject(component_state), context + ':create:bad state object for ' + arg_name)
@@ -83,6 +93,17 @@ export default class UI
 				{
 					const comp_state = component_state.toJS()
 					const comp = new Table(this.runtime, comp_state)
+					comp.state_path = state_path
+					// console.log('ui:create:path', state_path, comp_state)
+					this.cache[arg_name] = comp
+					comp.load()
+					return comp
+				}
+			
+			case 'TableTree':
+				{
+					const comp_state = component_state.toJS()
+					const comp = new TableTree(this.runtime, comp_state)
 					comp.state_path = state_path
 					// console.log('ui:create:path', state_path, comp_state)
 					this.cache[arg_name] = comp
@@ -151,10 +172,10 @@ export default class UI
 	/**
 	 * Find a UI component state.
 	 * 
-	 * @param {object} arg_state - state object.
+	 * @param {Immutable.Map} arg_state - registry global state object.
 	 * @param {string} arg_name - component name.
 	 * 
-	 * @returns {object}
+	 * @returns {Immutable.Map|undefined} - cmponent state object.
 	 */
 	find_state(arg_state, arg_name, arg_state_path = [])
 	{
@@ -164,6 +185,14 @@ export default class UI
 		if (! arg_state)
 		{
 			console.error('state is undefined for ' + arg_name)
+			return undefined
+		}
+
+		if (! T.isFunction(arg_state.get) )
+		{
+			// GLOBAL STATE IS NOT AN IMMUTABLE.MAP
+			// console.error(context + ':find_state:state is not an Immutable for ' + arg_name)
+			// console.log(context + ':find_state:state:', arg_state)
 			return undefined
 		}
 		

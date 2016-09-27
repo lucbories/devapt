@@ -1,12 +1,14 @@
-
+// NPM IMPORTS
 import T from 'typr'
 import assert from 'assert'
 
-import runtime from '../../base/runtime'
-
+// COMMON IMPORTS
+import {is_browser, is_server} from '../../utils/is_browser'
 
 
 const context = 'common/datas/providers/provider'
+
+
 
 export const SOURCE_LOCAL_FILE = 'local_file'
 export const SOURCE_MASTER = 'master'
@@ -16,6 +18,24 @@ export const SOURCE_SQL_DATABASE = 'sql_database'
 export const SOURCE_NOSQL_DATABASE = 'nosql_database'
 
 const SOURCES = [SOURCE_LOCAL_FILE, SOURCE_MASTER, SOURCE_MSG_BUS, SOURCE_REMOTE_URL, SOURCE_SQL_DATABASE, SOURCE_NOSQL_DATABASE]
+
+
+
+// GET RUNTIME
+const server_runtime_file = '../../../server/base/runtime'
+const browser_runtime_file = 'see window.devapt().runtime()'
+
+let runtime = undefined
+
+if (is_server())
+{
+	runtime = require(server_runtime_file).default
+}
+
+else if (is_browser())
+{
+	runtime = window.devapt().runtime()
+}
 
 
 
@@ -60,7 +80,7 @@ export default class JsonProvider
 
 		// logs.debug(context, 'leave')
 		return promise
-    }
+	}
     
     
     /**

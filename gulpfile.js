@@ -106,6 +106,24 @@ gulp.task('watch_server',
 )
 
 
+// **************************************************************************************************
+// DEVAPT - TEST
+// **************************************************************************************************
+getTask('gulp_test_transpile')('build_test_transpile')
+gulp.task('build_test', ['build_test_transpile'] )
+
+gulp.task('watch_test',
+	() => {
+		var watcher = gulp.watch(SRC_COMMON_JS, ['build_test'] )
+		watcher.on('change',
+			(event) => {
+				console.log('File ' + event.path + ' was ' + event.type + ', running tasks watch_test...')	
+			}
+		)
+	}
+)
+
+
 
 // **************************************************************************************************
 // DEVAPT - INDEX
@@ -165,6 +183,7 @@ gulp.task('browser', (cb) => runseq('build_browser_transpile', 'build_browser_bu
 gulp.task('server', (cb) => runseq('build_common_transpile', 'build_server_transpile', 'build_plugins_transpile', 'build_index_transpile', cb) )
 gulp.task('default', (cb) => runseq('build_common_transpile', 'build_server_transpile', 'build_plugins_transpile', 'build_index_transpile', 'build_browser_transpile', 'build_browser_bundle', cb) )
 gulp.task('clean_build', (cb) => runseq('clean', 'default', cb) )
+gulp.task('test', (cb) => runseq('build_common_transpile', 'build_server_transpile', 'build_plugins_transpile', 'build_index_transpile', 'build_browser_transpile', 'build_test_transpile', cb) )
 
 gulp.task('watch', (cb) => runseq('default', watch_tasks, cb))
 

@@ -1,9 +1,10 @@
-
+// NPM IMPORTS
 import T from 'typr'
 import assert from 'assert'
 
+// COMMON IMPORTS
+import Errorable from './errorable'
 import Instance from './instance'
-
 
 
 let context = 'common/base/collection'
@@ -15,7 +16,7 @@ let context = 'common/base/collection'
  * @author Luc BORIES
  * @license Apache-2.0
  */
-export default class Collection
+export default class Collection extends Errorable
 {
 	/**
 	 * Create a collection of Instance objects.
@@ -26,6 +27,8 @@ export default class Collection
 	 */
 	constructor(...args)
 	{
+		super(context, undefined)
+
 		this.is_collection = true
 		this.$items = []
 		this.$accepted_types = ['*']

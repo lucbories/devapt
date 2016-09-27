@@ -1,4 +1,4 @@
-
+// NPM IMPORTS
 import T from 'typr'
 import assert from 'assert'
 import fs from 'fs'
@@ -25,7 +25,7 @@ export default class Context
      */
 	constructor(arg_runtime)
 	{
-		assert( T.isObject(arg_runtime) && arg_runtime.is_runtime, context + ':bad runtime object')
+		assert( T.isObject(arg_runtime) && arg_runtime.is_server_runtime, context + ':bad runtime object')
 		this.is_context = true
 		this.$runtime = arg_runtime
 	}

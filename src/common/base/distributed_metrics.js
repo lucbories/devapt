@@ -1,7 +1,8 @@
-
+// NPM IMPORTS
 import T from 'typr'
 import assert from 'assert'
 
+// COMMON IMPORTS
 import DistributedMessage from './distributed_message'
 
 

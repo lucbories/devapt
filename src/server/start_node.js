@@ -1,14 +1,16 @@
 
+// NPM IMPORTS
 import T from 'typr'
 import path from 'path'
 import chokidar from 'chokidar'
-import runtime from '../common/base/runtime'
 import commander from 'commander'
 
+// SERVER IMPORTS
+import runtime from './base/runtime'
 
 
 // POLYFILLS FOR NODE 0.10
-require('./es5-compat.js')
+// require('../common/utils/es5-compat.js')
 
 
 

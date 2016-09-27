@@ -1,6 +1,5 @@
-
+// COMMON IMPORTS
 import Loggable from './loggable'
-
 
 
 let context = 'common/base/errorable'
@@ -17,8 +16,10 @@ export default class Errorable extends Loggable
 	/**
 	 * Create an Errorable instance.
 	 * @extends Loggable
+	 * 
 	 * @param {string} arg_log_context - trace context.
 	 * @param {LoggerManager} arg_logger_manager - logger manager object (optional).
+	 * 
 	 * @returns {nothing}
 	 */
 	constructor(arg_log_context, arg_logger_manager)

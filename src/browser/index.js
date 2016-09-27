@@ -1,4 +1,5 @@
 
+import es5 from '../common/utils/es5-compat'
 import runtime from './client_runtime'
 
 

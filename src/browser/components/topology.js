@@ -1,7 +1,8 @@
-
+// NPM IMPORTS
 import T from 'typr'
 import assert from 'assert'
 
+// BROWSER IMPORTS
 import Component from './component'
 
 
@@ -11,7 +12,9 @@ const context = 'browser/components/topology'
 
 /**
  * @file UI Topology component class.
+ * 
  * @author Luc BORIES
+ * 
  * @license Apache-2.0
  */
 export default class Topology extends Component
@@ -136,7 +139,7 @@ export default class Topology extends Component
 	{
 		this.mode = this.get_initial_state()['mode']
 		this.svc = this.get_initial_state()['service']
-		this.runtime.register_service(this.svc)
+		// this.runtime.register_service(this.svc)
 		
 		// console.log(context + ':init:mode %s, svc %s', this.mode, this.svc)
 	}
@@ -156,25 +159,32 @@ export default class Topology extends Component
 		const topology_id = this.get_dom_id()
 		// console.log(arg_values, 'topo.update_topology for %s', topology_id)
 		
+		this.cy.destroy()
+		this.init_cy()
 		
 		var cy = this.cy
-		cy.reset()
+		// if (this.els && this.els.length > 0)
+		// {
+		// 	const els_collection = cy.collection(this.els)
+		// 	this.cy.remove(els_collection)
+		// }
+		cy.reset() // RESET ZOOM...
 		// var h = $('#' + topology_id).css('height')
 		$('#' + topology_id).css('margin-top', '100px')
 		$('#' + topology_id).css('height', '300px')
 		// console.log($('#' + topology_id).css('top'), 'top')
 		
-		var els = []
+		this.els = []
 		if (this.mode == 'physical')
 		{
-			els = this.get_physical_els(arg_values)
+			this.els = this.get_physical_els(arg_values)
 		}
 		else if (this.mode == 'logical')
 		{
-			els = this.get_logical_els(arg_values)
+			this.els = this.get_logical_els(arg_values)
 		}
 		
-		cy.add(els)
+		cy.add(this.els)
 		cy.layout( { name:'dagre' } )
 		cy.resize()
 	}
@@ -246,6 +256,12 @@ export default class Topology extends Component
 	 */
 	get_logical_els(arg_values)
 	{
+		if (! arg_values || ! arg_values.datas)
+		{
+			console.error(context + ':get_logical_els:bad response:arg_values=', arg_values)
+			return
+		}
+
 		const topology_id = this.get_dom_id()
 		var els = [
 			{

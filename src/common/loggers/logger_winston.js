@@ -67,12 +67,12 @@ export default class LoggerWinston extends Logger
 							case 'file': {
 								const transport = this.create_file_transport(transport_cfg)
 								transports.push(transport)
-								break;
+								break
 							}
 							case 'console': {
 								const transport = this.create_console_transport(transport_cfg)
 								transports.push(transport)
-								break;
+								break
 							}
 						}
 					}

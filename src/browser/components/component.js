@@ -1,26 +1,28 @@
-
+// NPM IMPORTS
 import T from 'typr'
 import assert from 'assert'
 
-import Stateable from './stateable'
+// BROWSER IMPORTS
+import Bindable from './bindable'
 
 
 const context = 'browser/components/component'
 
 
 
-
 /**
  * @file UI component class.
+ * 
  * @author Luc BORIES
+ * 
  * @license Apache-2.0
  */
-export default class Component extends Stateable
+export default class Component extends Bindable
 {
 	
 	/**
 	 * Creates an instance of Component.
-	 * @extends Stateable
+	 * @extends Bindable
 	 * 
 	 * @param {object} arg_runtime - client runtime.
 	 * @param {object} arg_state - component state.
@@ -50,7 +52,10 @@ export default class Component extends Stateable
 	{
 		// console.info(context + ':load:loading component ' + this.get_name())
 		
-		this.store_unsubscribe = this.runtime.create_store_observer(this)
+		if (! this.store_unsubscribe)
+		{
+			this.store_unsubscribe = this.runtime.create_store_observer(this)
+		}
 		
 		const state = arg_state ? arg_state : this.get_state()
 		// console.log(state, 'load bindinds')
@@ -210,5 +215,48 @@ export default class Component extends Stateable
 	bind_this_dom(arg_dom_event, arg_values_xform, arg_bound_object, arg_bound_method)
 	{
 		this.bind_dom('#' + this.get_dom_id(), arg_dom_event, arg_values_xform, arg_bound_object, arg_bound_method)
+	}
+
+
+
+	/**
+	 * Show component.
+	 * 
+	 * @returns {nothing}
+	 */
+	show()
+	{
+		$('#' + this.get_dom_id() ).show()
+	}
+
+
+
+	/**
+	 * Hide component.
+	 * 
+	 * @returns {nothing}
+	 */
+	hide()
+	{
+		$('#' + this.get_dom_id() ).hide()
+	}
+
+
+
+	/**
+	 * Render view on window.document element.
+	 * 
+	 * @returns {Promise}
+	 */
+	render()
+	{
+		const is_rendered = this.get_state_value('is_rendered', false)
+		if (is_rendered)
+		{
+			return
+		}
+
+		// TODO: request rendering html on the server
+		console.error('browser/component:render:not yet implemented')
 	}
 }

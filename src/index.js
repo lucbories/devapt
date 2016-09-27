@@ -1,8 +1,15 @@
+// SERVER IMPORTS
+import runtime from './server/base/runtime'
+import Render from './server/rendering/render'
+import Component from './server/rendering/base/component'
+import Container from './server/rendering/base/container'
 
-import assert from 'assert'
+import RenderingPlugin from './server/plugins/rendering_plugin'
+import ServicesPlugin from './server/plugins/services_plugin'
+import ServersPlugin from './server/plugins/servers_plugin'
 
-import { is_browser, is_server } from './common/utils/is_browser'
-
+import DefaultRenderingPlugin from './server/default_plugins/rendering_default_plugin'
+import DefaultServicesPlugin from './server/default_plugins/services_default_plugin'
 
 
 /**
@@ -15,51 +22,9 @@ import { is_browser, is_server } from './common/utils/is_browser'
  * @property {object} devapt.store - Redux store instance
  * @property {object} devapt.config - configuration part of a Redux store instance
  * @property {object} devapt.logs - logging wrapper
- * @property {object} devapt.Render - rendering wrapper Class (Render)
+ * @property {object} devapt.render - rendering wrapper Class (Render)
  * @property {object} devapt.Component - rendering base class (Component)
  */
 
-let api = undefined
 
-if ( is_server() )
-{
-	api = require('./server/index')
-}
-
-
-else if ( is_browser() )
-{
-	api = require('./browser/index')
-}
-
-else
-{
-	assert('not a server and not a browser !!!')
-}
-
-// console.log(api, 'devapt/src/index:api')
-// console.log(api.default.runtime, 'devapt/src/index:api.runtime')
-
-const runtime = api.default.runtime
-const config = api.default.config
-const store = api.default.store
-const Render = api.default.Render
-const Component = api.default.Component
-const Container = api.default.Container
-
-const RenderingPlugin = api.default.RenderingPlugin
-const ServicesPlugin = api.default.ServicesPlugin
-const ServersPlugin = api.default.ServersPlugin
-
-const DefaultRenderingPlugin = api.default.DefaultRenderingPlugin
-const DefaultServicesPlugin = api.default.DefaultServicesPlugin
-
-// console.log(api.runtime, 'devapt/src/index:api.runtime')
-
-export default {
-	runtime, config, store,
-	Render, Component, Container,
-	RenderingPlugin, ServicesPlugin, ServersPlugin,
-	DefaultRenderingPlugin,
-	DefaultServicesPlugin
-}
+export default { runtime, Render, Component, Container, RenderingPlugin, ServicesPlugin, ServersPlugin, DefaultRenderingPlugin, DefaultServicesPlugin }

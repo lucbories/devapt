@@ -2,7 +2,8 @@
 import T from 'typr'
 import assert from 'assert'
 
-import Loggable from '../../common/base/loggable'
+import Stateable from '../../common/base/stateable'
+// import Errorable from '../../common/base/errorable'
 import { transform } from '../../common/utils/transform'
 
 
@@ -16,24 +17,27 @@ const context = 'browser/components/bindable'
  * @author Luc BORIES
  * @license Apache-2.0
  */
-export default class Bindable extends Loggable
+export default class Bindable extends Stateable
 {
 	
 	/**
 	 * Creates an instance of Bindable.
 	 * @extends Loggable
 	 * 
+	 * @param {object} arg_runtime - client runtime.
+	 * @param {object} arg_state - component state.
 	 * @param {string} arg_log_context - context of traces of this instance (optional).
 	 * 
 	 * @returns {nothing}
 	 */
-	constructor(arg_log_context)
+	constructor(arg_runtime, arg_state, arg_log_context)
 	{
 		const log_context = arg_log_context ? arg_log_context : context
-		super(log_context, window.devapt().runtime().get_logger_manager())
+		const default_settings = {}
+		super(default_settings, arg_runtime, arg_state, log_context)
 		this.is_bindable = true
 		
-		if ( ! this.is_runtime )
+		if ( ! this.is_server_runtime )
 		{
 			this.update_trace_enabled()
 		}
@@ -58,7 +62,7 @@ export default class Bindable extends Loggable
 		assert( T.isString(arg_svc_name), context + ':bind_svc:bad service name string')
 		assert( T.isString(arg_svc_method), context + ':bind_svc:bad service method string')
 		
-		// console.log(context + ':bind_svc:svc name=%s svc method=%s method=%s target=%o', arg_svc_name, arg_svc_method, arg_bound_method, arg_bound_object)
+		console.log(context + ':bind_svc:svc name=%s svc method=%s method=%s target=%o', arg_svc_name, arg_svc_method, arg_bound_method, arg_bound_object)
 		
 		this.runtime.register_service(arg_svc_name).then(
 			(svc) => {
@@ -74,11 +78,16 @@ export default class Bindable extends Loggable
 				const method_cfg = T.isObject(arg_options) ? arg_options.method : undefined
 				const operands = T.isObject(method_cfg) ? method_cfg.operands : undefined
 				const format = T.isObject(arg_options) ? arg_options.format : undefined
+				console.log(context + ':bind_svc:svc name=%s svc_method=%s method=%s method_cfg=%o', arg_svc_name, arg_svc_method, arg_bound_method, method_cfg)
 
 				const stream = svc[arg_svc_method](method_cfg)
 				// stream.subscribe( (datas) => {console.log(datas) } )
+
+				const unbind = this.bind_stream(stream, arg_values_xform, arg_bound_object, arg_bound_method, operands, format)
 				
-				this.bind_stream(stream, arg_values_xform, arg_bound_object, arg_bound_method, operands, format)
+				this.unbind = this.unbind ? this.unbind : {}
+				this.unbind[arg_svc_name] = this.unbind[arg_svc_name] ? this.unbind[arg_svc_name] : {}
+				this.unbind[arg_svc_name][arg_svc_method] = unbind
 			}
 		)
 	}
@@ -199,7 +208,7 @@ export default class Bindable extends Loggable
 	 * @param {string} arg_bound_method - target object method string.
 	 * @param {object} arg_options - binding options.
 	 * 
-	 * @returns {nothing}
+	 * @returns {function} - unbind function
 	 */
 	bind_dom(arg_dom_selector, arg_dom_event, arg_values_xform, arg_bound_object, arg_bound_method, arg_options)
 	{
@@ -215,7 +224,7 @@ export default class Bindable extends Loggable
 		const stream = $(arg_dom_selector).asEventStream(arg_dom_event)
 		// const stream = Bacon.fromEvent($(arg_dom_selector), arg_dom_event)
 		
-		this.bind_stream(stream, arg_values_xform, arg_bound_object, arg_bound_method, operands, format)
+		return this.bind_stream(stream, arg_values_xform, arg_bound_object, arg_bound_method, operands, format)
 	}
 	
 	
@@ -231,10 +240,12 @@ export default class Bindable extends Loggable
 	 * @param {anything} arg_method_operands - target object method operands (optional).
 	 * @param {object} arg_format_object - formatting settings.
 	 * 
-	 * @returns {nothing}
+	 * @returns {function} - unbind function
 	 */
 	bind_stream(arg_stream, arg_values_xform, arg_bound_object, arg_bound_method, arg_method_operands, arg_format_object)
 	{
+		let unbind_cb = undefined
+
 		// SET TARGET OBJECT
 		arg_bound_object = arg_bound_object ? arg_bound_object : this
 		if ( T.isString(arg_bound_object) )
@@ -285,11 +296,11 @@ export default class Bindable extends Loggable
 
 			if (arg_method_operands)
 			{
-				xform_stream.toProperty().assign(arg_bound_object, arg_bound_method, arg_method_operands)
+				unbind_cb = xform_stream.toProperty().assign(arg_bound_object, arg_bound_method, arg_method_operands)
 			}
 			else
 			{
-				xform_stream.toProperty().assign(arg_bound_object, arg_bound_method)
+				unbind_cb = xform_stream.toProperty().assign(arg_bound_object, arg_bound_method)
 			}
 		}
 		
@@ -300,11 +311,11 @@ export default class Bindable extends Loggable
 			
 			if (arg_method_operands)
 			{
-				xform_stream.toProperty().assign(arg_bound_object, arg_bound_method, arg_method_operands)
+				unbind_cb = xform_stream.toProperty().assign(arg_bound_object, arg_bound_method, arg_method_operands)
 			}
 			else
 			{
-				xform_stream.arg_stream.map(arg_values_xform).toProperty().assign(arg_bound_object, arg_bound_method)
+				unbind_cb = xform_stream.arg_stream.map(arg_values_xform).toProperty().assign(arg_bound_object, arg_bound_method)
 			}
 		}
 
@@ -331,17 +342,19 @@ export default class Bindable extends Loggable
 
 			if (arg_method_operands)
 			{
-				xform_stream.onValue(arg_bound_object, arg_bound_method, arg_method_operands)
+				unbind_cb = xform_stream.onValue(arg_bound_object, arg_bound_method, arg_method_operands)
 			}
 			else
 			{
-				xform_stream.onValue(arg_bound_object, arg_bound_method)
+				unbind_cb = xform_stream.onValue(arg_bound_object, arg_bound_method)
 			}
 		}
 		else
 		{
 			assert(false, context + ':bind_svc:bad values paths string|array|function')
 		}
+
+		return unbind_cb
 	}
 	
 	

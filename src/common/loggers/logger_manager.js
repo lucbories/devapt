@@ -1,11 +1,18 @@
-
+// NPM IMPORTS
 import T from 'typr'
 
+// COMMON IMPORTS
 import LoggerMsgPost from './logger_msg_post'
-4
+import {is_browser, is_server} from '../utils/is_browser'
 
 
 // const context = 'common/loggers/logger_manager'
+
+
+
+// GET RUNTIME
+const server_runtime_file = '../../server/base/runtime'
+const browser_runtime_file = 'see window.devapt().runtime()'
 
 
 
@@ -44,8 +51,6 @@ export default class LoggerManager
 		
 		if (! this.is_client_runtime)
 		{
-			const runtime = require('../base/runtime').default
-			
 			if (this.loggers.length > 0)
 			{
 				const old_loggers = this.loggers
@@ -57,9 +62,24 @@ export default class LoggerManager
 				this.loggers = []
 			}
 
-			this.loggers.push( new LoggerMsgPost(true, runtime.node.get_logs_bus().get_input_stream()) )
-			// this.info('msg logger created')
-			
+			let runtime = undefined
+
+			if (is_server())
+			{
+				runtime = require(server_runtime_file).default
+			}
+
+			else if (is_browser())
+			{
+				runtime = window.devapt().runtime()
+			}
+
+			if (runtime.node)
+			{
+				this.loggers.push( new LoggerMsgPost(true, runtime.node.get_logs_bus().get_input_stream()) )
+				// this.info('msg logger created')
+			}
+
 			if ( T.isObject(arg_settings) && ('console' in arg_settings) )
 			{
 				const LoggerConsole = require('./logger_console').default
@@ -171,14 +191,14 @@ export default class LoggerManager
 	
 	/**
 	 * Loggers DEBUG implementation.
-	 * @param {string|array} arg_msg - messages strings.
+	 * @param {string|array} arg_opds - messages strings.
 	 * @returns {nothing}
 	 */
-	debug(...arg_msg)
+	debug(arg_opds)
 	{
 		this.loggers.forEach(
 			(logger) => {
-				logger.debug(arg_msg)
+				logger.debug(arg_opds)
 			}
 		)
 	}
@@ -186,14 +206,14 @@ export default class LoggerManager
 	
 	/**
 	 * Loggers INFO implementation.
-	 * @param {string|array} arg_msg - messages strings.
+	 * @param {string|array} arg_opds - messages strings.
 	 * @returns {nothing}
 	 */
-	info(...arg_msg)
+	info(arg_opds)
 	{
 		this.loggers.forEach(
 			(logger) => {
-				logger.info(arg_msg)
+				logger.info(arg_opds)
 			}
 		)
 	}
@@ -201,14 +221,14 @@ export default class LoggerManager
 	
 	/**
 	 * Loggers WARN implementation.
-	 * @param {string|array} arg_msg - messages strings.
+	 * @param {string|array} arg_opds - messages strings.
 	 * @returns {nothing}
 	 */
-	warn(...arg_msg)
+	warn(arg_opds)
 	{
 		this.loggers.forEach(
 			(logger) => {
-				logger.warn(arg_msg)
+				logger.warn(arg_opds)
 			}
 		)
 	}
@@ -216,14 +236,14 @@ export default class LoggerManager
 	
 	/**
 	 * Loggers ERROR implementation.
-	 * @param {string|array} arg_msg - messages strings.
+	 * @param {string|array} arg_opds - messages strings.
 	 * @returns {nothing}
 	 */
-	error(...arg_msg)
+	error(arg_opds)
 	{
 		this.loggers.forEach(
 			(logger) => {
-				logger.error(arg_msg)
+				logger.error(arg_opds)
 			}
 		)
 	}

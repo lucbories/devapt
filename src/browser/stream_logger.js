@@ -1,6 +1,6 @@
 
 import Logger from '../common/loggers/logger'
-import Stream from '../common/messaging/stream'
+import Stream from '../server/messaging/stream'
 
 
 

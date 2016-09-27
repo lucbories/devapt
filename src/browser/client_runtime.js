@@ -1,16 +1,19 @@
+// NPM IMPORTS
 import T from 'typr'
 import assert from 'assert'
-import { createStore/*, combineReducers*/ } from 'redux'
-import { fromJS } from 'immutable'
 import Bacon from 'baconjs'
 
-import Loggable from '../common/base/loggable'
-import LoggerManager from '../common/loggers/logger_manager'
+// COMMON IMPORTS
+import ReduxStore from '../common/state_store/redux_store'
+import RuntimeBase from '../common/base/runtime_base'
+// import LoggerManager from '../common/loggers/logger_manager'
 
+// BROWSER IMPORTS
 import ConsoleLogger from './console_logger'
 import StreamLogger from './stream_logger'
 import Service from './service'
 import UI from './ui'
+import Router from './router'
 
 
 let context = 'browser/runtime'
@@ -19,42 +22,37 @@ let context = 'browser/runtime'
 
 /**
  * @file client runtime class - main library interface.
+ * 
  * @author Luc BORIES
+ * 
  * @license Apache-2.0
  */
-export default class ClientRuntime extends Loggable
+export default class ClientRuntime extends RuntimeBase
 {
 	/**
 	 * Create a client Runtime instance.
+	 * @extends Loggable
+	 * 
 	 * @returns {nothing}
 	 */
 	constructor()
 	{
+		super(context)
+
 		// INIT LOGGING FEATURE ON BROWSER
-		const loggers_settings = undefined
-		const logger_manager = new LoggerManager(loggers_settings)
-		
 		const console_logger = new ConsoleLogger(true)
-		logger_manager.loggers.push(console_logger)
+		this.get_logger_manager().loggers.push(console_logger)
 		
 		const stream_logger = new StreamLogger(undefined, true)
-		logger_manager.loggers.push(stream_logger)
+		this.get_logger_manager().loggers.push(stream_logger)
 		
-		
-		super(context, logger_manager)
 		
 		this.is_browser_runtime = true
 		
 		this.services = {}
 		this.services_promises = {}
-		this.store = undefined
 		this.ui = undefined
-		this.current_state = undefined
-		
-		if ( ! this.is_runtime )
-		{
-			this.update_trace_enabled()
-		}
+		this.router = undefined
 		
 		this.info('Client Runtime is created')
 	}
@@ -62,27 +60,18 @@ export default class ClientRuntime extends Loggable
 	
 	
 	/**
-	 * Get runtime logger manager.
-	 * 
-	 * @returns {LoggerManager}
-	 */
-	get_logger_manager()
-	{
-		return this.logger_manager
-	}
-	
-	
-	
-	/**
 	 * Load runtime settings.
-	 * @param {object} arg_settings - runtime settings
-	 * @returns {object} promise
+	 * 
+	 * @param {object} arg_settings - runtime settings.
+	 * 
+	 * @returns {nothing}
 	 */
 	load(arg_settings)
 	{
-		// this.separate_level_1()
-		// this.enter_group('load')
+		this.separate_level_1()
+		this.enter_group('load')
 		
+		this.router = new Router()
 		
 		// SET DEFAULT REMOTE LOGGING
 		// const svc_logger_settings = ('default' in arg_settings) ? arg_settings['default'] : {}
@@ -104,34 +93,38 @@ export default class ClientRuntime extends Loggable
 		
 		const reducer = this.get_store_reducers()
 		const self = this
-		this.store = createStore(reducer, fromJS(initial_state) )
-		this.store_unsubscribe = this.store.subscribe( self.handle_store_change.bind(self) )
-		this.store.dispatch( {type:'store_created'} )
+		this.state_store = new ReduxStore(reducer, initial_state, context, this.logger_manager)
+		this.state_store_unsubscribe = this.state_store.subscribe( self.handle_store_change.bind(self) )
+		this.state_store.dispatch( {type:'store_created'} )
 		
-		this.ui = new UI(this, this.store)
+		this.ui = new UI(this, this.state_store)
 		
-		// this.leave_group('load')
-		// this.separate_level_1()
+		this.leave_group('load')
+		this.separate_level_1()
 	}
 	
 	
 	
 	/**
 	 * Register a remote service.
-	 * @param {string} arg_svc_name - service name
-	 * @param {object} arg_svc_settings - service settings
+	 * 
+	 * @param {string} arg_svc_name - service name.
+	 * @param {object} arg_svc_settings - service settings.
+	 * 
 	 * @returns {Promise}
 	 */
 	register_service(arg_svc_name, arg_svc_settings)
 	{
 		const self = this
-		// this.enter_group('register_service')
+		this.enter_group('register_service:' + arg_svc_name)
 		
 		if (arg_svc_name in this.services_promises)
 		{
+			this.debug('register_service:svc promise found:' + arg_svc_name)
 			return this.services_promises[arg_svc_name]
 		}
 
+		this.debug('register_service:create svc promise:' + arg_svc_name)
 		this.services_promises[arg_svc_name] = new Promise(
 			function(resolve, reject)
 			{
@@ -141,7 +134,7 @@ export default class ClientRuntime extends Loggable
 		
 		this.info('Client Service is created (async):' + arg_svc_name)
 	
-		// this.leave_group('register_service')
+		this.leave_group('register_service')
 		return this.services_promises[arg_svc_name]
 	}
 
@@ -149,10 +142,12 @@ export default class ClientRuntime extends Loggable
 	
 	/**
 	 * Register a remote service.
-	 * @param {string} arg_svc_name - service name
-	 * @param {object} arg_svc_settings - service settings
-	 * @param {Function} arg_resolve_cb - function to call when promise is resolved
-	 * @param {Function} arg_reject_cb - function to call when promise is rejected
+	 * 
+	 * @param {string} arg_svc_name - service name.
+	 * @param {object} arg_svc_settings - service settings.
+	 * @param {Function} arg_resolve_cb - function to call when promise is resolved.
+	 * @param {Function} arg_reject_cb - function to call when promise is rejected.
+	 * 
 	 * @returns {nothing}
 	 */
 	register_service_self(arg_resolve_cb, arg_reject_cb, arg_svc_name, arg_svc_settings)
@@ -162,13 +157,14 @@ export default class ClientRuntime extends Loggable
 		// this.enter_group('register_service_self')
 		
 
-		const app_credentials = this.store.getState().get('credentials')
+		const app_credentials = this.state_store.get_state().get('credentials')
 		const request_svc_settings = 'request_settings'
 		const reply_svc_settings = 'reply_settings'
 
 		// CHECK SERVICE NAME
 		if ( ! T.isString(arg_svc_name) )
 		{
+			this.error('register_service:svc promise rejected:' + arg_svc_name)
 			arg_reject_cb(context + ':register_service:bad service name string [' + arg_svc_name + ']')
 			return
 		}
@@ -178,6 +174,7 @@ export default class ClientRuntime extends Loggable
 		{
 			const svc = this.services[arg_svc_name]
 			// console.log(context + ':register_service_self:SERVICE IS ALREADY REGISTERED:svc', svc)
+			this.debug('register_service:svc promise resolved:' + arg_svc_name)
 			arg_resolve_cb(svc)
 			// this.leave_group('register_service_self')
 			return
@@ -200,6 +197,7 @@ export default class ClientRuntime extends Loggable
 			const svc = new Service(arg_svc_name, arg_svc_settings)
 			// console.log(context + ':register_service_self:SERVICE FROM GIVEN SETTINGS:svc', svc)
 			self.services[arg_svc_name] = svc
+			this.debug('register_service:svc promise resolved:' + arg_svc_name)
 			arg_resolve_cb(svc)
 
 			// this.leave_group('register_service_self')
@@ -230,8 +228,9 @@ export default class ClientRuntime extends Loggable
 				// console.log(context + ':register_service_self:SERVICE FROM SERVER SETTINGS:svc', svc)
 
 				self.services[arg_svc_name] = svc
-				delete this.services_promises[arg_svc_name]
+				delete self.services_promises[arg_svc_name]
 
+				self.debug('register_service:svc promise resolved:' + arg_svc_name)
 				arg_resolve_cb(svc)
 			}
 		)
@@ -239,6 +238,8 @@ export default class ClientRuntime extends Loggable
 		get_settings_stream.onError(
 			(error) => {
 				console.error(context + ':register_service:error:' + error)
+				self.error('register_service:svc promise rejected:' + arg_svc_name + ' with error:' + error)
+				arg_reject_cb(context + ':register_service:request error for  [' + arg_svc_name + '] error=' + error)
 			}
 		)
 
@@ -260,7 +261,9 @@ export default class ClientRuntime extends Loggable
 	
 	/**
 	 * Get a service by its name.
-	 * @param {string} arg_name - service name
+	 * 
+	 * @param {string} arg_name - service name.
+	 * 
 	 * @returns {Service}
 	 */
 	service(arg_name)
@@ -269,6 +272,7 @@ export default class ClientRuntime extends Loggable
 		return (arg_name in this.services) ? this.services[arg_name] : undefined
 	}
 	
+
 	
 	/**
 	 * Emit a ping request through SocketIO
@@ -277,32 +281,6 @@ export default class ClientRuntime extends Loggable
 	{
 		const socketio = io()
 		socketio.emit('ping')
-	}
-	
-	
-	
-	/**
-	 * Get current state, an immutable object from a Redux data store.
-	 * @returns {object} - store state.
-	 */
-	get_state()
-	{
-		// TODO USE REDUX STORE
-		return this.store.getState()
-	}
-	
-	
-	
-	/**
-	 * Dispatch a state action.
-	 * 
-	 * @param {object} arg_action - action object with a 'type' attribute.
-	 * @returns {nothing}
-	 */
-	dispatch_action(arg_action)
-	{
-		assert( T.isObject(arg_action) && T.isString(arg_action.type), context + ':dispatch_action:bad action object')
-		this.store.dispatch(arg_action)		
 	}
 	
 	
@@ -341,7 +319,7 @@ export default class ClientRuntime extends Loggable
 						
 						// console.log(context + ':reducer 4:new_component_state', new_component_state.toJS())
 						
-						let state = this.store.getState()
+						let state = this.state_store.get_state()
 						state = state.setIn(component.get_state_path(), new_component_state)
 						// console.log(context + ':reducer 4:state', state.toJS())
 						
@@ -362,7 +340,7 @@ export default class ClientRuntime extends Loggable
 	handle_store_change()
 	{
 		// let previous_state = this.current_state
-		// this.current_state = this.store.getState()
+		// this.current_state = this.state_store.get_state()
 		
 		/// TODO
 		
@@ -399,7 +377,7 @@ export default class ClientRuntime extends Loggable
 			// }
 		}
 		
-		let unsubscribe = this.store.subscribe(handle_change)
+		let unsubscribe = this.state_store.subscribe(handle_change)
 		
 		handle_change()
 		

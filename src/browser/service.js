@@ -101,8 +101,20 @@ export default class Service
 		
 		this.load(arg_svc_settings)
 	}
-	
-	
+
+
+
+	/**
+	 * Get service name.
+	 * 
+	 * @returns {string}
+	 */
+	get_name()
+	{
+		return this.$name
+	}
+
+
 	
 	/**
 	 * Create a timer.
@@ -146,7 +158,52 @@ export default class Service
 	}
 	
 	
+
+	/**
+	 * Create a poller for the given socket operation.
+	 * 
+	 * @param {object} arg_poller_settings - poller settings { name:'...', interval_seconds|interval_milliseconds:number }.
+	 * @param {object} arg_op_name - service operation name.
+	 * @param {object} arg_credentials - session credentials.
+	 * @param {object} arg_socket - service socket.
+	 * @param {array} arg_op_opds - operation operands (optional)(default=[]).
+	 * 
+	 * @returns {nothing}
+	 */
+	create_poller(arg_poller_settings, arg_op_name, arg_credentials, arg_socket, arg_op_opds=[])
+	{
+		const self = this
+
+		if ( T.isObject(arg_poller_settings) )
+		{
+			const interval_ms = T.isNumber(arg_poller_settings.interval_seconds) ? arg_poller_settings.interval_seconds * 1000 : arg_poller_settings.interval_milliseconds
+			if ( T.isNumber(interval_ms) && T.isString(arg_poller_settings.name) )
+			{
+				console.log('create poller for operation:' + arg_op_name, arg_poller_settings.name, interval_ms)
+				
+				const payload = {
+					request: {
+						operation:arg_op_name,
+						operands:arg_op_opds
+					},
+					credentials:arg_credentials
+				}
+
+				self.create_timer(
+					arg_poller_settings.name,
+					() => {
+						// console.log('GLOBAL SETTINGS:create_timer svc_socket.emit', svc_path, op_name)
+						arg_socket.emit(arg_op_name, payload)
+					},
+					interval_ms,
+					false
+				)
+			}
+		}
+	}
 	
+
+
 	/**
 	 * Delete a timer.
 	 * 
@@ -204,78 +261,53 @@ export default class Service
 					const pollers_op_settings = pollers_settings[op_name]
 					// console.log('service has poller for operation:' + op_name, pollers_op_settings)
 
-					if ( T.isObject(pollers_op_settings) )
-					{
-						const interval_ms = T.isNumber(pollers_op_settings.interval_seconds) ? pollers_op_settings.interval_seconds * 1000 : pollers_op_settings.interval_milliseconds
-						if ( T.isNumber(interval_ms) && T.isString(pollers_op_settings.name) )
-						{
-							// console.log('create timer for operation:' + op_name, pollers_op_settings.name, pollers_op_settings.poll_interval)
-							
-							const payload = {
-								request: {
-									operation:op_name,
-									operands:[]
-								},
-								credentials:arg_settings.credentials
-							}
-
-							self.create_timer(
-								pollers_op_settings.name,
-								() => {
-									// console.log('GLOBAL SETTINGS:create_timer svc_socket.emit', svc_path, op_name)
-									svc_socket.emit(op_name, payload)
-								},
-								interval_ms,
-								false
-							)
-						}
-					}
+					this.create_poller(pollers_op_settings, op_name, arg_settings.credentials, svc_socket, [])
 				}
 
 				self[op_name] = (method_cfg) => {
+					// console.log(context + ':op:%s:%s:cfg=', this.get_name(), op_name, method_cfg)
+
 					// DEFINE REQUEST PAYLOAD
 					const payload = {
 						request: {
 							operation:op_name,
 							operands: [method_cfg]
-							// operands: (method_cfg && method_cfg.operands) ? (T.isArray(method_cfg.operands) ? method_cfg.operands : []) : []
 						},
 						credentials:arg_settings.credentials
 					}
 					
 					// REPEAT EVERY xxx MILLISECONDS FOR LOCAL SETTINGS
-					if ( T.isObject(method_cfg) )
+					if ( T.isObject(method_cfg) && T.isObject(method_cfg.poller) )
 					{
-						const interval_ms = T.isNumber(method_cfg.interval_seconds) ? method_cfg.interval_seconds * 1000 : method_cfg.interval_milliseconds
-						if ( T.isNumber(interval_ms) && T.isString(method_cfg.poller_name) )
-						{
-							// console.log('create timer for operation:' + op_name, value.name, value.poll_interval)
-							self.create_timer(
-								method_cfg.poller_name,
-								() => {
-									// console.log('LOCAL SETTINGS:create_timer svc_socket.emit', svc_path, op_name)
-									svc_socket.emit(op_name, payload)
-								},
-								interval_ms,
-								false
-							)
-						}
+						const poller_settings = method_cfg.poller
+						this.create_poller(poller_settings, op_name, arg_settings.credentials, svc_socket, [method_cfg])
 					}
+					
+					let stream = Bacon.fromEvent(svc_socket, op_name)
+
+					// DEBOUNCE STREAM
+					if ( T.isObject(method_cfg) && T.isNumber(method_cfg.debounce_milliseconds) )
+					{
+						stream = stream.debounceImmediate(method_cfg.debounce_milliseconds)
+					}
+					// self[op_name].in = stream
+
+					stream.onError(
+						(error) => {
+							console.error(context + 'svc=' + svc_path + ':op_name=' + op_name + ':error=', error)
+						}
+					)
 
 					// SEND REQUEST
 					svc_socket.emit(op_name, payload)
 
+					
 					// RETURN RESPONSE STREAM
-					return self[op_name].in
+					return stream
 				}
-				
+
 				self[op_name].timelines = {}
-				self[op_name].in = Bacon.fromEvent(svc_socket, op_name)
-				self[op_name].in.onError(
-					(error) => {
-						console.error(context + 'svc=' + svc_path + ':op_name=' + op_name + ':error=', error)
-					}
-				)
+				// self[op_name].in = undefined
 
 
 				// HAS HISTORY
@@ -287,6 +319,8 @@ export default class Service
 						timeline_op_settings_array = [timeline_op_settings_array]
 					}
 					// console.log('service has poller for operation:' + op_name, pollers_op_settings)
+					
+					let stream = Bacon.fromEvent(svc_socket, op_name)
 
 					timeline_op_settings_array.forEach(
 						(timeline_op_settings) => {
@@ -297,7 +331,7 @@ export default class Service
 									previous_ts:undefined,
 									stream:new Bacon.Bus()
 								}
-								self[op_name].in.onValue(
+								stream.onValue(
 									(value) => {
 										value = value.datas ? value.datas : value
 
