@@ -3,9 +3,11 @@ import T from 'typr'
 
 // COMMON IMPORTS
 import JsonProviderFactory from '../../common/json_provider/json_provider_factory'
+import PluginsFactory from '../plugins/plugins_factory'
 
 // SERVER IMPORTS
 import RuntimeExecutable from './runtime_executable'
+import TopologyRuntimeWorld from '../../common/topology/define/topology_define_world'
 
 
 let context = 'server/runtime/runtime_stage1_executable'
@@ -16,9 +18,9 @@ let context = 'server/runtime/runtime_stage1_executable'
  * @file Runtime Stage 1 loading class.
  * 
  * Runtime Stage 1 consists of:
- * 	  - load master apps settings
- *	  - load security settings
- *    - load logger settings
+ * 	  - get world topology definition settings from registry
+ *	  - create world topology definition
+ *    - load word topology definition
  * 
  * @author Luc BORIES
  * 
@@ -50,14 +52,15 @@ export default class RuntimeStage1Executable extends RuntimeExecutable
 		this.separate_level_1()
 		this.enter_group('execute')
 		
+		
+		// GET REGISTRY SETTINGS PROVIDER
+		this.info('Get registry settings provider')
+		const settings_provider = this.runtime.get_setting('settings_provider', null)
+		
 
+		// GET WORLD TOPOLOGY SETTINGS
 		let promise = null
 		const runtime = this.runtime
-		
-			
-		const settings_provider = runtime.get_setting('settings_provider', null)
-		console.log(settings_provider, 'settings_provider')
-		
 		if ( T.isObject(settings_provider) )
 		{
 			this.info('Settings provider found for master')
@@ -69,16 +72,16 @@ export default class RuntimeStage1Executable extends RuntimeExecutable
 				function(arg_json)
 				{
 					self.info('Dispatching master settings into store')
-					// console.info('Dispatching master settings into store')
 					
 					// console.log(arg_json, 'arg_json')
 
 					const base_dir = runtime.get_setting('base_dir', undefined)
 					const topology_dir = runtime.get_setting('world_dir', undefined)
-					if ( ! runtime.get_registry().load(arg_json, base_dir, topology_dir) )
+					const load_registry = runtime.get_registry().load(arg_json, base_dir, topology_dir)
+					if ( ! load_registry)
 					{
-						const error = runtime.get_topology().get_error()
-						const str = runtime.get_topology().format_error(error)
+						const error = runtime.get_registry().get_error()
+						const str = runtime.get_registry().format_error(error)
 						console.error(context + ':runtime.topology_registry.load:error', str)
 						self.error(context + ':runtime.topology_registry.load:error:' + str)
 						return false
@@ -103,56 +106,41 @@ export default class RuntimeStage1Executable extends RuntimeExecutable
 		}
 
 		
-		// LOAD LOGGERS SETTINGS
-		this.info('LOAD LOGGERS SETTINGS')
+		// DEFINE WORLD TOPOLOGY
+		this.info('CREATE WORLD TOPOLOGY ITEM')
 		promise = promise.then(
 			function()
 			{
-				self.info('Loading Loggers settings')
-				
-				const loggers_settings = runtime.get_registry().root.get('loggers').toJS()
-				const traces_settings = runtime.get_registry().root.get('traces').toJS()
-				
-				loggers_settings.traces = traces_settings
-				runtime.logger_manager.load(loggers_settings)
-				
-				// console.log(loggers_settings, context + '.execute:loggers_settings')
-				
-				return true
+				// CREATE PLUGINS MANAGERS
+				self.info('Creating plugins manage')
+				runtime.plugins_factory = new PluginsFactory(runtime)
+
+				// GET REGISTRY SETTINGS
+				self.info('Get world definition settings from registry')
+				const world_settings = {
+					nodes:runtime.get_registry().root.get('nodes').toJS(),
+					tenants:runtime.get_registry().root.get('tenants').toJS(),
+					plugins:runtime.get_registry().root.get('plugins').toJS(),
+					security:runtime.get_registry().root.get('security').toJS(),
+					loggers:runtime.get_registry().root.get('loggers').toJS(),
+					traces:runtime.get_registry().root.get('traces').toJS()
+				}
+
+				// CREATE WORLD TOPOLOGY DEFINITION ROOT
+				self.info('Creating world topology definition root')
+				runtime.world_topology = new TopologyRuntimeWorld('world', world_settings, runtime)
+
+				// LOAD WORLD TOPOLOGY DEFINITION
+				self.info('Loading world topology definition')
+				return runtime.world_topology.load()
 			}
 		)
 		.catch(
 			// FAILURE
 			function(arg_reason)
 			{
-				self.error(context + ':Loggers settings loading failure:' + arg_reason)
-				return false
-			}
-		)
-		
-		// LOAD SECURITY SETTINGS
-		this.info('LOAD SECURITY SETTINGS')
-		promise = promise.then(
-			function()
-			{
-				self.info('Loading Security settings')
-				
-				const security_settings = runtime.get_registry().root.get('security')
-				// console.log(security_settings, context + '.execute:security_settings')
-				
-				const saved_trace2 = self.get_trace()
-				self.set_trace(false)
-				runtime.security().load(security_settings)
-				self.set_trace(saved_trace2)
-				
-				return true
-			}
-		)
-		.catch(
-			// FAILURE
-			function(arg_reason)
-			{
-				self.error(context + ':Security settings loading failure:' + arg_reason)
+				self.error(context + ':World creation and loading failure:' + arg_reason)
+				console.error(context + ':World creation and loading failure:' + arg_reason)
 				return false
 			}
 		)

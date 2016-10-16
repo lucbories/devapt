@@ -117,7 +117,7 @@ export default class AuthenticationLowDbPlugin extends AuthenticationPlugin
 					const json_full_path = path.join(base_dir, 'resources', self.file_name)
 					// console.log(json_full_path, 'json_full_path')
 					
-					const storage = require('lowdb/file-sync')
+					const storage = require('lowdb/lib/file-sync')
 					self.file_db = lowdb(json_full_path, {storage})
 					
 					// console.log(self.file_db.object, 'self.file_db.object')

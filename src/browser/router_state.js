@@ -1,6 +1,6 @@
 // NPM IMPORTS
 import T from 'typr'
-// import assert from 'assert'
+import assert from 'assert'
 import { fromJS } from 'immutable'
 
 // COMMON IMPORTS
@@ -157,8 +157,8 @@ export default class RouterState extends Stateable
 	{
 		this.enter_group('do_action_display_content')
 		
-		this.debug('arg_view_name', arg_view_name)
-		this.debug('arg_menubar_name', arg_menubar_name)
+		this.debug('arg_view_name:', arg_view_name)
+		this.debug('arg_menubar_name:', arg_menubar_name)
 		
 		this.dispatch_action('display_content', { view:arg_view_name, menubar:arg_menubar_name } )
 		
@@ -382,8 +382,8 @@ export default class RouterState extends Stateable
 	{
 		this.enter_group('display_content')
 		
-		this.debug('arg_view_name', arg_view_name)
-		this.debug('arg_menubar_name', arg_menubar_name)
+		this.debug('arg_view_name=' + arg_view_name)
+		this.debug('arg_menubar_name=' + arg_menubar_name)
 		
 
 		let promise = null

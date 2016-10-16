@@ -43,7 +43,7 @@ export default class ServiceExecProvider extends SocketIOServiceProvider
 	{
 		assert( T.isObject(this.exec), context + ':activate_self:bad exec object')
 		
-		const exec_cfg = { 'routes':this.get_setting('routes').toJS(), 'server': arg_server, 'unused':arg_app_svc_cfg }
+		const exec_cfg = { 'routes':this.get_setting_js('routes'), 'server': arg_server, 'unused':arg_app_svc_cfg }
 		this.exec.prepare(exec_cfg)
 		this.exec.execute(arg_application)
 	}

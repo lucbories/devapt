@@ -52,6 +52,7 @@ export default class Stateable extends Settingsable
 		this.runtime = arg_runtime
 		this.initial_state = arg_state
 		this.state_store = this.runtime.get_state_store()
+		assert( T.isObject(this.state_store), context + ':constructor:bad state_store object')
 		this.state_path = undefined
 		
 		// console.info(context + ':constructor:creating component ' + this.get_name())
@@ -195,6 +196,7 @@ export default class Stateable extends Settingsable
 		
 		// console.info(context + ':dispatch_action:type=' + action.type + ' for ' + action.component, action)
 		
+		// assert( T.isObject(this.state_store), context + ':dispatch_action:bad state_store object')
 		this.state_store.dispatch_action(action)
 	}
 	

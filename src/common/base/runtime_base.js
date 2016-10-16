@@ -1,6 +1,6 @@
 // NPM IMPORTS
-// import T from 'typr'
-// import assert from 'assert'
+import T from 'typr'
+import assert from 'assert'
 // import Bacon from 'baconjs'
 
 // COMMON IMPORTS
@@ -72,6 +72,7 @@ export default class RuntimeBase extends Settingsable
 	 */
 	get_state_store()
 	{
+		assert( T.isObject(this.state_store), context + ':get_state_store:bad state_store object')
 		return this.state_store
 	}
 	

@@ -44,7 +44,7 @@ export default class ExecutableCommand extends Executable
 	{
 		// CHECK APPLICATION
 		assert(T.isObject(arg_data), context + ':bad application object')
-		assert(arg_data.is_topology_application, context + ':bad application instance')
+		assert(arg_data.is_topology_define_application, context + ':bad application instance')
 		const application = arg_data
 		this.info('Execute: add server route for ' + application.$name)
 		

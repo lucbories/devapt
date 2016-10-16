@@ -3,7 +3,7 @@ import assert from 'assert'
 import T from 'typr'
 
 
-const context = 'common/topology/registry/loaders/load_config_node'
+const context = 'common/topology/registry/loaders/load_nodes'
 
 
 
@@ -20,9 +20,9 @@ let error_msg_bad_node_servers_server_protocole = context + ':nodes.*.servers.*.
 
 
 
-function load_config_nodes(logs, arg_nodes_config, arg_base_dir)
+function load_nodes(logs, arg_nodes_config, arg_base_dir)
 {
-	logs.info(context, 'loading config.nodes')
+	logs.info(context, 'loading world.nodes from ' + arg_base_dir)
 	
 	try{
 		// CHECK MODULES
@@ -40,7 +40,7 @@ function load_config_nodes(logs, arg_nodes_config, arg_base_dir)
 				assert(T.isBoolean(node_obj.is_master), error_msg_bad_node_is_master)
 				assert(T.isObject(node_obj.servers), error_msg_bad_node_servers)
 				
-				load_config_node_servers(logs, node_obj.servers, node_name, node_obj.host, arg_base_dir)
+				load_node_servers(logs, node_obj.servers, node_name, node_obj.host, arg_base_dir)
 			}
 		)
 	}
@@ -53,9 +53,9 @@ function load_config_nodes(logs, arg_nodes_config, arg_base_dir)
 }
 
 
-function load_config_node_servers(logs, arg_servers_config, arg_node_name, arg_host/*, arg_base_dir*/)
+function load_node_servers(logs, arg_servers_config, arg_node_name, arg_host/*, arg_base_dir*/)
 {
-	logs.info(context, 'loading config.nodes.*.servers')
+	logs.info(context, 'loading config.nodes.' + arg_node_name + '.servers')
 	
 	try{
 		// CHECK MODULES
@@ -65,6 +65,7 @@ function load_config_node_servers(logs, arg_servers_config, arg_node_name, arg_h
 		Object.keys(arg_servers_config).forEach(
 			function(node_name)
 			{
+				logs.info(context, 'loading config.nodes.' + arg_node_name + '.servers.' + node_name)
 				let server_obj = arg_servers_config[node_name]
 				
 				// CHECK ATTRIBUTES
@@ -89,4 +90,4 @@ function load_config_node_servers(logs, arg_servers_config, arg_node_name, arg_h
 }
 
 
-export default load_config_nodes
+export default load_nodes

@@ -186,7 +186,7 @@ export default class Logger
 	 * 
 	 * @returns {nothing}
 	 */
-	debug(arg_opds)
+	debug(...arg_opds)
 	{
 		if (this.is_trace_enabled && this.is_trace_enabled_debug)
 		{
@@ -206,7 +206,7 @@ export default class Logger
 	 * 
 	 * @returns {nothing}
 	 */
-	info(arg_opds)
+	info(...arg_opds)
 	{
 		if (this.is_trace_enabled && this.is_trace_enabled_info)
 		{
@@ -226,7 +226,7 @@ export default class Logger
 	 * 
 	 * @returns {nothing}
 	 */
-	warn(arg_opds)
+	warn(...arg_opds)
 	{
 		if (this.is_trace_enabled && this.is_trace_enabled_warn)
 		{
@@ -246,7 +246,7 @@ export default class Logger
 	 * 
 	 * @returns {nothing}
 	 */
-	error(arg_opds)
+	error(...arg_opds)
 	{
 		if (this.is_trace_enabled && this.is_trace_enabled_error)
 		{

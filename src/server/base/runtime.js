@@ -11,7 +11,8 @@ import Transaction from '../../common/base/transaction'
 import RuntimeBase from '../../common/base/runtime_base'
 import LoggerManager from '../../common/loggers/logger_manager'
 import topology_registry from '../../common/topology/registry/index'
-import topology_runtime from '../../common/topology/runtime/index'
+// import topology_runtime from '../../common/topology/runtime/index'
+const topology_runtime = null // TODO
 
 // SERVER IMPORTS
 import Security from './security'
@@ -162,9 +163,6 @@ class Runtime extends RuntimeBase
 		// TRACES ARE ACTIVE IF ENABLED
 		this.separate_level_1()
 		this.enter_group('load')
-
-		// TODO USEFULL ???
-		// this.$settings.logger_manager = this.logger_manager
 		
 		this.is_master = this.get_setting('is_master', false)
 		// console.log(context + ':load:is_master', this.is_master)
@@ -173,10 +171,7 @@ class Runtime extends RuntimeBase
 		const stage1 = new exec.RuntimeStage1Executable(this.logger_manager)
 		const stage2 = new exec.RuntimeStage2Executable(this.logger_manager)
 		const stage3 = new exec.RuntimeStage3Executable(this.logger_manager)
-		const stage4 = new exec.RuntimeStage4Executable(this.logger_manager)
-		const stage5 = new exec.RuntimeStage5Executable(this.logger_manager)
-		const execs = [stage0, stage1, stage2, stage3, stage4, stage5]
-		// console.log(context + ':load:before tx new')
+		const execs = [stage0, stage1, stage2, stage3]
 
 		const tx = new Transaction('runtime', 'startup', 'loading', { logger_manager:this.logger_manager }, execs, Transaction.SEQUENCE)
 		// console.log(context + ':load:before tx new')
@@ -215,10 +210,10 @@ class Runtime extends RuntimeBase
 	 * 
 	 * @returns {Node}
 	 */
-	node(arg_name)
-	{
-		return this.topology_runtime.nodes.item(arg_name)
-	}
+	// node(arg_name)
+	// {
+	// 	return this.topology_runtime.nodes.item(arg_name)
+	// }
 	
 
 	

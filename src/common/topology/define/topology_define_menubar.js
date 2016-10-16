@@ -3,10 +3,11 @@
 // import assert from 'assert'
 
 // COMMON IMPORTS
-import TopologyRuntimeItem from './topology_runtime_item'
+import TopologyDefineItem from './topology_define_item'
+import TopologyDefineMenu from './topology_define_menu'
 
 
-let context = 'common/topology/runtime/topology_runtime_menubar'
+let context = 'common/topology/define/topology_define_menubar'
 
 
 
@@ -17,11 +18,11 @@ let context = 'common/topology/runtime/topology_runtime_menubar'
  * 
  * @license Apache-2.0
  */
-export default class TopologyRuntimeMenubar extends TopologyRuntimeItem
+export default class TopologyDefineMenubar extends TopologyDefineItem
 {
 	/**
-	 * Create a TopologyRuntimeMenubar instance.
-	 * @extends TopologyRuntimeItem
+	 * Create a TopologyDefineMenubar instance.
+	 * @extends TopologyDefineItem
 	 * 
 	 * @param {string} arg_name - instance name.
 	 * @param {object} arg_settings - instance settings map.
@@ -32,22 +33,12 @@ export default class TopologyRuntimeMenubar extends TopologyRuntimeItem
 	constructor(arg_name, arg_settings, arg_log_context)
 	{
 		const log_context = arg_log_context ? arg_log_context : context
-		super(arg_name, arg_settings, 'Menubar', log_context)
+		super(arg_name, arg_settings, 'TopologyDefineMenubar', log_context)
 		
-		this.is_topology_menubar = true
+		this.is_topology_define_menubar = true
 
 		this.topology_type = 'menubars'
-	}
-	
-
-
-	/**
-	 * Load Topology item settings.
-	 * 
-	 * @returns {nothing}
-	 */
-	load()
-	{
-		super.load()
+		
+		this.declare_collection('menus', 'menu', TopologyDefineMenu)
 	}
 }

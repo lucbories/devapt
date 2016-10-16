@@ -21,6 +21,10 @@ const DEFAULT_OPS = [
 		operands:[]
 	},
 	{
+		name:'render',
+		operands:[]
+	},
+	{
 		name:'post',
 		operands:[]
 	},

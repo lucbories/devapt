@@ -3,10 +3,10 @@
 // import assert from 'assert'
 
 // COMMON IMPORTS
-import TopologyRuntimeItem from './topology_runtime_item'
+import TopologyDefineItem from './topology_define_item'
 
 
-let context = 'common/topology/runtime/topology_runtime_view'
+let context = 'common/topology/define/topology_define_view'
 
 
 
@@ -17,11 +17,11 @@ let context = 'common/topology/runtime/topology_runtime_view'
  * 
  * @license Apache-2.0
  */
-export default class TopologyRuntimeView extends TopologyRuntimeItem
+export default class TopologyDefineView extends TopologyDefineItem
 {
 	/**
-	 * Create a TopologyRuntimeView instance.
-	 * @extends TopologyRuntimeItem
+	 * Create a TopologyDefineView instance.
+	 * @extends TopologyDefineItem
 	 * 
 	 * @param {string} arg_name - instance name.
 	 * @param {object} arg_settings - instance settings map.
@@ -32,22 +32,12 @@ export default class TopologyRuntimeView extends TopologyRuntimeItem
 	constructor(arg_name, arg_settings, arg_log_context)
 	{
 		const log_context = arg_log_context ? arg_log_context : context
-		super(arg_name, arg_settings, 'View', log_context)
+		super(arg_name, arg_settings, 'TopologyDefineView', log_context)
 		
-		this.is_topology_view = true
+		this.is_topology_define_view = true
 
 		this.topology_type = 'views'
-	}
-	
-
-
-	/**
-	 * Load Topology item settings.
-	 * 
-	 * @returns {nothing}
-	 */
-	load()
-	{
-		super.load()
+		
+		this.info('View is created')
 	}
 }

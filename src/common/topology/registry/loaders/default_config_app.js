@@ -1,9 +1,12 @@
 export const default_config = {
 	'nodes':{},
-	'services':{},
-	'applications':{},
-	'modules':{},
-	'plugins':{},
+
+	'tenants':{
+		'default':{
+			'applications':{},
+			'packages':{}
+		}
+	},
 	
 	'security':{
 		'is_readonly':false,
@@ -20,8 +23,10 @@ export const default_config = {
 			'default_plugins':[]
 		},
 		
-		'connexions':[]
+		'datasources':[]
 	},
+	
+	'plugins':{},
 	
 	'loggers':{},
 	'traces':{}

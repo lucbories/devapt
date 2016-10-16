@@ -106,7 +106,7 @@ export default class MetricsServer extends Server
 	process_metric(arg_metric_type, arg_metrics)
 	{
 		this.enter_group('process_metric')
-		this.info('metric type:' + arg_metric_type)
+		this.debug('metric type:' + arg_metric_type)
 		
 		// console.log(arg_metrics, context + ':process_metric:arg_metrics for ' + arg_metric_type)
 		
@@ -116,7 +116,7 @@ export default class MetricsServer extends Server
 		
 		if (arg_metric_type in this.metrics_collectors)
 		{
-			this.info('metrics collector found for ' + arg_metric_type)
+			this.debug('metrics collector found for ' + arg_metric_type)
 			this.metrics_collectors[arg_metric_type].process_values(arg_metrics)
 		}
 

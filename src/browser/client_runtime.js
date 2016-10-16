@@ -52,7 +52,7 @@ export default class ClientRuntime extends RuntimeBase
 		this.services = {}
 		this.services_promises = {}
 		this.ui = undefined
-		this.router = undefined
+		this._router = undefined
 		
 		this.info('Client Runtime is created')
 	}
@@ -70,16 +70,16 @@ export default class ClientRuntime extends RuntimeBase
 	{
 		this.separate_level_1()
 		this.enter_group('load')
-		
-		this.router = new Router()
-		
+
 		// SET DEFAULT REMOTE LOGGING
 		// const svc_logger_settings = ('default' in arg_settings) ? arg_settings['default'] : {}
 		// this.loggers.push( new LoggerSvc(true, svc_logger_settings) )
 		
+		// GET INITIAL STATE
 		const initial_state = window ? window.__INITIAL_STATE__ : {error:'no browser window object'}
 		// console.log(initial_state, 'initialState')
 		
+		// GET DEFAULT REDUCER
 		if ( T.isFunction(arg_settings.reducers) )
 		{
 			this.default_reducer = arg_settings.reducers
@@ -91,13 +91,19 @@ export default class ClientRuntime extends RuntimeBase
 			}
 		}
 		
+		// CREATE STATE STORE
 		const reducer = this.get_store_reducers()
 		const self = this
 		this.state_store = new ReduxStore(reducer, initial_state, context, this.logger_manager)
 		this.state_store_unsubscribe = this.state_store.subscribe( self.handle_store_change.bind(self) )
 		this.state_store.dispatch( {type:'store_created'} )
 		
+		// CREATE UI WRAPPER
 		this.ui = new UI(this, this.state_store)
+		
+		// CREATE NAVIGATION ROUTER
+		this._router = new Router()
+		this._router.init()
 		
 		this.leave_group('load')
 		this.separate_level_1()
@@ -295,6 +301,11 @@ export default class ClientRuntime extends RuntimeBase
 		return (arg_previous_state, arg_action) => {
 			// console.info(context + ':reducer 1:type=' + arg_action.type + ' for ' + arg_action.component)
 			
+			if ( T.isString(arg_action.type) && arg_action.type == 'ADD_JSON_RESOURCE' && T.isString(arg_action.resource) && T.isObject(arg_action.json) )
+			{
+				return arg_previous_state.set(arg_action.resource, arg_action.json)
+			}
+
 			if ( T.isString(arg_action.component) )
 			{
 				// console.info(context + ':reducer 2:type=' + arg_action.type + ' for ' + arg_action.component)
@@ -344,7 +355,7 @@ export default class ClientRuntime extends RuntimeBase
 		
 		/// TODO
 		
-		// console.info(context + ':handle_store_change:global')
+		console.info(context + ':handle_store_change:global', this.state_store.get_state())
 	}
 	
 	
@@ -382,5 +393,18 @@ export default class ClientRuntime extends RuntimeBase
 		handle_change()
 		
 		return unsubscribe
+	}
+
+
+
+	/**
+	 * Get runtime router.
+	 * 
+	 * @returns {Router}
+	 */
+	router()
+	{
+		assert( T.isObject(this._router), context + ':router:bad router object')
+		return this._router
 	}
 }

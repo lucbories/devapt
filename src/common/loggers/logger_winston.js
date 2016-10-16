@@ -11,10 +11,10 @@ import Logger from './logger'
 
 const customLevels = {
 	levels: {
-		debug: 0,
-		info: 1,
-		warn: 2,
-		error: 3
+		debug: 3,
+		info: 2,
+		warn: 1,
+		error: 0
 	},
 	colors: {
 		debug: 'blue',
@@ -43,7 +43,7 @@ export default class LoggerWinston extends Logger
 		super(arg_enabled)
 		
 		this.is_logger_winston = true
-		
+
 		let transports = []
 		
 		// console.log(arg_settings, context + ':' + arg_settings)
@@ -91,6 +91,7 @@ export default class LoggerWinston extends Logger
 		
 		const logger_cfg = {
 			levels: customLevels.levels,
+			colors: customLevels.colors,
 			transports: transports
 		}
 		
@@ -109,7 +110,7 @@ export default class LoggerWinston extends Logger
 	create_console_transport(arg_transport_cfg)
 	{
 		arg_transport_cfg = T.isObject(arg_transport_cfg) ? arg_transport_cfg : {}
-		
+
 		// DEFAULT CONFIGURATION
 		const default_transport_cfg = {
 			level:'debug',

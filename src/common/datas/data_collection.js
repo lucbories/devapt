@@ -32,10 +32,12 @@ export default class DataCollection extends Loggable
 	 * 		->get_adapter():DataAdapter - get data adapter instance.
 	 * 		->get_model():DataModel - get collection model instance.
 	 * 
-	 *		->validate_record(arg_record_id, arg_record_datas):Promise(boolean) - test if given datas are valid for collection model.
-	 * 		->create_record(arg_record_id, arg_record_datas):Promise(DataRecord) - create a new data record.
-	 * 		->delete_record(arg_record_id):Promise(boolean) - delete an existing data record.
-	 * 		->update_record(arg_record_id, arg_record_datas):Promise(DataRecord) - update an existing data record.
+	 *		->validate_record(arg_record):Promise(boolean) - test if given datas are valid for collection model.
+	 *		->new_record(arg_record_datas, arg_record_id) - create a new record instance.
+	 * 		->create_record(arg_record):Promise(DataRecord) - create an existing unsaved data record.
+	 * 		->delete_record(arg_record):Promise(boolean) - delete an existing data record.
+	 * 		->update_record(arg_record):Promise(DataRecord) - update an existing data record.
+	 * 		->reload_record(arg_record):Promise(DataRecord) - reload an existing data record.
 	 * 		->has_record(arg_record_id):Promise(boolean) - test if a data record exists with an id.
 	 * 		
 	 * 		->find_one_record(arg_record_id):Promise(DataRecord) - find an existing data record with an id.
@@ -47,7 +49,7 @@ export default class DataCollection extends Loggable
 	 * 		->_trigger(arg_event, arg_datas):nothing
 	 * 		->_has_cached_record_by_id(arg_id):Promise(boolean)
 	 * 		->_get_cached_record_by_id(arg_id):Promise(DataRecord)
-	 * 		->_add_cached_record_by_id(arg_record):Promise(boolean)
+	 * 		->_set_cached_record_by_id(arg_record):Promise(boolean)
 	 * 		->_remove_cached_record_by_id(arg_id):Promise(boolean)
 	 * 
 	 * 
@@ -98,10 +100,10 @@ export default class DataCollection extends Loggable
 	{
 		this.debug(context + ':emit:' + arg_event)
 
-		if ( this._model.has_rules_agenda() )
-		{
-			this._model.push_on_rule_agenda(arg_event, arg_datas)
-		}
+		// if ( this._schema.has_rules_agenda() )
+		// {
+		// 	this._schema.push_on_rule_agenda(arg_event, arg_datas)
+		// }
 	}
 
 
@@ -119,7 +121,7 @@ export default class DataCollection extends Loggable
 	{
 		this.debug(context + ':trigger:' + arg_event)
 
-		this._model.trigger(arg_event, arg_datas)
+		// this._schema._trigger(arg_event, arg_datas)
 		this._emit(arg_event, arg_datas)
 
 		// TODO: UPDATE METRICS
@@ -204,7 +206,7 @@ export default class DataCollection extends Loggable
 		assert( T.isObject(arg_record) && arg_record.is_data_record, context + ':_set_cached_record_by_id:bad data record object')
 		
 		const key = this._cache_prefix + ':' + arg_record.get_id()
-		return this._cache_manager.set(key, arg_record, this._model.get_ttl())
+		return this._cache_manager.set(key, arg_record, this._schema.get_ttl())
 	}
 
 
@@ -227,7 +229,7 @@ export default class DataCollection extends Loggable
 
 		// CACHE RECORD ARRAY
 		const key = this._cache_prefix + ':query:' + arg_query.hash()
-		promises.push( this._cache_manager.set(key, arg_record_array, this._model.get_ttl()) )
+		promises.push( this._cache_manager.set(key, arg_record_array, this._schema.get_ttl()) )
 
 		// CACHE ALL ARRAY RECORDS
 		arg_record_array._records.forEach(
@@ -305,9 +307,23 @@ export default class DataCollection extends Loggable
 	 */
 	get_model()
 	{
-		assert( T.isObject(this._model) && this._model.is_data_model, context + ':get_model:bad data model object')
+		assert( T.isObject(this._schema) && this._schema.is_topology_model, context + ':get_model:bad data model object')
 		
-		return this._model
+		return this._schema
+	}
+
+
+
+	/**
+	 * Get data model.
+	 * 
+	 * @returns {DataModel}
+	 */
+	get_schema()
+	{
+		assert( T.isObject(this._schema) && this._schema.is_topology_model, context + ':get_model:bad data model object')
+		
+		return this._schema
 	}
 
 
@@ -320,21 +336,40 @@ export default class DataCollection extends Loggable
 	 *   Call 'after_validate_ko' triggers on failure.
 	 * 4-Return success (true) or failure (false)
 	 * 
-	 * @param {string} arg_record_id - data record id.
-	 * @param {object} arg_record_datas - data record datas.
+	 * @param {DataRecord} arg_record - data record instance.
 	 * 
 	 * @returns {Promise} - Promise of a boolean.
 	 */
-	validate_record(arg_record_id, arg_record_datas) // TODO
+	validate_record(arg_record) // TODO
 	{
-		assert( T.isString(arg_record_id) && arg_record_id.length > 0, context + ':validate_record:bad record id string')
-		assert( T.isObject(arg_record_datas), context + ':validate_record:bad record datas object')
+		assert( T.isObject(arg_record) && arg_record.is_data_record, context + ':validate_record:bad data record object')
 		
-		this.trigger('before_validate', {id:arg_record_id, values:arg_record_datas})
-		const result = this._model.validate(arg_record_id, arg_record_datas)
-		this.trigger(result ? 'after_validate_ok' : 'after_validate_ko', {id:arg_record_id, values:arg_record_datas})
+		this._trigger('before_validate', { record:arg_record })
+		const result = this._schema.validate(arg_record.get_attributes_object())
+		this._trigger(result.is_valid ? 'after_validate_ok' : 'after_validate_ko', { record:arg_record })
 
 		return Promise.resolve(result)
+	}
+
+
+
+	/**
+	 * Create a new data record instance, not saved.
+	 * 
+	 * @param {object} arg_record_datas - new record attributes.
+	 * @param {string} arg_record_id - new record unique id (optional).
+	 * 
+	 * @returns {Promise} - Promise(DataRecord)
+	 */
+	new_record(arg_record_datas, arg_record_id)
+	{
+		// const is_cached_promise = this._has_cached_record_by_id(arg_record_id)
+		// if (is_cached)
+		// {
+		// 	console.log('collection:is cached')
+		// 	return this._get_cached_record_by_id(arg_record_id)
+		// }
+		return this._adapter.new_record(this._schema.get_name(), arg_record_datas, arg_record_id)
 	}
 
 
@@ -349,44 +384,51 @@ export default class DataCollection extends Loggable
 	 * 6-Call record.save()
 	 * 7-Call 'after_create' triggers.
 	 * 
-	 * @param {string} arg_record_id - data record id.
-	 * @param {object} arg_record_datas - data record datas.
+	 * @param {DataRecord} arg_record - data record instance.
 	 * 
 	 * @returns {Promise} - Promise of a DataRecord object.
 	 */
-	create_record(arg_record_id, arg_record_datas)
+	create_record(arg_record)
 	{
-		assert( T.isString(arg_record_id) && arg_record_id.length > 0, context + ':create_record:bad record id string')
-		assert( T.isObject(arg_record_datas), context + ':create_record:bad record datas object')
+		assert( T.isObject(arg_record) && arg_record.is_data_record, context + ':create_record:bad data record object')
 		
-		this.trigger('before_create', { has_error:false, error_msg:undefined, id:arg_record_id, values:arg_record_datas})
+		this._trigger('before_create', { has_error:false, error_msg:undefined, record:arg_record})
 		
-		const is_cached = this._has_from_cache_by_id(arg_record_id)
-		if (is_cached)
-		{
-			this.trigger('after_create', { has_error:true, error_msg:'already_exists', id:arg_record_id, values:arg_record_datas })
-			return Promise.reject('already_exists')
-		}
-
-		const is_valid = this.validate_record(arg_record_id, arg_record_datas)
-		if ( ! is_valid)
-		{
-			this.trigger('after_create', { has_error:true, error_msg:'not_valid', id:arg_record_id, values:arg_record_datas })
-			return Promise.reject('not_valid')
-		}
-
-		const record = this._adapter.new_record(this._model.get_name(), arg_record_id, arg_record_datas)
-
-		return this._add_cached_record_by_id(record)
-		.then(record.save)
+		return this._has_cached_record_by_id(arg_record.get_id())
+		.then(
+			(is_cached)=>{
+				if (is_cached)
+				{
+					this._trigger('after_create', { has_error:true, error_msg:'already_exists', record:arg_record })
+					return Promise.reject('already_exists')
+				}
+			}
+		)
 		.then(
 			()=>{
-				this.trigger('after_create', { has_error:false, error_msg:undefined, record:record})
+				const is_valid = this.validate_record(arg_record)
+				if ( ! is_valid)
+				{
+					this._trigger('after_create', { has_error:true, error_msg:'not_valid', record:arg_record })
+					return Promise.reject('not_valid')
+				}
+			}
+		)
+		.then(
+			()=>{
+				return this._adapter.create_record(this._schema.get_name(), arg_record.get_attributes_object())
+			}
+		)
+		.then(
+			(record)=>{
+				this._trigger('after_create', { has_error:false, error_msg:undefined, record:record})
 				return record
 			}
-		).catch(
+		)
+		.catch(
 			(e)=>{
-				this.trigger('after_create', { has_error:true, error_msg:e, id:arg_record_id, values:arg_record_datas})
+				this._trigger('after_create', { has_error:true, error_msg:e, record:arg_record})
+				console.error(context + ':create_record:', e)
 				return undefined
 			}
 		)
@@ -401,29 +443,30 @@ export default class DataCollection extends Loggable
 	 * 3-Call record.delete()
 	 * 4-Call 'after_delete' triggers.
 	 * 
-	 * @param {string|array} arg_record_id - data record id or an array of data record id strings.
+	 * @param {DataRecord} arg_record - data record instance.
 	 * 
 	 * @returns {Promise} - Promise of boolean success.
 	 */
-	delete_record(arg_record_id)
+	delete_record(arg_record)
 	{
-		assert( ( T.isString(arg_record_id) || T.isArray(arg_record_id) ) && arg_record_id.length > 0, context + ':delete_record:bad record id string')
+		assert( T.isObject(arg_record) && arg_record.is_data_record, context + ':delete_record:bad data record object')
+
+		this._trigger('before_delete', { has_error:false, error_msg:undefined, record:arg_record})
 		
-		this.trigger('before_delete', { has_error:false, error_msg:undefined, id:arg_record_id})
-		
-		return this._remove_cached_record_by_id(arg_record_id)
+		return this._remove_cached_record_by_id(arg_record.get_id())
 		.then(
 			()=>{
-				return this._adapter.find_record(this._model.get_name(), arg_record_id).then( (record)=> { return record.remove() } )
+				return this._adapter.delete_record(this._schema.get_name(), arg_record.get_id())
+				.then( (record)=> { return record.set_removed() } )
 			}
 		).then(
 			()=>{
-				this.trigger('after_delete', { has_error:false, error_msg:undefined, id:arg_record_id})
+				this._trigger('after_delete', { has_error:false, error_msg:undefined, record:arg_record})
 				return true
 			}
 		).catch(
 			(e)=>{
-				this.trigger('after_delete', { has_error:true, error_msg:e, id:arg_record_id})
+				this._trigger('after_delete', { has_error:true, error_msg:e, record:arg_record})
 				return false
 			}
 		)
@@ -438,38 +481,33 @@ export default class DataCollection extends Loggable
 	 * 3-Call record.update()
 	 * 4-Call 'after_update' triggers.
 	 * 
-	 * @param {string} arg_record_id - data record id.
-	 * @param {object} arg_record_datas - data record datas.
+	 * @param {DataRecord} arg_record - data record instance.
 	 * 
 	 * @returns {Promise} - Promise of boolean success.
 	 */
-	update_record(arg_record_id, arg_record_datas)
+	update_record(arg_record)
 	{
-		assert( T.isString(arg_record_id) && arg_record_id.length > 0, context + ':update_record:bad record id string')
-		assert( T.isObject(arg_record_datas), context + ':update_record:bad record datas object')
+		assert( T.isObject(arg_record) && arg_record.is_data_record, context + ':update_record:bad data record object')
 		
-		this.trigger('before_update', { has_error:false, error_msg:undefined, id:arg_record_id, values:arg_record_datas})
+		this._trigger('before_update', { has_error:false, error_msg:undefined, record:arg_record})
 		
-		return this._adapter.find_record(this._model.get_name(), arg_record_id)
+		return this._adapter.update_record(this._schema.get_name(), arg_record)
 		.then(
 			(record)=>{
-				return this._set_cached_record_by_id(arg_record_id, record).then( ()=>{ return record} )
-			}
-		)
-		.then(
-			(record)=>{
-				return record.update_record(arg_record_datas)
+				console.log(context + ':update_record:record', record)
+				return this._set_cached_record_by_id(arg_record.get_id(), record)
 			}
 		)
 		.then(
 			()=>{
-				this.trigger('after_update', { has_error:false, error_msg:undefined, id:arg_record_id, values:arg_record_datas})
+				this._trigger('after_update', { has_error:false, error_msg:undefined, record:arg_record})
+				console.log(context + ':update_record:true')
 				return true
 			}
 		)
 		.catch(
 			(e)=>{
-				this.trigger('after_update', { has_error:true, error_msg:e, id:arg_record_id, values:arg_record_datas})
+				this._trigger('after_update', { has_error:true, error_msg:e, record:arg_record})
 				return false
 			}
 		)
@@ -497,11 +535,11 @@ export default class DataCollection extends Loggable
 				{
 					return true
 				}
-				return this._adapter.has_record(this._model.get_name(), arg_record_id)
+				return this._adapter.has_record(this._schema.get_name(), arg_record_id)
 			}
 		).catch(
 			(e)=>{
-				this.trigger('has_record', { has_error:true, error_msg:e, id:arg_record_id} )
+				this._trigger('has_record', { has_error:true, error_msg:e, id:arg_record_id} )
 				return false
 			}
 		)
@@ -528,29 +566,36 @@ export default class DataCollection extends Loggable
 			(record)=>{
 				if ( T.isObject(record) && record.is_data_record )
 				{
-					this.trigger('find_one_record', { has_error:false, error_msg:undefined, id:arg_record_id, from:'cache'})
+					this._trigger('find_one_record', { has_error:false, error_msg:undefined, id:arg_record_id, from:'cache'})
 					return record
 				}
-				return this._adapter.find_one_record(this._model.get_name(), arg_record_id).then(
+				return this._adapter.find_one_record(this._schema.get_name(), arg_record_id)
+				.then(
+					(attributes)=>{
+						// console.log(context + ':find_one_record:adapter:attributes', attributes)
+						return this.new_record(attributes, arg_record_id)
+					}
+				)
+				.then(
 					(record)=>{
 						if ( T.isObject(record) && record.is_data_record )
 						{
-							return this._set_cached_record_by_id(arg_record_id, record).then(
-								()=>{
-									this.trigger('find_one_record', { has_error:false, error_msg:undefined, id:arg_record_id, from:'adapter'})
-									return record
-								}
-							)
+							this._trigger('find_one_record', { has_error:false, error_msg:undefined, id:arg_record_id, record:record, from:'adapter'})
+							// console.log(context + ':find_one_record:adapter:good record', record)
+							return record
 						}
 
-						this.trigger('find_one_record', { has_error:false, error_msg:undefined, id:arg_record_id, from:'notfound'})
+						console.error(context + ':find_one_record:adapter:bad record', record)
+						this._trigger('find_one_record', { has_error:false, error_msg:undefined, id:arg_record_id, from:'notfound'})
 						return undefined
 					}
 				)
 			}
-		).catch(
+		)
+		.catch(
 			(e)=>{
-				this.trigger('find_one_record', { has_error:true, error_msg:e, id:arg_record_id} )
+				this._trigger('find_one_record', { has_error:true, error_msg:e, id:arg_record_id} )
+				console.error(context + ':find_one_record:error', e)
 				return undefined
 			}
 		)
@@ -577,29 +622,41 @@ export default class DataCollection extends Loggable
 			(record_array)=>{
 				if ( T.isObject(record_array) && record_array.is_data_record_array )
 				{
-					this.trigger('find_records', { has_error:false, error_msg:undefined, query:arg_query, from:'cache'})
+					this._trigger('find_records', { has_error:false, error_msg:undefined, query:arg_query, from:'cache'})
 					return record_array
 				}
-				return this._adapter.find_records(this._model.get_name(), arg_query).then(
+				return this._adapter.find_records(this._schema.get_name(), arg_query)
+				.then(
+					(attributes_array)=>{
+						if ( T.isArray(attributes_array) )
+						{
+							return this.new_record_array(attributes_array)
+						}
+
+						this._trigger('find_records', { has_error:true, error_msg:'bad attributes array', query:arg_query, from:'notfound'})
+						return undefined
+					}
+				)
+				.then(
 					(record_array)=>{
 						if ( T.isObject(record_array) && record_array.is_data_record_array )
 						{
 							return this._set_cached_record_by_query(arg_query, record_array).then(
 								()=>{
-									this.trigger('find_records', { has_error:false, error_msg:undefined, query:arg_query, from:'adapter'})
+									this._trigger('find_records', { has_error:false, error_msg:undefined, query:arg_query, records:record_array, from:'adapter'})
 									return record_array
 								}
 							)
 						}
 
-						this.trigger('find_records', { has_error:false, error_msg:undefined, query:arg_query, from:'notfound'})
+						this._trigger('find_records', { has_error:false, error_msg:'bad DataRecordArray', query:arg_query, from:'notfound'})
 						return undefined
 					}
 				)
 			}
 		).catch(
 			(e)=>{
-				this.trigger('find_one_record', { has_error:true, error_msg:e, query:arg_query} )
+				this._trigger('find_one_record', { has_error:true, error_msg:e, query:arg_query} )
 				return undefined
 			}
 		)
@@ -614,16 +671,22 @@ export default class DataCollection extends Loggable
 	 */
 	find_all_records() // TODO use a query and cache: calling find_records(query) with query.select_all()
 	{
-		return this._adapter.find_all_records(this._model.get_name())
+		return this._adapter.find_all_records(this._schema.get_name())
 		.then(
 			(record_array)=>{
-				this.trigger('find_all_records', { has_error:false, error_msg:undefined, from:'adapter'})
-				return record_array
+				if ( T.isObject(record_array) && record_array.is_data_record_array )
+				{
+					this._trigger('find_all_records', { has_error:false, error_msg:undefined, from:'adapter'})
+					return record_array
+				}
+
+				this._trigger('find_all_records', { has_error:true, error_msg:'bad DataRecordArray'} )
+				return undefined
 			}
 		)
 		.catch(
 			(e)=>{
-				this.trigger('find_all_records', { has_error:true, error_msg:e } )
+				this._trigger('find_all_records', { has_error:true, error_msg:e } )
 				return undefined
 			}
 		)

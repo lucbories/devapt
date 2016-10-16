@@ -21,6 +21,11 @@ export default class Collection extends Errorable
 	/**
 	 * Create a collection of Instance objects.
 	 * 
+	 * API:
+	 * 		->set_all(arg_items):nothing - 
+	 * 		->get_all(arg_types):array - 
+	 * 		->item(arg_name):Instance - 
+	 * 
 	 * @param {array} args - variadic arguments.
 	 * 
 	 * @returns {nothing}

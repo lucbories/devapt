@@ -1,6 +1,6 @@
 // NPM IMPORTS
-// import T from 'typr'
-// import assert from 'assert'
+import T from 'typr'
+import assert from 'assert'
 import Crossroads from 'crossroads'
 import Hasher from 'hasher'
 
@@ -50,6 +50,8 @@ export default class Router extends RouterState
 		this.router_engine.routed.add(console.log, console)
 		// log all requests that were bypassed / not matched
 		this.router_engine.bypassed.add(console.log, console)
+
+		assert( T.isObject(this.state_store), context + ':constructor:bad state_store object')
 	}
 
 
@@ -146,8 +148,13 @@ export default class Router extends RouterState
 		}
 		if (! page_content)
 		{
-			page_content = this.runtime.ui(arg_view_name)
-			promises.push( page_content.render() )
+			const page_content_promise = this.runtime.ui.render(arg_view_name)
+			.then(
+				(controller)=>{
+					this.runtime.ui.page.content = controller
+				}
+			)
+			promises.push(page_content_promise)
 		}
 
 
@@ -164,13 +171,18 @@ export default class Router extends RouterState
 		}
 		if (! page_menubar)
 		{
-			page_menubar = this.runtime.ui(arg_menubar_name)
-			promises.push( page_menubar.render() )
+			const page_menubar_promise  = this.runtime.ui.render(arg_menubar_name)
+			.then(
+				(controller)=>{
+					this.runtime.ui.page.menubar = controller
+				}
+			)
+			promises.push(page_menubar_promise)
 		}
 
 
 		// UPDATE BREADCRUMBS
-		if (page_breadcrumbs)
+		if (page_breadcrumbs) // TODO
 		{
 			// var state = {
 			// 	content_label: Devapt.app.main_content.label ? Devapt.app.main_content.label : Devapt.app.main_breadcrumbs.name,
@@ -180,8 +192,8 @@ export default class Router extends RouterState
 			
 			// page_breadcrumbs.add_history_item(state)
 
-			promises.push( page_breadcrumbs.render() )
-			page_breadcrumbs.show()
+			// promises.push( page_breadcrumbs.render() )
+			// page_breadcrumbs.show()
 		}
 
 

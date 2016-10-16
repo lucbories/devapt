@@ -5,7 +5,7 @@ import assert from 'assert'
 // COMMON IMPORTS
 import Loggable from '../base/loggable'
 import DataCollection from './data_collection'
-import DataRecord from '../data_record'
+import DataRecord from './data_record'
 
 
 let context = 'common/data/data_adapter'
@@ -102,7 +102,7 @@ export default class DataAdapter extends Loggable
 
 					return Promise.all(promises).then(
 						(results)=>{
-							console.log(results, 'results')
+							// console.log(results, 'results')
 							let all_result = true
 							results.forEach( (result)=>{ all_result = all_result && result} )
 							return all_result
@@ -169,8 +169,9 @@ export default class DataAdapter extends Loggable
 			(result)=>{
 				if (result)
 				{
+					const model_name = arg_model_schema.get_plural_name()
 					this._topology_models_array.push(arg_model_schema)
-					this._topology_models_map[arg_model_schema.plural] = arg_model_schema
+					this._topology_models_map[model_name] = arg_model_schema
 					arg_model_schema.index_in_array = this._topology_models_array.length - 1
 				}
 				return result
@@ -227,20 +228,23 @@ export default class DataAdapter extends Loggable
 	 */
 	get_collection(arg_model_name)
 	{
+		// console.log(context + ':get_collection:model=', arg_model_name, Object.keys(this._topology_models_map))
+
 		if (! (arg_model_name in this._topology_models_map) )
 		{
-			console.debug(context + ':get_collection:bad model name')
+			// console.log(context + ':get_collection:bad model name')
 			return undefined
 		}
 
-		const found_collection = (arg_model_name in this._collections) ? this.this._collections[arg_model_name] : undefined
+		const found_collection = (arg_model_name in this._collections) ? this._collections[arg_model_name] : undefined
 		if (found_collection)
 		{
-			console.debug(context + ':get_collection:collection found')
+			// console.log(context + ':get_collection:collection found')
 			return found_collection
 		}
 		
-		console.debug(context + ':get_collection:create collection')
+		// console.log(context + ':get_collection:create collection')
+
 		const model_schema = this._topology_models_map[arg_model_name]
 		let collection = new DataCollection(this._cache_manager, this, model_schema)
 		this._collections[arg_model_name] = collection
@@ -310,7 +314,7 @@ export default class DataAdapter extends Loggable
 	 * @param {object} arg_record_datas - new record attributes.
 	 * @param {string} arg_record_id - new record unique id (optional).
 	 * 
-	 * @returns {Promise} - Promise(boolean)
+	 * @returns {Promise} - Promise(DataRecord)
 	 */
 	new_record(arg_model_name, arg_record_datas, arg_record_id)
 	{
@@ -319,10 +323,10 @@ export default class DataAdapter extends Loggable
 		{
 			return Promise.reject('bad model name string')
 		}
-		if (! ( T.isString(arg_record_id) || T.isNumber(arg_record_id) ) )
-		{
-			return Promise.reject('bad record id integer or string')
-		}
+		// if (! ( T.isString(arg_record_id) || T.isNumber(arg_record_id) ) )
+		// {
+		// 	return Promise.reject('bad record id integer or string')
+		// }
 
 		// GET COLLECTION
 		const collection = this.get_collection(arg_model_name)
@@ -337,7 +341,7 @@ export default class DataAdapter extends Loggable
 		{
 			return Promise.reject('bad topology model')
 		}
-
+		
 		// GET SEQUELIZE MODEL
 		const sequelize_model = this.get_sequelize_model(arg_model_name)
 		if (!sequelize_model)
@@ -369,7 +373,30 @@ export default class DataAdapter extends Loggable
 		}
 
 		const record = new DataRecord(collection, arg_record_id, arg_record_datas)
-		return Promise.resolve(record)
+		record._is_new = true
+
+		return collection._set_cached_record_by_id(record)
+		.then(
+			(/*result*/)=>{
+				// console.log('_set_cached_record_by_id result', result)
+				return record
+			}
+		)
+	}
+
+
+
+	/**
+	 * Create a new data record.
+	 * 
+	 * @param {string} arg_model_name - topology model name.
+	 * @param {object} arg_record_datas - new record attributes.
+	 * 
+	 * @returns {Promise} - Promise(boolean)
+	 */
+	create_record(/*arg_model_name, arg_record_datas*/)
+	{
+		return Promise.resolve(false)
 	}
 
 
@@ -382,7 +409,7 @@ export default class DataAdapter extends Loggable
 	 * 
 	 * @returns {Promise} - Promise(boolean)
 	 */
-	delete_record(arg_model_name, arg_record_id)
+	delete_record(/*arg_model_name, arg_record_id*/)
 	{
 		return Promise.resolve(false)
 	}
@@ -394,11 +421,10 @@ export default class DataAdapter extends Loggable
 	 * 
 	 * @param {string} arg_model_name - topology model name.
 	 * @param {object} arg_record_datas - new record attributes.
-	 * @param {string} arg_record_id - new record unique id (optional).
 	 * 
 	 * @returns {Promise} - Promise(boolean)
 	 */
-	update_record(arg_model_name, arg_record_datas, arg_record_id)
+	update_record(/*arg_model_name, arg_record_datas*/)
 	{
 		return Promise.resolve(false)
 	}
@@ -413,7 +439,7 @@ export default class DataAdapter extends Loggable
 	 * 
 	 * @returns {Promise} - Promise(boolean)
 	 */
-	has_record(arg_model_name, arg_record_id)
+	has_record(/*arg_model_name, arg_record_id*/)
 	{
 		return Promise.resolve(false)
 	}
@@ -428,7 +454,7 @@ export default class DataAdapter extends Loggable
 	 * 
 	 * @returns {Promise} - Promise(DataRecord)
 	 */
-	find_one_record(arg_model_name, arg_record_id)
+	find_one_record(/*arg_model_name, arg_record_id*/)
 	{
 		return Promise.resolve(undefined)
 	}
@@ -444,7 +470,7 @@ export default class DataAdapter extends Loggable
 	 * 
 	 * @returns {Promise} - Promise(DataRecord)
 	 */
-	find_or_create_record(arg_model_name, arg_record_datas, arg_record_id)
+	find_or_create_record(/*arg_model_name, arg_record_datas, arg_record_id*/)
 	{
 		return Promise.resolve(undefined)
 	}
@@ -459,7 +485,7 @@ export default class DataAdapter extends Loggable
 	 * 
 	 * @returns {Promise} - Promise(DataRecordArray)
 	 */
-	find_records(arg_model_name, arg_query)
+	find_records(/*arg_model_name, arg_query*/)
 	{
 		return Promise.resolve(undefined)
 	}
@@ -473,7 +499,7 @@ export default class DataAdapter extends Loggable
 	 * 
 	 * @returns {Promise} - Promise(DataRecordArray)
 	 */
-	find_all_records(arg_model_name)
+	find_all_records(/*arg_model_name*/)
 	{
 		return Promise.resolve(undefined)
 	}

@@ -15,7 +15,7 @@ const context = 'common/base/instance'
 
 
 
-const NOT_STORED_COLLECTIONS = ['registered_services', 'components', 'svc_providers', 'svc_consumers', 'buses', 'remote_bus_gateways']
+const NOT_STORED_COLLECTIONS = ['defined_topology', 'deployed_topology', 'registered_services', 'components', 'svc_providers', 'svc_consumers', 'buses', 'remote_bus_gateways']
 
 
 

@@ -50,22 +50,17 @@ export default class RuntimeStage0Executable extends RuntimeExecutable
 			
 			// CREATE MASTER NODE
 			this.info('Create Node and load it')
-			this.runtime.node = new Node(node_name, this.runtime.get_settings())
-			this.runtime.node.load()
-			this.runtime.get_topology().nodes.add(this.runtime.node)
+			// this.runtime.get_topology().nodes.add(this.runtime.node)
 		}
 		else
 		{
 			this.info('Node is not master')
 			// console.log(context + ':execute:Node is not master')
-			
-			// CREATE SIMPLE NODE
-			this.runtime.node = new Node(node_name, this.runtime.get_settings())
-			// console.log(context + ':execute:Node is created')
-
-			this.runtime.node.load()
-			// console.log(context + ':execute:Node is loaded')
 		}
+
+		// CREATE NODE
+		this.runtime.node = new Node(node_name, this.runtime.get_settings())
+		this.runtime.node.load()
 		
 		this.leave_group('execute')
 		this.separate_level_1()

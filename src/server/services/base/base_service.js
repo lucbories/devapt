@@ -26,7 +26,7 @@ export default class BaseService extends Service
 	 */
 	constructor(arg_svc_name, arg_service_settings, arg_context)
 	{
-		super(arg_svc_name, null, null, arg_context ? arg_context : context)
+		super(arg_svc_name, arg_service_settings, arg_context ? arg_context : context)
 		
 		this.is_base_service = true
 	}
@@ -42,7 +42,7 @@ export default class BaseService extends Service
 	 */
 	activate_on_server(arg_application, arg_server, arg_app_svc_cfg)
 	{
-		assert( T.isObject(arg_application) && arg_application.is_topology_application, context + ':activate_on_server:bad application instance')
+		assert( T.isObject(arg_application) && arg_application.is_topology_define_application, context + ':activate_on_server:bad application instance')
 		assert( T.isObject(arg_server) && arg_server.is_server, context + ':activate_on_server:bad server instance')
 		
 		let provider = this.get_provider_by_app_server(arg_application.get_name(), arg_server.get_name())

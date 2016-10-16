@@ -23,20 +23,27 @@ export default class ExecutableRouteGetResources extends ExecutableRoute
     /**
      * Create a ExecutableRouteGetResources instance.
 	 * @extends ExecutableRoute
+	 * 
+	 * @param {ServiceProvider} arg_provider - service provider.
+	 * 
 	 * @returns {nothing}
      */
-	constructor()
+	constructor(arg_provider)
 	{
 		super(context)
+
+		// this.provider = arg_provider
 	}
 	
 	
 	
     /**
      * Get a collection resources list.
+	 * 
      * @param {object} res - response instance
      * @param {object} arg_application - Application instance.
      * @param {object} arg_cfg_route - plain object route configuration.
+	 * 
      * @returns {nothing}
      */
 	send_resources_list(res, arg_application, arg_cfg_route)

@@ -1,10 +1,8 @@
 
-import RuntimeStage0Executable from './runtime_stage0_executable'
-import RuntimeStage1Executable from './runtime_stage1_executable'
-import RuntimeStage2Executable from './runtime_stage2_executable'
-import RuntimeStage3Executable from './runtime_stage3_executable'
-import RuntimeStage4Executable from './runtime_stage4_executable'
-import RuntimeStage5Executable from './runtime_stage5_executable'
+import RuntimeStage0Executable from './stage0_create_local_node_executable'
+import RuntimeStage1Executable from './stage1_define_topology_executable'
+import RuntimeStage2Executable from './stage2_load_local_topology_executable'
+import RuntimeStage3Executable from './stage3_start_local_node_executable'
 
 
 
@@ -12,7 +10,5 @@ export {
 	RuntimeStage0Executable,
 	RuntimeStage1Executable,
 	RuntimeStage2Executable,
-	RuntimeStage3Executable,
-	RuntimeStage4Executable,
-	RuntimeStage5Executable
+	RuntimeStage3Executable
 }

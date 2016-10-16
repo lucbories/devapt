@@ -30,11 +30,14 @@ export default class ExecutableRoute extends Executable
 		super(context)
 	}
 	
+	
     
 	/**
      * Prepare an execution with contextual informations.
      * @override
+	 * 
      * @param {object} arg_settings - execution settings.
+	 * 
      * @returns {nothing}
      */
 	prepare(arg_settings)
@@ -56,10 +59,13 @@ export default class ExecutableRoute extends Executable
 	}
     
 	
+
 	/**
      * Execution with contextual informations.
      * @override
+	 * 
      * @param {object} arg_data - Application instance.
+	 * 
      * @returns {object} promise.
      */
 	execute(arg_data)
@@ -68,10 +74,10 @@ export default class ExecutableRoute extends Executable
 		
 		// CHECK APPLICATION
 		assert(T.isObject(arg_data), context + ':bad application object')
-		assert(arg_data.is_topology_application, context + ':bad application instance')
+		assert(arg_data.is_topology_define_application, context + ':bad application instance')
 		const application = arg_data
 		
-		this.info('Execute: add server route for ' + application.$name)
+		this.info('Execute: add server route for ' + application.get_name())
 		
 		
 		// CHECK SERVER
@@ -82,8 +88,9 @@ export default class ExecutableRoute extends Executable
 		
 
 		// LOOP ON ROUTES
+		this.debug('this.store_config.routes', this.store_config.routes)
 		let routes_registering_promises = []
-		assert(T.isArray(this.store_config.routes), context + ':bad server_instance.routes object')
+		assert(T.isArray(this.store_config.routes), context + ':bad store_config.routes object')
 		const cfg_routes = this.store_config.routes
 
 		// PROBLEM WITH NODEJS 0.10
@@ -92,13 +99,14 @@ export default class ExecutableRoute extends Executable
 		for(let cfg_route_index = 0 ; cfg_route_index < cfg_routes.length ; cfg_route_index++)
 		{
 			let cfg_route = cfg_routes[cfg_route_index]
+			this.debug('loop on cfg_route', cfg_route)
 			assert(T.isObject(cfg_route), context + ':bad cfg_route object')
 			assert(T.isString(cfg_route.route), context + ':bad route string')
 			
-			const app_route = T.isString(application.url) ? application.url : ''
+			const app_route = T.isString(application.app_url) ? application.app_url : ''
+			this.debug('app_route', app_route)
 			
 			let route = (cfg_route.is_global && cfg_route.is_global == true) ? cfg_route.route : app_route + cfg_route.route
-			// let route = app_route + cfg_route.route
 			route = (route[0] == '/' ? '' : '/') + route
 			
 			// DEBUG
@@ -116,6 +124,7 @@ export default class ExecutableRoute extends Executable
 			
 			this.debug('route', cfg_route.full_route.toString())
 			this.debug('directory', cfg_route.directory)
+			
 			const route_resistering_promise = this.process_route(server_instance, application, cfg_route, arg_data)
 			routes_registering_promises.push(route_resistering_promise)
             
@@ -124,15 +133,18 @@ export default class ExecutableRoute extends Executable
         
 		return Promise.all(routes_registering_promises)
 	}
+
 	
     
 	/**
      * Process a route registering.
-     * @param {object} arg_server - Server instance.
-     * @param {object} arg_application - Application instance.
+	 * 
+     * @param {Server} arg_server - Server instance.
+     * @param {TopologyDefineApplication} arg_application - Application instance.
      * @param {object} arg_cfg_route - plain object route configuration.
      * @param {object} arg_data - plain object contextual datas.
-     * @returns {object} promise with a boolean resolved value (true:success, false: failure).
+	 * 
+     * @returns {Promise} - Promise(boolean) with (true:success, false: failure).
      */
 	process_route(arg_server, arg_application, arg_cfg_route, arg_data)
 	{
@@ -178,13 +190,16 @@ export default class ExecutableRoute extends Executable
 		return Promise.reject(context + ':process_route:bad server type')
 	}
     
+
 	
 	/**
      * Callback for route handling.
      * @abstract
-     * @param {object} arg_application - Application instance.
+	 * 
+     * @param {TopologyDefineApplication} arg_application - Application instance.
      * @param {object} arg_cfg_route - plain object route configuration.
      * @param {object} arg_data - plain object contextual datas.
+	 * 
      * @param {function} route handler.
      */
 	get_route_cb(/*arg_application, arg_cfg_route, arg_data*/)
@@ -196,9 +211,11 @@ export default class ExecutableRoute extends Executable
 	
 	/**
 	 * Callback for redirect route handling.
-	 * @param {object} arg_application - Application instance.
+	 * 
+	 * @param {TopologyDefineApplication} arg_application - Application instance.
 	 * @param {object} arg_cfg_route - plain object route configuration.
 	 * @param {object} arg_data - plain object contextual datas.
+	 * 
 	 * @param {function} route handler.
 	 */
 	get_route_redirect_cb(arg_application, arg_cfg_route/*, arg_data*/)

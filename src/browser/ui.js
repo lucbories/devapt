@@ -174,6 +174,7 @@ export default class UI
 	 * 
 	 * @param {Immutable.Map} arg_state - registry global state object.
 	 * @param {string} arg_name - component name.
+	 * @param {array} arg_state_path - state path (optional, default=[])
 	 * 
 	 * @returns {Immutable.Map|undefined} - cmponent state object.
 	 */
@@ -247,5 +248,42 @@ export default class UI
 		
 		// console.error('state not found for ' + arg_name)
 		return undefined
+	}
+
+
+
+	/**
+	 * Render a view by its name. Request view content an definition to the server if needed.
+	 * 
+	 * @param {string} arg_view_name - resource view name.
+	 * 
+	 * @returns {Promise} - Promise of a view controller
+	 */
+	render(arg_view_name)
+	{
+		const service = this.runtime.service('rest_api_resources_query_1')
+		if (! service)
+		{
+			return Promise.reject('bad resources service')
+		}
+		
+		return service.get( {collection:'views', 'resource':arg_view_name} )
+		.then(
+			(resource_json)=>{
+				const action = { type:'ADD_JSON_RESOURCE', resource:arg_view_name, json:resource_json }
+				this.store.dispatch(action)
+				return this.create(arg_view_name)
+			}
+		)
+		.then(
+			(resource_instance)=>{
+				return service.render( {collection:'views', 'resource':arg_view_name} )
+			}
+		)
+		.then(
+			(html)=>{
+				//...
+			}
+		)
 	}
 }

@@ -98,8 +98,10 @@ export default class Settingsable extends Errorable
 	
 	/**
 	 * Get a value in settings for given key.
+	 * 
 	 * @param {string|array} arg_name - settings value key.
 	 * @param {any} arg_default - default value.
+	 * 
 	 * @returns {any} - found value or given default value
 	 */
 	get_setting(arg_name, arg_default)
@@ -111,6 +113,29 @@ export default class Settingsable extends Errorable
 			return this.$settings.hasIn(arg_name) ? this.$settings.getIn(arg_name) : (arg_default ? arg_default : null)
 		}
 		return this.$settings.has(arg_name) ? this.$settings.get(arg_name) : (arg_default ? arg_default : null)
+	}
+	
+	
+	/**
+	 * Get a value in settings for given key.
+	 * 
+	 * @param {string|array} arg_name - settings value key.
+	 * @param {any} arg_default - default value.
+	 * 
+	 * @returns {any} - found value or given default value
+	 */
+	get_setting_js(arg_name, arg_default)
+	{
+		assert( T.isFunction(this.$settings.has), context + ':has:bad settings object')
+		
+		let result = undefined
+		if ( T.isArray(arg_name) )
+		{
+			result = this.$settings.hasIn(arg_name) ? this.$settings.getIn(arg_name) : (arg_default ? arg_default : null)
+		} else {
+			result = this.$settings.has(arg_name) ? this.$settings.get(arg_name) : (arg_default ? arg_default : null)
+		}
+		return (result && T.isFunction(result.toJS) ) ? result.toJS() : result
 	}
 	
 	

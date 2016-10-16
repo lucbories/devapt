@@ -36,7 +36,7 @@ export default class RegistryStore extends MapStore
 		
 		this.collections = ['nodes', 'servers', 'applications', 'modules', 'plugins',
 			'resources', 'security', 'views', 'models', 'menubars', 'menus', 'loggers',
-			'services', 'transactions', 'connexions']
+			'services', 'transactions', 'datasources']
 
 		this.register_collection('nodes', 'node')
 		this.register_collection('servers', 'server')
@@ -53,7 +53,7 @@ export default class RegistryStore extends MapStore
 		this.register_resources_collection('loggers', 'logger')
 		this.register_resources_collection('services', 'service')
 		this.register_resources_collection('transactions', 'transaction')
-		this.register_resources_collection('connexions', 'connexion')
+		this.register_resources_collection('datasources', 'datasource')
 	}
 	
 	
@@ -151,11 +151,13 @@ export default class RegistryStore extends MapStore
 		}
 		
 		this['get_' + arg_item_name] = (arg_name) => {
-			return this.root.getIn( [arg_collection_name, arg_name] ).toMap().toJS()
+			const result = this.root.getIn( [arg_collection_name, arg_name] ).toMap()
+			return (result && T.isFunction(result.toJS) ) ? result.toJS() : result
 		}
 		
 		this['get_' + arg_item_name + '_js'] = (arg_name) => {
-			return this.root.getIn( [arg_collection_name, arg_name] ).toJS()
+			const result = this.root.getIn( [arg_collection_name, arg_name] )
+			return (result && T.isFunction(result.toJS) ) ? result.toJS() : result
 		}
 	}
 

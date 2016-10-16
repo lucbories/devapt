@@ -292,10 +292,55 @@ export default class DataAdapterSequelize extends DataAdapter
 
 
 	/**
+	 * Create a new data record.
+	 * 
+	 * @param {string} arg_model_name - topology model name.
+	 * @param {object} arg_record_datas - new record attributes.
+	 * 
+	 * @returns {Promise} - Promise(boolean)
+	 */
+	create_record(arg_model_name, arg_record_datas)
+	{
+		// CHECK ARGS
+		if (! T.isString(arg_model_name))
+		{
+			return Promise.reject('bad model name string')
+		}
+		if (! T.isObject(arg_record_datas))
+		{
+			return Promise.reject('bad record attributes object')
+		}
+
+		// GET SEQUELIZE MODEL
+		const sequelize_model = this.get_sequelize_model(arg_model_name)
+		if (!sequelize_model)
+		{
+			return Promise.reject('bad sequelize model')
+		}
+
+		// DEFINE OPERATION OPTIONS
+		const options = {
+			isNewRecord:true,
+			logging:false,
+			benchmark:false
+		}
+
+		// DO OPERATION
+		return sequelize_model.create(arg_record_datas, options)
+		.then(
+			(model_instance)=>{
+				return model_instance ? true : false
+			}
+		)
+	}
+
+
+
+	/**
 	 * Delete an existing data record.
 	 * 
 	 * @param {string} arg_model_name - topology model name.
-	 * @param {string} arg_record_id - new record unique id (optional).
+	 * @param {string} arg_record_id - new record unique id.
 	 * 
 	 * @returns {Promise} - Promise(boolean)
 	 */
@@ -362,13 +407,64 @@ export default class DataAdapterSequelize extends DataAdapter
 	 * 
 	 * @param {string} arg_model_name - topology model name.
 	 * @param {object} arg_record_datas - new record attributes.
-	 * @param {string} arg_record_id - new record unique id (optional).
 	 * 
 	 * @returns {Promise} - Promise(boolean)
 	 */
-	update_record(arg_model_name, arg_record_datas, arg_record_id)
+	update_record(arg_model_name, arg_record_datas)
 	{
-		return Promise.resolve(false)
+		// CHECK ARGS
+		if (! T.isString(arg_model_name))
+		{
+			return Promise.reject('bad model name string')
+		}
+		
+		// GET TOPOLOGY MODEL
+		const topology_model = this.get_model_schema(arg_model_name)
+		if (!topology_model)
+		{
+			return Promise.reject('bad topology model')
+		}
+
+		// GET PRIMARY KEY FIELD NAME
+		const pk_name = topology_model.get_id_field_name()
+		if (!pk_name)
+		{
+			return Promise.reject('bad pk name')
+		}
+
+		// CHECK ARGS
+		if (! T.isObject(arg_record_datas))
+		{
+			return Promise.reject('bad record attributes object')
+		}
+		if ( ! (pk_name in arg_record_datas) )
+		{
+			return Promise.reject('id not found in record attributes')
+		}
+
+		// GET SEQUELIZE MODEL
+		const sequelize_model = this.get_sequelize_model(arg_model_name)
+		if (!sequelize_model)
+		{
+			return Promise.reject('bad sequelize model')
+		}
+
+		// DEFINE OPERATION OPTIONS
+		const options = {
+			where:{},
+			limit:1,
+			logging:false,
+			benchmark:false
+		}
+		options.where[pk_name] = arg_record_datas[pk_name]
+
+		// DO OPERATION
+		return sequelize_model.update(arg_record_datas, options)
+		.then(
+			(result)=>{
+				return result[0] == 1
+			}
+		)
 	}
 
 
@@ -383,7 +479,53 @@ export default class DataAdapterSequelize extends DataAdapter
 	 */
 	has_record(arg_model_name, arg_record_id)
 	{
-		return Promise.resolve(false)
+		// CHECK ARGS
+		if (! T.isString(arg_model_name))
+		{
+			return Promise.reject('bad model name string')
+		}
+		if ( ! (T.isString(arg_record_id) || T.isNumber(arg_record_id) ) )
+		{
+			return Promise.reject('bad record id')
+		}
+		
+		// GET TOPOLOGY MODEL
+		const topology_model = this.get_model_schema(arg_model_name)
+		if (!topology_model)
+		{
+			return Promise.reject('bad topology model')
+		}
+
+		// GET PRIMARY KEY FIELD NAME
+		const pk_name = topology_model.get_id_field_name()
+		if (!pk_name)
+		{
+			return Promise.reject('bad pk name')
+		}
+
+		// GET SEQUELIZE MODEL
+		const sequelize_model = this.get_sequelize_model(arg_model_name)
+		if (!sequelize_model)
+		{
+			return Promise.reject('bad sequelize model')
+		}
+
+		// DEFINE OPERATION OPTIONS
+		const options = {
+			where:{},
+			distinct:true,
+			logging:false,
+			benchmark:false
+		}
+		options.where[pk_name] = arg_record_id
+
+		// DO OPERATION
+		return sequelize_model.count(options)
+		.then(
+			(result)=>{
+				return result == 1
+			}
+		)
 	}
 
 
@@ -394,11 +536,53 @@ export default class DataAdapterSequelize extends DataAdapter
 	 * @param {string} arg_model_name - topology model name.
 	 * @param {string} arg_record_id - new record unique id.
 	 * 
-	 * @returns {Promise} - Promise(DataRecord)
+	 * @returns {Promise} - Promise(object)
 	 */
 	find_one_record(arg_model_name, arg_record_id)
 	{
-		return Promise.resolve(undefined)
+		// CHECK ARGS
+		if (! T.isString(arg_model_name))
+		{
+			return Promise.reject('bad model name string')
+		}
+		if ( ! (T.isString(arg_record_id) || T.isNumber(arg_record_id) ) )
+		{
+			return Promise.reject('bad record id')
+		}
+		
+		// GET TOPOLOGY MODEL
+		const topology_model = this.get_model_schema(arg_model_name)
+		if (!topology_model)
+		{
+			return Promise.reject('bad topology model')
+		}
+
+		// GET PRIMARY KEY FIELD NAME
+		const pk_name = topology_model.get_id_field_name()
+		if (!pk_name)
+		{
+			return Promise.reject('bad pk name')
+		}
+
+		// GET SEQUELIZE MODEL
+		const sequelize_model = this.get_sequelize_model(arg_model_name)
+		if (!sequelize_model)
+		{
+			return Promise.reject('bad sequelize model')
+		}
+
+		// DEFINE OPERATION OPTIONS
+		const options = {
+			where:{},
+			attributes:topology_model.get_fields_names(),
+			raw:true,
+			logging:false,
+			benchmark:false
+		}
+		options.where[pk_name] = arg_record_id
+
+		// DO OPERATION
+		return sequelize_model.findOne(options)
 	}
 
 

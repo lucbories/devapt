@@ -39,6 +39,7 @@ export default class SocketIOServiceProvider extends ServiceProvider
 		this.is_socketio_service_provider = true
 		
 		this.subscribers_sockets = []
+		this.runtime = runtime
 		
 		// TRACE
 		// this.enable_trace()
@@ -101,7 +102,7 @@ export default class SocketIOServiceProvider extends ServiceProvider
 			'request_settings':
 				() => {
 					const svc_settings = runtime.get_registry().root.getIn(['services', svc_name, 'browser'])
-					const svc_settings_js = svc_settings ? svc_settings.toJS() : {}
+					const svc_settings_js = svc_settings ? svc_settings.toJS() : {} // TODO SECURITY: filter outputs
 					arg_socket.emit('reply_settings', { svc: svc_name, settings:svc_settings_js })
 				},
 			
@@ -161,6 +162,10 @@ export default class SocketIOServiceProvider extends ServiceProvider
 			'get':
 				(data) => {
 					self.on_method('get', arg_socket, data)
+				},
+			'render':
+				(data) => {
+					self.on_method('render', arg_socket, data)
 				},
 			'list':
 				(data) => {

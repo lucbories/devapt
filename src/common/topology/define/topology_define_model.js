@@ -3,23 +3,25 @@ import T from 'typr'
 import assert from 'assert'
 
 // COMMON IMPORTS
-import TopologyRuntimeItem from './topology_runtime_item'
+import TopologyDefineItem from './topology_define_item'
 
 
-let context = 'common/topology/runtime/topology_runtime_model_schema'
+let context = 'common/topology/define/topology_define_model'
 
 
 
 /**
  * @file Model class: describe a Model topology item.
  * 
- * FORMAT:
+ * FORMAT: {
+ * 		
  *			{
  *				"single":"user",
  *				"plural":"users",
  *				
  *				"datasource": "cx_auth",
  *				"container": "users",
+ * 				"cache": { "ttl": 500 },
  *
  *				"security":{
  *					"role_read": "ROLE_AUTH_USERS_READ",
@@ -88,11 +90,30 @@ let context = 'common/topology/runtime/topology_runtime_model_schema'
  * 
  * @license Apache-2.0
  */
-export default class TopologyRuntimeModelSchema extends TopologyRuntimeItem
+export default class TopologyDefineModel extends TopologyDefineItem
 {
 	/**
-	 * Create a TopologyRuntimeModelSchema instance.
-	 * @extends TopologyRuntimeItem
+	 * Create a TopologyDefineModel instance.
+	 * @extends TopologyDefineItem
+	 * 
+	 * SETTINGS FORMAT:
+	 * 	"modelss":{
+	 * 		"modelA":{
+	 *			"plural":"users",
+	 *				
+	 *			"datasource": "cx_auth",
+	 *			"container": "users",
+	 * 			"cache": { "ttl": 500 },
+	 *
+	 *			"security":{...},
+	 * 			"triggers":{...},
+	 * 			"associations": {...},
+	 * 			"fields":{...}
+	 * 		},
+	 * 		"modelB":{
+	 *			...
+	 * 		}
+	 * 	}
 	 * 
 	 * @param {string} arg_name - instance name.
 	 * @param {object} arg_settings - instance settings map.
@@ -103,15 +124,21 @@ export default class TopologyRuntimeModelSchema extends TopologyRuntimeItem
 	constructor(arg_name, arg_settings, arg_log_context)
 	{
 		const log_context = arg_log_context ? arg_log_context : context
-		super(arg_name, arg_settings, 'Model', log_context)
+		super(arg_name, arg_settings, 'TopologyDefineModel', log_context)
 		
-		this.is_topology_model = true
+		this.is_topology_define_model = true
 
 		this.topology_type = 'models'
 
+		this.declare_collection('fields', 'field',  TopologyDefineDatasource)
+		
+		this.info('Model is created')
+
 		// SCHEMA
-		this._id_field_name = undefined
-		this._fields = {}
+		// this._id_field_name = undefined
+		// this._fields = {}
+		// this._fields_names = undefined
+		// this._fields_defaults = undefined
 	}
 	
 
@@ -127,6 +154,20 @@ export default class TopologyRuntimeModelSchema extends TopologyRuntimeItem
 	
 		// const schema_format = ""
 	}
+	
+
+
+	/**
+	 * Test given attributes against schema rules.
+	 * 
+	 * @param {object} - fields values to check.
+	 * 
+	 * @returns {Promise} - Promise of { is_valid:boolean, errors:{} }
+	 */
+	validate(arg_attributes) // TODO check and load collection schema
+	{
+		return { is_valid:true, errors:{} }
+	}
 
 
 
@@ -137,7 +178,82 @@ export default class TopologyRuntimeModelSchema extends TopologyRuntimeItem
 	 */
 	get_id_field_name()
 	{
-		return this._id_field_name ||this.get_setting('pk_field', undefined)
+		return this._id_field_name || this.get_setting('pk_field', undefined)
+	}
+
+
+
+	/**
+	 * Get single name.
+	 * 
+	 * @returns {string}
+	 */
+	get_single_name()
+	{
+		return this.get_setting('single')
+	}
+
+
+
+	/**
+	 * Get plural name.
+	 * 
+	 * @returns {string}
+	 */
+	get_plural_name()
+	{
+		return this.get_setting('plural')
+	}
+
+
+
+	/**
+	 * Get cache TTL.
+	 * 
+	 * @returns {Number} - default 3000ms.
+	 */
+	get_ttl()
+	{
+		return this.get_setting(['cache', 'ttl'], 3000)
+	}
+
+
+
+	/**
+	 * Get record fields names.
+	 * 
+	 * @returns {array} - array of all schema fields names strings.
+	 */
+	get_fields_names()
+	{
+		if (! this._fields_names)
+		{
+			this._fields_names = Object.keys( this.get_setting_js('fields', new Map()) )
+		}
+		return this._fields_names
+	}
+
+
+
+	/**
+	 * Get record fields names.
+	 * 
+	 * @returns {array} - array of all schema fields names strings.
+	 */
+	get_defaults()
+	{
+		if (! this._fields_defaults)
+		{
+			this._fields_defaults = {}
+			const fields_names = this.get_fields_names()
+			fields_names.forEach(
+				(field_name)=>{
+					const field_default = this.get_setting(['fields', field_name, 'default'], undefined)
+					this._fields_defaults[field_name] = field_default
+				}
+			)
+		}
+		return this._fields_defaults
 	}
 }
 

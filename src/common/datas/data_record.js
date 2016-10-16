@@ -61,8 +61,17 @@ export default class DataRecord
 		this.is_data_record = true
 
 		this._collection = arg_data_collection
+
+		this._is_new = false
 		this._id = arg_id
-		this._attributes = (arg_attributes.has && arg_attributes.get && arg_attributes.getIn) ? arg_attributes : new Map(arg_attributes)
+		this._id_field_name = this._collection.get_schema().get_id_field_name()
+		this._attributes = new Map()
+		this.set_attributes(arg_attributes)
+		if (this._id)
+		{
+			this.set(this._id_field_name, this._id)
+		}
+
 		this._has_dirty_attributes = false
 		this._dirty_attributes = []
 		this._previous_attributes = this._attributes
@@ -119,7 +128,7 @@ export default class DataRecord
 	 */
 	get_collection()
 	{
-		return this._model.get_collection()
+		return this._collection
 	}
 
 
@@ -161,6 +170,18 @@ export default class DataRecord
 
 
 	/**
+	 * Get record fields names.
+	 * 
+	 * @returns {array} - array of all schema fields names strings.
+	 */
+	get_fields_names()
+	{
+		return this.get_collection().get_schema().get_fields_names()
+	}
+
+
+
+	/**
 	 * Get record attributes.
 	 * 
 	 * @returns {Immutable.Map}
@@ -171,30 +192,76 @@ export default class DataRecord
 	}
 
 
+	/**
+	 * Get record attributes.
+	 * 
+	 * @returns {object}
+	 */
+	get_attributes_object()
+	{
+		return this._attributes.toJS()
+	}
+
+
+
+	/**
+	 * Set record attributes and normalize with schema.
+	 * 
+	 * @param {object|Immutable.Map} arg_attributes - attributes map.
+	 * 
+	 * @returns {nothing}
+	 */
+	set_attributes(arg_attributes)
+	{
+		this._previous_attributes = this._attributes
+		this._attributes = (arg_attributes.has && arg_attributes.get && arg_attributes.getIn) ? arg_attributes : new Map(arg_attributes)
+		// console.log('record._attributes 1', this._attributes)
+
+		const fields_names = this.get_fields_names()
+		const defaults_values = this.get_collection().get_schema().get_defaults()
+
+		fields_names.forEach(
+			(field_name)=>{
+				if(this._attributes.has(field_name) || this._id_field_name == field_name)
+				{
+					return
+				}
+				
+				this._attributes.set(field_name, defaults_values[field_name])
+			}
+		)
+		// console.log('record._attributes 2', this._attributes)
+
+		this._has_dirty_attributes = true
+		this._dirty_attributes = Object.keys( this._attributes.toJS() )
+	}
+	
+
+
 
 	/**
 	 * Set an attribute value.
 	 * 
-	 * @param {string} arg_attribute_name - attribute name.
+	 * @param {string|array} arg_attribute_path - attribute name or path.
 	 * @param {any} arg_attribute_value - attribute value.
 	 * 
 	 * @returns {boolean}
 	 */
-	set(arg_attribute_name, arg_attribute_value)
+	set(arg_attribute_path, arg_attribute_value)
 	{
-		const check = this._check_attribute(arg_attribute_name, arg_attribute_value)
+		const check = this._check_attribute(arg_attribute_path, arg_attribute_value)
 		if (!check)
 		{
 			return false
 		}
 
 		this._has_dirty_attributes = true
-		if ( this._dirty_attributes.indexOf(arg_attribute_name) == -1 )
+		if ( this._dirty_attributes.indexOf(arg_attribute_path) == -1 )
 		{
-			this._dirty_attributes.push(arg_attribute_name)
+			this._dirty_attributes.push(arg_attribute_path)
 		}
-		this._attributes = this._attributes.set(arg_attribute_name, arg_attribute_value)
-		this._emit('changed', {arg_attribute_name:arg_attribute_value})
+		this._attributes = this._attributes.set(arg_attribute_path, arg_attribute_value)
+		this._emit('changed', {path:arg_attribute_path, value:arg_attribute_value})
 
 		return true
 	}
@@ -204,13 +271,13 @@ export default class DataRecord
 	/**
 	 * Get an attribute value.
 	 * 
-	 * @param {string} arg_attribute_name - attribute name.
+	 * @param {string|array} arg_attribute_path - attribute name or path.
 	 * 
 	 * @returns {any|undefined}
 	 */
-	get(arg_attribute_name)
+	get(arg_attribute_path)
 	{
-		return this._attributes.get(arg_attribute_name, undefined)
+		return this._attributes.get(arg_attribute_path, undefined)
 	}
 
 
@@ -222,15 +289,26 @@ export default class DataRecord
 	 */
 	save()
 	{
-		return this._model.get_collection().save(this).then(
+		let promise = undefined
+		if (this._is_new)
+		{
+			promise = this.get_collection().create_record(this)
+		} else {
+			promise = this.get_collection().update_record(this)
+		}
+		
+		return promise.then(
 			(success)=>{
 				if (success)
 				{
+					this._is_new = false
 					this._emit('saved')
 					this._has_dirty_attributes = false
 					this._dirty_attributes = []
 					this._previous_attributes = this._attributes
 				}
+				console.log(context + ':save:success', success)
+				return success
 			}
 		)
 	}
@@ -260,7 +338,7 @@ export default class DataRecord
 	 */
 	remove()
 	{
-		return this._model.get_collection().remove(this).then(
+		return this.get_collection().delete_record(this).then(
 			(success)=>{
 				if (success)
 				{
@@ -276,13 +354,25 @@ export default class DataRecord
 
 
 	/**
+	 * Set record as removed.
+	 * 
+	 * @return {nothing}
+	 */
+	set_removed()
+	{
+		// TODO
+	}
+
+
+
+	/**
 	 * Reload record from collection store.
 	 * 
 	 * @returns {Promise} - promise of success (boolean)
 	 */
 	reload()
 	{
-		return this._model.get_collection().reload(this).then(
+		return this.get_collection().reload_record(this).then(
 			(success)=>{
 				if (success)
 				{
@@ -324,7 +414,7 @@ export default class DataRecord
 
 
 	/**
-	 * Fill all attributes values with given dats.
+	 * Fill all attributes values with given datas.
 	 * 
 	 * @param {arg_datas} - new attribute values.
 	 * 

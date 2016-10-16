@@ -91,7 +91,7 @@ export default class Server extends DistributedInstance
 	 */
 	use_service_on_loading(arg_application, arg_service, arg_app_svc_cfg = {})
 	{
-		assert( T.isObject(arg_application) && arg_application.is_topology_application, context + ':bad application object')
+		assert( T.isObject(arg_application) && arg_application.is_topology_define_application, context + ':bad application object')
 		assert( T.isObject(arg_service) && arg_service.is_service, context + ':bad service object')
 		assert( T.isObject(arg_app_svc_cfg) , context + ':bad application service config object')
 

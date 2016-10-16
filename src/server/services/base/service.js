@@ -49,26 +49,22 @@ export default class Service extends Instance
 	 * @param {string} arg_log_context - trace context string.
 	 * @returns {nothing}
 	 */
-	constructor(arg_svc_name, arg_locale_exec, arg_remote_exec, arg_log_context)
+	constructor(arg_svc_name, arg_settings, arg_log_context)
 	{
 		assert( runtime.get_registry().has_collection('services'), context + ':not found store.services')
-		let settings = runtime.get_registry().root.hasIn(['services', arg_svc_name]) ? runtime.get_registry().root.getIn(['services', arg_svc_name]) : {}
+		// let settings = runtime.get_registry().root.hasIn(['services', arg_svc_name]) ? runtime.get_registry().root.getIn(['services', arg_svc_name]) : {}
 		
-		super('services', 'Service', arg_svc_name, settings, arg_log_context ? arg_log_context : context)
+		super('services', 'Service', arg_svc_name, arg_settings, arg_log_context ? arg_log_context : context)
 		
 		this.status = STATUS_UNKNOW
-		
-		// CHECK EXECUTABLES
-		// assert( T.isObject(arg_locale_exec) && arg_locale_exec.is_executable, context + ':bad locale executable')
-		// assert( T.isObject(arg_remote_exec) && arg_remote_exec.is_executable, context + ':bad remote executable')
 		
 		this.is_service = true
 		
 		this.status = Service.STATUS_CREATED
 		// this.registered_nodes = new Collection()
 		
-		this.locale_exec = arg_locale_exec
-		this.remote_exec = arg_remote_exec
+		this.locale_exec = this.get_setting('locale_exec', undefined)
+		this.remote_exec = this.get_setting('remote_exec', undefined)
 		
 		this.providers = new Collection()
 	}
@@ -126,7 +122,7 @@ export default class Service extends Instance
 	activate(arg_application, arg_app_svc_cfg)
 	{
 		// console.log(arg_app_svc_cfg, context + ':arg_app_svc_cfg')
-		assert( T.isObject(arg_application) && arg_application.is_topology_application , context + ':bad application object')
+		assert( T.isObject(arg_application) && arg_application.is_topology_define_application , context + ':bad application object')
 		assert( T.isObject(arg_app_svc_cfg) , context + ':bad app svc settings object')
 		assert( T.isArray(arg_app_svc_cfg.servers), context + ':bad app svc servers array')
 		// this.info('servers ' + arg_app_svc_cfg.servers.length)
@@ -162,7 +158,7 @@ export default class Service extends Instance
 	 */
 	activate_on_server(arg_application, arg_server, arg_app_svc_cfg)
 	{
-		assert( T.isObject(arg_application) && arg_application.is_topology_application , context + ':bad application object')
+		assert( T.isObject(arg_application) && arg_application.is_topology_define_application , context + ':bad application object')
 		assert( T.isObject(arg_server) && arg_server.is_server , context + ':bad server object')
 		this.info('activate_on_server [' + arg_server.get_name() + '] for application [' + arg_application.get_name() + ']')
 		

@@ -78,7 +78,7 @@ export default class BusNodeFeature extends NodeFeature
 		const bus_type = this.node.get_setting(['master', bus_name, 'type'], default_bus_type)
 		const bus_host = this.node.get_setting(['master', bus_name, 'host'], undefined)
 		const bus_port = this.node.get_setting(['master', bus_name, 'port'], undefined)
-		// console.log(context + ':load:master settings %o', this.node.get_setting(['master']).toJS() )
+		// console.log(context + ':load:master settings %o', this.node.get_setting_js(['master']) )
 
 		// CREATE MESSAGES BUS FOR INTRA NODES COMMUNICATION
 		const bus_settings = {}
@@ -90,7 +90,7 @@ export default class BusNodeFeature extends NodeFeature
 		{
 			if (bus_type != 'local')
 			{
-				const gw_settings = this.node.get_setting(['master', bus_name]).toJS()
+				const gw_settings = this.node.get_setting_js(['master', bus_name])
 				const gw_name = this.get_bus_unique_name() + '_gateway'
 				
 				// console.log(context + ':load:bus_type != local and gw_settings=%o', gw_settings)
@@ -112,7 +112,7 @@ export default class BusNodeFeature extends NodeFeature
 						if (! self.node.is_master)
 						{
 							self.bus_gateway.add_remote_target(self.node.master_name)
-							self.node.remote_nodes[self.node.master_name] = self.node.get_setting(['master']).toJS()
+							self.node.remote_nodes[self.node.master_name] = self.node.get_setting_js(['master'])
 						}
 					}
 				)

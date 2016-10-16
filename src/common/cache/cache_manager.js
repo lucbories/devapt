@@ -59,7 +59,7 @@ export default class CacheManager
 	{
 		if (this.cache_adapters.length == 0)
 		{
-			return Promise.resolved(arg_default)
+			return Promise.resolve(arg_default)
 		}
 		if (this.cache_adapters.length == 1)
 		{
@@ -89,7 +89,7 @@ export default class CacheManager
 	{
 		if (this.cache_adapters.length == 0)
 		{
-			return Promise.resolved([arg_default])
+			return Promise.resolve([arg_default])
 		}
 		if (this.cache_adapters.length == 1)
 		{
@@ -99,7 +99,7 @@ export default class CacheManager
 		let promises = []
 		this.cache_adapters.forEach(
 			(adapter)=>{
-				return adapter.mget(arg_keys, arg_default)
+				promises.push( adapter.mget(arg_keys, arg_default) )
 			}
 		)
 		return Promise.race(promises)
@@ -118,7 +118,7 @@ export default class CacheManager
 	{
 		if (this.cache_adapters.length == 0)
 		{
-			return Promise.resolved(false)
+			return Promise.resolve(false)
 		}
 		if (this.cache_adapters.length == 1)
 		{
@@ -128,7 +128,7 @@ export default class CacheManager
 		let promises = []
 		this.cache_adapters.forEach(
 			(adapter)=>{
-				return adapter.has(arg_key)
+				promises.push( adapter.has(arg_key) )
 			}
 		)
 		return Promise.race(promises)
@@ -149,7 +149,7 @@ export default class CacheManager
 	{
 		if (this.cache_adapters.length == 0)
 		{
-			return Promise.resolved()
+			return Promise.resolve()
 		}
 		if (this.cache_adapters.length == 1)
 		{
@@ -159,7 +159,7 @@ export default class CacheManager
 		let promises = []
 		this.cache_adapters.forEach(
 			(adapter)=>{
-				return adapter.set(arg_key, arg_value, arg_ttl)
+				promises.push( adapter.set(arg_key, arg_value, arg_ttl) )
 			}
 		)
 		return Promise.all(promises)
@@ -179,7 +179,7 @@ export default class CacheManager
 	{
 		if (this.cache_adapters.length == 0)
 		{
-			return Promise.resolved()
+			return Promise.resolve()
 		}
 		if (this.cache_adapters.length == 1)
 		{
@@ -189,7 +189,7 @@ export default class CacheManager
 		let promises = []
 		this.cache_adapters.forEach(
 			(adapter)=>{
-				return adapter.set_ttl(arg_key, arg_ttl)
+				promises.push( adapter.set_ttl(arg_key, arg_ttl) )
 			}
 		)
 		return Promise.all(promises)
@@ -208,7 +208,7 @@ export default class CacheManager
 	{
 		if (this.cache_adapters.length == 0)
 		{
-			return Promise.resolved()
+			return Promise.resolve()
 		}
 		if (this.cache_adapters.length == 1)
 		{
@@ -218,7 +218,7 @@ export default class CacheManager
 		let promises = []
 		this.cache_adapters.forEach(
 			(adapter)=>{
-				return adapter.get_ttl(arg_key)
+				promises.push( adapter.get_ttl(arg_key) )
 			}
 		)
 		return Promise.race(promises)
@@ -235,7 +235,7 @@ export default class CacheManager
 	{
 		if (this.cache_adapters.length == 0)
 		{
-			return Promise.resolved([])
+			return Promise.resolve([])
 		}
 		if (this.cache_adapters.length == 1)
 		{
@@ -244,7 +244,7 @@ export default class CacheManager
 		let promises = []
 		this.cache_adapters.forEach(
 			(adapter)=>{
-				return adapter.get_keys()
+				promises.push( adapter.get_keys() )
 			}
 		)
 		return Promise.race(promises)
@@ -263,7 +263,7 @@ export default class CacheManager
 	{
 		if (this.cache_adapters.length == 0)
 		{
-			return Promise.resolved()
+			return Promise.resolve()
 		}
 		if (this.cache_adapters.length == 1)
 		{
@@ -273,7 +273,7 @@ export default class CacheManager
 		let promises = []
 		this.cache_adapters.forEach(
 			(adapter)=>{
-				return adapter.remove(arg_keys)
+				promises.push( adapter.remove(arg_keys) )
 			}
 		)
 		return Promise.all(promises)
@@ -290,7 +290,7 @@ export default class CacheManager
 	{
 		if (this.cache_adapters.length == 0)
 		{
-			return Promise.resolved()
+			return Promise.resolve()
 		}
 		if (this.cache_adapters.length == 1)
 		{
@@ -300,7 +300,7 @@ export default class CacheManager
 		let promises = []
 		this.cache_adapters.forEach(
 			(adapter)=>{
-				return adapter.flush()
+				promises.push( adapter.flush() )
 			}
 		)
 		return Promise.all(promises)
@@ -317,7 +317,7 @@ export default class CacheManager
 	{
 		if (this.cache_adapters.length == 0)
 		{
-			return Promise.resolved()
+			return Promise.resolve()
 		}
 		if (this.cache_adapters.length == 1)
 		{
@@ -327,7 +327,7 @@ export default class CacheManager
 		let promises = []
 		this.cache_adapters.forEach(
 			(adapter)=>{
-				return adapter.close()
+				promises.push( adapter.close() )
 			}
 		)
 		return Promise.all(promises)

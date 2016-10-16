@@ -20,8 +20,15 @@ export default class Render extends Loggable
 {
     /**
      * Create a rendering wrapper class.
+	 * 
+	 * @param {string} arg_assets_img - application service name to provide image assets.
+	 * @param {string} arg_assets_html - application service name to provide html assets.
+	 * @param {string} arg_assets_scripts - application service name to provide script assets.
+	 * @param {string} arg_assets_styles - application service name to provide style assets.
+	 * 
+	 * @returns {nothing}
      */
-	constructor(arg_assets_img, arg_assets_html, arg_assets_scripts, arg_request)
+	constructor(arg_assets_img, arg_assets_html, arg_assets_scripts, arg_assets_styles)
 	{
 		super(context)
 
@@ -29,14 +36,12 @@ export default class Render extends Loggable
 
 		this.stack = new RenderStack()
 		
-		this.request = arg_request ? arg_request : undefined
-		
 		this.rendering_manager = runtime.get_plugins_factory().get_rendering_manager()
 		
 		this.assets_images_service_name = arg_assets_img ? arg_assets_img : null
 		this.assets_html_service_name = arg_assets_html ? arg_assets_html : null
 		this.assets_scripts_service_name = arg_assets_scripts ? arg_assets_scripts : null
-		this.assets_styles_service_name = arg_assets_scripts ? arg_assets_scripts : null
+		this.assets_styles_service_name = arg_assets_styles ? arg_assets_styles : null
 
 		this.assets_images_service_consumer = null
 		this.assets_html_service_consumer = null
@@ -52,14 +57,16 @@ export default class Render extends Loggable
     
     /**
      * Get an url to server the given image asset.
+	 * 
      * @param {string} arg_url - image asset relative url.
+	 * 
      * @returns {string} absolute image asset url.
      */
-	get_url_with_credentials(arg_url, arg_request)
+	get_url_with_credentials(arg_url)
 	{
 		this.enter_group('get_url_with_credentials')
 
-		const url = runtime.context.get_url_with_credentials(arg_url, arg_request)
+		const url = runtime.context.get_url_with_credentials(arg_url)
 
 		this.leave_group('get_url_with_credentials')
 		return url
@@ -136,9 +143,11 @@ export default class Render extends Loggable
     
     /**
      * Get an url to server the given image asset.
+	 * 
      * @param {object} arg_consumer - service consumer.
      * @param {string} arg_svc_name - service name or null.
      * @param {string} arg_url - image asset relative url.
+	 * 
      * @returns {string} absolute image asset url.
      */
 	get_assets_url(arg_consumer, arg_svc_name, arg_url)
@@ -171,7 +180,7 @@ export default class Render extends Loggable
 		const strategy = null
 		const provider = service.get_a_provider(strategy)
 		let url = this.assets_scripts_service_consumer.get_url_for(provider, { url: arg_url})
-		url = runtime.context.get_url_with_credentials(url, this.request)
+		url = runtime.context.get_url_with_credentials(url)
 
 		this.leave_group('get_assets_url')
 		return url

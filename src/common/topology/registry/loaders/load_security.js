@@ -7,26 +7,26 @@ import path from 'path'
 import parser from '../../../utils/parser/parser'
 
 // SERVER IMPORTS
-import load_config_security_authorization from './load_config_security_authorization'
-import load_config_security_authentication from './load_config_security_authentication'
+import load_security_authorization from './load_security_authorization'
+import load_security_authentication from './load_security_authentication'
 
 
-const context = 'server/store/config/loaders/load_config_security'
+const context = 'common/topology/registry/loaders/load_security'
 
 
 
 let error_msg_bad_config = context + ':bad config'
 let error_msg_bad_is_readonly = context + ':security.is_readonly should be a boolean'
-let error_msg_bad_connexions = context + ':security.connexions should be an array'
+let error_msg_bad_datasources = context + ':security.datasources should be an array'
 let error_msg_bad_authentication = context + ':security.authentication should be an object'
 let error_msg_bad_authorization = context + ':security.authorization should be an object'
-let error_msg_bad_connexion = context + ':security.connexions.* should be a string'
-let error_msg_bad_cx_config = context + ':security.connexions.*.* should be a valid connexion'
+let error_msg_bad_datasource = context + ':security.datasources.* should be a string'
+let error_msg_bad_cx_config = context + ':security.datasources.*.* should be a valid datasource'
 
 // const apps_dir = '../../../../apps/'
 	
 
-function load_config_security(logs, arg_security_config, arg_base_dir)
+function load_security(logs, arg_security_config, arg_base_dir)
 {
 	// console.log('LOADING CONFIG SECURITY', arg_security_config)
 	logs.info(context, 'loading config.security')
@@ -36,21 +36,21 @@ function load_config_security(logs, arg_security_config, arg_base_dir)
 		// CHECK SECURITY
 		assert(T.isObject(arg_security_config), error_msg_bad_config)
 		assert(T.isBoolean(arg_security_config.is_readonly), error_msg_bad_is_readonly)
-		assert(T.isArray(arg_security_config.connexions), error_msg_bad_connexions)
+		assert(T.isArray(arg_security_config.datasources), error_msg_bad_datasources)
 		assert(T.isObject(arg_security_config.authentication), error_msg_bad_authentication)
 		assert(T.isObject(arg_security_config.authorization), error_msg_bad_authorization)
 
-		// LOAD CONNEXIONS
+		// LOAD DATASOURCES
 		arg_security_config.files = {}
 		arg_security_config.resources_by_name = {}
 		arg_security_config.resources_by_file = {}
-		arg_security_config.connexions.forEach(
+		arg_security_config.datasources.forEach(
 			(file_name)=> {
-				// CHECK CONNEXIONS
-				assert(T.isString(file_name), error_msg_bad_connexion)
+				// CHECK DATASOURCES
+				assert(T.isString(file_name), error_msg_bad_datasource)
 				
 				let file_path_name = path.join(arg_base_dir, 'resources', file_name)
-				// console.log(file_path_name, 'connexions file_path_name')
+				// console.log(file_path_name, 'datasources file_path_name')
 				
 				let config = parser.read(file_path_name, 'utf8')
 				// console.log(config, 'config')
@@ -63,7 +63,7 @@ function load_config_security(logs, arg_security_config, arg_base_dir)
 					(res_name) => {
 						let res_obj = config[res_name]
 						res_obj.name = res_name
-						res_obj.type = 'connexions'
+						res_obj.type = 'datasources'
 						
 						// CHECK CONNEXION
 						assert(T.isString(res_obj.engine),        error_msg_bad_cx_config + '(engine) for file ' + file_name)
@@ -82,10 +82,10 @@ function load_config_security(logs, arg_security_config, arg_base_dir)
 		)
 		
 		// CHECK AUTHENTICATION
-		arg_security_config.authentication = load_config_security_authentication(logs, arg_security_config.authentication, arg_base_dir)
+		arg_security_config.authentication = load_security_authentication(logs, arg_security_config.authentication, arg_base_dir)
 
 		// CHECK AUTHORIZATION
-		arg_security_config.authorization = load_config_security_authorization(logs, arg_security_config.authorization, arg_base_dir)
+		arg_security_config.authorization = load_security_authorization(logs, arg_security_config.authorization, arg_base_dir)
 	}
 	catch(e)
 	{
@@ -95,4 +95,4 @@ function load_config_security(logs, arg_security_config, arg_base_dir)
 	return arg_security_config
 }
 
-export default load_config_security
+export default load_security

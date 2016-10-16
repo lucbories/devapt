@@ -372,11 +372,11 @@ export default class Node extends NodeMessaging
 		this.features.forEach(
 			(feature) => {
 				self.info('Starting feature [' + feature.get_name() + ']')
-				console.info(context + ':starting feature [' + feature.get_name() + ']')
+				// console.info(context + ':starting feature [' + feature.get_name() + ']')
 				
 				feature.start()
 
-				console.info('Feature is started [' + feature.get_name() + ']')
+				// console.info('Feature is started [' + feature.get_name() + ']')
 				self.info('Feature is started [' + feature.get_name() + ']')
 			}
 		)
