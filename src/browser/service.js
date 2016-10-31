@@ -236,7 +236,7 @@ export default class Service
 		// this.separate_level_1()
 		// this.enter_group('load')
 		
-		// console.log(context + ':load: name=' + this.$name + ' settings=', arg_settings)
+		console.log(context + ':load: name=' + this.$name + ' settings=', arg_settings)
 
 		let ops = DEFAULT_OPS
 		
@@ -269,7 +269,7 @@ export default class Service
 				}
 
 				self[op_name] = (method_cfg) => {
-					// console.log(context + ':op:%s:%s:cfg=', this.get_name(), op_name, method_cfg)
+					console.log(context + ':op:%s:%s:cfg=', this.get_name(), op_name, method_cfg)
 
 					// DEFINE REQUEST PAYLOAD
 					const payload = {
@@ -317,12 +317,13 @@ export default class Service
 				// HAS HISTORY
 				if (timeline_settings && (op_name in timeline_settings))
 				{
+					console.log('service has timeline for operation:' + op_name, timeline_settings)
+
 					let timeline_op_settings_array = timeline_settings[op_name]
 					if( T.isObject(timeline_op_settings_array) )
 					{
 						timeline_op_settings_array = [timeline_op_settings_array]
 					}
-					// console.log('service has poller for operation:' + op_name, pollers_op_settings)
 					
 					let stream = Bacon.fromEvent(svc_socket, op_name)
 

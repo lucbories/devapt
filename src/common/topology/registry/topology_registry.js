@@ -10,7 +10,7 @@ const context = 'common/topology/registry/topology_registry'
 
 
 
-const TRACE = false
+const TRACE = false // TODO configure from runtime settings
 
 /**
  * @file TopologyRegistryStore class, a RegistryStore loading topology.

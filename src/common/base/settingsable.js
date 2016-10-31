@@ -68,6 +68,8 @@ export default class Settingsable extends Errorable
 			this.$settings = fromJS(arg_settings)
 		}
 	}
+
+
 	
 	/**
 	 * Get instance settings.
@@ -77,6 +79,18 @@ export default class Settingsable extends Errorable
 	{
 		return this.$settings
 	}
+
+
+	
+	/**
+	 * Get instance settings.
+	 * @returns {Immutable.Map}
+	 */
+	get_settings_js()
+	{
+		return this.$settings.toJS()
+	}
+
 	
 	
 	/**
@@ -94,6 +108,7 @@ export default class Settingsable extends Errorable
 		}
 		return this.$settings.has(arg_name)
 	}
+
 	
 	
 	/**
@@ -115,6 +130,7 @@ export default class Settingsable extends Errorable
 		return this.$settings.has(arg_name) ? this.$settings.get(arg_name) : (arg_default ? arg_default : null)
 	}
 	
+
 	
 	/**
 	 * Get a value in settings for given key.
@@ -138,6 +154,7 @@ export default class Settingsable extends Errorable
 		return (result && T.isFunction(result.toJS) ) ? result.toJS() : result
 	}
 	
+
 	
 	/**
 	 * Set a value in settings for given key.

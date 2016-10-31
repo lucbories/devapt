@@ -236,7 +236,26 @@ export default class Page extends Container
 	render_state_store()
 	{
 		let initial_state = this.get_children_state()
-		initial_state.credentials = { "username":"{{{credentials_username}}}", "password":"{{{credentials_password}}}", "token":"{{{credentials_token}}}", "expire":"{{{credentials_expire}}}" }
+
+		initial_state.credentials = {
+			"tenant":"{{{credentials_tenant}}}",
+			"env":"{{{credentials_env}}}",
+			"application":"{{{credentials_application}}}",
+			
+			"token":"{{{credentials_token}}}",
+			"user_name":"{{{credentials_user_name}}}",
+			"user_pass_digest":"{{{credentials_pass_digest}}}",
+
+			"ts_login":"{{{credentials_login}}}",
+			"ts_expiration":"{{{credentials_expire}}}",
+
+			"errors_count":"{{{credentials_errors_count}}}",
+			"renew_count":"{{{credentials_renew_count}}}"
+		}
+
+		initial_state.app_url = this.renderer.application ? this.renderer.application.app_url : null
+		initial_state.commands = this.renderer.application ? this.renderer.application.get_resources_settings('commands') : {}
+
 		const stored_state = JSON.stringify(initial_state)
 		return `<script>window.__INITIAL_STATE__ = ${stored_state}</script>\n`
 	}
@@ -250,6 +269,9 @@ export default class Page extends Container
 	 */
 	render_devapt_init()
 	{
+		const default_view = this.get_setting('default_view')
+		const default_menubar = this.get_setting('default_menubar')
+
 		return `<script>
 			$(document).ready(
 				function()
@@ -277,7 +299,9 @@ export default class Page extends Container
 					
 					// CREATE RUNTIME
 					var runtime_settings = {
-						reducers:reducers
+						reducers:reducers,
+						default_view:"${default_view}",
+						default_menubar:"${default_menubar}"
 					}
 					var ClientRuntime = require('client_runtime').default
 					var private_runtime = new ClientRuntime()

@@ -21,40 +21,60 @@ export default class Render extends Loggable
     /**
      * Create a rendering wrapper class.
 	 * 
+	 * @param {string} arg_assets_styles - application service name to provide style assets.
+	 * @param {string} arg_assets_scripts - application service name to provide script assets.
 	 * @param {string} arg_assets_img - application service name to provide image assets.
 	 * @param {string} arg_assets_html - application service name to provide html assets.
-	 * @param {string} arg_assets_scripts - application service name to provide script assets.
-	 * @param {string} arg_assets_styles - application service name to provide style assets.
+	 * @param {TopologyDefineApplication} arg_application - application.
 	 * 
 	 * @returns {nothing}
      */
-	constructor(arg_assets_img, arg_assets_html, arg_assets_scripts, arg_assets_styles)
+	constructor(arg_assets_styles, arg_assets_scripts, arg_assets_img, arg_assets_html, arg_application)
 	{
 		super(context)
 
 		this.is_render = true
 
 		this.stack = new RenderStack()
+		this.application = arg_application
 		
 		this.rendering_manager = runtime.get_plugins_factory().get_rendering_manager()
 		
-		this.assets_images_service_name = arg_assets_img ? arg_assets_img : null
-		this.assets_html_service_name = arg_assets_html ? arg_assets_html : null
-		this.assets_scripts_service_name = arg_assets_scripts ? arg_assets_scripts : null
-		this.assets_styles_service_name = arg_assets_styles ? arg_assets_styles : null
-
-		this.assets_images_service_consumer = null
-		this.assets_html_service_consumer = null
-		this.assets_scripts_service_consumer = null
-		this.assets_styles_service_consumer = null
+		this.set_assets_services_names(arg_assets_styles, arg_assets_scripts, arg_assets_img, arg_assets_html)
 		
 		if ( ! this.is_server_runtime )
 		{
 			this.update_trace_enabled()
 		}
 	}
-	
+
+
+
+	/**
+	 * Set assets services names.
+	 * 
+	 * @param {string} arg_assets_styles  - styles assets service name.
+	 * @param {string} arg_assets_scripts - scripts assets service name.
+	 * @param {string} arg_assets_img     - images assets service name.
+	 * @param {string} arg_assets_html    - html assets service name.
+	 * 
+	 * @returns {nothing}
+	 */
+	set_assets_services_names(arg_assets_styles, arg_assets_scripts, arg_assets_img, arg_assets_html)
+	{
+		this.assets_styles_service_name = arg_assets_styles ? arg_assets_styles : null
+		this.assets_scripts_service_name = arg_assets_scripts ? arg_assets_scripts : null
+		this.assets_images_service_name = arg_assets_img ? arg_assets_img : null
+		this.assets_html_service_name = arg_assets_html ? arg_assets_html : null
+
+		this.assets_styles_service_consumer = null
+		this.assets_scripts_service_consumer = null
+		this.assets_images_service_consumer = null
+		this.assets_html_service_consumer = null
+	}
     
+
+
     /**
      * Get an url to server the given image asset.
 	 * 
@@ -162,7 +182,8 @@ export default class Render extends Loggable
 		{
 			assert( T.isString(arg_svc_name), context + ':get_assets_url:bad svc name string')
 
-			const service = runtime.get_topology().services.find_by_name(arg_svc_name)
+			const deployed_services = runtime.deployed_local_topology.deployed_services_map
+			const service = (arg_svc_name in deployed_services) ? deployed_services[arg_svc_name] : undefined
 			assert( T.isObject(service) && service.is_service, context + ':get_assets_script_url:bad service object')
 
 			this.assets_scripts_service_consumer = service.create_consumer()

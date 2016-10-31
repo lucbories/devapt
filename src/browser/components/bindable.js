@@ -127,7 +127,7 @@ export default class Bindable extends Stateable
 				const method_cfg = T.isObject(arg_options) ? arg_options.method : undefined
 				const operands = T.isObject(method_cfg) ? method_cfg.operands : undefined
 
-				assert( arg_timeline_name in svc[arg_svc_method].timelines, context + ':bind_timeline:timeline name not found')
+				assert( arg_timeline_name in svc[arg_svc_method].timelines, context + ':bind_timeline:timeline name [' + arg_timeline_name + '] not found')
 				assert( T.isObject( svc[arg_svc_method].timelines[arg_timeline_name] ), context + ':bind_timeline:bad timeline object')
 				const stream = svc[arg_svc_method].timelines[arg_timeline_name].stream
 				// stream.subscribe( (datas) => {console.log(context + ':bind_timeline:timeline=%s datas=', arg_timeline_name, datas) } )

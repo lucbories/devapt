@@ -44,7 +44,7 @@ export default class TopologySvcProvider extends SocketIOServiceProvider
 	 * 
 	 * @param {string} arg_method - method name
 	 * @param {array} arg_operands - request operands
-	 * @param {object} arg_credentials - request credentials
+	 * @param {Credentials} arg_credentials - request credentials
 	 * 
 	 * @returns {Promise}
 	 */
@@ -52,7 +52,7 @@ export default class TopologySvcProvider extends SocketIOServiceProvider
 	{
 		assert( T.isString(arg_method), context + ':process:bad method string')
 		assert( T.isArray(arg_operands), context + ':process:bad operands array')
-		assert( T.isObject(arg_credentials), context + ':process:bad credentials object')
+		assert( T.isObject(arg_credentials) && arg_credentials.is_credentials, context + ':process:bad credentials object')
 		
 		// const metrics_server = runtime.node.metrics_server
 		
@@ -80,22 +80,26 @@ export default class TopologySvcProvider extends SocketIOServiceProvider
 				if (query.mode == 'physical')
 				{
 					let topology = { nodes:{} }
-					const nodes = runtime.get_topology().nodes
-					assert( T.isObject(nodes), context + ':process:bad runtime.nodes object')
 
+					// LOOP ON DEFINED NODES
+					const nodes = runtime.get_defined_topology().nodes().get_latest_items()
+					assert( T.isArray(nodes), context + ':process:bad runtime.nodes array')
 					nodes.forEach(
 						(node) => {
 							let node_topology = { servers:{} }
 
-							assert( T.isObject(node.servers_feature.servers), context + ':process:bad node.servers object')
-
-							node.servers_feature.servers.forEach(
+							// LOOP ON NODE servers
+							const node_servers = node.servers().get_latest_items()
+							assert( T.isArray(node_servers), context + ':process:bad node.servers array')
+							node_servers.forEach(
 								(server) => {
 									node_topology.servers[server.get_name()] = {
 										host:server.server_host,
 										port:server.server_port,
 										protocole:server.server_protocole,
-										type:server.server_type
+										type:server.server_type,
+										middlewares:server.server_middlewares,
+										use_socketio:server.server_use_socketio
 									}
 								}
 							)
@@ -111,23 +115,35 @@ export default class TopologySvcProvider extends SocketIOServiceProvider
 				{
 					let topology = { applications:{} }
 					
-					runtime.get_topology().applications.forEach(
-						(app) => {
-							let app_topology = { provided_services:{}, consumed_services:{} }
+					// LOOP ON TENANTS
+					const defined_tenants = runtime.get_defined_topology().tenants().get_latest_items().get_latest_items()
+					defined_tenants.forEach(
+						(defined_tenant)=>{
 							
-							app.provided_services.forEach(
-								(svc) => {
-									app_topology.provided_services[svc.get_name()] = {}
+							// LOOP ON TENANT APPLICATIONS
+							const applications = defined_tenant.applications().get_latest_items()
+							applications.forEach(
+								(defined_app) => {
+
+									let app_topology = { provided_services:{}, consumed_services:{} }
+									
+									// LOOP ON APPLICATION PROVIDED SERVICES
+									const app_provided_services = defined_app.provided_services().get_latest_items()
+									app_provided_services.forEach(
+										(svc) => {
+											app_topology.provided_services[svc.get_name()] = {}
+										}
+									)
+									
+									app.consumed_services.forEach(
+										(svc) => {
+											app_topology.consumed_services[svc.get_name()] = {}
+										}
+									)
+									
+									topology.applications[app.get_name()] = app_topology
 								}
 							)
-							
-							app.consumed_services.forEach(
-								(svc) => {
-									app_topology.consumed_services[svc.get_name()] = {}
-								}
-							)
-							
-							topology.applications[app.get_name()] = app_topology
 						}
 					)
 					
@@ -145,7 +161,7 @@ export default class TopologySvcProvider extends SocketIOServiceProvider
 				// LOGICAL TOPOLOGY
 				if (query.mode == 'runtime')
 				{
-					const json = runtime.get_topology().get_topology_info(true)
+					const json = runtime.get_defined_topology().get_topology_info(true)
 					// console.log(context + ':produce:get:runtime:json=', json)
 					return Promise.resolve(json)
 				}

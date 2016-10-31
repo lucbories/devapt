@@ -136,7 +136,8 @@ export default class TopologyDeployLocalNode extends TopologyDeployItem
 					this.leave_group('deploy (error):bad tenant for ' + deployed_tenant_name)
 					return Promise.reject('tenant ' + deployed_tenant_name + ' not found for world')
 				}
-				let deployed_services = []
+				this.deployed_services = []
+				this.deployed_services_map = []
 
 				// LOOP ON APPLICATIONS TO DEPLOY
 				const deployed_apps = deployed_tenants[deployed_tenant_name]
@@ -164,66 +165,42 @@ export default class TopologyDeployLocalNode extends TopologyDeployItem
 								// LOOP ON DEPLOYED APPLICATION SERVICE SERVERS
 								service.activate(defined_app, deployed_app_svc)
 								service.enable()
-								deployed_services.push(service)
+								this.deployed_services.push(service)
+								this.deployed_services_map[deployed_svc_name] = service
 							}
 						)
 						
 						// LOOP ON APPLICATION ASSETS TO DEPLOY
 						let deployed_assets = {}
 						const deployed_app_assets = deployed_apps[deployed_app_name].assets
-						deployed_app_assets.forEach(
-							(deployed_asset, asset_index)=>{
-								this.info('loop on asset: at ' + asset_index)
+						assert( T.isObject(deployed_app_assets), context + ':deploy:bad assets object')
+						if ( T.isObject(deployed_app_assets.regions) )
+						{
+							assert( T.isObject(deployed_app_assets.regions), context + ':deploy:bad assets.regions object')
+							Object.keys(deployed_app_assets.regions).forEach(
+								(deployed_region_name)=>{
+									this.info('loop on assets region:' + deployed_region_name)
 
-								// LOOP ON ASSET ATTRIBUTES
-								Object.keys(deployed_asset).forEach(
-									(asset_attribute_name)=>{
-										const asset_attribute = deployed_asset[asset_attribute_name]
-										assert( T.isObject(asset_attribute), 'bad asset attribute object for ' + asset_attribute_name + ' at index ' + asset_index)
-										
-										const region = (T.isString(asset_attribute.region) && region.length > 0) ? asset_attribute.region : 'all'
+									const deployed_region = deployed_app_assets.regions[deployed_region_name]
+									assert( T.isObject(deployed_region), context + ':deploy:bad assets.regions.* object for region ' + deployed_region_name)
 
-										const style_svc_name  = T.isString(asset_attribute.style)  ? asset_attribute.style  : undefined
-										const script_svc_name = T.isString(asset_attribute.script) ? asset_attribute.script : undefined
-										const image_svc_name  = T.isString(asset_attribute.image)  ? asset_attribute.image  : undefined
-										const html_svc_name   = T.isString(asset_attribute.html)   ? asset_attribute.html   : undefined
-										
-										if (style_svc_name || script_svc_name || image_svc_name || html_svc_name)
-										{
-											if (! T.isArray(deployed_assets[region]) )
-											{
-												deployed_assets[region] = {
-													style:[],
-													script:[],
-													image:[],
-													html:[]
-												}
-											}
-
-											if (script_svc_name)
-											{
-												deployed_assets[region].script.push(script_svc_name)
-											}
-											if (style_svc_name)
-											{
-												deployed_assets[region].style.push(style_svc_name)
-											}
-											if (image_svc_name)
-											{
-												deployed_assets[region].image.push(image_svc_name)
-											}
-											if (html_svc_name)
-											{
-												deployed_assets[region].html.push(html_svc_name)
-											}
-										}
+									const style_svc_array  = T.isArray(deployed_region.style)  ? deployed_region.style  : []
+									const script_svc_array = T.isArray(deployed_region.script) ? deployed_region.script : []
+									const image_svc_array  = T.isArray(deployed_region.image)  ? deployed_region.image  : []
+									const html_svc_array   = T.isArray(deployed_region.html)   ? deployed_region.html   : []
+												
+									deployed_assets[deployed_region_name] = {
+										style:style_svc_array,
+										script:script_svc_array,
+										image:image_svc_array,
+										html:html_svc_array
 									}
-								)
-							}
-						)
+								}
+							)
+						}
 
 						// REGISTER ASSETS ON DEPLOYED SERVICES
-						deployed_services.forEach(
+						this.deployed_services.forEach(
 							(service)=>{
 								service.topology_deploy_assets = deployed_assets
 							}

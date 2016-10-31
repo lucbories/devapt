@@ -23,7 +23,7 @@ export default class ResourcesService extends BaseService
 	 * CONFIGURATION FORMAT:
 	 * 	services.json:
 	 * 		"rest_api_resources_query_1":{
-	 *			"type":"rest_api_resources_query",
+	 *			"type":"resources_query",
 	 *			"routes":[
 	 *				{
 	 *					"route":"/views",

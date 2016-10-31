@@ -101,10 +101,21 @@ function load_tenant(logs, arg_tenant_name, arg_tenant_config, arg_plugins, arg_
 	let services = {}
 	Object.keys(arg_tenant_config.packages).forEach(
 		(pkg_name)=>{
-			const pkg = arg_tenant_config.packages[pkg_name]
-			services = Object.assign(services, pkg.services)
+			if (pkg_name != 'files')
+			{
+				logs.info(context, 'loading world.tenants.' + arg_tenant_name + ' consolidated services for pkg ' + pkg_name)
+				const pkg = arg_tenant_config.packages[pkg_name]
+
+				Object.keys(pkg.services).forEach(
+					(svc_name)=>{
+						services[svc_name] = pkg.services[svc_name]
+						logs.info(context, 'loading world.tenants.' + arg_tenant_name + ' consolid service for ' + svc_name)
+					}
+				)
+			}
 		}
 	)
+	logs.info(context, 'loading world.tenants.' + arg_tenant_name + ' consolidated services:' + Object.keys(services).toString())
 
 	// LOAD APPLICATIONS
 	if (T.isString(arg_tenant_config.applications))

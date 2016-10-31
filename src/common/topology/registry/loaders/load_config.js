@@ -100,6 +100,8 @@ function load_config(arg_state, arg_initial_config, arg_base_dir, arg_world_dir,
 		arg_state.config.resources.by_file = {} // Resource names (map name:name)
 		arg_state.config.resources.by_package = {} // Resource names (map name:name)
 		arg_state.config.resources.by_type = {}
+		arg_state.config.resources.by_type.commands = {} // Resource names (map name:name)
+		arg_state.config.resources.by_type.services = {} // Resource names (map name:name)
 		arg_state.config.resources.by_type.views = {} // Resource names (map name:name)
 		arg_state.config.resources.by_type.models = {} // Resource names (map name:name)
 		arg_state.config.resources.by_type.menubars = {} // Resource names (map name:name)
@@ -107,14 +109,31 @@ function load_config(arg_state, arg_initial_config, arg_base_dir, arg_world_dir,
 		arg_state.config.resources.by_type.datasources = {} // Resource names (map name:name)
 		arg_state.config.resources.by_type.loggers = {} // Resource names (map name:name)
 		
-		arg_state.config.nodes        = load_nodes(logs, config.nodes, arg_world_dir)
-		arg_state.config.tenants      = load_tenants(logs, config.tenants, arg_state.config.plugins, arg_world_dir)
-		arg_state.config.plugins      = load_plugins(logs, config.plugins, arg_world_dir)
-		arg_state.config.deployments  = load_deployments(logs, config.deployments, arg_world_dir)
-		arg_state.config.security     = load_security(logs, config.security, arg_world_dir)
-		arg_state.config.loggers      = config.loggers
-		arg_state.config.traces       = config.traces
-		
+		arg_state.config.nodes = load_nodes(logs, config.nodes, arg_world_dir)
+		if (arg_state.config.nodes && ! arg_state.config.nodes.error)
+		{
+			arg_state.config.tenants = load_tenants(logs, config.tenants, arg_state.config.plugins, arg_world_dir)
+
+			if (arg_state.config.tenants && ! arg_state.config.tenants.error)
+			{
+				arg_state.config.plugins = load_plugins(logs, config.plugins, arg_world_dir)
+
+				if (arg_state.config.plugins && ! arg_state.config.plugins.error)
+				{
+					arg_state.config.deployments  = load_deployments(logs, config.deployments, arg_world_dir)
+					arg_state.config.security     = load_security(logs, config.security, arg_world_dir)
+					arg_state.config.loggers      = config.loggers
+					arg_state.config.traces       = config.traces
+				}
+			}
+		}
+		arg_state.config.nodes       = arg_state.config.nodes       ? arg_state.config.nodes : {}
+		arg_state.config.tenants     = arg_state.config.tenants     ? arg_state.config.tenants : {}
+		arg_state.config.plugins     = arg_state.config.plugins     ? arg_state.config.plugins : {}
+		arg_state.config.deployments = arg_state.config.deployments ? arg_state.config.deployments : {}
+		arg_state.config.security    = arg_state.config.security    ? arg_state.config.security : {}
+		arg_state.config.loggers     = arg_state.config.loggers     ? arg_state.config.loggers : {}
+		arg_state.config.traces      = arg_state.config.traces      ? arg_state.config.traces : {}
 		
 		// POPULATE STORE RESOURCES
 		const has_error = arg_state.config.nodes.error || arg_state.config.tenants.error || arg_state.config.plugins.error || arg_state.config.security.error 
@@ -140,7 +159,7 @@ function load_config(arg_state, arg_initial_config, arg_base_dir, arg_world_dir,
 							logs.info(context, 'storing resources by name for package ' + package_name)
 							Object.keys(package_obj.resources_by_name).forEach(
 								(resource_name) => {
-									logs.debug(context, 'loading config for package ' + package_name + ' for register resource by name for ' + resource_name)
+									// logs.debug(context, 'loading config for package ' + package_name + ' for register resource by name for ' + resource_name)
 									
 									let resource_obj = package_obj.resources_by_name[resource_name]
 									arg_state.config.resources.by_name[resource_name] = resource_obj
@@ -170,7 +189,7 @@ function load_config(arg_state, arg_initial_config, arg_base_dir, arg_world_dir,
 									// logs.info(context, 'loading config for package ' + package_name + ' for register resource by type:' + type_name)
 									Object.keys(package_obj.resources_by_type[type_name]).forEach(
 										(resource_name) => {
-											logs.debug(context, 'loading config for package ' + package_name + ' for register resource by type for resource' + resource_name)
+											// logs.debug(context, 'loading config for package ' + package_name + ' for register resource by type for ' + resource_name)
 											arg_state.config.resources.by_type[type_name][resource_name] = resource_name
 										}
 									)

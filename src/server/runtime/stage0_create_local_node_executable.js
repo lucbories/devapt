@@ -49,8 +49,6 @@ export default class RuntimeStage0Executable extends RuntimeExecutable
 			assert(node_name == master_name, context + ':node name [' + node_name + '] not equals master name [' + master_name + ']')
 			
 			// CREATE MASTER NODE
-			this.info('Create Node and load it')
-			// this.runtime.get_topology().nodes.add(this.runtime.node)
 		}
 		else
 		{
@@ -59,6 +57,7 @@ export default class RuntimeStage0Executable extends RuntimeExecutable
 		}
 
 		// CREATE NODE
+		this.info('Create Node and load it')
 		this.runtime.node = new Node(node_name, this.runtime.get_settings())
 		this.runtime.node.load()
 		

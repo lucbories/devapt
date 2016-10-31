@@ -101,7 +101,7 @@ export default class AuthenticationPlugin extends Plugin
 	 * Authenticate a user with request credentials.
 	 * @abstract
 	 * 
-	 * @param {object|undefined} arg_credentials - request credentials object.
+	 * @param {Credentials|undefined} arg_credentials - request credentials object.
 	 * 
 	 * @returns {object} - a promise of boolean.
 	 */

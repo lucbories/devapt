@@ -11,32 +11,25 @@ const context = 'common/topology/registry/loaders/load_application'
 
 
 
-let error_msg_bad_config = context + ':bad config - config.applications.* should be a plain object'
-let error_msg_bad_from_file = context + ':bad config - config.applications.*.from_file should be a string'
-let error_msg_bad_license = context + ':bad config - config.applications.*.license should be a string'
-let error_msg_bad_url = context + ':bad config - config.applications.*.url should be a string'
-let error_msg_bad_file_config = context + ':bad config - config.applications.*.from_file content should be an object'
+let error_msg_bad_config = context + ':bad config - world.tenants.*.applications.* should be a plain object'
+let error_msg_bad_from_file = context + ':bad config - world.tenants.*.applications.*.from_file should be a string'
+let error_msg_bad_license = context + ':bad config - world.tenants.*.applications.*.license should be a string'
+let error_msg_bad_url = context + ':bad config - world.tenants.*.applications.*.url should be a string'
+let error_msg_bad_file_config = context + ':bad config - world.tenants.*.applications.*.from_file content should be an object'
 
-let error_msg_bad_used_packages = context + ':bad config - config.applications.*.used_packages should be an array'
-let error_msg_bad_used_plugins = context + ':bad config - config.applications.*.used_plugins should be an array'
-let error_msg_bad_used_services = context + ':bad config - config.applications.*.used_services should be an array'
-let error_msg_bad_provided_services = context + ':bad config - config.applications.*.provided_services should be an array'
+let error_msg_bad_used_packages = context + ':bad config - world.tenants.*.applications.*.used_packages should be an array'
+let error_msg_bad_used_plugins = context + ':bad config - world.tenants.*.applications.*.used_plugins should be an array'
+let error_msg_bad_used_services = context + ':bad config - world.tenants.*.applications.*.used_services should be an array'
+let error_msg_bad_provided_services = context + ':bad config - world.tenants.*.applications.*.provided_services should be an array'
 
-let error_msg_bad_service_name = context + ':bad config - config.applications.*.used_services|provided_services.* should be a string'
-let error_msg_bad_package_name = context + ':bad config - config.applications.*.used_packages.* should be a string'
-let error_msg_bad_plugin_name = context + ':bad config - config.applications.*.used_plugins.* should be a string'
+let error_msg_bad_service_name = context + ':bad config - world.tenants.*.applications.*.used_services|provided_services.* should be a string'
+let error_msg_bad_package_name = context + ':bad config - world.tenants.*.applications.*.used_packages.* should be a string'
+let error_msg_bad_plugin_name = context + ':bad config - world.tenants.*.applications.*.used_plugins.* should be a string'
 
-// let error_msg_bad_assets = context + ':bad config - config.applications.*.assets should be a plain object'
-// let error_msg_bad_assets_css = context + ':bad config - config.applications.*.assets.css should be an array'
-// let error_msg_bad_assets_js = context + ':bad config - config.applications.*.assets.js should be an array'
-// let error_msg_bad_assets_img = context + ':bad config - config.applications.*.assets.img should be an array'
-// let error_msg_bad_assets_index = context + ':bad config - config.applications.*.assets.index should be a string'
-// let error_msg_bad_asset = context + ':bad config - config.applications.*.assets.[css,js,imd].* should be a string'
-
-let error_msg_used_plugin_not_found = context + ':bad config - config.applications.*.used_plugins.* not found in config.plugins'
-let error_msg_used_package_not_found = context + ':bad config - config.applications.*.used_packages.* not found in config.packages'
-let error_msg_used_service_not_found = context + ':bad config - config.applications.*.used_service.* not found in config.resources'
-let error_msg_provided_service_not_found = context + ':bad config - config.applications.*.provided_service.* not found in config.resources'
+let error_msg_used_plugin_not_found = context + ':bad config - world.tenants.*.applications.*.used_plugins.* not found in world.plugins'
+let error_msg_used_package_not_found = context + ':bad config - world.tenants.*.applications.*.used_packages.* not found in world.tenants.*.packages'
+let error_msg_used_service_not_found = context + ':bad config - world.tenants.*.applications.*.used_service.* not found in world.tenants.*.packages.*.resources'
+let error_msg_provided_service_not_found = context + ':bad config - world.tenants...provided_service.* not found in world...packages.*.resources'
 
 
 
@@ -90,7 +83,7 @@ function load_application(logs, arg_app_name, arg_app_config, arg_config_package
 			function(service_name)
 			{
 				assert(T.isString(service_name), error_msg_bad_service_name)
-				assert(service_name in arg_config_services, error_msg_provided_service_not_found)
+				assert(service_name in arg_config_services, error_msg_provided_service_not_found + ' for ' + service_name)
 			}
 		)
 		
@@ -100,7 +93,7 @@ function load_application(logs, arg_app_name, arg_app_config, arg_config_package
 			function(service_name)
 			{
 				assert(T.isString(service_name), error_msg_bad_service_name)
-				assert(service_name in arg_config_services, error_msg_used_service_not_found)
+				assert(service_name in arg_config_services, error_msg_used_service_not_found + ' for ' + service_name)
 			}
 		)
 		
@@ -110,7 +103,7 @@ function load_application(logs, arg_app_name, arg_app_config, arg_config_package
 			function(package_name)
 			{
 				assert(T.isString(package_name), error_msg_bad_package_name)
-				assert(package_name in arg_config_packages, error_msg_package_not_found)
+				assert(package_name in arg_config_packages, error_msg_used_package_not_found + ' for ' + package_name)
 			}
 		)
 		
@@ -120,7 +113,7 @@ function load_application(logs, arg_app_name, arg_app_config, arg_config_package
 			function(plugin_name)
 			{
 				assert(T.isString(plugin_name), error_msg_bad_plugin_name)
-				assert(plugin_name in arg_config_plugins, error_msg_plugin_not_found)
+				assert(plugin_name in arg_config_plugins, error_msg_plugin_not_found + ' for ' + plugin_name)
 			}
 		)
 		

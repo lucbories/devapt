@@ -3,6 +3,9 @@ import T from 'typr'
 import assert from 'assert'
 import passport from 'passport'
 
+// COMMON IMPORTS
+import Credentials from '../../../common/base/credentials'
+
 import AuthenticationPlugin from './authentication_plugin'
 
 
@@ -224,8 +227,10 @@ export default class AuthenticationPluginPassport extends AuthenticationPlugin
                 self.debug('LocalStrategy.authenticate')
                 console.log(context + '.LocalStrategy:mw')
                 
-                const credentials = { 'user':arg_username, 'password':arg_password, 'done_cb':arg_done_cb }
-                this.authenticate(credentials)
+                const credentials = { 'user':arg_username, 'password':arg_password }
+                const instance = new Credentials(credentials)
+                instance.done_cb = arg_done_cb
+                this.authenticate(instance)
             }
         )
         

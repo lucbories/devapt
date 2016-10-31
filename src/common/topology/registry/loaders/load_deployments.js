@@ -11,7 +11,7 @@ let error_msg_bad_config                    = context + ':deployments should be 
 let error_msg_bad_deployed_tenant           = context + ':deployments.tenantA should be an object'
 let error_msg_bad_deployed_app              = context + ':deployments.tenantA.appA should be an object'
 let error_msg_bad_deployed_app_services     = context + ':deployments.tenantA.appA.services should be an object'
-let error_msg_bad_deployed_app_assets       = context + ':deployments.tenantA.appA.assets should be an array'
+let error_msg_bad_deployed_app_assets       = context + ':deployments.tenantA.appA.assets should be an object'
 let error_msg_bad_deployed_svc              = context + ':deployments.tenantA.appA.services.svc1 should be an object'
 let error_msg_bad_deployed_svc_servers      = context + ':deployments.tenantA.appA.services.svc1.servers should be an array'
 let error_msg_bad_deployed_svc_servers_item = context + ':deployments.tenantA.appA.services.svc1.servers.* should be a string'
@@ -63,10 +63,10 @@ function load_deployments(logs, arg_deploy_config, arg_base_dir)
 						const deployed_app_obj = deployed_tenant_apps[app_name]
 						assert(T.isObject(deployed_app_obj), error_msg_bad_deployed_app)
 
-						const assets = deployed_app_obj.services
+						const services = deployed_app_obj.services
 						assert(T.isObject(services), error_msg_bad_deployed_app_services)
 
-						const services = deployed_app_obj.assets
+						const assets = deployed_app_obj.assets
 						assert(T.isObject(assets), error_msg_bad_deployed_app_assets)
 
 						Object.keys(services).forEach(

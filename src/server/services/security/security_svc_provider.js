@@ -41,7 +41,7 @@ export default class SecuritySvcProvider extends SocketIOServiceProvider
 	 * 
 	 * @param {string} arg_method - method name
 	 * @param {array} arg_operands - request operands
-	 * @param {object} arg_credentials - request credentials
+	 * @param {Credentials} arg_credentials - request credentials
 	 * 
 	 * @returns {Promise}
 	 */
@@ -49,7 +49,7 @@ export default class SecuritySvcProvider extends SocketIOServiceProvider
 	{
 		assert( T.isString(arg_method), context + ':process:bad method string')
 		assert( T.isArray(arg_operands), context + ':process:bad operands array')
-		assert( T.isObject(arg_credentials), context + ':process:bad credentials object')
+		assert( T.isObject(arg_credentials) && arg_credentials.is_credentials, context + ':process:bad credentials object')
 		
 		switch(arg_method)
 		{

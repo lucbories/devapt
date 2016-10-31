@@ -170,6 +170,7 @@ export default class Service extends Instance
 		{
 			if ( T.isObject(this.locale_exec) )
 			{
+				this.locale_exec.assets = this.topology_deploy_assets
 				this.locale_exec.prepare(exec_cfg)
 				this.locale_exec.execute(arg_application)
 			}
@@ -178,6 +179,7 @@ export default class Service extends Instance
 		{
 			if ( T.isObject(this.remote_exec) )
 			{
+				this.remote_exec.assets = this.topology_deploy_assets
 				this.remote_exec.prepare(exec_cfg)
 				this.remote_exec.execute(arg_application)
 			}

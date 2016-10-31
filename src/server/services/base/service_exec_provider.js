@@ -19,9 +19,11 @@ export default class ServiceExecProvider extends SocketIOServiceProvider
 {
 	/**
 	 * Create a service provider.
-	 * @param {string} arg_provider_name - consumer name
-	 * @param {Service} arg_service_instance - service instance
-	 * @param {string} arg_context - logging context label
+	 * 
+	 * @param {string} arg_provider_name - consumer name.
+	 * @param {Service} arg_service_instance - service instance.
+	 * @param {string} arg_context - logging context label.
+	 * 
 	 * @returns {nothing}
 	 */
 	constructor(arg_provider_name, arg_service_instance, arg_context)
@@ -32,18 +34,26 @@ export default class ServiceExecProvider extends SocketIOServiceProvider
 	}
 	
 	
+	
 	/**
 	 * Activate a service feature for an application for a specific provider.
-	 * @param {Application} arg_application - application instance
-	 * @param {Server} arg_server - server instance to bind the service
-	 * @param {object} arg_app_svc_cfg - service configuration for activation on application (unused)
+	 * 
+	 * @param {Application} arg_application - application instance.
+	 * @param {Server} arg_server - server instance to bind the service.
+	 * @param {object} arg_app_svc_cfg - service configuration for activation on application (unused).
+	 * 
 	 * @returns {nothing}
 	 */
 	activate_self(arg_application, arg_server, arg_app_svc_cfg)
 	{
 		assert( T.isObject(this.exec), context + ':activate_self:bad exec object')
 		
-		const exec_cfg = { 'routes':this.get_setting_js('routes'), 'server': arg_server, 'unused':arg_app_svc_cfg }
+		const exec_cfg = {
+			'routes':this.get_setting_js('routes'),
+			'server': arg_server,
+			'unused':arg_app_svc_cfg
+		}
+		this.exec.assets = this.service.topology_deploy_assets
 		this.exec.prepare(exec_cfg)
 		this.exec.execute(arg_application)
 	}

@@ -3,6 +3,9 @@ import T from 'typr'
 import assert from 'assert'
 import forge from 'node-forge'
 
+// COMMON IMPORTS
+import Credentials from '../../common/base/credentials'
+
 // SERVER IMPORTS
 import PluginsManager from '../plugins/plugins_manager'
 
@@ -169,7 +172,7 @@ export default class AuthenticationManager extends PluginsManager
 	/**
 	 * Authenticate a user with giving credentials.
 	 * 
-	 * @param {object} arg_credentials - credentials object.
+	 * @param {Credentials} arg_credentials - credentials object.
 	 * 
 	 * @returns {Promise} - a promise of boolean.
 	 */
@@ -285,14 +288,17 @@ export default class AuthenticationManager extends PluginsManager
 		{
 			return true
 		}
-		
-		const credentials = this.get_credentials(arg_request)
-		
-		if (arg_request.is_authenticated && credentials.username && credentials.password)
+		try{
+			const credentials = this.get_credentials(arg_request).get_credentials()
+			
+			if (arg_request.is_authenticated && credentials.username && credentials.password)
+			{
+				return true
+			}
+		} catch(e)
 		{
-			return true
+			this.error(context + ':check_request_authentication:exception', e)
 		}
-		
 		return false
 	}
 	
@@ -313,7 +319,7 @@ export default class AuthenticationManager extends PluginsManager
 	 * 
 	 * @param {object} arg_request - request object.
 	 * 
-	 * @returns {object} - plain object as { 'user':..., 'password':... }
+	 * @returns {Credentials|undefined} - credentials instance.
 	 */
 	get_credentials(arg_request)
 	{
@@ -328,15 +334,28 @@ export default class AuthenticationManager extends PluginsManager
 		
 		
 		// CHECK REQUEST
-		let credentials = { 'username':null, 'password':null, 'token':null, 'expire':null }
+		// let credentials = { 'user_name':null, 'password':null, 'token':null, 'expire':null }
 		if (!arg_request)
 		{
-			return credentials
+			return undefined
 		}
+
+
+		// DEFINE EMPTY CREDENTIALS
+		let credentials = Credentials.get_empty_credentials()
+		
+		credentials.tenant = 'tenantA' // TODO
+		credentials.env = 'dev' // TODO
+		credentials.application = 'devtools' // TODO
+
+		credentials.token = '' // TODO
+
+		credentials.ts_login = Date.now()
+		credentials.ts_expiration = Date.now() + 999999999 // TODO
 		
 		
 		// REQUEST ALREADY HAVE PROCESSED CREDENTIAL
-		if ( T.isObject(arg_request.devapt_credentials) )
+		if ( T.isObject(arg_request.devapt_credentials) && arg_request.devapt_credentials.is_credentials )
 		{
 			this.info('get_credentials:authentication from cache')
 			return arg_request.devapt_credentials
@@ -348,11 +367,11 @@ export default class AuthenticationManager extends PluginsManager
 		{
 			this.info('get_credentials:authentication with query map')
 			
-			credentials.username = arg_request.query.username
-			credentials.password = arg_request.query.password
-			arg_request.devapt_credentials = credentials
+			credentials.user_name = arg_request.query.username
+			credentials.user_pass_digest = arg_request.query.password
+			arg_request.devapt_credentials = new Credentials(credentials)
 			
-			return credentials
+			return arg_request.devapt_credentials
 		}
 		
 		
@@ -382,22 +401,22 @@ export default class AuthenticationManager extends PluginsManager
 						const value = parts[1]
 						if (key == 'username')
 						{
-							credentials.username = value
+							credentials.user_name = value
 							return
 						}
 						if (key == 'password')
 						{
-							credentials.password = value
+							credentials.user_pass_digest = value
 							return
 						}
 					}
 				}
 			)
 			
-			if (credentials.username && credentials.password)
+			if (credentials.user_name && credentials.user_pass_digest)
 			{
-				arg_request.devapt_credentials = credentials
-				return credentials
+				arg_request.devapt_credentials = new Credentials(credentials)
+				return arg_request.devapt_credentials
 			}
 		}
 		
@@ -407,11 +426,10 @@ export default class AuthenticationManager extends PluginsManager
 		{
 			this.info('get_credentials:authentication with params args')
 			
-			credentials.username = arg_request.params.username
-			credentials.password = arg_request.params.password
-			arg_request.devapt_credentials = credentials
-			
-			return credentials
+			credentials.user_name = arg_request.params.username
+			credentials.user_pass_digest = arg_request.params.password
+			arg_request.devapt_credentials = new Credentials(credentials)
+			return arg_request.devapt_credentials
 		}
 		
 		
@@ -425,15 +443,14 @@ export default class AuthenticationManager extends PluginsManager
 				return credentials
 			}
 			
-			credentials.username = arg_request.authorization.basic.username
-			credentials.password = arg_request.authorization.basic.password
-			arg_request.devapt_credentials = credentials
-			
-			return credentials
+			credentials.user_name = arg_request.authorization.basic.username
+			credentials.user_pass_digest = arg_request.authorization.basic.password
+			arg_request.devapt_credentials = new Credentials(credentials)
+			return arg_request.devapt_credentials
 		}
 		
 		this.error_bad_credentials_format()
-		return credentials
+		return undefined
 	}
 	
 	

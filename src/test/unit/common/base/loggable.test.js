@@ -500,22 +500,22 @@ describe('Loggable', () => {
 
 		it('TEST loggable.debug(...)', () => {
 			loggable.debug('test ABC')
-			expect(logger_mock.debug_str).equal('loggable context' + ':' + 'test ABC')
+			expect(logger_mock.debug_str).equal('loggable context' + ',' + 'test ABC')
 		} )
 		
 		it('TEST loggable.info(...)', () => {
 			loggable.info('test ABC')
-			expect(logger_mock.info_str).equal('loggable context' + ':' + 'test ABC')
+			expect(logger_mock.info_str).equal('loggable context' + ',' + 'test ABC')
 		} )
 		
 		it('TEST loggable.warn(...)', () => {
 			loggable.warn('test ABC')
-			expect(logger_mock.warn_str).equal('loggable context' + ':' + 'test ABC')
+			expect(logger_mock.warn_str).equal('loggable context' + ',' + 'test ABC')
 		} )
 		
 		it('TEST loggable.error(...)', () => {
 			loggable.error('test ABC')
-			expect(logger_mock.error_str).equal('loggable context' + ':' + 'test ABC')
+			expect(logger_mock.error_str).equal('loggable context' + ',' + 'test ABC')
 		} )
 	} )
 
@@ -524,22 +524,22 @@ describe('Loggable', () => {
 
 		it('TEST loggable.debug(...)', () => {
 			loggable.debug('test ABC', 'test DEF')
-			expect(logger_mock.debug_str).equal('loggable context' + ':' + 'test ABC' + ':' + 'test DEF')
+			expect(logger_mock.debug_str).equal('loggable context' + ',' + 'test ABC' + ',' + 'test DEF')
 		} )
 		
 		it('TEST loggable.info(...)', () => {
 			loggable.info('test ABC', 'test DEF')
-			expect(logger_mock.info_str).equal('loggable context' + ':' + 'test ABC' + ':' + 'test DEF')
+			expect(logger_mock.info_str).equal('loggable context' + ',' + 'test ABC' + ',' + 'test DEF')
 		} )
 		
 		it('TEST loggable.warn(...)', () => {
 			loggable.warn('test ABC', 'test DEF')
-			expect(logger_mock.warn_str).equal('loggable context' + ':' + 'test ABC' + ':' + 'test DEF')
+			expect(logger_mock.warn_str).equal('loggable context' + ',' + 'test ABC' + ',' + 'test DEF')
 		} )
 		
 		it('TEST loggable.error(...)', () => {
 			loggable.error('test ABC', 'test DEF')
-			expect(logger_mock.error_str).equal('loggable context' + ':' + 'test ABC' + ':' + 'test DEF')
+			expect(logger_mock.error_str).equal('loggable context' + ',' + 'test ABC' + ',' + 'test DEF')
 		} )
 	} )
 
@@ -548,12 +548,12 @@ describe('Loggable', () => {
 		
 		it('TEST loggable.enter_group(group)', () => {
 			loggable.enter_group('test ABC')
-			expect(logger_mock.info_str).equal('loggable context' + ':' + '[test ABC] ------- ENTER -------')
+			expect(logger_mock.debug_str).equal('loggable context' + ',' + '[test ABC] ------- ENTER -------')
 		} )
 		
 		it('TEST loggable.leave_group(group)', () => {
 			loggable.leave_group('test ABC')
-			expect(logger_mock.info_str).equal('loggable context' + ':' + '[test ABC] ------- LEAVE -------')
+			expect(logger_mock.debug_str).equal('loggable context' + ',' + '[test ABC] ------- LEAVE -------')
 		} )
 	} )
 
@@ -562,17 +562,17 @@ describe('Loggable', () => {
 
 		it('TEST loggable.separate_level_1()', () => {
 			loggable.separate_level_1()
-			expect(logger_mock.info_str).equal('loggable context' + ':' + '==========================================================================================================================')
+			expect(logger_mock.debug_str).equal('loggable context' + ',' + '==========================================================================================================================')
 		} )
 		
 		it('TEST loggable.separate_level_2()', () => {
 			loggable.separate_level_2()
-			expect(logger_mock.info_str).equal('loggable context' + ':' + '--------------------------------------------------------------------------------------------------------------------------')
+			expect(logger_mock.debug_str).equal('loggable context' + ',' + '--------------------------------------------------------------------------------------------------------------------------')
 		} )
 		
 		it('TEST loggable.separate_level_3()', () => {
 			loggable.separate_level_3()
-			expect(logger_mock.info_str).equal('loggable context' + ':' + '*************************************************************************************************************************')
+			expect(logger_mock.debug_str).equal('loggable context' + ',' + '*************************************************************************************************************************')
 		} )
 	} )
 } )

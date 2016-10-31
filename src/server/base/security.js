@@ -130,7 +130,7 @@ export default class Security extends Errorable
 	/**
 	 * Authenticate a user with giving credentials.
 	 * 
-	 * @param {object} arg_credentials - credentials object.
+	 * @param {Credentials} arg_credentials - credentials object.
 	 * 
 	 * @returns {Promise} - a promise of boolean.
 	 */

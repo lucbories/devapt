@@ -8,16 +8,16 @@ let context = 'common/cache/cache_adapter'
 
 
 /**
- * @file Cache base class.
+ * @file CacheAdapter base class.
  * 
  * @author Luc BORIES
  * 
  * @license Apache-2.0
  */
-export default class CacheBase
+export default class CacheAdapter
 {
 	/**
-	 * Create Cache instance to manage cached datas.
+	 * Create CacheAdapter instance to manage cached datas.
 	 * 
 	 * API:
 	 * 		->get(arg_key:string, arg_default):Promise - get a cached value with its key.

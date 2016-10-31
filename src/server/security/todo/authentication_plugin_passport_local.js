@@ -4,6 +4,9 @@
 import passport_local from 'passport-local'
 // import passport_local from 'passport-http'
 
+// COMMON IMPORTS
+import Credentials from '../../../common/base/credentials'
+
 import AuthenticationPluginPassport from './authentication_plugin_passport'
 
 
@@ -79,8 +82,10 @@ export default class AuthenticationPluginPassportLocal extends AuthenticationPlu
                 self.debug('LocalStrategy.authenticate')
                 console.log(context + '.LocalStrategy:mw')
                 
-                const credentials = { 'user':arg_username, 'password':arg_password, 'done_cb':arg_done_cb }
-                this.authenticate(credentials)
+                const credentials = { 'user':arg_username, 'password':arg_password }
+                const instance = new Credentials(credentials)
+                instance.done_cb = arg_done_cb
+                this.authenticate(instance)
             }
         )
     }

@@ -1,6 +1,6 @@
 // NPM IMPORTS
-// import T from 'typr'
-// import assert from 'assert'
+import T from 'typr'
+import assert from 'assert'
 
 // COMMON IMPORTS
 import TopologyDefineItem from './topology_define_item'
@@ -69,7 +69,7 @@ export default class TopologyDefineService extends TopologyDefineItem
 		const log_context = arg_log_context ? arg_log_context : context
 		super(arg_name, arg_settings, 'TopologyDefineService', log_context)
 		
-		this.is_topology_menu = true
+		this.is_topology_define_service = true
 
 		this.topology_type = 'services'
 		

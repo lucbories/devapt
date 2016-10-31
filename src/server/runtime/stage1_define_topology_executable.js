@@ -7,7 +7,7 @@ import PluginsFactory from '../plugins/plugins_factory'
 
 // SERVER IMPORTS
 import RuntimeExecutable from './runtime_executable'
-import TopologyRuntimeWorld from '../../common/topology/define/topology_define_world'
+import TopologyDefineWorld from '../../common/topology/define/topology_define_world'
 
 
 let context = 'server/runtime/runtime_stage1_executable'
@@ -112,7 +112,7 @@ export default class RuntimeStage1Executable extends RuntimeExecutable
 			function()
 			{
 				// CREATE PLUGINS MANAGERS
-				self.info('Creating plugins manage')
+				self.info('Creating plugins manager')
 				runtime.plugins_factory = new PluginsFactory(runtime)
 
 				// GET REGISTRY SETTINGS
@@ -128,11 +128,11 @@ export default class RuntimeStage1Executable extends RuntimeExecutable
 
 				// CREATE WORLD TOPOLOGY DEFINITION ROOT
 				self.info('Creating world topology definition root')
-				runtime.world_topology = new TopologyRuntimeWorld('world', world_settings, runtime)
+				runtime.defined_world_topology = new TopologyDefineWorld('world', world_settings, runtime)
 
 				// LOAD WORLD TOPOLOGY DEFINITION
 				self.info('Loading world topology definition')
-				return runtime.world_topology.load()
+				return runtime.defined_world_topology.load()
 			}
 		)
 		.catch(

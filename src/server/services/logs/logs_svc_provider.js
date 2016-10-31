@@ -129,7 +129,7 @@ export default class LogsSvcProvider extends SocketIOServiceProvider
 	 * 
 	 * @param {string} arg_method - method name
 	 * @param {array} arg_operands - request operands
-	 * @param {object} arg_credentials - request credentials
+	 * @param {Credentials} arg_credentials - request credentials
 	 * 
 	 * @returns {Promise}
 	 */

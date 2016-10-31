@@ -70,4 +70,148 @@ export default class TopologyDefineApplication extends TopologyDefineItem
 		
 		this.info('Application is created')
 	}
+
+
+
+	/**
+	 * Find a resource.
+	 * 
+	 * @param {string} arg_name - resource name (mandatory).
+	 * @param {string} arg_type - resource type name (optional).
+	 * 
+	 * @returns {TopologyDefineItem|undefined} - resource instance.
+	 */
+	find_resource(arg_name, arg_type=undefined)
+	{
+		const tenant = this.get_topology_owner()
+		if (! tenant)
+		{
+			this.error('no owner tenant found for this application')
+			console.error('no owner tenant found for this application')
+			return undefined
+		}
+
+		const used_packages_array = this.app_used_packages.toArray()
+		// console.log('application.find_resource ' + arg_name + ' in packages ' + used_packages_array.toString() )
+
+		let package_index = 0
+		for( ; package_index < used_packages_array.length ; package_index++)
+		{
+			const package_name = used_packages_array[package_index]
+			const pkg = tenant.package(package_name)
+			const resource = pkg.find_resource(arg_name, arg_type)
+			// console.log(resource, 'application.find_resource ' + arg_name + ' in package ' + package_name + ' for type ' + arg_type)
+			
+			if (resource)
+			{
+				// console.log('application.find_resource ' + arg_name + ' FOUND')
+				return resource
+			} else {
+				this.warn(resource, 'application.find_resource ' + arg_name + ' NOT FOUND')
+			}
+			
+			return resource
+		}
+
+		this.warn('application.find_resource NOT FOUND ' + arg_name + ' in packages ' + used_packages_array.toString() )
+		return undefined
+	}
+
+
+
+	/**
+	 * Get resources names.
+	 * 
+	 * @param {string} arg_type - resource type name (optional).
+	 * 
+	 * @returns {array} - resources names list.
+	 */
+	get_resources_names(arg_type=undefined)
+	{
+		let names = []
+		const used_packages_array = this.app_used_packages.get_latest_items()
+		names = used_packages_array.find( (arg_pkg)=> { names.concat(arg_pkg.get_all_names(arg_type)) } )
+		return names
+	}
+
+
+
+	/**
+	 * Get resources instances.
+	 * 
+	 * @param {string} arg_type - resources type name.
+	 * 
+	 * @returns {array} - resources instances list.
+	 */
+	get_resources(arg_type)
+	{
+		this.enter_group('get_resources:type ' + arg_type)
+
+		if ( ! T.isString(arg_type) )
+		{
+			this.leave_group('get_resources:bad type string')
+			return []
+		}
+
+		const used_packages_array = this.app_used_packages.toJS()
+		assert( T.isArray(used_packages_array) , context + ':get_resources:bad used_packages_array array')
+		this.debug('used_packages_array=', used_packages_array)
+
+		let instances = []
+		used_packages_array.map(
+			(arg_pkg_name)=> {
+				this.debug('get_resources:loop on package[' + arg_pkg_name + ']')
+
+				const pkg = this.topology_owner.package(arg_pkg_name)
+				assert( T.isObject(pkg) && pkg.is_topology_define_package, context + ':get_resources:bad package object for ' + arg_pkg_name)
+
+				if (arg_type in pkg)
+				{
+					this.debug(':get_resources:type ' + arg_type + ' found for package ' + arg_pkg_name)
+
+					const pkg_resources = pkg[arg_type]()
+
+					if ( T.isObject(pkg_resources) && T.isFunction(pkg_resources.get_latest_items) )
+					{
+						pkg_resources.get_latest_items().forEach(
+							(instance)=>{
+								instances.push(instance)
+							}
+						)
+					}
+
+					return
+				}
+
+				console.error(context + ':get_resources:type ' + arg_type + ' not found for package ' + arg_pkg_name, pkg)
+			}
+		)
+
+		this.leave_group('get_resources:type=' + arg_type + ':instances count=' + instances.length)
+		return instances
+	}
+
+
+
+	/**
+	 * Get resources instances settings.
+	 * 
+	 * @param {string} arg_type - resources type name.
+	 * 
+	 * @returns {array} - resources instances list.
+	 */
+	get_resources_settings(arg_type)
+	{
+		let settings = {}
+		const instances = this.get_resources(arg_type)
+		this.debug('get_resources_settings:type[' + arg_type + ']:count=' + instances.length)
+
+		instances.forEach(
+			(instance)=>{
+				this.debug('get_resources_settings:instance.is_instance=' + instance.is_instance, ':instance name=' + instance.$name)
+				settings[instance.get_name()] = instance.get_settings_js()
+			}
+		)
+		return settings
+	}
 }

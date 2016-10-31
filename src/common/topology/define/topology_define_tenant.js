@@ -70,7 +70,7 @@ export default class TopologyDefineTenant extends TopologyDefineItem
 	 */
 	get_service(arg_svc_name)
 	{
-		const packages = this.packages().latest.get_all()
+		const packages = this.packages().get_latest_items()
 		let i = 0
 		let count = packages.length
 		for( ; i < count ; ++i)

@@ -28,7 +28,9 @@ module.exports = function (gulp, plugins)
 					.ignore('sequelize')
 					.ignore('restify')
 					.ignore('socket.io')
+					.ignore('node-forge')
 					.require('./dist/browser/client_runtime.js', { expose:'client_runtime' } )
+					.require('./public/js/forge.min.js', { expose:'forge-browser' } )
 				
 				var stream = bundler.bundle()
 					.on('error',

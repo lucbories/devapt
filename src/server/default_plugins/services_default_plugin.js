@@ -7,19 +7,20 @@ import ServicesPlugin from '../plugins/services_plugin'
 
 
 const default_plugins_map = {
-	'middleware':   '../server/services/middleware/mw_service',
-	'metrics_http': '../server/services/metrics_http/metrics_service',
-	'metrics_host': '../server/services/metrics_host/metrics_service',
-	'metrics_nodejs': '../server/services/metrics_nodejs/metrics_service',
-	'metrics_bus': '../server/services/metrics_bus/metrics_service',
-	'logs':         '../server/services/logs/logs_service',
-	'topology':     '../server/services/topology/topology_service',
-	'messages':     '../server/services/messages/messages_service',
+	'middleware':               '../server/services/middleware/mw_service',
+	'metrics_http':             '../server/services/metrics_http/metrics_service',
+	'metrics_host':             '../server/services/metrics_host/metrics_service',
+	'metrics_nodejs':           '../server/services/metrics_nodejs/metrics_service',
+	'metrics_bus':              '../server/services/metrics_bus/metrics_service',
+	'logs':                     '../server/services/logs/logs_service',
+	'topology':                 '../server/services/topology/topology_service',
+	'messages':                 '../server/services/messages/messages_service',
 	'rest_api_models_query':    '../server/services/crud/crud_service',
 	'rest_api_models_modifier': '../server/services/crud/crud_service',
 	'rest_api_resources_query': '../server/services/resource/resources_service',
-	'html_assets':  '../server/services/assets/assets_service',
-	'security':     '../server/services/security/security_service'
+	'resources_query':          '../server/services/resource/resources_service',
+	'html_assets':              '../server/services/assets/assets_service',
+	'security':                 '../server/services/security/security_service'
 }
 
 

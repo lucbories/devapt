@@ -67,23 +67,16 @@ export default class Router extends RouterState
 	init(arg_home_view_name, arg_home_menubar_name)
 	{
 		// REGISTER HOME PAGE ROUTE
-		this.router_engine.addRoute('',
+		this.add_handler('',
 			() => {
-				var hash = Hasher.getHash()
-				
-				console.log('Crossroads route cb for home view [%s] and menubar [%s] with hash [%s]', arg_home_view_name, arg_home_menubar_name, hash)
-				
 				return this.do_action_display_content(arg_home_view_name, arg_home_menubar_name)
 			}
 		)
 		
 		// REGISTER A PAGE ROUTE (view, menubar)
 		var route = 'view\={view}\,menubar\={menubar}'
-		this.router_engine.addRoute(route,
+		this.add_handler(route,
 			(arg_view, arg_menubar) => {
-				var arg_url = ''
-				console.log('Crossroads route cb for url [%s] with view [%s] and menubar [%s]', arg_url, arg_view, arg_menubar)
-				
 				return this.do_action_display_content(arg_view, arg_menubar)
 			}
 		)
@@ -91,13 +84,38 @@ export default class Router extends RouterState
 		
 		// SETUP HASHER
 		const parseHash = (arg_newHash, arg_oldHash) => {
-			console.log('Hasher parse cb for [%s] [%s]', arg_newHash, arg_oldHash)
+			console.log('Hasher parse cb for new [%s] and old [%s]', arg_newHash, arg_oldHash)
 			this.router_engine.parse(arg_newHash)
 		}
 		Hasher.prependHash = ''
 		Hasher.initialized.add(parseHash) //parse initial hash
 		Hasher.changed.add(parseHash) //parse hash changes
 		Hasher.init() //start listening for history change
+	}
+
+
+
+	/**
+	 * Add a route handler.
+	 * 
+	 * @param {string|RegExp} arg_route - route.
+	 * @param {Function} arg_handler - f(args)
+	 * 
+	 * @returns {nothing}
+	 */
+	add_handler(arg_route, arg_handler)
+	{
+		console.log('Crossroads add route handler for route:', arg_route)
+
+		this.router_engine.addRoute(arg_route,
+			(...args) => {
+				var hash = Hasher.getHash()
+				
+				console.log('Crossroads route cb with hash [%s] and args:', hash, args)
+
+				return  arg_handler(args)
+			}
+		)
 	}
 	
 	
@@ -129,6 +147,8 @@ export default class Router extends RouterState
 	 */
 	display_content_self(arg_view_name, arg_menubar_name)
 	{
+		this.enter_group('display_content_self')
+
 		let page_content = this.runtime.ui.page.content
 		let page_menubar = this.runtime.ui.page.menubar
 		const page_breadcrumbs = this.runtime.ui.page.breadcrumbs
@@ -138,6 +158,7 @@ export default class Router extends RouterState
 		// UDPATE CONTENT VIEW
 		if (page_content)
 		{
+			this.debug('page content exists')
 			if( page_content.get_name() === arg_view_name )
 			{
 				page_content.show()
@@ -146,8 +167,9 @@ export default class Router extends RouterState
 				page_content = undefined
 			}
 		}
-		if (! page_content)
+		if (! page_content && T.isString(arg_view_name) )
 		{
+			this.debug('page content doesn t exist and view name is valid:', arg_view_name)
 			const page_content_promise = this.runtime.ui.render(arg_view_name)
 			.then(
 				(controller)=>{
@@ -161,6 +183,7 @@ export default class Router extends RouterState
 		// UDPATE MENUBAR
 		if (page_menubar)
 		{
+			this.debug('page menubar exists')
 			if( page_menubar.get_name() === arg_menubar_name )
 			{
 				page_menubar.show()
@@ -169,8 +192,9 @@ export default class Router extends RouterState
 				page_menubar = undefined
 			}
 		}
-		if (! page_menubar)
+		if (! page_menubar && T.isString(arg_menubar_name) )
 		{
+			this.debug('page menubar doesn t exist and menubar name is valid:', arg_menubar_name)
 			const page_menubar_promise  = this.runtime.ui.render(arg_menubar_name)
 			.then(
 				(controller)=>{
@@ -196,7 +220,7 @@ export default class Router extends RouterState
 			// page_breadcrumbs.show()
 		}
 
-
+		this.leave_group('display_content_self:async')
 		return Promise.all(promises)
 	}
 }

@@ -75,7 +75,7 @@ describe('Errorable', () => {
 			expect(errorable.has_error()).equal(true)
 			expect(errorable.get_error_msg()).equal('my error')
 
-			expect(logger_mock.error_str).equal('errorable context:my error')
+			expect(logger_mock.error_str).equal('errorable context,my error')
 		} )
 	} )
 } )

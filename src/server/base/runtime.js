@@ -11,8 +11,6 @@ import Transaction from '../../common/base/transaction'
 import RuntimeBase from '../../common/base/runtime_base'
 import LoggerManager from '../../common/loggers/logger_manager'
 import topology_registry from '../../common/topology/registry/index'
-// import topology_runtime from '../../common/topology/runtime/index'
-const topology_runtime = null // TODO
 
 // SERVER IMPORTS
 import Security from './security'
@@ -78,7 +76,8 @@ class Runtime extends RuntimeBase
 		
 		this.state_store = topology_registry
 		this.topology_registry = topology_registry
-		this.topology_runtime = topology_runtime
+		this.defined_world_topology = undefined
+		this.deployed_local_topology= undefined
 
 		this.socketio_servers = {}
 		
@@ -112,13 +111,25 @@ class Runtime extends RuntimeBase
 	
 	
 	/**
-	 * Get topology runtime singleton.
+	 * Get defined topology runtime singleton.
 	 * 
-	 * @returns {object}
+	 * @returns {TopologyDefineWorld} - defined world topology.
 	 */
-	get_topology()
+	get_defined_topology()
 	{
-		return this.topology_runtime
+		return this.defined_world_topology
+	}
+	
+	
+	
+	/**
+	 * Get deployed topology runtime singleton.
+	 * 
+	 * @returns {TopologyDeployLocalNode} - deployed local node topology.
+	 */
+	get_deployed_topology()
+	{
+		return this.deployed_world_topology
 	}
 	
 	
@@ -204,30 +215,16 @@ class Runtime extends RuntimeBase
 
 	
 	/**
-	 * Get a node by its name.
-	 * 
-	 * @param {string} arg_name - node name.
-	 * 
-	 * @returns {Node}
-	 */
-	// node(arg_name)
-	// {
-	// 	return this.topology_runtime.nodes.item(arg_name)
-	// }
-	
-
-	
-	/**
 	 * Get a server by its name.
 	 * 
 	 * @param {string} arg_name - server name.
 	 * 
 	 * @returns {Server}
 	 */
-	server(arg_name)
-	{
-		return this.topology_runtime.servers.item(arg_name)
-	}
+	// server(arg_name)
+	// {
+	// 	return this.defined_world_topology.servers.item(arg_name)
+	// }
 	
 
 	
@@ -238,10 +235,10 @@ class Runtime extends RuntimeBase
 	 * 
 	 * @returns {Service}
 	 */
-	service(arg_name)
-	{
-		return this.topology_runtime.services.item(arg_name)
-	}
+	// service(arg_name)
+	// {
+	// 	return this.defined_world_topology.services.item(arg_name)
+	// }
 	
 	
 
@@ -252,10 +249,10 @@ class Runtime extends RuntimeBase
 	 * 
 	 * @returns {Service}
 	 */
-	registered_service(arg_name)
-	{
-		return this.topology_runtime.registered_services.item(arg_name)
-	}
+	// registered_service(arg_name)
+	// {
+	// 	return this.topology_runtime.registered_services.item(arg_name)
+	// }
 	
 
 	
@@ -266,10 +263,10 @@ class Runtime extends RuntimeBase
 	 * 
 	 * @returns {Module}
 	 */
-	module(arg_name)
-	{
-		return this.topology_runtime.modules.item(arg_name)
-	}
+	// module(arg_name)
+	// {
+	// 	return this.topology_runtime.modules.item(arg_name)
+	// }
 	
 
 	
@@ -280,10 +277,10 @@ class Runtime extends RuntimeBase
 	 * 
 	 * @returns {Plugin}
 	 */
-	plugin(arg_name)
-	{
-		return this.topology_runtime.plugins.item(arg_name)
-	}
+	// plugin(arg_name)
+	// {
+	// 	return this.topology_runtime.plugins.item(arg_name)
+	// }
 	
 	
 	
@@ -292,10 +289,10 @@ class Runtime extends RuntimeBase
 	 * @param {string} arg_name - resource name
 	 * @returns {Resource}
 	 */
-	resource(arg_name)
-	{
-		return this.topology_runtime.resources.item(arg_name)
-	}
+	// resource(arg_name)
+	// {
+	// 	return this.topology_runtime.resources.item(arg_name)
+	// }
 	
 	
 	/**
@@ -303,10 +300,10 @@ class Runtime extends RuntimeBase
 	 * @param {string} arg_name - transaction name
 	 * @returns {Transaction}
 	 */
-	transaction(arg_name)
-	{
-		return this.topology_runtime.transactions.item(arg_name)
-	}
+	// transaction(arg_name)
+	// {
+	// 	return this.topology_runtime.transactions.item(arg_name)
+	// }
 	
 	
 	/**
@@ -314,10 +311,10 @@ class Runtime extends RuntimeBase
 	 * @param {string} arg_name - application name
 	 * @returns {Application}
 	 */
-	application(arg_name)
-	{
-		return this.get_topology().applications.item(arg_name)
-	}
+	// application(arg_name)
+	// {
+	// 	return this.get_topology().applications.item(arg_name)
+	// }
 	
 	
 	/**

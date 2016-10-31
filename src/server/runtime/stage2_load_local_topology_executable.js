@@ -70,7 +70,7 @@ export default class RuntimeStage2Executable extends RuntimeExecutable
 		const rt_factory = this.runtime.plugins_factory
 		const svc_mgr = rt_factory.get_services_manager()
 		const deploy_name = this.runtime.node.get_name()
-		const defined_item = this.runtime.world_topology.node(deploy_name)
+		const defined_item = this.runtime.defined_world_topology.node(deploy_name)
 		const deploy_settings = this.runtime.get_registry().root.get('deployments', {}).toJS()
 		const deploy_factory = {
 			create:(arg_type, arg_name, arg_settings)=>{

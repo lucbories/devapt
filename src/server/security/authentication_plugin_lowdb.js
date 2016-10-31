@@ -173,9 +173,18 @@ export default class AuthenticationLowDbPlugin extends AuthenticationPlugin
 		const auth_mgr = runtime.security().get_authentication_manager()
 		
 		return (req, res, next) => {
-			const credentials = auth_mgr.get_credentials(req)
-			// console.log('auth_lowdb_plugin.create_middleware', credentials)
+			try{
+				const credentials = auth_mgr.get_credentials(req)
+			} catch(e)
+			{
+				console.error(context + ':create_middleware:middleware:exception', e)
+				self.error(context + ':create_middleware:middleware:exception', e)
+				next('Authentication failure(exception)')
+				return
+			}
 			
+			// console.log('auth_lowdb_plugin.create_middleware', credentials)
+				
 			if ( auth_mgr.check_request_authentication(req) )
 			{
 				// console.log(context + ':auth_lowdb_plugin.create_middleware.request is already authenticated')
@@ -256,7 +265,7 @@ export default class AuthenticationLowDbPlugin extends AuthenticationPlugin
 	/**
 	 * Authenticate a user with a file giving request credentials.
 	 * 
-	 * @param {object|undefined} arg_credentials - request credentials object.
+	 * @param {Credentials|undefined} arg_credentials - request credentials object.
 	 * 
 	 * @returns {object} - a promise of boolean.
 	 */
@@ -271,23 +280,24 @@ export default class AuthenticationLowDbPlugin extends AuthenticationPlugin
 			return Promise.resolve(false)
 		}
 		// assert( T.isFunction(this.file_db), context + ':authenticate:bad db object')
-		assert( T.isObject(arg_credentials), context + ':authenticate:bad credentials object')
-		
+		assert( T.isObject(arg_credentials) && arg_credentials.is_credentials, context + ':authenticate:bad credentials object')
+		arg_credentials = arg_credentials.get_credentials()
+
 		// HAS AUTHENTICATION INFORMATIONS
-		if ( !(T.isString(arg_credentials.username) && T.isString(arg_credentials.password)) )
+		if ( !(T.isString(arg_credentials.user_name) && T.isString(arg_credentials.user_pass_digest)) )
 		{
 			this.debug('authenticate:failure:no credentials', arg_credentials)
 			return Promise.resolve(false)
 		}
-		// assert( T.isString(arg_credentials.username), context + ':authenticate:bad credentials.username string')
-		// assert( T.isString(arg_credentials.password), context + ':authenticate:bad credentials.password string')
+		// assert( T.isString(arg_credentials.user_name), context + ':authenticate:bad credentials.user_name string')
+		// assert( T.isString(arg_credentials.user_pass_digest), context + ':authenticate:bad credentials.user_pass_digest string')
 		
 		// CREATE QUERY
 		const username_field = this.username_fieldname ? this.username_fieldname : 'username'
 		const password_field = this.id_password_fieldnamefieldname ? this.password_fieldname : 'password'
 		let query = {}
-		query[username_field] = arg_credentials.username
-		query[password_field] = arg_credentials.password
+		query[username_field] = arg_credentials.user_name
+		query[password_field] = arg_credentials.user_pass_digest
 		
 		// EXECUTE QUERY
 		try{

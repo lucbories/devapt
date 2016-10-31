@@ -2,9 +2,10 @@
 import T from 'typr'
 import assert from 'assert'
 import util from 'util'
-import { fromJS } from 'immmutable'
+import { fromJS } from 'immutable'
 import Digest from '../utils/digest'
 import EncodeDecode from '../utils/encode_decode'
+import EncryptDecrypt from '../utils/encrypt_decrypt'
 
 
 const context = 'common/base/credentials'
@@ -61,16 +62,18 @@ export default class Credentials
 	 * 
      * @returns {nothing}
      */
-	constructor(arg_datas=default_credentials)
+	constructor(arg_datas=default_credentials, update_handler=undefined)
 	{
 		assert( T.isObject(arg_datas), context + ':bad runtime object')
 		this.is_credentials = true
 
 		this._credentials = fromJS(default_credentials)
-		this._crypt_mode = 'AES-CBC' // (other modes include: CFB, OFB, CTR, and GCM)
-		this._crypt_key_length = 32
-		this._crypt_iv_length = 8
-		this._crypt_num_iterations = 10
+		// this._crypt_mode = 'AES-CBC' // (other modes include: CFB, OFB, CTR, and GCM)
+		// this._crypt_key_length = 32
+		// this._crypt_iv_length = 8
+		// this._crypt_num_iterations = 10
+
+		this.update_handler = update_handler
 
 		this.set_credentials(arg_datas)
 	}
@@ -80,15 +83,160 @@ export default class Credentials
 	/**
 	 * Get credentials datas.
 	 * 
-	 * @returns {boolean}
+	 * @returns {object}
 	 */
 	get_credentials()
 	{
-		return this._credentials.toJS()
+		const datas = this._credentials.toJS()
+		return datas
 	}
     
     
 	
+	/**
+	 * Get credentials tenant.
+	 * 
+	 * @returns {string|undefined}
+	 */
+	get_tenant()
+	{
+		return this._credentials.get('tenant', undefined)
+	}
+    
+    
+	
+	/**
+	 * Get credentials environment.
+	 * 
+	 * @returns {string|undefined}
+	 */
+	get_env()
+	{
+		return this._credentials.get('env', undefined)
+	}
+    
+    
+	
+	/**
+	 * Get credentials application.
+	 * 
+	 * @returns {string|undefined}
+	 */
+	get_application()
+	{
+		return this._credentials.get('application', undefined)
+	}
+    
+    
+	
+	/**
+	 * Get credentials token.
+	 * 
+	 * @returns {string|undefined}
+	 */
+	get_token()
+	{
+		return this._credentials.get('token', undefined)
+	}
+    
+    
+	
+	/**
+	 * Get credentials user.
+	 * 
+	 * @returns {string|undefined}
+	 */
+	get_user()
+	{
+		return this._credentials.get('user_name', undefined)
+	}
+    
+    
+	
+	/**
+	 * Get credentials user.
+	 * 
+	 * @returns {string|undefined}
+	 */
+	get_pass_digest()
+	{
+		return this._credentials.get('user_pass_digest', undefined)
+	}
+    
+    
+	
+	/**
+	 * Get credentials url part.
+	 * 
+	 * @returns {string}
+	 */
+	get_url_part()
+	{
+		return 'username=' + this.get_user() + '&password=' + this.get_pass_digest() + '&token=' + this.get_token()
+	}
+    
+    
+	
+	/**
+	 * Get credentials datas.
+	 * 
+	 * @returns {object}
+	 */
+	get_credentials_for_template()
+	{
+		const credentials_obj = this._credentials.toJS()
+		const template_datas = {
+			credentials_tenant:credentials_obj.tenant,
+			credentials_env:credentials_obj.env,
+			credentials_application:credentials_obj.application,
+
+			credentials_token:credentials_obj.token,
+			credentials_user_name:credentials_obj.user_name,
+			credentials_pass_digest:credentials_obj.user_pass_digest,
+			
+			credentials_login:credentials_obj.ts_login,
+			credentials_expire:credentials_obj.ts_expiration,
+
+			credentials_errors_count:credentials_obj.errors_count,
+			credentials_renew_count:credentials_obj.renew_count,
+
+			credentials_hash:credentials_obj.hash
+		}
+		return template_datas
+	}
+    
+	
+
+	/**
+	 * Get empty credentials record.
+	 * 
+	 * @returns {object}
+	 */
+	static get_empty_credentials()
+	{
+		const template_datas = {
+			tenant:undefined,
+			env:undefined,
+			application:undefined,
+
+			token:undefined,
+			user_name:undefined,
+			user_pass_digest:undefined,
+			
+			ts_login:undefined,
+			ts_expiration:undefined,
+
+			errors_count:0,
+			renew_count:0,
+
+			hash:undefined
+		}
+		return default_credentials
+	}
+    
+    
+	
+			
 	/**
 	 * Credentials are valid for access.
 	 * 
@@ -120,9 +268,41 @@ export default class Credentials
 		assert( T.isString(arg_datas.user_name), context + ':set_credentials:bad user_name string')
 		assert( T.isString(arg_datas.user_pass_digest), context + ':set_credentials:bad user_pass_digest string')
 
+		if ( T.isString(arg_datas.ts_login) )
+		{
+			try{
+				arg_datas.ts_login = parseInt(arg_datas.ts_login)
+			}
+			catch(e)
+			{}
+		}
+		if ( T.isString(arg_datas.ts_expiration) )
+		{
+			try{
+				arg_datas.ts_expiration = parseInt(arg_datas.ts_expiration)
+			}
+			catch(e)
+			{}
+		}
 		assert( T.isNumber(arg_datas.ts_login), context + ':set_credentials:bad ts_login number')
 		assert( T.isNumber(arg_datas.ts_expiration), context + ':set_credentials:bad ts_expiration number')
 
+		if ( T.isString(arg_datas.errors_count) )
+		{
+			try{
+				arg_datas.errors_count = parseInt(arg_datas.errors_count)
+			}
+			catch(e)
+			{}
+		}
+		if ( T.isString(arg_datas.renew_count) )
+		{
+			try{
+				arg_datas.renew_count = parseInt(arg_datas.renew_count)
+			}
+			catch(e)
+			{}
+		}
 		assert( T.isNumber(arg_datas.errors_count), context + ':set_credentials:bad errors_count number')
 		assert( T.isNumber(arg_datas.renew_count), context + ':set_credentials:bad renew_count number')
 
@@ -147,6 +327,11 @@ export default class Credentials
 		datas.hash = Digest.hash(str, 'sha256', 'hex')
 
 		this._credentials = fromJS(datas)
+
+		if ( T.isFunction(this.update_handler) )
+		{
+			this.update_handler(this._credentials)
+		}
 
 		return true
 	}
@@ -233,7 +418,7 @@ export default class Credentials
 		const auth = util.format('token:%s,user:%s,pass:%s', datas.token ? datas.token : 'none', datas.user_name ? datas.user_name : 'none', datas.user_pass_digest ? datas.user_pass_digest : 'none')
 		const str = util.format('CREDENTIALS:{%s,%s}', head, auth)
 
-		return EncodeDecode.encrypt(str, arg_app_key)
+		return EncryptDecrypt.encrypt(str, arg_app_key)
 	}
 
 
@@ -248,7 +433,7 @@ export default class Credentials
 	 */
 	decrypt(arg_string, arg_app_key)
 	{
-		const str = EncodeDecode.decrypt(arg_string, arg_app_key)
+		const str = EncryptDecrypt.decrypt(arg_string, arg_app_key)
 		const record = this.extract(str)
 
 		return this.set_credentials(record)

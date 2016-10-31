@@ -34,6 +34,7 @@ export default class AuthorizationManager extends PluginsManager
 	}
 	
 	
+	
 	/**
 	 * Load security settings
 	 * @param {object} arg_settings - authorization settings (Immutable object)
@@ -62,9 +63,12 @@ export default class AuthorizationManager extends PluginsManager
 	}
 	
 	
+	
 	/**
-	 * Load security plugin from settings
-	 * @param {object} arg_settings - authorization settings (Immutable object)
+	 * Load security plugin from settings.
+	 * 
+	 * @param {object} arg_settings - authorization settings (Immutable object).
+	 * 
 	 * @returns {boolean}
 	 */
 	load_plugin(arg_settings)
@@ -102,7 +106,7 @@ export default class AuthorizationManager extends PluginsManager
 	 * Chech permission authorization of a user.
 	 * 
 	 * @param {object} arg_permission - permission plain object.
-	 * @param {object} arg_credentials - user credentials plain object.
+	 * @param {Credentials} arg_credentials - user credentials plain object.
 	 * 
 	 * @returns {object} - a promise of boolean
 	 */

@@ -194,7 +194,7 @@ export default class LoggerManager
 	 * @param {string|array} arg_opds - messages strings.
 	 * @returns {nothing}
 	 */
-	debug(arg_opds)
+	debug(...arg_opds)
 	{
 		this.loggers.forEach(
 			(logger) => {
@@ -209,7 +209,7 @@ export default class LoggerManager
 	 * @param {string|array} arg_opds - messages strings.
 	 * @returns {nothing}
 	 */
-	info(arg_opds)
+	info(...arg_opds)
 	{
 		this.loggers.forEach(
 			(logger) => {
@@ -224,7 +224,7 @@ export default class LoggerManager
 	 * @param {string|array} arg_opds - messages strings.
 	 * @returns {nothing}
 	 */
-	warn(arg_opds)
+	warn(...arg_opds)
 	{
 		this.loggers.forEach(
 			(logger) => {
@@ -239,7 +239,7 @@ export default class LoggerManager
 	 * @param {string|array} arg_opds - messages strings.
 	 * @returns {nothing}
 	 */
-	error(arg_opds)
+	error(...arg_opds)
 	{
 		this.loggers.forEach(
 			(logger) => {

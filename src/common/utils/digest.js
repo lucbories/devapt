@@ -1,7 +1,18 @@
 // NPM IMPORTS
 import T from 'typr'
 import assert from 'assert'
-import forge from 'node-forge'
+// import nodeforge from 'node-forge'
+
+// COMMON IMPORTS
+import { is_browser } from './is_browser'
+
+let  forge = undefined
+if ( is_browser() )
+{
+	forge = require('forge-browser').forge
+} else {
+	forge = require('node-forge')
+}
 
 
 const context = 'common/utils/digest'
@@ -57,7 +68,7 @@ export default class Digest
 			case 'sha256': md = forge.md.sha256.create(); break
 			case 'sha384': md = forge.md.sha384.create(); break
 			case 'sha512': md = forge.md.sha512.create(); break
-			case 'md5':	md = forge.md.md5.create(); break
+			case 'md5':	   md = forge.md.md5.create(); break
 			default: this.error_bad_digest_method(arg_digest_method); return null
 		}
 		assert(md, context + ':bad message digest object')

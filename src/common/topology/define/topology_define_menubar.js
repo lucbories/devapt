@@ -32,6 +32,8 @@ export default class TopologyDefineMenubar extends TopologyDefineItem
 	 */
 	constructor(arg_name, arg_settings, arg_log_context)
 	{
+		// console.log('TopologyDefineMenubar.arg_settings', arg_settings.toJS ? arg_settings.toJS() : arg_settings)
+
 		const log_context = arg_log_context ? arg_log_context : context
 		super(arg_name, arg_settings, 'TopologyDefineMenubar', log_context)
 		

@@ -56,15 +56,17 @@ export default class TopologyDefineWorld extends TopologyDefineItem
 
 		this.topology_type = 'world'
 		
+		this._runtime = arg_runtime
+
+		this.load_loggers()
+		this.load_security()
+		
 		this.declare_collection('tenants', 'tenant', TopologyDefineTenant)
 		this.declare_collection('nodes',   'node',   TopologyDefineNode)
 		this.declare_collection('plugins', 'plugin', TopologyDefinePlugin, this.load_plugin.bind(this))
 
-		this._runtime = arg_runtime
 		assert( T.isObject(this._runtime) && this._runtime.is_server_runtime, context + ':constructor')
 
-		this.load_loggers()
-		this.load_security()
 		
 		this.info('World is created')
 	}
@@ -197,7 +199,7 @@ export default class TopologyDefineWorld extends TopologyDefineItem
 		else if ( T.isString(arg_plugin.topology_plugin_file) )
 		{
 			const file_path = self.runtime.context.get_absolute_path(arg_plugin.topology_plugin_file)
-			console.log(context + ':load_rendering_plugins:file_path=%s for plugin=%s', file_path, arg_plugin.topology_plugin_name)
+			console.log(context + ':load_rendering_plugins:file_path=%s for plugin=%s', file_path, arg_plugin.get_name())
 
 			plugin_class = require(file_path)
 		}
@@ -220,5 +222,113 @@ export default class TopologyDefineWorld extends TopologyDefineItem
 			
 		self.leave_group('load_rendering_plugin')
 		return Promise.resolve(true)
+	}
+
+
+
+	/**
+	 * Find a Tenant / Application / service.
+	 * 
+	 * @param {string} arg_tenant_name - tenant name.
+	 * @param {string} arg_env_name - environment name. (TODO)
+	 * @param {string} arg_application_name - application name.
+	 * @param {string} arg_svc_name - service name.
+	 * 
+	 * @returns {TopologyDefineService|undefined}
+	 */
+	find_service(arg_tenant_name, arg_application_name, arg_svc_name)
+	{
+		const tenant = this.tenant(arg_tenant_name)
+		if(! tenant)
+		{
+			self.error('tenant not found for ' + arg_tenant_name)
+			return
+		}
+
+		const application = tenant.application(arg_application_name)
+		if(! application)
+		{
+			self.error('application not found for ' + arg_application_name + ' for tenant ' + arg_tenant_name)
+			return
+		}
+
+		const defined_svc = application.find_resource(arg_svc_name, 'services')
+		return defined_svc
+	}
+
+
+	
+	/**
+	 * Find a Tenant / Application.
+	 * 
+	 * @param {Credentials} arg_credentials - credentials instance.
+	 * 
+	 * @returns {TopologyDefineApplication|undefined}
+	 */
+	find_application_with_credentials(arg_credentials)
+	{
+		const tenant_name = arg_credentials.get_tenant()
+		// const env_name = arg_credentials.get_env()// TODO
+		const application_name = arg_credentials.get_application()
+
+		const tenant = this.tenant(tenant_name)
+		if(! tenant)
+		{
+			self.error('tenant not found for ' + tenant_name)
+			return
+		}
+
+		const application = tenant.application(application_name)
+		return application
+	}
+
+
+	
+	/**
+	 * Find a Tenant / Application / service.
+	 * 
+	 * @param {Credentials} arg_credentials - credentials instance.
+	 * @param {string} arg_resource_name - resource name.
+	 * @param {string} arg_resource_type - resource type.
+	 * 
+	 * @returns {TopologyDefineService|undefined}
+	 */
+	find_resource_with_credentials(arg_credentials, arg_resource_name, arg_resource_type)
+	{
+		const tenant_name = arg_credentials.get_tenant()
+		const env_name = arg_credentials.get_env() // TODO
+		const application_name = arg_credentials.get_application()
+
+		const tenant = this.tenant(tenant_name)
+		if(! tenant)
+		{
+			self.error('tenant not found for ' + tenant_name)
+			return
+		}
+
+		const application = tenant.application(application_name)
+		if(! application)
+		{
+			self.error('resource of type ' + arg_resource_type + ' with name ' + arg_resource_name + 'not found for ' + application_name + ' for tenant ' + tenant_name)
+			return
+		}
+
+		const defined_svc = application.find_resource(arg_resource_name, arg_resource_type)
+		return defined_svc
+	}
+
+
+	
+	/**
+	 * Find a Tenant / Application / service.
+	 * 
+	 * @param {Credentials} arg_credentials - credentials instance.
+	 * @param {string} arg_svc_name - service name.
+	 * 
+	 * @returns {TopologyDefineService|undefined}
+	 */
+	find_service_with_credentials(arg_credentials, arg_svc_name)
+	{
+		return this.find_resource_with_credentials(arg_credentials, arg_svc_name, 'services')
 	}
 }

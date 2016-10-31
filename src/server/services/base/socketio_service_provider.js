@@ -3,6 +3,9 @@ import T from 'typr'
 import assert from 'assert'
 import Baconjs from 'baconjs'
 
+// COMMON IMPORTS
+import Credentials from '../../../common/base/credentials'
+
 // SERVER IMPORTS
 import ServiceProvider from './service_provider'
 import runtime from '../../base/runtime'
@@ -100,10 +103,12 @@ export default class SocketIOServiceProvider extends ServiceProvider
 		return {
 			// SETTINGS
 			'request_settings':
-				() => {
-					const svc_settings = runtime.get_registry().root.getIn(['services', svc_name, 'browser'])
-					const svc_settings_js = svc_settings ? svc_settings.toJS() : {} // TODO SECURITY: filter outputs
-					arg_socket.emit('reply_settings', { svc: svc_name, settings:svc_settings_js })
+				(data, credentials) => {
+					const defined_topology = runtime.get_defined_topology()
+					const defined_svc = defined_topology.find_service_with_credentials(credentials, svc_name, 'services')
+					const svc_settings_js = defined_svc ? defined_svc.export_settings() : {}
+					const svc_browser_settings_js = svc_settings_js.browser ? svc_settings_js.browser : {}
+					arg_socket.emit('reply_settings', { svc: svc_name, settings:svc_browser_settings_js })
 				},
 			
 			// SOCKET OPERATIONS
@@ -124,56 +129,56 @@ export default class SocketIOServiceProvider extends ServiceProvider
 			
 			// SECURITY OPERATIONS
 			'login':
-				(data) => {
-					self.on_method('login', arg_socket, data)
+				(data, arg_credentials) => {
+					self.on_method('login', arg_socket, data, arg_credentials)
 				},
 			'signup':
-				(data) => {
-					self.on_method('signup', arg_socket, data)
+				(data, arg_credentials) => {
+					self.on_method('signup', arg_socket, data, arg_credentials)
 				},
 			'logout':
-				(data) => {
-					self.on_method('logout', arg_socket, data)
+				(data, arg_credentials) => {
+					self.on_method('logout', arg_socket, data, arg_credentials)
 				},
 			'renew':
-				(data) => {
-					self.on_method('renew', arg_socket, data)
+				(data, arg_credentials) => {
+					self.on_method('renew', arg_socket, data, arg_credentials)
 				},
 			'change_password':
-				(data) => {
-					self.on_method('change_password', arg_socket, data)
+				(data, arg_credentials) => {
+					self.on_method('change_password', arg_socket, data, arg_credentials)
 				},
 			'reset_password':
-				(data) => {
-					self.on_method('reset_password', arg_socket, data)
+				(data, arg_credentials) => {
+					self.on_method('reset_password', arg_socket, data, arg_credentials)
 				},
 				
 			// SUBSCRIPTION OPERATIONS
 			'subscribe':
-				(data) => {
-					self.subscribe(arg_socket, data)
+				(data, arg_credentials) => {
+					self.subscribe(arg_socket, data, arg_credentials)
 				},
 			'unsubscribe':
-				(data) => {
-					self.unsubscribe(arg_socket, data)
+				(data, arg_credentials) => {
+					self.unsubscribe(arg_socket, data, arg_credentials)
 				},
 			
 			// OTHERS OPERATIONS
 			'get':
-				(data) => {
-					self.on_method('get', arg_socket, data)
+				(data, arg_credentials) => {
+					self.on_method('get', arg_socket, data, arg_credentials)
 				},
 			'render':
-				(data) => {
-					self.on_method('render', arg_socket, data)
+				(data, arg_credentials) => {
+					self.on_method('render', arg_socket, data, arg_credentials)
 				},
 			'list':
-				(data) => {
-					self.on_method('list', arg_socket, data)
+				(data, arg_credentials) => {
+					self.on_method('list', arg_socket, data, arg_credentials)
 				},
 			'push':
-				(data) => {
-					self.on_method('push', arg_socket, data)
+				(data, arg_credentials) => {
+					self.on_method('push', arg_socket, data, arg_credentials)
 				}
 		}
 	}
@@ -209,7 +214,9 @@ export default class SocketIOServiceProvider extends ServiceProvider
 	
 	/**
 	 * Activate service on one socketio server for browser request with messages.
-	 * @param {object} arg_socketio - socketio server
+	 * 
+	 * @param {object} arg_socketio - socketio server.
+	 * 
 	 * @returns {nothing}
 	 */
 	activate_on_socketio_server(arg_socketio)
@@ -234,7 +241,7 @@ export default class SocketIOServiceProvider extends ServiceProvider
 							if ( no_credentials_ops.indexOf(key) > -1 )
 							{
 								// console.info(context + ':activate_on_socketio_server:operation %s of svc %s without credentials with data:', key, svc_name, data)
-								callback(data)
+								callback(data, undefined)
 								return
 							}
 							
@@ -250,8 +257,8 @@ export default class SocketIOServiceProvider extends ServiceProvider
 							}
 							
 							// console.log(context + ':on: svc=%s op=%s :arg_credentials', svc_name, key, data.credentials.username)
-							
-							let authenticate_promise = runtime.security().authenticate(data.credentials)
+							const credentials = new Credentials(data.credentials)
+							let authenticate_promise = runtime.security().authenticate(credentials)
 							authenticate_promise = authenticate_promise.then(
 								(authenticate_result) => {
 									if (authenticate_result)
@@ -260,27 +267,28 @@ export default class SocketIOServiceProvider extends ServiceProvider
 										// console.log(context + 'authentication success')
 										
 										const permission = { resource:svc_name, operation:key }
-										let authorization_promise = runtime.security().authorize(permission, data.credentials)
+										let authorization_promise = runtime.security().authorize(permission, credentials)
 										return authorization_promise.then(
 											(authorize_result) => {
+												// console.log(context + ':authorize_result', authorize_result)
 												if (authorize_result)
 												{
 													self.debug('authorization success')
-													// console.log(context + 'authorization success')
-													callback(data)
-													return
+													// console.log(context + ':authorization success')
+													callback(data, credentials)
+													return true
 												}
 												
 												self.debug('authorization failure')
 												console.log(context + ':authorization failure')
 												socket.emit(key, { service:svc_name, operation:key, result:'authorization failure' })
-												return
+												return false
 											}
 										)
 										.catch(
 											(reason) => {
 												self.debug('authorization error:' + reason)
-												console.log(context + ':authorization error:' + reason)
+												console.error(context + ':authorization error:' + reason)
 												socket.emit(key, { service:svc_name, operation:key, result:'authorization error'} )
 											}
 										)
@@ -294,7 +302,7 @@ export default class SocketIOServiceProvider extends ServiceProvider
 							)
 							.catch(
 								(reason) => {
-									self.debug('authentication error:' + reason)
+									self.debug('authentication error:' + reason) // TODO NOT ONLY AUTHORIZ. ERROR
 									console.log(context + 'authentication error:' + reason)
 									socket.emit(key, { service:svc_name, operation:key, result:'authentication error'} )
 								}
@@ -358,10 +366,11 @@ export default class SocketIOServiceProvider extends ServiceProvider
 	 * @param {string} arg_method - method name
 	 * @param {object} arg_socket - subscribing socket.
 	 * @param {object} arg_data - query filter or datas (optional).
+	 * @param {Credentials} arg_credentials - request credentials
 	 * 
 	 * @returns {nothing}
 	 */
-	on_method(arg_method, arg_socket, arg_data)
+	on_method(arg_method, arg_socket, arg_data, arg_credentials)
 	{
 		const svc_name = this.service.get_name()
 		// console.info(context + ':on_get:socket get on /' + svc_name, arg_socket.id, arg_data)
@@ -373,7 +382,7 @@ export default class SocketIOServiceProvider extends ServiceProvider
 		}
 		
 		// PROCESS REQUEST
-		const datas_promise = this.process(arg_method, arg_data.request.operands, arg_data.credentials)
+		const datas_promise = this.process(arg_method, arg_data.request.operands, arg_credentials)
 		datas_promise.then(
 			(produced_datas) => {
 				arg_socket.emit(arg_method, { 'service':svc_name, 'operation':arg_method, 'result':'done', 'datas':produced_datas })
@@ -393,7 +402,7 @@ export default class SocketIOServiceProvider extends ServiceProvider
 	 * 
 	 * @param {string} arg_method - method name
 	 * @param {array} arg_operands - request operands
-	 * @param {object} arg_credentials - request credentials
+	 * @param {Credentials} arg_credentials - request credentials
 	 * 
 	 * @returns {Promise}
 	 */

@@ -46,6 +46,7 @@ export default class Component extends Bindable
 	 * Load and apply a component configuration.
 	 * 
 	 * @param {Immutable.Map|undefined} arg_state - component state to load (optional).
+	 * 
 	 * @returns {nothing} 
 	 */
 	load(arg_state)

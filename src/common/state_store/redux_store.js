@@ -78,6 +78,7 @@ export default class ReduxStore extends StateStore
 	 */
 	dispatch(arg_action)
 	{
+		console.log(context + ':dispatch:action', arg_action)
 		this.store.dispatch(arg_action)
 	}
 	

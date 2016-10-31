@@ -73,7 +73,7 @@ export default class ServiceConsumerByUrl extends ServiceConsumerBase
 	get_app_url_for(arg_provider)
 	{
 		let url = this.get_server_url_for(arg_provider)
-		const app_url = arg_provider.application.url
+		const app_url = arg_provider.application.app_url
 		
 		return url + '/' + app_url
 	}

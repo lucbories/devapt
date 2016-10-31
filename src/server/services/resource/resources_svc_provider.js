@@ -1,4 +1,5 @@
 // NPM IMPORTS
+import T from 'typr'
 import assert from 'assert'
 
 // SERVER IMPORTS
@@ -54,38 +55,53 @@ export default class ResourcesSvcProvider extends ServiceExecProvider
 		assert( T.isArray(arg_operands) && arg_operands.length > 0, context + ':process:bad operands array')
 		assert( T.isObject(arg_credentials) && arg_credentials.is_credentials, context + ':process:bad credentials object')
 		
-		const application_name = arg_credentials.get_credentials().application
+		const credentials = arg_credentials.get_credentials()
+
+		const tenant_name = T.isObject(credentials) ? credentials.tenant : undefined
+		assert( T.isString(tenant_name) && tenant_name.length > 0, context + ':process:bad credentials tenant name string')
+		this.debug('tenant_name', tenant_name)
+		// console.log('tenant_name', tenant_name)
+
+		const application_name = T.isObject(credentials) ? credentials.application : undefined
 		assert( T.isString(application_name) && application_name.length > 0, context + ':process:bad credentials application name string')
-		const application = this.runtime.topology_runtime.application(application_name)
+		this.debug('application_name', application_name)
+		// console.log('application_name', application_name)
+		
+		const defined_tenant = this.runtime.defined_world_topology.tenant(tenant_name)
+		assert( T.isObject(defined_tenant) && defined_tenant.is_topology_define_tenant, context + ':process:bad tenant object')
+
+		const application = defined_tenant.application(application_name)
 		assert( T.isObject(application) && application.is_topology_define_application, context + ':process:bad application object')
 
 		const args = arg_operands[0]
 		assert( T.isObject(args), context + ':process:bad method first operands object')
 		assert( T.isString(args.collection) && args.collection.length > 0, context + ':process:get:bad collection name string')
-		const collection = args.collection
+		const collection = args.collection 
 
 		switch(arg_method)
 		{
 			case 'get': {
 				assert( T.isString(args.resource) && args.resource.length > 0, context + ':process:get:bad resource name string')
 				const resource_name = args.resource
-				const resource_instance = application.resources.find_by_name(resource_name)
-				
+				const type = (collection && collection) != '*' ? collection : undefined
+				console.log('find resource name=%s with type=%s for tenant=%s and app=%s', resource_name, type, tenant_name, application_name)
+				const resource_instance = application.find_resource(resource_name, type)
+
 				if (!  T.isObject(resource_instance) )
 				{
 					return Promise.reject('not found')
 				}
 
-				if (collection !== '*' && (resource_instance.$type != collection) )
+				if (collection !== '*' && (resource_instance.topology_type != collection) )
 				{
-					return Promise.reject('not found')
+					return Promise.reject('found but bad type [' + resource_instance.topology_type + '] for [' + collection + ']')
 				}
 				
 				return Promise.resolve( this.get_resource_json(resource_instance) )
 			}
 
 			case 'list': {
-				return Promise.resolve( application.resources.get_all_names(collection) )
+				return Promise.resolve( application.get_resources_names(collection) )
 			}
 
 			case 'render': {
@@ -95,7 +111,23 @@ export default class ResourcesSvcProvider extends ServiceExecProvider
 				}
 				assert( T.isString(args.resource) && args.resource.length > 0, context + ':process:get:bad resource name string')
 				const resource_name = args.resource
-				const renderer = new Render('html_assets_1', 'html_assets_1', 'html_assets_1', undefined)
+				
+				// GET ASSETS CONFIG
+				const assets = this.services.topology_deploy_assets
+				const assets_region = 'all'
+				const assets_for_region = T.isObject(assets) && T.isObject(assets[assets_region]) ? assets[assets_region] : undefined
+				
+				const assets_style  = T.isObject(assets_for_region) && T.isArray(assets_for_region.style)  ? assets_for_region.style  : []
+				const assets_script = T.isObject(assets_for_region) && T.isArray(assets_for_region.script) ? assets_for_region.script : []
+				const assets_image  = T.isObject(assets_for_region) && T.isArray(assets_for_region.image)  ? assets_for_region.image  : []
+				const assets_html   = T.isObject(assets_for_region) && T.isArray(assets_for_region.html)   ? assets_for_region.html   : []
+
+				const assets_style_selected  = assets_style.length  > 0 ? assets_style[0]  : undefined
+				const assets_script_selected = assets_script.length > 0 ? assets_script[0] : undefined
+				const assets_image_selected  = assets_image.length  > 0 ? assets_image[0]  : undefined
+				const assets_html_selected   = assets_html.length   > 0 ? assets_html[0]   : undefined
+				
+				const renderer = new Render(assets_style_selected, assets_script_selected, assets_image_selected, assets_html_selected)
 				const html = renderer.add(resource).render()
 				return Promise.resolve(html)
 			}

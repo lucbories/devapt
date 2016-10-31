@@ -3,6 +3,7 @@ import T from 'typr'
 import assert from 'assert'
 
 // BROWSER IMPORTS
+import Loggable from '../common/base/loggable'
 import Component from './components/component'
 import Table from './components/table'
 import Tree from './components/tree'
@@ -20,10 +21,17 @@ const context = 'browser/ui'
  * @author Luc BORIES
  * @license Apache-2.0
  */
-export default class UI
+export default class UI extends Loggable
 {
 	/**
 	 * Create a UI instance.
+	 * 
+	 * 	API:
+	 * 		->constructor(arg_runtime, arg_store)
+	 * 		->get(arg_name):Component - Get a UI component by its name.
+	 * 		->create(arg_name):Component - Create a UI component.
+	 * 		->find_state(arg_state, arg_name, arg_state_path = []):Immutable.Map|undefined - Find a UI component state.
+	 * 		->render(arg_view_name):Promise(Component) - Render a view by its name.
 	 * 
 	 * @param {object} arg_runtime - client runtime.
 	 * @param {object} arg_store - UI components state store.
@@ -32,6 +40,8 @@ export default class UI
 	 */
 	constructor(arg_runtime, arg_store)
 	{
+		super(context)
+
 		this.is_ui = true
 		this.runtime = arg_runtime
 		this.store = arg_store
@@ -54,7 +64,7 @@ export default class UI
 	 * 
 	 * @param {string} arg_name - component name.
 	 * 
-	 * @returns {object}
+	 * @returns {Component}
 	 */
 	get(arg_name)
 	{
@@ -73,13 +83,14 @@ export default class UI
 	 * 
 	 * @param {string} arg_name - component name.
 	 * 
-	 * @returns {object}
+	 * @returns {Component}
 	 */
 	create(arg_name)
 	{
 		const current_state = this.store.get_state()
 		let state_path = []
 		const component_state = this.find_state(current_state, arg_name, state_path)
+		console.log('component_state', component_state)
 		assert( T.isObject(component_state), context + ':create:bad state object for ' + arg_name)
 		state_path.shift()
 		this.state_by_path[arg_name] = state_path
@@ -176,7 +187,7 @@ export default class UI
 	 * @param {string} arg_name - component name.
 	 * @param {array} arg_state_path - state path (optional, default=[])
 	 * 
-	 * @returns {Immutable.Map|undefined} - cmponent state object.
+	 * @returns {Immutable.Map|undefined} - component state object.
 	 */
 	find_state(arg_state, arg_name, arg_state_path = [])
 	{
@@ -261,29 +272,67 @@ export default class UI
 	 */
 	render(arg_view_name)
 	{
-		const service = this.runtime.service('rest_api_resources_query_1')
-		if (! service)
-		{
-			return Promise.reject('bad resources service')
-		}
-		
-		return service.get( {collection:'views', 'resource':arg_view_name} )
+		this.enter_group('render')
+		console.log(context + ':render:enter')
+
+		this.leave_group('render:async')
+		console.log(context + ':render:leave async')
+		return this.runtime.register_service('rest_api_resources_query_1')
 		.then(
-			(resource_json)=>{
-				const action = { type:'ADD_JSON_RESOURCE', resource:arg_view_name, json:resource_json }
-				this.store.dispatch(action)
-				return this.create(arg_view_name)
+			(service)=>{
+				console.log(context + ':render:get service for ' + arg_view_name)
+				return service.get( {collection:'views', 'resource':arg_view_name} )
+			}
+		)
+		.then(
+			(stream)=>{
+				console.log(context + ':render:get listen stream for ' + arg_view_name)
+				return new Promise(
+					function(resolve, reject)
+					{
+						stream.onValue(
+							(response)=>{
+								resolve(response)
+							}
+						)
+						stream.onError(
+							(reason)=>{
+								reject(reason)
+							}
+						)
+					}
+				)
+			}
+		)
+		.then(
+			(response)=>{
+				console.log(context + ':render:get response for ' + arg_view_name, response)
+
+				if (response.result == 'done')
+				{
+					console.log(context + ':render:dispatch ADD_JSON_RESOURCE action for ' + arg_view_name)
+					const action = { type:'ADD_JSON_RESOURCE', resource:arg_view_name, json:response.datas }
+					this.store.dispatch(action)
+					return this.create(arg_view_name)
+				}
+
+				return undefined
 			}
 		)
 		.then(
 			(resource_instance)=>{
-				return service.render( {collection:'views', 'resource':arg_view_name} )
+				if (! resource_instance)
+				{
+					return 'Bad resource instance'
+				}
+				return resource_instance.render( {collection:'views', 'resource':arg_view_name} )
 			}
 		)
-		.then(
-			(html)=>{
-				//...
-			}
-		)
+		// .then(
+		// 	(html)=>{
+		// 		//...
+		// 	}
+		// )
+
 	}
 }

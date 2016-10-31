@@ -2,8 +2,10 @@
 import T from 'typr'
 import assert from 'assert'
 import Bacon from 'baconjs'
+import { fromJS } from 'immutable'
 
 // COMMON IMPORTS
+import Credentials from '../common/base/credentials'
 import ReduxStore from '../common/state_store/redux_store'
 import RuntimeBase from '../common/base/runtime_base'
 // import LoggerManager from '../common/loggers/logger_manager'
@@ -14,6 +16,7 @@ import StreamLogger from './stream_logger'
 import Service from './service'
 import UI from './ui'
 import Router from './router'
+import Page from './components/page'
 
 
 let context = 'browser/runtime'
@@ -53,6 +56,7 @@ export default class ClientRuntime extends RuntimeBase
 		this.services_promises = {}
 		this.ui = undefined
 		this._router = undefined
+		this.body_page = new Page()
 		
 		this.info('Client Runtime is created')
 	}
@@ -77,7 +81,7 @@ export default class ClientRuntime extends RuntimeBase
 		
 		// GET INITIAL STATE
 		const initial_state = window ? window.__INITIAL_STATE__ : {error:'no browser window object'}
-		// console.log(initial_state, 'initialState')
+		console.log(initial_state, 'initialState')
 		
 		// GET DEFAULT REDUCER
 		if ( T.isFunction(arg_settings.reducers) )
@@ -98,13 +102,53 @@ export default class ClientRuntime extends RuntimeBase
 		this.state_store_unsubscribe = this.state_store.subscribe( self.handle_store_change.bind(self) )
 		this.state_store.dispatch( {type:'store_created'} )
 		
+		// CREATE CREDENTIALS INSTANCE
+		const credentials_settings = this.state_store.get_state().get('credentials', undefined)
+		// console.log('credentials_settings', credentials_settings)
+		const credentials_update_handler = (arg_credentials_map)=>{
+			this.state_store.dispatch( {type:'SET_CREDENTIALS', credentials:arg_credentials_map } )
+		}
+		const credentials_datas = credentials_settings ? credentials_settings.toJS() : Credentials.get_empty_credentials()
+		this.session_credentials = new Credentials(credentials_datas, credentials_update_handler)
+
 		// CREATE UI WRAPPER
 		this.ui = new UI(this, this.state_store)
 		
 		// CREATE NAVIGATION ROUTER
 		this._router = new Router()
 		this._router.init()
-		
+
+		// ADD COMMANDS ROUTE
+		const app_url = this.state_store.get_state().get('app_url', undefined)
+		const commands = this.state_store.get_state().get('commands', {}).toJS()
+		Object.keys(commands).forEach(
+			(cmd_name)=>{
+				const cmd = commands[cmd_name]
+				if ( T.isString(cmd.url) )
+				{
+					const route = T.isString(app_url) ? '/' + app_url + cmd.url : cmd.url
+					if ( T.isString(cmd.view) )
+					{
+						const menubar = T.isString(cmd.menubar) ? cmd.menubar : undefined
+						this._router.add_handler(route, ()=>this._router.display_content(cmd.view, menubar) )
+						return
+					}
+
+					// GET AN URL HTML CONTENT
+					let url = route + '?' + this.session_credentials.get_url_part()
+					this._router.add_handler(url,
+						()=> {
+							$.get(url).then(
+								(html)=>{
+									this.body_page.render_html(html) // TODO
+								}
+							)
+						}
+					)
+				}
+			}
+		)
+
 		this.leave_group('load')
 		this.separate_level_1()
 	}
@@ -117,7 +161,7 @@ export default class ClientRuntime extends RuntimeBase
 	 * @param {string} arg_svc_name - service name.
 	 * @param {object} arg_svc_settings - service settings.
 	 * 
-	 * @returns {Promise}
+	 * @returns {Promise} - Promise(Service)
 	 */
 	register_service(arg_svc_name, arg_svc_settings)
 	{
@@ -126,7 +170,8 @@ export default class ClientRuntime extends RuntimeBase
 		
 		if (arg_svc_name in this.services_promises)
 		{
-			this.debug('register_service:svc promise found:' + arg_svc_name)
+			console.log(this.services_promises[arg_svc_name], 'this.services_promises[arg_svc_name]')
+			this.leave_group('register_service:svc promise found for ' + arg_svc_name)
 			return this.services_promises[arg_svc_name]
 		}
 
@@ -137,10 +182,16 @@ export default class ClientRuntime extends RuntimeBase
 				self.register_service_self(resolve, reject, arg_svc_name, arg_svc_settings)
 			}
 		)
+		.then(
+			(service)=>{
+				this.leave_group('register_service:svc promise created for ' + arg_svc_name)
+				return service
+			}
+		)
 		
 		this.info('Client Service is created (async):' + arg_svc_name)
 	
-		this.leave_group('register_service')
+		this.leave_group('register_service:async')
 		return this.services_promises[arg_svc_name]
 	}
 
@@ -163,7 +214,8 @@ export default class ClientRuntime extends RuntimeBase
 		// this.enter_group('register_service_self')
 		
 
-		const app_credentials = this.state_store.get_state().get('credentials')
+		// const app_credentials = this.state_store.get_state().get('credentials')
+		const app_credentials = this.session_credentials.get_credentials()
 		const request_svc_settings = 'request_settings'
 		const reply_svc_settings = 'reply_settings'
 
@@ -178,6 +230,8 @@ export default class ClientRuntime extends RuntimeBase
 		// TEST IF SERVICE IS ALREADY REGISTERED
 		if (this.services && (arg_svc_name in this.services) )
 		{
+			this.debug('register_service_self:SERVICE IS ALREADY REGISTERED for ' + arg_svc_name)
+
 			const svc = this.services[arg_svc_name]
 			// console.log(context + ':register_service_self:SERVICE IS ALREADY REGISTERED:svc', svc)
 			this.debug('register_service:svc promise resolved:' + arg_svc_name)
@@ -189,11 +243,13 @@ export default class ClientRuntime extends RuntimeBase
 		// GET SERVICE SETTINGS FROM GIVEN SETTINGS
 		if ( T.isObject(arg_svc_settings) )
 		{
+			this.debug('register_service_self:SERVICE FROM GIVEN SETTINGS for ' + arg_svc_name)
 			// console.log(context + ':register_service_self:SERVICE FROM GIVEN SETTINGS:arg_svc_settings', arg_svc_settings)
 
 			// GET APPLICATION CREDENTIALS
 			// TODO CHECK CREDENTIAL FORMAT STRING -> MAP ?
 			arg_svc_settings.credentials = app_credentials
+			// console.log(context + ':register_service_self:credentials', arg_svc_settings.credentials = app_credentials)
 			assert( T.isObject(arg_svc_settings), context + ':register_service:bad service settings object')
 			
 			if ( T.isString(arg_svc_settings.credentials ) )
@@ -216,12 +272,14 @@ export default class ClientRuntime extends RuntimeBase
 		const svc_socket = io(svc_path)
 		const get_settings_stream = Bacon.fromEvent(svc_socket, reply_svc_settings)
 		
+		this.debug('register_service_self:SERVICE FROM SERVER SETTINGS for ' + arg_svc_name)
 		get_settings_stream.onValue(
 			(response) => {
 				// console.log(context + ':register_service_self:SERVICE FROM SERVER SETTINGS:response', response)
 				arg_svc_settings = response.settings
 				assert( T.isObject(arg_svc_settings), context + ':register_service:bad service settings object')
-				
+				console.log(context + ':register_service_self:SERVICE FROM SERVER SETTINGS:arg_svc_settings', arg_svc_settings)
+
 				// GET APPLICATION CREDENTIALS
 				// TODO CHECK CREDENTIAL FORMAT STRING -> MAP ?
 				arg_svc_settings.credentials = app_credentials
@@ -231,7 +289,7 @@ export default class ClientRuntime extends RuntimeBase
 				}
 
 				const svc = new Service(arg_svc_name, arg_svc_settings)
-				// console.log(context + ':register_service_self:SERVICE FROM SERVER SETTINGS:svc', svc)
+				console.log(context + ':register_service_self:SERVICE FROM SERVER SETTINGS:svc', svc)
 
 				self.services[arg_svc_name] = svc
 				delete self.services_promises[arg_svc_name]
@@ -257,6 +315,7 @@ export default class ClientRuntime extends RuntimeBase
 			},
 			credentials:app_credentials
 		}
+		this.debug('register_service_self:emit with path=' + request_svc_settings + ' and payload', payload.request.operation, payload.credentials)
 		svc_socket.emit(request_svc_settings, payload)
 
 
@@ -299,13 +358,23 @@ export default class ClientRuntime extends RuntimeBase
 	get_store_reducers()
 	{
 		return (arg_previous_state, arg_action) => {
-			// console.info(context + ':reducer 1:type=' + arg_action.type + ' for ' + arg_action.component)
+			console.info(context + ':reducer 1:type=' + arg_action.type + ' for ' + arg_action.component)
 			
+			// ADD JSON RESOURCE SETTINGS
 			if ( T.isString(arg_action.type) && arg_action.type == 'ADD_JSON_RESOURCE' && T.isString(arg_action.resource) && T.isObject(arg_action.json) )
 			{
-				return arg_previous_state.set(arg_action.resource, arg_action.json)
+				console.log(context + ':reducer:ADD_JSON_RESOURCE', arg_action.resource, arg_action.json)
+				return arg_previous_state.setIn(['children', arg_action.resource], fromJS(arg_action.json) )
 			}
 
+			// SET SESSION CREDENTIALS
+			if ( T.isString(arg_action.type) && arg_action.type == 'SET_CREDENTIALS' && T.isObject(arg_action.credentials) )
+			{
+				console.log(context + ':reducer:SET_CREDENTIALS', arg_action.credentials)
+				return arg_previous_state.set('credentials', arg_action.credentials)
+			}
+
+			// DISPATCH TO COMPONENTS REDUCERS
 			if ( T.isString(arg_action.component) )
 			{
 				// console.info(context + ':reducer 2:type=' + arg_action.type + ' for ' + arg_action.component)

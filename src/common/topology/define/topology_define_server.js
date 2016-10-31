@@ -6,7 +6,7 @@
 import TopologyDefineItem from './topology_define_item'
 
 
-let context = 'common/topology/define/topology_define_node'
+let context = 'common/topology/define/topology_define_server'
 
 
 
@@ -55,7 +55,7 @@ export default class TopologyDefineServer extends TopologyDefineItem
 		const log_context = arg_log_context ? arg_log_context : context
 		super(arg_name, arg_settings, 'TopologyDefineServer', log_context)
 		
-		this.is_topology_define_node = true
+		this.is_topology_define_server = true
 
 		this.topology_type = 'servers'
 		

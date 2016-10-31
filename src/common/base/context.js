@@ -258,7 +258,7 @@ export default class Context
 		}
 		
 		// TODO: use security token
-		return 'username=' + credentials.username + '&password=' + credentials.password
+		return 'username=' + credentials.get_user() + '&password=' + credentials.get_pass_digest() + '&token=' + credentials.get_token()
 	}
 	
 	
@@ -320,16 +320,21 @@ export default class Context
 		{
 			const base64_encoded = forge.util.encode64(credentials_obj.username + ':' + credentials_obj.password)
 
-			const credentials_datas = {
-				credentials_str:credentials_str,
-				credentials_url:credentials_url,
-				credentials_username:credentials_obj.username,
-				credentials_password:credentials_obj.password,
-				credentials_token:credentials_obj.token,
-				credentials_expire:credentials_obj.expire,
-				credentials_basic_base64:base64_encoded
-				// credentials_obj: `{ \"username\":\"${credentials_obj.username}\", "password":"${credentials_obj.password}" }`
-			}
+			const credentials_datas = credentials_obj.get_credentials_for_template()
+			credentials_datas.credentials_str = credentials_str
+			credentials_datas.credentials_url = credentials_url
+			credentials_datas.credentials_basic_base64 = base64_encoded
+
+			// 	credentials_token:credentials_obj.token,
+			// 	credentials_user_name:credentials_obj.username,
+			// 	credentials_pass_digest:credentials_obj.password,
+				
+			// 	credentials_login:credentials_obj.ts_login,
+			// 	credentials_expire:credentials_obj.expire,
+
+			// 	credentials_basic_base64:base64_encoded
+			// 	// credentials_obj: `{ \"username\":\"${credentials_obj.username}\", "password":"${credentials_obj.password}" }`
+			// }
 			return mustache.render(arg_html, credentials_datas)
 		}
 		

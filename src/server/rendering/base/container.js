@@ -65,7 +65,7 @@ export default class Container extends Component
 				{
 					this.add_child(child)
 				}
-				else if ( T.isString(child) )
+				else if ( T.isString(child) || ( T.isObject(child) && T.isString(child.name) ) )
 				{
 					this.create_and_add_child(child)
 				}

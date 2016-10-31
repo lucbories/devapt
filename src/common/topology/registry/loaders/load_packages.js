@@ -18,6 +18,7 @@ let error_msg_bad_resources = context + ':package.resources should be an array'
 let error_msg_bad_templates = context + ':package.templates should be an array'
 let error_msg_bad_includes = context + ':package.includes should be an array'
 
+let error_msg_bad_service = context + ':package.services.* should be an object'
 let error_msg_bad_resource = context + ':package.resources.* should be a string'
 let error_msg_bad_template = context + ':package.templates.* should be a string'
 let error_msg_bad_include = context + ':package.includes.* should be a string'
@@ -29,7 +30,7 @@ let error_msg_bad_resource_config = context + ':bad resource config'
 
 function load_packages(logs, arg_packages_config, arg_base_dir)
 {
-	logs.info(context, 'loading world.packages')
+	logs.info(context, 'loading world...packages')
 	
 	try{
 		// CHECK PACKAGES
@@ -40,18 +41,22 @@ function load_packages(logs, arg_packages_config, arg_base_dir)
 		Object.keys(arg_packages_config).forEach(
 			function(arg_package_name)
 			{
-				if (arg_package_name === 'files')
+				if (arg_package_name == 'files')
 				{
 					return
 				}
 				
-				logs.info(context, 'loading world.packages.' + arg_package_name)
+				logs.info(context, 'loading world...packages.' + arg_package_name)
 				
 				let package_obj = arg_packages_config[arg_package_name]
-				load_package(logs, arg_package_name, package_obj, arg_base_dir, files)
+				arg_packages_config[arg_package_name] = load_package(logs, arg_package_name, package_obj, arg_base_dir, files)
 				// console.log(package_obj, 'package_obj')
 
 				// PROCESS ERRORS
+				if (package_obj.commands && package_obj.commands.error)
+				{
+					throw 'error in packages.' + arg_package_name + '.commands:' + e 
+				}
 				if (package_obj.services && package_obj.services.error)
 				{
 					throw 'error in packages.' + arg_package_name + '.services:' + e 
@@ -80,7 +85,7 @@ function load_packages(logs, arg_packages_config, arg_base_dir)
 		)
 		
 		// CACHE FILES CONTENT
-		arg_packages_config.files = files
+		// arg_packages_config.files = files
 	}
 	catch(e)
 	{
@@ -94,24 +99,38 @@ function load_packages(logs, arg_packages_config, arg_base_dir)
 
 function load_package(logs, arg_package_name, arg_package_config, arg_base_dir, files)
 {
-	logs.info(context, 'loading world.packages.' + arg_package_name)
+	logs.info(context, 'loading world...packages.' + arg_package_name + ':BEGIN')
 	
 	// CHECK PACKAGES
 	assert(T.isObject(arg_package_config), error_msg_bad_config)
-
+	arg_package_config.base_dir  = arg_package_config.base_dir  ? arg_package_config.base_dir  : ''
+	arg_package_config.commands  = arg_package_config.commands  ? arg_package_config.commands  : {}
+	arg_package_config.services  = arg_package_config.services  ? arg_package_config.services  : {}
+	arg_package_config.resources = arg_package_config.resources ? arg_package_config.resources : {}
+	arg_package_config.templates = arg_package_config.templates ? arg_package_config.templates : {}
+	arg_package_config.includes  = arg_package_config.includes  ? arg_package_config.includes  : {}
 	
+	// LOAD COMMANDS
+	if (T.isString(arg_package_config.commands))
+	{
+		logs.info(context, 'loading world...packages.' + arg_package_name + '.commands is a string')
+		const file_path_name = path.join(arg_base_dir, arg_package_config.commands)
+		arg_package_config.commands = require(file_path_name).commands
+	}
+
 	// LOAD SERVICES
 	if (T.isString(arg_package_config.services))
 	{
-		logs.info(context, 'loading world.packages.' + arg_package_name + '.services is a string')
+		logs.info(context, 'loading world...packages.' + arg_package_name + '.services is a string')
 		const file_path_name = path.join(arg_base_dir, arg_package_config.services)
 		arg_package_config.services = require(file_path_name).services
 	}
 	if ( T.isObject(arg_package_config.services) )
 	{
-		logs.info(context, 'loading world.packages.' + arg_package_name + '.services.*')
+		logs.info(context, 'loading world...packages.' + arg_package_name + '.services is now an object')
 		// load_services(arg_package_config.services)
 	}
+	// console.log(arg_package_config.services, 'arg_package_config.services for ' + arg_package_name)
 
 	// CHECK ATTRIBUTES
 	assert(T.isString(arg_package_config.base_dir), error_msg_bad_base_dir  + ' for package ' + arg_package_name)
@@ -122,7 +141,7 @@ function load_package(logs, arg_package_name, arg_package_config, arg_base_dir, 
 	// CHECK ATTRIBUTES ITEMS
 	arg_package_config.resources.forEach( (resource) => { assert(T.isString(resource), error_msg_bad_resource) } )
 	arg_package_config.templates.forEach( (template) => { assert(T.isString(template), error_msg_bad_template) } )
-	arg_package_config.includes.forEach( (include) => { assert(T.isString(include), error_msg_bad_include) } )
+	arg_package_config.includes.forEach(  (include) => { assert(T.isString(include), error_msg_bad_include) } )
 	
 	// INIT RESOURCES REPOSITORY
 	arg_package_config.resources_by_name = {}
@@ -134,11 +153,43 @@ function load_package(logs, arg_package_name, arg_package_config, arg_base_dir, 
 	arg_package_config.resources_by_type.menus = {}
 	arg_package_config.resources_by_type.datasources = {}
 	arg_package_config.resources_by_type.services = {}
+	arg_package_config.resources_by_type.commands = {}
+	arg_package_config.views = {}
+	arg_package_config.models = {}
+	arg_package_config.menubars = {}
+	arg_package_config.menus = {}
+	arg_package_config.datasources = {}
+
+	// REGISTER SERVICES AS RESOURCES
+	Object.keys(arg_package_config.services).forEach(
+		(svc_name) => {
+			const svc = arg_package_config.services[svc_name]
+			assert(T.isObject(svc), error_msg_bad_service)
+			logs.info(context, 'loading world...packages.' + arg_package_name + '.services.' + svc_name + ' is registered')
+
+			arg_package_config.resources_by_name[svc_name] = svc
+			arg_package_config.resources_by_type['services'][svc_name] = svc
+		}
+	)
+
+	// REGISTER COMMANDS AS RESOURCES
+	debugger
+	Object.keys(arg_package_config.commands).forEach(
+		(cmd_name) => {
+			const cmd = arg_package_config.commands[cmd_name]
+			assert(T.isObject(cmd), error_msg_bad_service)
+			logs.info(context, 'loading world...packages.' + arg_package_name + '.commands.' + cmd_name + ' is registered')
+
+			arg_package_config.resources_by_name[cmd_name] = cmd
+			arg_package_config.resources_by_type['commands'][cmd_name] = cmd
+		}
+	)
 	
 	// LOAD RESOURCES
-	arg_package_config.resources.forEach(
+	const resources = arg_package_config.resources
+	resources.forEach(
 		(resource_file) => {
-			logs.info(context, 'loading world.packages.' + arg_package_name + ' resources file:' + resource_file)
+			logs.info(context, 'loading world...packages.' + arg_package_name + ' resources file:' + resource_file)
 			
 			let relative_path_name = path.join(arg_package_config.base_dir, resource_file)
 			let absolute_path_name = path.join(arg_base_dir , relative_path_name)
@@ -150,20 +201,20 @@ function load_package(logs, arg_package_name, arg_package_config, arg_base_dir, 
 			arg_package_config.resources_by_file[relative_path_name] = {}
 			
 			// CHECK package
-			assert(T.isObject(config.application), error_msg_bad_package_config + ' for file ' + resource_file)
+			assert(T.isObject(config), error_msg_bad_package_config + ' for file ' + resource_file)
 			
-			const types = ['views', 'models', 'menubars', 'menus', 'datasources', 'services']
+			const types = ['views', 'models', 'menubars', 'menus', 'datasources']
 			types.forEach(
 				(type_name)=>{
-					// logs.info(context, 'loading config.packages.' + arg_package_name + ' resources file:' + resource_file + ' of type:' + type_name)
+					logs.info(context, 'loading world...packages.' + arg_package_name + ' resources file:' + resource_file + ' of type:' + type_name)
 					
-					if ( config.application[type_name] && T.isObject(config.application[type_name]) )
+					if ( config[type_name] && T.isObject(config[type_name]) )
 					{
-						Object.keys(config.application[type_name]).forEach(
+						Object.keys(config[type_name]).forEach(
 							(res_name) => {
-								// logs.info(context, 'loading config.packages.' + arg_package_name + ' resources file:' + resource_file + ' of type:' + type_name + ' for ' + res_name)
+								logs.debug(context, 'loading world...packages.' + arg_package_name + ' resources file:' + resource_file + ' of type:' + type_name + ' for ' + res_name)
 								
-								let res_obj = config.application[type_name][res_name]
+								let res_obj = config[type_name][res_name]
 								
 								if (type_name !== 'menus' && type_name !== 'models')
 								{
@@ -172,10 +223,12 @@ function load_package(logs, arg_package_name, arg_package_config, arg_base_dir, 
 								}
 								
 								res_obj.collection = type_name
+								res_obj.name = res_name
 								
 								arg_package_config.resources_by_name[res_name] = res_obj
 								arg_package_config.resources_by_type[type_name][res_name] = res_obj
 								arg_package_config.resources_by_file[relative_path_name][res_name] = res_obj
+								arg_package_config[type_name][res_name] = res_obj
 							}
 						)
 					}
@@ -184,6 +237,7 @@ function load_package(logs, arg_package_name, arg_package_config, arg_base_dir, 
 		}
 	)
 	
+	logs.info(context, 'loading world...packages.' + arg_package_name + ':END')
 	return arg_package_config
 }
 

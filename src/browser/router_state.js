@@ -160,7 +160,10 @@ export default class RouterState extends Stateable
 		this.debug('arg_view_name:', arg_view_name)
 		this.debug('arg_menubar_name:', arg_menubar_name)
 		
-		this.dispatch_action('display_content', { view:arg_view_name, menubar:arg_menubar_name } )
+		if ( T.isString(arg_view_name) || T.isString(arg_menubar_name) )
+		{
+			this.dispatch_action('display_content', { view:arg_view_name, menubar:arg_menubar_name } )
+		}
 		
 		this.leave_group('do_action_display_content')
 	}
