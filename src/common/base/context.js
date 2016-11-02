@@ -231,34 +231,19 @@ export default class Context
     /**
      * Get credentials string.
 	 * 
-     * @param {object} arg_request - request object.
+     * @param {object} arg_credentials - Credetials object.
 	 * 
      * @returns {string} credentials string.
      */
-	get_credentials_string(arg_request)
+	get_credentials_string(arg_credentials)
 	{
-		// logs.debug('get_credentials_string')
-
-		// TODO: credentials
-		const auth_mgr = this.$runtime ? this.$runtime.security().authentication() : null
-		if (! auth_mgr)
-		{
-			return undefined
-		}
-		
-		if ( ! arg_request )
-		{
-			return undefined
-		}
-		
-		const credentials = auth_mgr.get_credentials(arg_request)
-		if (! credentials)
+		if (! arg_credentials)
 		{
 			return ''
 		}
 		
 		// TODO: use security token
-		return 'username=' + credentials.get_user() + '&password=' + credentials.get_pass_digest() + '&token=' + credentials.get_token()
+		return 'username=' + arg_credentials.get_user() + '&password=' + arg_credentials.get_pass_digest() + '&token=' + arg_credentials.get_token()
 	}
 	
 	
@@ -296,15 +281,17 @@ export default class Context
      * Render credentials template.
 	 * 
      * @param {string} arg_html - template html string.
-     * @param {object} arg_request - request object.
+     * @param {Request|Credentials} arg_request_or_credentials - request object.
 	 * 
      * @returns {string} rendered template.
      */
-	render_credentials_template(arg_html, arg_request)
+	render_credentials_template(arg_html, arg_request_or_credentials)
 	{
-		let credentials_str = this.get_credentials_string(arg_request)
-		let credentials_url = this.get_credentials_string(arg_request)
-		let credentials_obj = this.get_credentials(arg_request)
+		assert( T.isObject(arg_request_or_credentials), context + ':render_credentials_template:bad arg_request_or_credentials object')
+
+		let credentials_obj = arg_request_or_credentials.is_credentials ? arg_request_or_credentials : this.get_credentials(arg_request_or_credentials)
+		let credentials_str = this.get_credentials_string(credentials_obj)
+		let credentials_url = this.get_credentials_string(credentials_obj)
 		// console.log(credentials_str, 'credentials_str')
 		
 		

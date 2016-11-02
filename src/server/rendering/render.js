@@ -1,10 +1,15 @@
-
+// NPM IMPORTS
 import T from 'typr'
 import assert from 'assert'
 
+// COMMON IMPORTS
 import Loggable from '../../common/base/loggable'
+import RenderingResult from '../../common/rendering/rendering_result'
+
+// SERVER IMPORTS
 import runtime from '../base/runtime'
 import RenderStack from './base/render_stack'
+import { create_component } from './base/factory'
 
 
 const context = 'common/rendering/render'
@@ -20,6 +25,9 @@ export default class Render extends Loggable
 {
     /**
      * Create a rendering wrapper class.
+	 * 
+	 * API:
+	 * 		->render_content(arg_title, arg_view, arg_menubar, arg_credentials):string - generate page HTML string.
 	 * 
 	 * @param {string} arg_assets_styles - application service name to provide style assets.
 	 * @param {string} arg_assets_scripts - application service name to provide script assets.
@@ -251,7 +259,7 @@ export default class Render extends Loggable
 			console.warn(context + ':add:bad container')
 			return this
 		}
-
+		
 		// COMPONENT NAME
 		if ( T.isString(arg_component) )
 		{
@@ -292,10 +300,12 @@ export default class Render extends Loggable
 	
     /**
      * Create a component instance and push it on the rendering stack.
+	 * 
      * @param {string} arg_class_name - component class name.
      * @param {string} arg_name - component name.
      * @param {object} arg_settings - component settings plain object.
      * @param {object} arg_state - component initial state plain object.
+	 * 
      * @returns {object} this.
      */
 	new_component(arg_class_name, arg_name, arg_settings, arg_state)
@@ -334,7 +344,8 @@ export default class Render extends Loggable
         
 		let component = this.rendering_manager.create('Page', arg_name, arg_settings)
 		assert( T.isObject(component) && component.is_component, context + ':bad Page component object')
-		
+		component.renderer = this
+
 		this.push(component)
 		
 		return this
@@ -473,6 +484,7 @@ export default class Render extends Loggable
 	
     /**
      * Render the rendering stack of componenents.
+	 * 
      * @returns {string} rendered HTML string.
      */
 	render()
@@ -483,5 +495,231 @@ export default class Render extends Loggable
 		}
 		
 		return this.current().render()
+	}
+
+
+
+	/**
+	 * Get TopologyDefineApplication instance from registered application or from credentials.
+	 * 
+	 * @param {Credentials} arg_credentials - Credentials instance (optional).
+	 * 
+	 * @returns {TopologyDefineApplication} - request user credentials application.
+	 */
+	get_topology_defined_application(arg_credentials)
+	{
+		// GET TOPOLOGY DEFINED APPLICATION
+		if ( ! this.application )
+		{
+			if ( T.isObject(arg_credentials) && arg_credentials.is_credentials )
+			{
+				const defined_topology = runtime.get_defined_topology()
+				this.application = defined_topology.find_application_with_credentials(arg_credentials)
+				
+				if(! this.application)
+				{
+					console.error(context + ':get_topology_defined_application:application not found')
+					return undefined
+				}
+
+				return this.application
+			}
+
+			console.error(context + ':get_topology_defined_application:bad credentials object')
+			return undefined
+		}
+
+		return this.application
+	}
+
+
+
+	/**
+	 * Render a complete page.
+	 * 
+	 * @param {string|undefined} arg_tile - page title, application title (optional).
+	 * @param {string|Component|undefined} arg_view - main view name or instance (optional) (default application view name).
+	 * @param {string|Component|undefined} arg_menubar - main menubar name or instance (optional) (default application menubar name).
+	 * @param {Credentials} arg_credentials - credentials instance.
+	 * @param {object} arg_assets_services - assets record (optional).
+	 * 
+	 * @returns {string|RenderingResult} - rendering result.
+	 */
+	render_page_content(arg_title, arg_view, arg_menubar, arg_credentials, arg_assets_services=undefined)
+	{
+		// assert( T.isString(arg_view) || ( T.isObject(arg_view) && arg_view.is_component ), context + ':bad view string or object')
+		assert( T.isObject(arg_credentials) && arg_credentials.is_credentials, context + ':bad credentials object')
+		
+		// SET ASSETS SERVICES NAMES
+		if ( T.isObject(arg_assets_services) )
+		{
+			this.set_assets_services_names(arg_assets_services.style, arg_assets_services.script, arg_assets_services.image, arg_assets_services.html)
+		}
+
+		// GET TOPOLOGY DEFINED APPLICATION
+		const topology_define_app = this.get_topology_defined_application(arg_credentials)
+		assert(topology_define_app, context + ':render_page_content:bad topology_define_app')
+		
+		// GET VIEW
+		const default_view_name = topology_define_app.app_default_view
+		const view = ( T.isString(arg_view) || ( T.isObject(arg_view) && arg_view.is_component ) ) ? arg_view : default_view_name
+		
+		// GET MENUBAR
+		const default_menubar_name = topology_define_app.app_default_menubar
+		const menubar = ( T.isString(arg_menubar) || ( T.isObject(arg_menubar) && arg_menubar.is_component ) ) ? arg_menubar : default_menubar_name
+
+		// GET DEFAULT TITLE IF NEEDED
+		const default_title = topology_define_app.app_title
+		const title = arg_title ? arg_title : default_title
+
+		// TODO ADDSECURITY  HEADERS
+		// const auth_basic_realm = '<meta http-equiv="WWW-Authenticate" content="Basic realm=Devtools"/>'
+		// const auth_basic_credentials = '<meta http-equiv="Authorization" content="Basic {{{credentials_basic_base64}}}"/>'
+		
+		// ADD PAGE
+		const separator = create_component( {type:'Table', name:'separator'} )
+		const scripts = create_component(
+			{
+				type:'Script',
+				name:'main_script',
+				scripts:[],
+				scripts_urls:this.application.app_assets_js,
+				renderer:this
+			}
+		)
+		const page_settings = {
+			title: title,
+			default_view: default_view_name,
+			default_menubar: default_menubar_name/*,
+			headers:[auth_basic_realm, auth_basic_credentials]*/,
+			renderer:this,
+			children:[menubar, separator, view, scripts]
+		}
+		this.page('main', page_settings)
+		
+		// RENDER
+		const html = this.render()
+		const rendered_html = runtime.context.render_credentials_template(html, arg_credentials)
+		
+		return rendered_html
+	}
+
+	
+
+	/**
+	 * Render a page part.
+	 * 
+	 * @param {string|Component|undefined} arg_view - main view name or instance (optional) (default application view name).
+	 * @param {string|Component|undefined} arg_menubar - main menubar name or instance (optional) (default application menubar name).
+	 * @param {Credentials} arg_credentials - credentials instance.
+	 * @param {object} arg_assets_services - assets record (optional).
+	 * 
+	 * @returns {string|RenderingResult} - rendering result.
+	 */
+	render_content(arg_view, arg_menubar, arg_credentials, arg_assets_services)
+	{
+		assert( T.isString(arg_view) || ( T.isObject(arg_view) && arg_view.is_component ), context + ':bad view string or object')
+		assert( T.isObject(arg_credentials) && arg_credentials.is_credentials, context + ':bad credentials object')
+		
+		// SET ASSETS SERVICES NAMES
+		if ( T.isObject(arg_assets_services) )
+		{
+			this.set_assets_services_names(arg_assets_services.style, arg_assets_services.script, arg_assets_services.image, arg_assets_services.html)
+		}
+
+		// GET TOPOLOGY DEFINED APPLICATION
+		const topology_define_app = this.get_topology_defined_application(arg_credentials)
+		assert(topology_define_app, context + ':render_content:bad topology_define_app')
+
+		// GET VIEW
+		const default_view_name = topology_define_app.app_default_view
+		
+		// GET MENUBAR
+		const default_menubar_name = topology_define_app.app_default_menubar
+		let menubar_object = T.isObject(arg_menubar) && arg_menubar.is_component ? arg_menubar : undefined
+		const menubar_name = T.isString(arg_menubar) ? arg_menubar : (menubar_object ? menubar_object.get_name() : default_menubar_name )
+		let menubar_settings = undefined
+		let menubar_state = undefined
+		if (! menubar_object)
+		{
+			const defined_menubar = topology_define_app.find_resource(menubar_name, 'menubars')
+			if(! defined_menubar)
+			{
+				console.error(context + ':render_content:defined menubar not found [' + menubar_name + ']')
+				return
+			}
+			menubar_settings = defined_menubar.get_settings_js()
+			menubar_state    = defined_menubar.get_setting('state', undefined)
+		}
+
+		this.new_component('Container', 'content', {}, {})
+
+		// ADD MENUBAR
+		if (menubar_object)
+		{
+			this.add(menubar_object)
+		} else if (menubar_state)
+		{
+			this.menubar(menubar_name, menubar_settings, menubar_state)
+		}
+
+		// ADD VIEW
+		const html2 = this.up()
+		.table('separator', undefined, undefined)
+		.up()
+		.add(arg_view)
+		.up()
+
+		// RENDER
+		//.render()
+		const view_name      = T.isString(arg_view) ? arg_view : arg_view.get_name()
+		const menubar_html   = this.stack.components[menubar_name].render()
+		const separator_html = this.stack.components['separator'].render()
+		const view_html      = this.stack.components[view_name].render()
+		const html           = '<div id="content">' + menubar_html + separator_html + view_html + '</div>'
+
+		// GET HTML ATTRIBUTES
+		const headers      = this.current().get_headers()
+		const styles_tags  = this.current().get_styles()
+		const styles_urls  = this.current().get_styles_urls()
+		// const scripts_urls = this.current().get_scripts_urls()
+		const scripts_urls = this.stack.components[menubar_name].get_scripts_urls().concat( this.stack.components[view_name].get_scripts_urls() )
+		// const scripts_tags = this.current().get_scripts()
+
+		const view_state = this.stack.components[view_name].get_children_state()
+		const view_state_str = JSON.stringify(view_state)
+		const state_js = `
+			var current_state = window.devapt().ui().store.get_state()
+			var state_path = []
+			var view_state = ${view_state_str}
+			// console.log(view_state, 'view_state')
+			var component_state = window.devapt().ui().find_state(current_state, "${view_name}", state_path)
+			if (! component_state)
+			{
+				var action = { type:"ADD_JSON_RESOURCE", resource:"${view_name}", json:view_state }
+				 window.devapt().ui().store.dispatch(action)
+			}
+			`
+		const scripts_tags = [state_js].concat( this.stack.components[menubar_name].get_scripts().concat( this.stack.components[view_name].get_scripts() ) )
+
+		// const page_id = 'content'
+		// const show_content = '\n document.getElementById("' + page_id + '").style.display="block";\n'
+		// const handler_1 = 'function(e){ ' + show_content + '}'
+		// const on_ready = '\n document.addEventListener("DOMContentLoaded", ' + handler_1 + ', false);\n'
+		// html_scripts.push(on_ready)
+		// return `<script type="text/javascript">${html_scripts} ${on_ready}</script>\n`
+
+		const rendered_html = runtime.context.render_credentials_template(html, arg_credentials)
+		const result = new RenderingResult()
+		result.add_html('content', rendered_html)
+		result.set_headers(headers)
+
+		result.set_head_styles_tags(styles_tags)
+		result.set_head_styles_urls(styles_urls)
+
+		result.set_body_scripts_urls(scripts_urls)
+		result.set_body_scripts_tags(scripts_tags)
+		
+		return result
 	}
 }

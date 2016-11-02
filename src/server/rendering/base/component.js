@@ -79,6 +79,11 @@ export default class Component extends ComponentBase
 		this.state = {}
 		const settings_state = this.get_setting(['state'], undefined)
 		this.init_state(settings_state)
+
+		if (arg_settings.renderer)
+		{
+			this.renderer = arg_settings.renderer
+		}
 	}
 
 

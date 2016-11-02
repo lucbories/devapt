@@ -53,7 +53,6 @@ export default class ServiceExecProvider extends SocketIOServiceProvider
 			'server': arg_server,
 			'unused':arg_app_svc_cfg
 		}
-		this.exec.assets = this.service.topology_deploy_assets
 		this.exec.prepare(exec_cfg)
 		this.exec.execute(arg_application)
 	}

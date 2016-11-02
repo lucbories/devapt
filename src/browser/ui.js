@@ -1,6 +1,7 @@
 // NPM IMPORTS
 import T from 'typr'
 import assert from 'assert'
+import _ from 'lodash'
 
 // BROWSER IMPORTS
 import Loggable from '../common/base/loggable'
@@ -10,6 +11,28 @@ import Tree from './components/tree'
 import TableTree from './components/table_tree'
 import Topology from './components/topology'
 import RecordsTable from './components/records_table'
+import Page from './components/page'
+
+// VTREE
+import virtualize from 'vdom-virtualize'
+// import document from 'global/document'
+
+import diff from 'virtual-dom/diff'
+import patch from 'virtual-dom/patch'
+import create_element from 'virtual-dom/create-element'
+
+import vdom_as_json from 'vdom-as-json'
+import VNode from 'virtual-dom/vnode/vnode'
+import VText from 'virtual-dom/vnode/vtext'
+import html_to_vdom from 'html-to-vdom'
+
+const vdom_from_json = vdom_as_json.fromJson
+
+const convertHTML = html_to_vdom({
+    VNode: VNode,
+    VText: VText
+})
+
 
 
 const context = 'browser/ui'
@@ -55,6 +78,11 @@ export default class UI extends Loggable
 			content:undefined,
 			footer:undefined
 		}
+		
+		this.vtrees = {}
+		this.vtrees_targets = {}
+
+		this.body_page = new Page()
 	}
 	
 	
@@ -282,6 +310,10 @@ export default class UI extends Loggable
 			(service)=>{
 				console.log(context + ':render:get service for ' + arg_view_name)
 				return service.get( {collection:'views', 'resource':arg_view_name} )
+			},
+			
+			(reason)=>{
+				console.error(context + ':render:error 1 for ' + arg_cmd.url, reason)
 			}
 		)
 		.then(
@@ -302,6 +334,10 @@ export default class UI extends Loggable
 						)
 					}
 				)
+			},
+			
+			(reason)=>{
+				console.error(context + ':render:error 2 for ' + arg_cmd.url, reason)
 			}
 		)
 		.then(
@@ -317,6 +353,10 @@ export default class UI extends Loggable
 				}
 
 				return undefined
+			},
+			
+			(reason)=>{
+				console.error(context + ':render:error 3 for ' + arg_cmd.url, reason)
 			}
 		)
 		.then(
@@ -325,7 +365,12 @@ export default class UI extends Loggable
 				{
 					return 'Bad resource instance'
 				}
-				return resource_instance.render( {collection:'views', 'resource':arg_view_name} )
+
+				return resource_instance.render()
+			},
+			
+			(reason)=>{
+				console.error(context + ':render:error 4 for ' + arg_cmd.url, reason)
 			}
 		)
 		// .then(
@@ -334,5 +379,188 @@ export default class UI extends Loggable
 		// 	}
 		// )
 
+	}
+
+
+	render_with_middleware(arg_cmd, arg_route, arg_credentials)
+	{
+		console.log(context + ':render_with_middleware:cmd,route,credentials:', arg_cmd, arg_route, arg_credentials)
+
+		const middleware = arg_cmd.middleware
+
+		// GET AN URL HTML CONTENT
+		const get_url_cb = ()=>{
+			let url = arg_route + '?' + arg_credentials.get_url_part()
+			this._router.add_handler(url,
+				()=> {
+					$.get(url).then(
+						(html)=>{
+							this.body_page.render_html(html) // TODO
+						}
+					)
+				}
+			)
+		}
+
+		this.runtime.register_service(arg_cmd.middleware)
+		.then(
+			(service)=>{
+				console.log(context + ':render_with_middleware:get rendering for ' + arg_cmd.url)
+				return service.get( { route:arg_cmd.url } )
+			},
+			
+			(reason)=>{
+				console.error(context + ':render_with_middleware:error 0', reason)
+			}
+		)
+		.then(
+			(stream)=>{
+				console.log(context + ':render_with_middleware:get listen stream for ' + arg_cmd.url)
+				return new Promise(
+					function(resolve, reject)
+					{
+						stream.onValue(
+							(response)=>{
+								resolve(response)
+							}
+						)
+						stream.onError(
+							(reason)=>{
+								reject(reason)
+							}
+						)
+					}
+				)
+
+				.then(
+					(rendering_result_response)=>{
+						if (! rendering_result_response)
+						{
+							get_url_cb()
+						}
+
+						return this.process_rendering_result(rendering_result_response.datas)
+					},
+			
+					(reason)=>{
+						console.error(context + ':render_with_middleware:error 2 for ' + arg_cmd.url, reason)
+					}
+				)
+
+				.then(
+					(arg_content_ids)=>{
+						arg_content_ids.forEach(
+							(id)=>{
+								document.getElementById(id).style.display = 'block'
+							}
+						)
+					}
+				)
+			},
+
+			(reason)=>{
+				console.error(context + ':render_with_middleware:error 1 for ' + arg_cmd.url, reason)
+			}
+		)
+	}
+
+
+
+	process_rendering_result(arg_rendering_result)
+	{
+		console.log(context + ':process_rendering_result:rendering result:', arg_rendering_result)
+		
+		// PROCESS HEADERS
+		this.process_rendering_result_headers(arg_rendering_result.headers)
+
+		// PROCESS HTML CONTENT
+		const ids = []
+		_.forEach(arg_rendering_result.vtrees,
+			(new_vtree_json, id)=>{
+				let new_vtree = vdom_from_json(new_vtree_json)
+				console.log(context + ':process_rendering_result:id,new_vtree:', id, new_vtree)
+
+				ids.push(id)
+
+				if ( T.isArray(new_vtree) )
+				{
+					new_vtree = new VNode('DIV', { id:'content' }, new_vtree, 'id', undefined)
+				}
+
+				let element = document.getElementById(id)
+
+				// GET PREVIOUS TREE
+				let prev_vtree = undefined
+				if (id in this.vtrees)
+				{
+					prev_vtree = this.vtrees[id]
+				} else {
+					if (element)
+					{
+						console.log(context + ':process_rendering_result:element found for id=' + id, element)
+
+						prev_vtree = virtualize(element)
+					} else {
+						console.log(context + ':process_rendering_result:create element for id=' + id)
+
+						const content = document.getElementById('content')
+						assert(content, context + ':process_rendering_result:bad content element')
+						element = create_element(new_vtree)
+						content.appendChild(element)
+					}
+				}
+
+				if (prev_vtree)
+				{
+					console.log(context + ':process_rendering_result:prev_vtree found for id=' + id, prev_vtree)
+
+					if ( T.isArray(prev_vtree) )
+					{
+						prev_vtree = new VNode('DIV', {}, prev_vtree, 'id', undefined)
+					}
+					const patches = diff(prev_vtree, new_vtree)
+					element = patch(element, patches)
+					this.vtrees_targets[id] = element
+				}
+
+				this.vtrees[id] = new_vtree
+			}
+		)
+
+		// PROCESS BODY SCRIPTS TAGS
+		this.process_rendering_result_body_scripts_tags(arg_rendering_result.body_scripts_tags)
+
+		return ids
+	}
+
+
+	process_rendering_result_headers(arg_rendering_result_headers)
+	{
+		console.log(context + ':process_rendering_result_headers:rendering headers:', arg_rendering_result_headers)
+		
+		arg_rendering_result_headers.forEach(
+			(header)=>{
+				const has_header = false // TODO
+				// const e = document.createElement(header)
+				// document.head.appendChild(e)// TODO
+			}
+		)
+	}
+
+
+	process_rendering_result_body_scripts_tags(arg_rendering_result_body_scripts_tags)
+	{
+		console.log(context + ':process_rendering_result_body_scripts_tags:rendering body_scripts_tags:', arg_rendering_result_body_scripts_tags)
+		
+		arg_rendering_result_body_scripts_tags.forEach(
+			(tag)=>{
+				const has_tag = false // TODO
+				const e = document.createElement('script')
+				e.text = tag
+				e.setAttribute('type', 'text/javascript')
+				e.setAttribute('name', 'todo')
+				document.body.appendChild(e)
+			}
+		)
 	}
 }

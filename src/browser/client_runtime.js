@@ -16,7 +16,6 @@ import StreamLogger from './stream_logger'
 import Service from './service'
 import UI from './ui'
 import Router from './router'
-import Page from './components/page'
 
 
 let context = 'browser/runtime'
@@ -56,7 +55,6 @@ export default class ClientRuntime extends RuntimeBase
 		this.services_promises = {}
 		this.ui = undefined
 		this._router = undefined
-		this.body_page = new Page()
 		
 		this.info('Client Runtime is created')
 	}
@@ -127,24 +125,28 @@ export default class ClientRuntime extends RuntimeBase
 				if ( T.isString(cmd.url) )
 				{
 					const route = T.isString(app_url) ? '/' + app_url + cmd.url : cmd.url
+
+					// VIEW RENDERING
 					if ( T.isString(cmd.view) )
 					{
+						console.log(context + ':load:add route handler for cmd [' + cmd_name + '] with view:' + cmd.view)
+
 						const menubar = T.isString(cmd.menubar) ? cmd.menubar : undefined
 						this._router.add_handler(route, ()=>this._router.display_content(cmd.view, menubar) )
 						return
 					}
+					
+					// MIDDLEWARE RENDERING
+					const middleware = cmd.middleware
+					if ( T.isString(middleware) )
+					{
+						console.log(context + ':load:add route handler for cmd [' + cmd_name + '] with middleware:' + middleware)
 
-					// GET AN URL HTML CONTENT
-					let url = route + '?' + this.session_credentials.get_url_part()
-					this._router.add_handler(url,
-						()=> {
-							$.get(url).then(
-								(html)=>{
-									this.body_page.render_html(html) // TODO
-								}
-							)
-						}
-					)
+						this._router.add_handler(route, ()=>this.ui.render_with_middleware(cmd, route, this.session_credentials) )
+						return
+					}
+
+					console.error(context + ':load:no route handler for cmd [' + cmd_name + ']:unknow cmd bad view/middleware')
 				}
 			}
 		)

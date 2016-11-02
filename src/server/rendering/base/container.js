@@ -84,7 +84,9 @@ export default class Container extends Component
 	 */
 	get_component(arg_name)
 	{
-		return get_or_create_component(arg_name)
+		const component = get_or_create_component(arg_name, this.renderer)
+		component.renderer = this.renderer
+		return component
 	}
 	
 	
@@ -98,7 +100,9 @@ export default class Container extends Component
 	 */
 	create_component(arg_settings)
 	{
-		return create_component(arg_settings)
+		const component = create_component(arg_settings)
+		component.renderer = this.renderer
+		return component
 	}
 	
 	
@@ -163,6 +167,7 @@ export default class Container extends Component
 		
 		this.children.push(arg_child)
 		this.children_by_name[arg_child.get_name()] = arg_child
+		arg_child.renderer = this.renderer
 		
 		return this
 	}

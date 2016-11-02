@@ -254,6 +254,7 @@ export default class Page extends Container
 		}
 
 		initial_state.app_url = this.renderer.application ? this.renderer.application.app_url : null
+		initial_state.app_assets = this.renderer.application ? this.renderer.application.app_assets : null
 		initial_state.commands = this.renderer.application ? this.renderer.application.get_resources_settings('commands') : {}
 
 		const stored_state = JSON.stringify(initial_state)

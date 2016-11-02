@@ -33,6 +33,12 @@ export default class Router extends RouterState
 	 * 		* go_forward(): update page with history next content if available.
 	 * 		* clear_history(): reset history array.
 	 * 
+	 * 	API:
+	 * 		->init(arg_home_view_name, arg_home_menubar_name)
+	 * 		->add_handler(arg_route, arg_handler)
+	 * 		->update_hash_self(arg_view_name, arg_menubar_name)
+	 * 		->display_content_self(arg_view_name, arg_menubar_name)
+	 * 
 	 * @param {string} arg_log_context - context of traces of this instance (optional).
 	 * 
 	 * @returns {nothing}
@@ -87,7 +93,7 @@ export default class Router extends RouterState
 			console.log('Hasher parse cb for new [%s] and old [%s]', arg_newHash, arg_oldHash)
 			this.router_engine.parse(arg_newHash)
 		}
-		Hasher.prependHash = ''
+		Hasher.prependHash = '/'
 		Hasher.initialized.add(parseHash) //parse initial hash
 		Hasher.changed.add(parseHash) //parse hash changes
 		Hasher.init() //start listening for history change
@@ -118,6 +124,33 @@ export default class Router extends RouterState
 		)
 	}
 	
+	
+
+	/**
+	 * Parse an url and route it.
+	 * 
+	 * @param {string} arg_url - url to route.
+	 * 
+	 * @returns {nothing}
+	 */
+	parse(arg_url)
+	{
+		const app_url = this.state_store.get_state().get('app_url', undefined)
+		const has_app_url = app_url.length > 0 && arg_url.length > app_url.length && arg_url.substr(0, app_url.length) == app_url
+		
+		if (app_url.length > 0 && ! has_app_url)
+		{
+			arg_url = (app_url[0] == '/' ? '' : '/') + app_url + arg_url
+		}
+		
+		if ( arg_url.endsWith('/') )
+		{
+			arg_url = arg_url.substr(0, arg_url.length - 1)
+		}
+
+		this.router_engine.parse(arg_url)
+	}
+
 	
 
 	/**

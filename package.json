@@ -1,6 +1,6 @@
 {
   "name": "devapt",
-  "version": "1.1.0",
+  "version": "2.0.0",
   "description": "Developpers Application Toolkit - build application (backend, frontend, RESTfull, API, distributed nodes, reactive...) from configuration",
   "author": {
     "name": "Luc BORIES",
@@ -119,6 +119,7 @@
     "socket.io": ">=1.3.7",
     "socketio": ">=1.0.0",
     "typr": ">=0.2.1",
+    "vdom-as-json": "^1.0.9",
     "vdom-virtualize": "^2.0.0",
     "virtual-dom": "^2.1.1",
     "winston": ">=1.0.1"

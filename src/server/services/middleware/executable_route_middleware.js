@@ -5,7 +5,6 @@ import assert from 'assert'
 // SERVER IMPORTS
 import runtime from '../../base/runtime'
 import Renderer from '../../rendering/render'
-import { create_component } from '../../rendering/base/factory'
 import ExecutableRoute from '../../executables/executable_route'
 
 
@@ -55,18 +54,7 @@ export default class ExecutableRouteMiddleware extends ExecutableRoute
 		
 		
 		// GET ASSETS CONFIG
-		const assets_region = 'all'
-		const assets_for_region = T.isObject(self.assets) && T.isObject(self.assets[assets_region]) ? self.assets[assets_region] : undefined
-		
-		const assets_style  = T.isObject(assets_for_region) && T.isArray(assets_for_region.style)  ? assets_for_region.style  : []
-		const assets_script = T.isObject(assets_for_region) && T.isArray(assets_for_region.script) ? assets_for_region.script : []
-		const assets_image  = T.isObject(assets_for_region) && T.isArray(assets_for_region.image)  ? assets_for_region.image  : []
-		const assets_html   = T.isObject(assets_for_region) && T.isArray(assets_for_region.html)   ? assets_for_region.html   : []
-
-		const assets_style_selected  = assets_style.length  > 0 ? assets_style[0]  : undefined
-		const assets_script_selected = assets_script.length > 0 ? assets_script[0] : undefined
-		const assets_image_selected  = assets_image.length  > 0 ? assets_image[0]  : undefined
-		const assets_html_selected   = assets_html.length   > 0 ? assets_html[0]   : undefined
+		const assets_for_region = this.service.get_assets_services_names('any')
 		
 
 		// MIDDLEWARE
@@ -74,7 +62,14 @@ export default class ExecutableRouteMiddleware extends ExecutableRoute
 		{
 			self.enter_group('ExecutableRouteMiddleware.exec_http')
 			
-			
+			// REGISTER ASSETS SERVICES
+			req.devapt_assets_services = {
+				style: assets_for_region.style,
+				script:assets_for_region.script,
+				image: assets_for_region.image,
+				html:  assets_for_region.html
+			}
+
 			let mw_cb = null
 
 
@@ -115,61 +110,34 @@ export default class ExecutableRouteMiddleware extends ExecutableRoute
 					console.log(assets_style_selected, 'get_route_cb:mw:assets_style_selected')
 					const renderer = new Renderer(assets_style_selected, assets_script_selected, assets_image_selected, assets_html_selected, arg_application)
 					
+					const title = undefined
+					const credentials = req.devapt_credentials
 					const view_name = arg_cfg_route.page_view
 					const menubar_name = T.isString(arg_cfg_route.page_menubar) ? arg_cfg_route.page_menubar : undefined
-					const separator = create_component( {type:'Table', name:'separator'} )
-					const scripts = create_component(
-						{
-							type:'Script',
-							name:'main_script',
-							scripts:[],
-							scripts_urls:['js/vendor/browser.min.js', 'js/devapt-browser.js', 'js/app.js']
-						}
-					)
-					
-					// GET DEFAULT VIEW AND MENUBAR FROM CREDENTIALS
-					const credentials = req.devapt_credentials
-					const defined_topology = runtime.get_defined_topology()
 
-					const application = defined_topology.find_application_with_credentials(credentials)
-					if(! application)
+					const renderer_result = renderer.render_page_content(title, view_name, menubar_name, credentials)
+
+					// MANAGE ERROR
+					if (! T.isString(renderer_result) )
 					{
 						res.status(500)
-						res.send('application not found [' + application_name + ']')
+						res.send('a rendering error occures for view [' + view_name + ']')
 						return
 					}
 
-					// BUILD PAGE
-					renderer.page('main', { title:'Title', default_view:application.get_setting('default_view'), default_menubar:application.get_setting('default_menubar'), children:[menubar_name, separator, view_name, scripts] } )
-					
-					// SEND HTML
-					const html = renderer.render()
-					
-					const rendered_html = runtime.context.render_credentials_template(html, req)
-					
-					res.send(rendered_html)
+					res.send(renderer_result)
 				}
 			}
 			
 			
 			// EXECUTE MIDDLEWARE FUNCTION
-			// if ( ! T.isFunction(mw_cb) )
-			// {
-			// 	console.error(context + ':ExecutableRouteMiddleware.exec_http')
-			// 	console.log(context + ':ExecutableRouteMiddleware.exec_http:req', req)
-			// }
 			assert(T.isFunction(mw_cb), context + ':bad middleware function')
 			try
 			{
 				self.info('Execute middleware: before')
 				
-				req.devapt_assets_services = {
-					style:assets_style_selected,
-					script:assets_script_selected,
-					image:assets_image_selected,
-					html:assets_html_selected
-				}
 				mw_cb(req, res)
+				
 				self.info('Execute middleware: after')
 			}
 			catch(e)

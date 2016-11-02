@@ -65,6 +65,15 @@ export default class Service extends Instance
 		
 		this.locale_exec = this.get_setting('locale_exec', undefined)
 		this.remote_exec = this.get_setting('remote_exec', undefined)
+
+		if (this.locale_exec)
+		{
+			this.locale_exec.service = this
+		}
+		if (this.remote_exec)
+		{
+			this.remote_exec.service = this
+		}
 		
 		this.providers = new Collection()
 	}
@@ -151,9 +160,11 @@ export default class Service extends Instance
 	
 	/**
 	 * Activate a service feature for an application on a server.
+	 * 
 	 * @param {Application} arg_application - Application instance.
 	 * @param {Server} arg_server - Server instance.
 	 * @param {object} arg_app_svc_cfg - service configuration on application.
+	 * 
 	 * @returns {nothing}
 	 */
 	activate_on_server(arg_application, arg_server, arg_app_svc_cfg)
@@ -170,7 +181,6 @@ export default class Service extends Instance
 		{
 			if ( T.isObject(this.locale_exec) )
 			{
-				this.locale_exec.assets = this.topology_deploy_assets
 				this.locale_exec.prepare(exec_cfg)
 				this.locale_exec.execute(arg_application)
 			}
@@ -179,7 +189,6 @@ export default class Service extends Instance
 		{
 			if ( T.isObject(this.remote_exec) )
 			{
-				this.remote_exec.assets = this.topology_deploy_assets
 				this.remote_exec.prepare(exec_cfg)
 				this.remote_exec.execute(arg_application)
 			}
@@ -321,6 +330,40 @@ export default class Service extends Instance
 		arg_visited[this.topology_uid] = info
 
 		return info
+	}
+
+
+
+	/**
+	 * Get assets services names.
+	 * 
+	 * @returns {object} - assets { style:'', script:'', image:'', html:'' }
+	 */
+	get_assets_services_names(arg_region='any')
+	{
+		assert( T.isString(arg_region), context + ':get_assets_services_names:bad region string')
+
+		// GET ASSETS CONFIG
+		const assets = this.topology_deploy_assets
+		const assets_region = arg_region == 'any' ? 'all' : arg_region
+		const assets_for_region = T.isObject(assets) && T.isObject(assets[assets_region]) ? assets[assets_region] : undefined
+		
+		const assets_style  = T.isObject(assets_for_region) && T.isArray(assets_for_region.style)  ? assets_for_region.style  : []
+		const assets_script = T.isObject(assets_for_region) && T.isArray(assets_for_region.script) ? assets_for_region.script : []
+		const assets_image  = T.isObject(assets_for_region) && T.isArray(assets_for_region.image)  ? assets_for_region.image  : []
+		const assets_html   = T.isObject(assets_for_region) && T.isArray(assets_for_region.html)   ? assets_for_region.html   : []
+
+		const assets_style_selected  = assets_style.length  > 0 ? assets_style[0]  : undefined
+		const assets_script_selected = assets_script.length > 0 ? assets_script[0] : undefined
+		const assets_image_selected  = assets_image.length  > 0 ? assets_image[0]  : undefined
+		const assets_html_selected   = assets_html.length   > 0 ? assets_html[0]   : undefined
+
+		return {
+			style:assets_style_selected,
+			script:assets_script_selected,
+			image:assets_image_selected,
+			html:assets_html_selected
+		}
 	}
 }
 

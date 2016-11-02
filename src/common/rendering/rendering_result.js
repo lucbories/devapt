@@ -5,7 +5,9 @@ import virtualize from 'vdom-virtualize'
 import VNode from 'virtual-dom/vnode/vnode'
 import VText from 'virtual-dom/vnode/vtext'
 import html_to_vdom from 'html-to-vdom'
+import vdom_as_json from 'vdom-as-json'
 
+const vdom_to_json = vdom_as_json.toJson
 
 let context = 'common/rendering/rendering_result'
 
@@ -32,19 +34,21 @@ export default class RenderingResult
 	 * 
 	 * API:
 	 * 		->constructor():nothing - create an empty rendering result instance.
-	 * 		->set_html(arg_html):nothing - take Html text and convert it to a virtual tree.
-	 * 		->set_vtree(arg_vtree):nothing - set virtual tree.
+	 * 
+	 * 		->add_html(arg_tag_id, arg_html):nothing - take Html text and convert it to a virtual tree.
+	 * 		->add_vtree(arg_tag_id, arg_vtree):nothing - add a virtual tree.
+	 * 
+	 * 		->set_head_scripts_urls(arg_urls):nothing - .
 	 * 
      * @returns {nothing}
 	 */
-	constructor(arg_)
+	constructor()
 	{
-		assert( T.isObject(arg_settings), context + ':constructor:bad settings object')
-
 		this.is_rendering_result = true
 
 		this.vtrees = {}
 
+		this.headers = []
 		this.head_scripts_urls = []
 		this.head_scripts_tags = []
 		this.body_scripts_urls = []
@@ -56,33 +60,50 @@ export default class RenderingResult
 
 
 	/**
-	 * Set Html text.
+	 * Add Html tag.
 	 * 
+	 * @param {string} arg_tag_id - tag id string.
 	 * @param {string} arg_html - Html string.
 	 * 
 	 * @returns {nothing}.
 	 */
-	set_html(arg_html)
+	add_html(arg_tag_id, arg_html)
 	{
+		assert( T.isString(arg_tag_id) && arg_tag_id.length > 0, context + ':set_vtree:bad tag id string')
 		assert( T.isString(arg_html), context + ':set_html:bad html string')
-		this.vtree = convertHTML(arg_html)
+		this.vtrees[arg_tag_id] = vdom_to_json( convertHTML(arg_html) )
 	}
 
 
 
 	/**
-	 * Set a VTree instance.
+	 * Add a VTree instance.
 	 * 
 	 * @param {string} arg_tag_id - tag id string.
 	 * @param {VNode} arg_vtree - virtual-dom virtual tree.
 	 * 
 	 * @returns {nothing}.
 	 */
-	set_vtree(arg_tag_id, arg_vtree)
+	add_vtree(arg_tag_id, arg_vtree)
 	{
 		assert( T.isString(arg_tag_id) && arg_tag_id.length > 0, context + ':set_vtree:bad tag id string')
 		assert( T.isObject(arg_vtree), context + ':set_vtree:bad vtree object')
-		this.vtrees[arg_tag_id] = arg_vtree
+		this.vtrees[arg_tag_id] = vdom_to_json( arg_vtree )
+	}
+
+
+
+	/**
+	 * Set headers.
+	 * 
+	 * @param {array} set_headers - headers strings array.
+	 * 
+	 * @returns {nothing}.
+	 */
+	set_headers(arg_headers)
+	{
+		assert( T.isArray(arg_headers), context + ':set_headers:bad headers array')
+		this.headers = arg_headers
 	}
 
 
@@ -96,7 +117,7 @@ export default class RenderingResult
 	 */
 	set_head_scripts_urls(arg_urls)
 	{
-		assert( T.isArrayg(arg_urls), context + ':set_head_scripts_urls:bad head scripts urls array')
+		assert( T.isArray(arg_urls), context + ':set_head_scripts_urls:bad head scripts urls array')
 		this.head_scripts_urls = arg_urls
 	}
 
@@ -111,7 +132,7 @@ export default class RenderingResult
 	 */
 	set_head_scripts_tags(arg_tags)
 	{
-		assert( T.isArrayg(arg_tags), context + ':set_head_scripts_tags:bad head scripts tags array')
+		assert( T.isArray(arg_tags), context + ':set_head_scripts_tags:bad head scripts tags array')
 		this.head_scripts_tags = arg_tags
 	}
 
@@ -126,7 +147,7 @@ export default class RenderingResult
 	 */
 	set_body_scripts_urls(arg_urls)
 	{
-		assert( T.isArrayg(arg_urls), context + ':set_body_scripts_urls:bad body scripts urls array')
+		assert( T.isArray(arg_urls), context + ':set_body_scripts_urls:bad body scripts urls array')
 		this.body_scripts_urls = arg_urls
 	}
 
@@ -141,7 +162,7 @@ export default class RenderingResult
 	 */
 	set_body_scripts_tags(arg_tags)
 	{
-		assert( T.isArrayg(arg_tags), context + ':set_body_scripts_tags:bad body scripts tags array')
+		assert( T.isArray(arg_tags), context + ':set_body_scripts_tags:bad body scripts tags array')
 		this.body_scripts_tags = arg_tags
 	}
 
@@ -156,7 +177,7 @@ export default class RenderingResult
 	 */
 	set_head_styles_urls(arg_urls)
 	{
-		assert( T.isArrayg(arg_urls), context + ':set_head_styles_urls:bad head styles urls array')
+		assert( T.isArray(arg_urls), context + ':set_head_styles_urls:bad head styles urls array')
 		this.head_styles_urls = arg_urls
 	}
 
@@ -171,8 +192,29 @@ export default class RenderingResult
 	 */
 	set_head_styles_tags(arg_tags)
 	{
-		assert( T.isArrayg(arg_tags), context + ':set_head_styles_tags:bad head styles tags array')
+		assert( T.isArray(arg_tags), context + ':set_head_styles_tags:bad head styles tags array')
 		this.head_styles_tags = arg_tags
+	}
+
+
+
+	/**
+	 * Add a RenderingResult instance.
+	 * 
+	 * @param {RenderingResult} arg_result - rendering result to add to this result.
+	 * 
+	 * @returns {nothing}
+	 */
+	add_result(arg_result)
+	{
+		this.vtrees = Object.assign(this.vtrees, arg_result.vtrees)
+
+		this.head_scripts_urls = Array.concat(this.head_scripts_urls, arg_result.head_scripts_urls)
+		this.head_scripts_tags = Array.concat(this.head_scripts_tags, arg_result.head_scripts_tags)
+		this.body_scripts_urls = Array.concat(this.body_scripts_urls, arg_result.body_scripts_urls)
+		this.body_scripts_tags = Array.concat(this.body_scripts_tags, arg_result.body_scripts_tags)
+		this.head_styles_urls  = Array.concat(this.head_styles_urls,  arg_result.head_styles_urls)
+		this.head_styles_tags  = Array.concat(this.head_styles_tags,  arg_result.head_styles_tags)
 	}
 }
 

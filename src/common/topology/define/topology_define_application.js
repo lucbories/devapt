@@ -61,12 +61,20 @@ export default class TopologyDefineApplication extends TopologyDefineItem
 
 		this.topology_type = 'applications'
 		
-		this.app_url				= this.get_setting('url', undefined)
-		this.app_license			= this.get_setting('license', undefined)
+		this.app_title				= this.get_setting_js('title', undefined)
+		this.app_url				= this.get_setting_js('url', undefined)
+		this.app_license			= this.get_setting_js('license', undefined)
 		this.app_provided_services	= this.get_setting('provided_services', undefined)
 		this.app_used_services 		= this.get_setting('used_service', undefined)
 		this.app_used_packages		= this.get_setting('used_packages', undefined)
 		this.app_used_plugins		= this.get_setting('used_plugins', undefined)
+		this.app_assets				= this.get_setting_js('assets', undefined)
+		this.app_assets_js			= this.get_setting_js(['assets', 'js'], [])
+		this.app_assets_css			= this.get_setting_js(['assets', 'css'], [])
+		this.app_assets_img			= this.get_setting_js(['assets', 'img'], [])
+		this.app_assets_index		= this.get_setting_js(['assets', 'index'], undefined)
+		this.app_default_view		= this.get_setting_js('default_view', undefined)
+		this.app_default_menubar	= this.get_setting_js('default_menubar', undefined)
 		
 		this.info('Application is created')
 	}

@@ -12,16 +12,20 @@ let context = 'server/services/base/base_service'
 
 /**
  * Base service class.
+ * 
  * @author Luc BORIES
+ * 
  * @license Apache-2.0
  */
 export default class BaseService extends Service
 {
 	/**
 	 * Create a service.
-	 * @param {string} arg_svc_name - service name
-	 * @param {object} arg_service_settings - service settings
-	 * @param {string} arg_context - logging context label
+	 * 
+	 * @param {string} arg_svc_name - service name.
+	 * @param {object} arg_service_settings - service settings.
+	 * @param {string} arg_context - logging context label.
+	 * 
 	 * @returns {nothing}
 	 */
 	constructor(arg_svc_name, arg_service_settings, arg_context)
@@ -35,9 +39,11 @@ export default class BaseService extends Service
 	
 	/**
 	 * Activate service feature for an application on a server.
-	 * @param {Application} arg_application - application instance
-	 * @param {Server} arg_server - server instance
-	 * @param {object} arg_app_svc_cfg - application service settings
+	 * 
+	 * @param {Application} arg_application - application instance.
+	 * @param {Server} arg_server - server instance.
+	 * @param {object} arg_app_svc_cfg - application service settings.
+	 * 
 	 * @returns {nothing}
 	 */
 	activate_on_server(arg_application, arg_server, arg_app_svc_cfg)

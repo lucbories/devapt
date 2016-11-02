@@ -31,6 +31,8 @@ export default class RenderingHtml extends RenderingItem
 	{
 		assert( T.isObject(arg_settings), context + ':constructor:bad settings object')
 
+		super()
+		
 		this.is_rendering_item = true
 	}
 

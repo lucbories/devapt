@@ -10,7 +10,7 @@ const context = 'common/rendering/base/factory'
 
 
 
-const get_component = (arg_name) => {
+const get_component = (arg_name,) => {
 	assert( T.isString(arg_name), context + ':get_component:bad name string')
 	
 	const mgr = runtime.get_plugins_factory().get_rendering_manager()
@@ -18,7 +18,8 @@ const get_component = (arg_name) => {
 }
 
 
-const get_or_create_component = (arg_name) => {
+
+const get_or_create_component = (arg_name, arg_renderer=undefined) => {
 	assert( T.isString(arg_name), context + ':get_or_create_component:bad name string')
 	
 	const mgr = runtime.get_plugins_factory().get_rendering_manager()
@@ -29,16 +30,17 @@ const get_or_create_component = (arg_name) => {
 		return mgr.get_instance(arg_name)
 	}
 	
-	if ( runtime.get_registry().has_resource(arg_name) )
+	assert( T.isObject(arg_renderer) && arg_renderer.is_render, context + ':get_or_create_component:bad render object')
+	
+	const defined_resource = arg_renderer.application.find_resource(arg_name)
+	if (defined_resource)
 	{
-		// console.log(context + ':get_or_create_component:existing settings name=%s', arg_name)
-		
-		const settings = runtime.get_registry().get_resource(arg_name)
+		const settings = defined_resource.export_settings()
 		const class_name = settings.class_name
 		const state = settings.state ? settings.state : {}
 		
-		// console.log(context + ':get_or_create_component:class_name=%s name=%s', class_name, arg_name, settings)
-		
+		settings.renderer = arg_renderer
+
 		return mgr.create(class_name, arg_name, settings, state)
 	}
 	
@@ -47,7 +49,8 @@ const get_or_create_component = (arg_name) => {
 }
 
 
-const has_component = (arg_name) => {
+
+const has_component = (arg_name, arg_defined_application) => {
 	assert( T.isString(arg_name), context + ':has_component:bad name string')
 	
 	const mgr = runtime.get_plugins_factory().get_rendering_manager()
