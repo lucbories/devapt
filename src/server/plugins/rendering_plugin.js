@@ -163,4 +163,18 @@ export default class RenderingPlugin extends FeaturesPlugin
 		}
 		return null
 	}
+
+
+
+	/**
+	 * Find a rendering function.
+	 * 
+	 * @param {string} arg_type - rendering item type.
+	 * 
+	 * @returns {Function} - rendering function.
+	 */
+	find_rendering_function(arg_type)
+	{
+		return undefined
+	}
 }

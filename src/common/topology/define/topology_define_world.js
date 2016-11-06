@@ -125,103 +125,14 @@ export default class TopologyDefineWorld extends TopologyDefineItem
 	{
 		switch(arg_plugin.topology_plugin_type){
 			case 'rendering': {
-				return this.load_rendering_plugin(arg_plugin)
+				assert( T.isObject(arg_plugin) && arg_plugin.is_topology_define_plugin, context + ':load_rendering_plugin:bad plugin object')
+				return arg_plugin.load_rendering_plugin(this._runtime)
 			}
 			case '...':{
 				return Promise.resolve(true)
 			}
 		}
 		return Promise.reject('bad plugin type [' + arg_plugin.topology_plugin_type + ']')
-	}
-
-
-	/**
-	 * Load rendering plugins.
-	 * 
-	 * @returns {Promise}
-	 */
-	load_rendering_plugin(arg_plugin)
-	{
-		const self = this
-		self.enter_group('load_rendering_plugin')
-
-		const plugins_mgr = self._runtime.get_plugins_factory().get_rendering_manager()
-		assert( T.isObject(arg_plugin) && arg_plugin.is_topology_define_plugin, context + ':load_rendering_plugin:bad plugin object')
-		assert( T.isObject(plugins_mgr) && plugins_mgr.is_plugins_manager, context + ':load_rendering_plugin:bad plugin manager object')
-
-		this.debug('plugin=%s', arg_plugin.get_name())
-
-		let plugin_class = undefined
-
-		// RENDERING PLUGIN IS LOADED FROM A NPM PACKAGE
-		if ( T.isString(arg_plugin.topology_plugin_package) )
-		{
-			// TODO : loading packages without full path?
-			let file_path = undefined
-			const pkg = arg_plugin.topology_plugin_package
-
-			file_path = self.runtime.context.get_absolute_path('./node_modules/', pkg)
-			let file_path_stats = file_path ? fs.statSync(file_path) : undefined
-			if ( ! file_path_stats || ! file_path_stats.isDirectory())
-			{
-				file_path = self.runtime.context.get_absolute_path('../node_modules/', pkg)
-				file_path_stats = file_path ? fs.statSync(file_path) : undefined
-				if ( ! file_path_stats || ! file_path_stats.isDirectory())
-				{
-					file_path = self.runtime.context.get_absolute_path('../../node_modules/', pkg)
-					file_path_stats = file_path ? fs.statSync(file_path) : undefined
-					if ( ! file_path_stats || ! file_path_stats.isDirectory())
-					{
-						file_path = self.runtime.context.get_absolute_path('../../../node_modules/', pkg)
-						file_path_stats = file_path ? fs.statSync(file_path) : undefined
-						if ( ! file_path_stats || ! file_path_stats.isDirectory())
-						{
-							file_path = undefined
-						}
-					}
-				}
-			}
-
-			if (file_path)
-			{
-				console.log(context + ':load_rendering_plugins:package=%s for plugin=%s at=%s', pkg, arg_plugin.get_name(), file_path)
-				plugin_class = require(file_path)
-			}
-			else
-			{
-				file_path = undefined
-				console.error(context + ':load_rendering_plugins:not found package=%s for plugin=%s at=%s', pkg, arg_plugin.get_name())
-			}
-		}
-
-
-		// LOAD A PLUGIN FROM A PATH
-		else if ( T.isString(arg_plugin.topology_plugin_file) )
-		{
-			const file_path = self.runtime.context.get_absolute_path(arg_plugin.topology_plugin_file)
-			console.log(context + ':load_rendering_plugins:file_path=%s for plugin=%s', file_path, arg_plugin.get_name())
-
-			plugin_class = require(file_path)
-		}
-
-
-		// REGISTER PLUGIN CLASS
-		if (plugin_class)
-		{
-			if ( plugin_class.default )
-			{
-				plugin_class = plugin_class.default
-			}
-
-			const plugin = new plugin_class(plugins_mgr)
-			plugins_mgr.load_at_first(plugin)
-
-			console.log(context + ':load_rendering_plugins:plugin=%s is loaded', arg_plugin.get_name())
-		}
-			
-			
-		self.leave_group('load_rendering_plugin')
-		return Promise.resolve(true)
 	}
 
 

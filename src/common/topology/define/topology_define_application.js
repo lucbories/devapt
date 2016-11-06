@@ -64,15 +64,18 @@ export default class TopologyDefineApplication extends TopologyDefineItem
 		this.app_title				= this.get_setting_js('title', undefined)
 		this.app_url				= this.get_setting_js('url', undefined)
 		this.app_license			= this.get_setting_js('license', undefined)
+
 		this.app_provided_services	= this.get_setting('provided_services', undefined)
 		this.app_used_services 		= this.get_setting('used_service', undefined)
 		this.app_used_packages		= this.get_setting('used_packages', undefined)
 		this.app_used_plugins		= this.get_setting('used_plugins', undefined)
+
 		this.app_assets				= this.get_setting_js('assets', undefined)
 		this.app_assets_js			= this.get_setting_js(['assets', 'js'], [])
 		this.app_assets_css			= this.get_setting_js(['assets', 'css'], [])
 		this.app_assets_img			= this.get_setting_js(['assets', 'img'], [])
 		this.app_assets_index		= this.get_setting_js(['assets', 'index'], undefined)
+
 		this.app_default_view		= this.get_setting_js('default_view', undefined)
 		this.app_default_menubar	= this.get_setting_js('default_menubar', undefined)
 		
@@ -114,11 +117,7 @@ export default class TopologyDefineApplication extends TopologyDefineItem
 			{
 				// console.log('application.find_resource ' + arg_name + ' FOUND')
 				return resource
-			} else {
-				this.warn(resource, 'application.find_resource ' + arg_name + ' NOT FOUND')
 			}
-			
-			return resource
 		}
 
 		this.warn('application.find_resource NOT FOUND ' + arg_name + ' in packages ' + used_packages_array.toString() )
@@ -221,5 +220,45 @@ export default class TopologyDefineApplication extends TopologyDefineItem
 			}
 		)
 		return settings
+	}
+
+
+
+	/**
+	 * Find a rendering function.
+	 * 
+	 * @param {string} arg_type - rendering item type.
+	 * 
+	 * @returns {Function} - rendering function.
+	 */
+	find_rendering_function(arg_type)
+	{
+		const tenant = this.get_topology_owner()
+		if (! tenant)
+		{
+			this.error('no owner tenant found for this application')
+			console.error('no owner tenant found for this application')
+			return undefined
+		}
+
+		const used_plugins_array = this.app_used_plugins.toArray()
+		// console.log('application.find_resource ' + arg_name + ' in packages ' + used_packages_array.toString() )
+
+		let plugin_index = 0
+		for( ; plugin_index < used_plugins_array.length ; plugin_index++)
+		{
+			const plugin_name = used_plugins_array[plugin_index]
+			const plugin = tenant.plugin(plugin_name)
+			const rendering_fn = plugin.find_rendering_function(arg_type)
+			console.log(context + ':find_rendering_function:type=' + arg_type + ' in plugin ' + plugin_name + (rendering_fn ? ' found' : ' not found'))
+			
+			if (rendering_fn)
+			{
+				return rendering_fn
+			}
+		}
+
+		this.warn(context + ':find_rendering_function NOT FOUND ' + arg_type + ' in plugin ' + used_plugins_array.toString() )
+		return undefined
 	}
 }

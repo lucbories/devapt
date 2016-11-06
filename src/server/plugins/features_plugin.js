@@ -3,7 +3,7 @@ import T from 'typr'
 import assert from 'assert'
 
 // SERVER IMPORTS
-import Plugin from './plugin'
+import Plugin from '../../common/plugins/plugin'
 import runtime from '../base/runtime'
 
 

@@ -1,0 +1,78 @@
+// NPM IMPORTS
+import T from 'typr'
+import assert from 'assert'
+import _ from 'lodash'
+import h from 'virtual-dom/h'
+
+// COMMON IMPORTS
+import RenderingResult from './rendering_result'
+import rendering_normalize from './rendering_normalize'
+
+
+let context = 'common/rendering/table'
+
+
+
+// DEFAULT STATE
+const default_state = {
+	label:undefined,
+	columns:undefined,  // array (rows) of array (th values)
+	items:undefined,    // array (rows) of array (cells)
+	footers:undefined   // array (rows) of array (th values)
+}
+
+// DEFAULT SETTINGS
+const default_settings = {
+	class:undefined,
+	style:undefined,
+	id:undefined
+}
+
+
+
+/**
+ * Table rendering with given state, produce a rendering result.
+ * 
+ * @param {object} arg_settings - rendering item settings.
+ * @param {object} arg_state - component state.
+ * @param {object} arg_rendering_context - rendering context: { trace_fn:..., topology_defined_application:..., credentials:..., rendering_factory:... }.
+ * @param {RenderingResult} arg_rendering_result - rendering result to update.
+ * 
+ * @returns {RenderingResult} - updated Rendering result: VNode or Html text, headers.
+ */
+export default (arg_settings, arg_state={}, arg_rendering_context, arg_rendering_result)=>{
+	// NORMALIZE ARGS
+	const { settings, state, rendering_context, rendering_result } = rendering_normalize(default_settings, default_state, arg_settings, arg_state, arg_rendering_context, arg_rendering_result, context)
+	const rendering_factory = rendering_context ? rendering_context.rendering_factory : undefined
+		
+	// GET STATE ATTRIBUTES
+	const label_value   = T.isString(state.label)  ? state.label : undefined
+	const columns_value = T.isArray(state.columns) ?  (label_value ? [[label_value]].concat(state.columns) : state.columns) : (label_value ? [[label_value]] : undefined)
+	const items_value   = T.isArray(state.items)   ? state.items : undefined
+	const footers_value = T.isArray(state.footers) ? state.footers : undefined
+
+	// BUILD THEAD, TBODY, TFOOT
+	const cell_fn = (cell) => T.isFunction(rendering_factory) ? rendering_factory(cell, rendering_context) : cell.toString()
+	const th_fn = (header) =>h('th', undefined, cell_fn(header) )
+	const td_fn = (content)=>h('td', undefined, cell_fn(content) )
+
+	const tr_td_fn = (cells)  =>h('tr', undefined, (T.isArray(cells) ? cells : [cells]).map(td_fn) )
+	const tr_th_fn = (cells)  =>h('tr', undefined, (T.isArray(cells) ? cells : [cells]).map(th_fn) )
+	const thead_children = columns_value ? (T.isArray(columns_value) ? columns_value : [columns_value]).map(tr_th_fn) : undefined
+	const tbody_children = items_value   ? (T.isArray(items_value)   ? items_value   : [items_value]).map(tr_td_fn)   : undefined
+	const tfoot_children = footers_value ? (T.isArray(footers_value) ? footers_value : [footers_value]).map(tr_th_fn) : undefined
+
+	const thead = h('thead', undefined, thead_children)
+	const tbody = h('tbody', undefined, tbody_children)
+	const tfoot = h('tfoot', undefined, tfoot_children)
+
+	// BUILD TAG
+	const tag_id = settings.id
+	const tag_children = [thead, tbody, tfoot]
+	const tag_props = { id:tag_id, style:settings.style, class:settings.class }
+	const tag = h('table', tag_props, tag_children)
+	
+	rendering_result.add_vtree(tag_id, tag)
+
+	return rendering_result
+}
