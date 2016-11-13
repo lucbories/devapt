@@ -1,10 +1,12 @@
 // NPM IMPORTS
 import T from 'typr'
 import assert from 'assert'
+import _ from 'lodash'
 
 // COMMON IMPORTS
 import Loggable from '../../common/base/loggable'
 import RenderingResult from '../../common/rendering/rendering_result'
+import rendering_factory from '../../common/rendering/rendering_factory'
 
 // SERVER IMPORTS
 import runtime from '../base/runtime'
@@ -531,6 +533,101 @@ export default class Render extends Loggable
 
 		return this.application
 	}
+	
+	
+	
+	/**
+	 * Get initial state.
+	 * 
+	 * @returns {string} - state string.
+	 */
+	get_initial_state()
+	{
+		let initial_state = {} //this.get_children_state()
+
+		initial_state.credentials = {
+			"tenant":"{{{credentials_tenant}}}",
+			"env":"{{{credentials_env}}}",
+			"application":"{{{credentials_application}}}",
+			
+			"token":"{{{credentials_token}}}",
+			"user_name":"{{{credentials_user_name}}}",
+			"user_pass_digest":"{{{credentials_pass_digest}}}",
+
+			"ts_login":"{{{credentials_login}}}",
+			"ts_expiration":"{{{credentials_expire}}}",
+
+			"errors_count":"{{{credentials_errors_count}}}",
+			"renew_count":"{{{credentials_renew_count}}}"
+		}
+
+		initial_state.app_url    = this.application ? this.application.app_url : null
+		initial_state.app_assets = this.application ? this.application.app_assets : null
+		initial_state.commands   = this.application ? this.application.get_resources_settings('commands') : {}
+
+		return JSON.stringify(initial_state)
+	}
+
+
+
+	/**
+	 * Render Devapt init code.
+	 * 
+	 * @returns {string} - HTML code.
+	 */
+	get_devapt_init(arg_default_view, arg_default_menubar)
+	{
+		return `
+			$(document).ready(
+				function()
+				{
+					// CREATE ROOT
+					var private_devapt = {}
+					window.devapt = function() { return private_devapt }
+					
+					function reducers(prev_state, action)
+					{
+						if (! prev_state)
+						{
+							prev_state = {}
+						}
+						if (! prev_state.counter)
+						{
+							prev_state.counter = 0
+						}
+						prev_state.counter++
+						
+						// console.log(prev_state, 'state')
+						
+						return prev_state
+					}
+					
+					// CREATE RUNTIME
+					var runtime_settings = {
+						reducers:reducers,
+						default_view:"${arg_default_view}",
+						default_menubar:"${arg_default_menubar}"
+					}
+					var ClientRuntime = require('client_runtime').default
+					var private_runtime = new ClientRuntime()
+					private_devapt.runtime = function() { return private_runtime }
+					
+					private_runtime.load(runtime_settings)
+					
+					var private_ui = private_runtime.ui
+					private_devapt.ui = function(arg_name)
+					{
+						if (arg_name)
+						{
+							return private_ui.get(arg_name)
+						}
+						return private_ui
+					}
+					
+				}
+			)
+		`
+	}
 
 
 
@@ -575,32 +672,84 @@ export default class Render extends Loggable
 		// TODO ADDSECURITY  HEADERS
 		// const auth_basic_realm = '<meta http-equiv="WWW-Authenticate" content="Basic realm=Devtools"/>'
 		// const auth_basic_credentials = '<meta http-equiv="Authorization" content="Basic {{{credentials_basic_base64}}}"/>'
-		
-		// ADD PAGE
-		const separator = create_component( {type:'Table', name:'separator'} )
-		const scripts = create_component(
-			{
-				type:'Script',
-				name:'main_script',
-				scripts:[],
-				scripts_urls:this.application.app_assets_js,
-				renderer:this
-			}
-		)
-		const page_settings = {
-			title: title,
-			default_view: default_view_name,
-			default_menubar: default_menubar_name/*,
-			headers:[auth_basic_realm, auth_basic_credentials]*/,
-			renderer:this,
-			children:[menubar, separator, view, scripts]
+
+		const separator = {
+			type:'table'
 		}
-		this.page('main', page_settings)
-		
-		// RENDER
-		const html = this.render()
+
+		const stored_state = this.get_initial_state()
+
+		const page = {
+			type:'page',
+			state:{
+				title:title,
+				metas:undefined,
+
+				body_headers:undefined,
+				body_contents:[menubar, separator, view],
+				body_footers:undefined,
+				
+				head_styles_tags:[],
+				head_styles_urls:topology_define_app.app_assets_css,
+				
+				head_scripts_tags:[],
+				head_scripts_urls:[],
+
+				body_styles_tags:[],
+				body_styles_urls:[],
+
+				body_scripts_tags:[
+					{
+						id:'js-initial-state',
+						content:`window.__INITIAL_STATE__ = ${stored_state}`
+					},
+					{
+						id:'js-devapt-init',
+						content:this.get_devapt_init(default_view_name, default_menubar_name)
+					}
+				],
+
+				body_scripts_urls:_.concat(topology_define_app.app_assets_js, 
+					[{
+						id:'js-socketio',
+						src:'/socket.io/socket.io.js',
+						absolute:true
+					}]
+				)
+			},
+			settings:{
+				html_lang:undefined,
+				html_class:undefined,
+				html_prefix:undefined,
+
+				head_charset:'utf-8',
+				head_viewport:undefined,
+				head_description:undefined,
+				head_robots:undefined,
+
+				body_class:undefined,
+
+				assets_urls_templates:{
+					script:this.get_assets_script_url('{{url}}'),
+					style:this.get_assets_style_url('{{url}}'),
+					image:this.get_assets_image_url('{{url}}'),
+					html:this.get_assets_html_url('{{url}}')
+				}
+			},
+			children:{}
+		}
+
+		const rendering_context = {
+			trace_fn:undefined,//console.log,
+			topology_defined_application:topology_define_app,
+			credentials:arg_credentials,
+			rendering_factory:rendering_factory
+		}
+
+		const rendering_result = rendering_factory(page, rendering_context, page.children)
+		const html = rendering_result.get_final_html('page')
 		const rendered_html = runtime.context.render_credentials_template(html, arg_credentials)
-		
+
 		return rendered_html
 	}
 
@@ -636,90 +785,139 @@ export default class Render extends Loggable
 		
 		// GET MENUBAR
 		const default_menubar_name = topology_define_app.app_default_menubar
-		let menubar_object = T.isObject(arg_menubar) && arg_menubar.is_component ? arg_menubar : undefined
-		const menubar_name = T.isString(arg_menubar) ? arg_menubar : (menubar_object ? menubar_object.get_name() : default_menubar_name )
-		let menubar_settings = undefined
-		let menubar_state = undefined
-		if (! menubar_object)
-		{
-			const defined_menubar = topology_define_app.find_resource(menubar_name, 'menubars')
-			if(! defined_menubar)
-			{
-				console.error(context + ':render_content:defined menubar not found [' + menubar_name + ']')
-				return
-			}
-			menubar_settings = defined_menubar.get_settings_js()
-			menubar_state    = defined_menubar.get_setting('state', undefined)
-		}
+		// let menubar_object = T.isObject(arg_menubar) && arg_menubar.is_component ? arg_menubar : undefined
+		// const menubar_name = T.isString(arg_menubar) ? arg_menubar : (menubar_object ? menubar_object.get_name() : default_menubar_name )
+		// let menubar_settings = undefined
+		// let menubar_state = undefined
+		// if (! menubar_object)
+		// {
+		// 	const defined_menubar = topology_define_app.find_resource(menubar_name, 'menubars')
+		// 	if(! defined_menubar)
+		// 	{
+		// 		console.error(context + ':render_content:defined menubar not found [' + menubar_name + ']')
+		// 		return
+		// 	}
+		// 	menubar_settings = defined_menubar.get_settings_js()
+		// 	menubar_state    = defined_menubar.get_setting('state', undefined)
+		// }
 
-		this.new_component('Container', 'content', {}, {})
+		// this.new_component('Container', 'content', {}, {})
 
-		// ADD MENUBAR
-		if (menubar_object)
-		{
-			this.add(menubar_object)
-		} else if (menubar_state)
-		{
-			this.menubar(menubar_name, menubar_settings, menubar_state)
-		}
+		// // ADD MENUBAR
+		// if (menubar_object)
+		// {
+		// 	this.add(menubar_object)
+		// } else if (menubar_state)
+		// {
+		// 	this.menubar(menubar_name, menubar_settings, menubar_state)
+		// }
 
 		// ADD VIEW
-		const html2 = this.up()
-		.table('separator', undefined, undefined)
-		.up()
-		.add(arg_view)
-		.up()
+		// const html2 = this.up()
+		// .table('separator', undefined, undefined)
+		// .up()
+		// .add(arg_view)
+		// .up()
 
-		// RENDER
-		//.render()
-		const view_name      = T.isString(arg_view) ? arg_view : arg_view.get_name()
-		const menubar_html   = this.stack.components[menubar_name].render()
-		const separator_html = this.stack.components['separator'].render()
-		const view_html      = this.stack.components[view_name].render()
-		const html           = '<div id="content">' + menubar_html + separator_html + view_html + '</div>'
+		// // RENDER
+		// //.render()
+		// const view_name      = T.isString(arg_view) ? arg_view : arg_view.get_name()
+		// const menubar_html   = this.stack.components[menubar_name].render()
+		// const separator_html = this.stack.components['separator'].render()
+		// const view_html      = this.stack.components[view_name].render()
+		// const html           = '<div id="content">' + menubar_html + separator_html + view_html + '</div>'
 
-		// GET HTML ATTRIBUTES
-		const headers      = this.current().get_headers()
-		const styles_tags  = this.current().get_styles()
-		const styles_urls  = this.current().get_styles_urls()
-		// const scripts_urls = this.current().get_scripts_urls()
-		const scripts_urls = this.stack.components[menubar_name].get_scripts_urls().concat( this.stack.components[view_name].get_scripts_urls() )
-		// const scripts_tags = this.current().get_scripts()
+		// // GET HTML ATTRIBUTES
+		// const headers      = this.current().get_headers()
+		// const styles_tags  = this.current().get_styles()
+		// const styles_urls  = this.current().get_styles_urls()
+		// // const scripts_urls = this.current().get_scripts_urls()
+		// const scripts_urls = this.stack.components[menubar_name].get_scripts_urls().concat( this.stack.components[view_name].get_scripts_urls() )
+		// // const scripts_tags = this.current().get_scripts()
 
-		const view_state = this.stack.components[view_name].get_children_state()
-		const view_state_str = JSON.stringify(view_state)
-		const state_js = `
-			var current_state = window.devapt().ui().store.get_state()
-			var state_path = []
-			var view_state = ${view_state_str}
-			// console.log(view_state, 'view_state')
-			var component_state = window.devapt().ui().find_state(current_state, "${view_name}", state_path)
-			if (! component_state)
-			{
-				var action = { type:"ADD_JSON_RESOURCE", resource:"${view_name}", json:view_state }
-				 window.devapt().ui().store.dispatch(action)
-			}
-			`
-		const scripts_tags = [state_js].concat( this.stack.components[menubar_name].get_scripts().concat( this.stack.components[view_name].get_scripts() ) )
 
-		// const page_id = 'content'
-		// const show_content = '\n document.getElementById("' + page_id + '").style.display="block";\n'
-		// const handler_1 = 'function(e){ ' + show_content + '}'
-		// const on_ready = '\n document.addEventListener("DOMContentLoaded", ' + handler_1 + ', false);\n'
-		// html_scripts.push(on_ready)
-		// return `<script type="text/javascript">${html_scripts} ${on_ready}</script>\n`
 
-		const rendered_html = runtime.context.render_credentials_template(html, arg_credentials)
-		const result = new RenderingResult()
-		result.add_html('content', rendered_html)
-		result.set_headers(headers)
 
-		result.set_head_styles_tags(styles_tags)
-		result.set_head_styles_urls(styles_urls)
 
-		result.set_body_scripts_urls(scripts_urls)
-		result.set_body_scripts_tags(scripts_tags)
+
+
+
+
+		// const view_state = this.stack.components[view_name].get_children_state()
+		// const view_state_str = JSON.stringify(view_state)
+		// const state_js = `
+		// 	var current_state = window.devapt().ui().store.get_state()
+		// 	var state_path = []
+		// 	var view_state = ${view_state_str}
+		// 	// console.log(view_state, 'view_state')
+		// 	var component_state = window.devapt().ui().find_state(current_state, "${view_name}", state_path)
+		// 	if (! component_state)
+		// 	{
+		// 		var action = { type:"ADD_JSON_RESOURCE", resource:"${view_name}", json:view_state }
+		// 		 window.devapt().ui().store.dispatch(action)
+		// 	}
+		// 	`
+		// const scripts_tags = [state_js].concat( this.stack.components[menubar_name].get_scripts().concat( this.stack.components[view_name].get_scripts() ) )
+
+
+
+
+
+
+
+
+
+
+
+		// // const page_id = 'content'
+		// // const show_content = '\n document.getElementById("' + page_id + '").style.display="block";\n'
+		// // const handler_1 = 'function(e){ ' + show_content + '}'
+		// // const on_ready = '\n document.addEventListener("DOMContentLoaded", ' + handler_1 + ', false);\n'
+		// // html_scripts.push(on_ready)
+		// // return `<script type="text/javascript">${html_scripts} ${on_ready}</script>\n`
+
+		// const rendered_html = runtime.context.render_credentials_template(html, arg_credentials)
+		// const result = new RenderingResult()
+		// result.add_html('content', rendered_html)
+		// result.set_headers(headers)
+
+		// result.add_head_styles_tags(styles_tags)
+		// result.add_head_styles_urls(styles_urls)
+
+		// result.add_body_scripts_urls(scripts_urls)
+		// result.add_body_scripts_tags(scripts_tags)
 		
-		return result
+		const separator = {
+			type:'table'
+		}
+
+		const rendering_context = {
+			trace_fn:undefined,//console.log,
+			topology_defined_application:topology_define_app,
+			credentials:arg_credentials,
+			rendering_factory:rendering_factory
+		}
+
+		const content = {
+			type:'page_content',
+			state:{
+				body_contents:[
+					(arg_menubar ? arg_menubar : default_menubar_name),
+					separator,
+					(arg_view    ? arg_view    : default_view_name)
+				]
+			},
+			settings:{
+				assets_urls_templates:{
+					script:'{{url}}',
+					style:'{{url}}',
+					image:'{{url}}',
+					html:'{{url}}'
+				}
+			},
+			children:{}
+		}
+		const rendering_result = rendering_factory(content, rendering_context, undefined)
+		return rendering_result
 	}
 }

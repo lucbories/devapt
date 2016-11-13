@@ -173,7 +173,6 @@ function load_package(logs, arg_package_name, arg_package_config, arg_base_dir, 
 	)
 
 	// REGISTER COMMANDS AS RESOURCES
-	debugger
 	Object.keys(arg_package_config.commands).forEach(
 		(cmd_name) => {
 			const cmd = arg_package_config.commands[cmd_name]

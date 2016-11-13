@@ -167,6 +167,47 @@ export default class Router extends RouterState
 		Hasher.setHash('view=' + arg_view_name + ',menubar=' + arg_menubar_name)
 		Hasher.changed.active = true
 	}
+
+
+
+	/**
+	 * Evaluate a command.
+	 * 
+	 * @param {string} arg_command_name - command name.
+	 * 
+	 * @returns {Promise}
+	 */
+	evaluate_command(arg_command_name)
+	{
+		const commands = this.state_store.get_state().get('commands', undefined)
+		if (!commands)
+		{
+			return Promise.reject('no commands found for [' + arg_command_name + ']')
+		}
+		let command = commands.get(arg_command_name)
+		command = command ? command.toJS() : undefined
+		console.log(command, 'evaluate_command:command')
+		const type = T.isString(command.type) && command.type.length > 0 ? command.type.toLocaleLowerCase() : undefined
+		const url = T.isString(command.type) && command.url.length > 0 ? command.url : ''
+		const middleware = T.isString(command.middleware) && command.middleware.length > 0 ? command.middleware : undefined
+		const label = T.isString(command.label) && command.label.length > 0 ? command.label : undefined
+
+		if (!type)
+		{
+			return Promise.reject('bad command type for [' + arg_command_name + ']')
+		}
+
+		switch(type){
+			case 'display':{
+				const app_url = this.state_store.get_state().get('app_url', undefined)
+				const route = T.isString(app_url) ? '/' + app_url + url : url
+				this.runtime.ui.render_with_middleware(command, route, this.session_credentials)
+				return Promise.resolve('done')
+			}
+		}
+
+		return Promise.reject('unknow command type for [' + arg_command_name + ']')
+	}
 	
 	
 	

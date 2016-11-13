@@ -113,21 +113,8 @@ export default class ResourcesSvcProvider extends ServiceExecProvider
 				const resource_name = args.resource
 				
 				// GET ASSETS CONFIG
-				const assets = this.services.topology_deploy_assets
-				const assets_region = 'all'
-				const assets_for_region = T.isObject(assets) && T.isObject(assets[assets_region]) ? assets[assets_region] : undefined
-				
-				const assets_style  = T.isObject(assets_for_region) && T.isArray(assets_for_region.style)  ? assets_for_region.style  : []
-				const assets_script = T.isObject(assets_for_region) && T.isArray(assets_for_region.script) ? assets_for_region.script : []
-				const assets_image  = T.isObject(assets_for_region) && T.isArray(assets_for_region.image)  ? assets_for_region.image  : []
-				const assets_html   = T.isObject(assets_for_region) && T.isArray(assets_for_region.html)   ? assets_for_region.html   : []
-
-				const assets_style_selected  = assets_style.length  > 0 ? assets_style[0]  : undefined
-				const assets_script_selected = assets_script.length > 0 ? assets_script[0] : undefined
-				const assets_image_selected  = assets_image.length  > 0 ? assets_image[0]  : undefined
-				const assets_html_selected   = assets_html.length   > 0 ? assets_html[0]   : undefined
-				
-				const renderer = new Render(assets_style_selected, assets_script_selected, assets_image_selected, assets_html_selected)
+				const assets_for_region = this.service.get_assets_services_names('all')
+				const renderer = new Render(assets_for_region.style, assets_for_region.script, assets_for_region.image, assets_for_region.html)
 				const html = renderer.add(resource).render()
 				return Promise.resolve(html)
 			}

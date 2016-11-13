@@ -65,6 +65,9 @@ export default class Security extends Errorable
 	 */
 	load(arg_settings)
 	{
+		this.enter_group('load')
+		// this.debug('settings', arg_settings)
+
 		// console.log(context + '.load:arg_settings', arg_settings)
 		
 		assert(T.isObject(arg_settings), context + ':bad settings object')
@@ -86,6 +89,8 @@ export default class Security extends Errorable
 			https://github.com/OptimalBits/node_acl
 			http://www.hamiltonchapman.com/blog/2014/3/25/user-accounts-using-sequelize-and-passport-in-nodejs
 		*/
+
+		this.leave_group('load')
 	}
 	
 	

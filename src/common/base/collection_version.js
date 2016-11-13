@@ -73,7 +73,7 @@ export default class CollectionVersion extends CollectionBase
 	 */
 	constructor(...args)
 	{
-		super(args, false)
+		super()
 
 		this.is_collection_version  = true
 
@@ -155,6 +155,7 @@ export default class CollectionVersion extends CollectionBase
 	 */
 	get_latest_item(arg_name)
 	{
+		// console.log('collection.get_latest_item:latest=' + Object.keys(this.$items_by_name_latest_version).toString())
 		return this.$items_by_name_latest_version ? this.$items_by_name_latest_version[arg_name] : undefined
 	}
 	

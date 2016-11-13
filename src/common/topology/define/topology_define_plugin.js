@@ -73,16 +73,16 @@ export default class TopologyDefinePlugin extends TopologyDefineItem
 		const plugins_mgr = arg_runtime.get_plugins_factory().get_rendering_manager()
 		assert( T.isObject(plugins_mgr) && plugins_mgr.is_plugins_manager, context + ':load_rendering_plugin:bad plugin manager object')
 
-		this.debug('plugin=%s', arg_plugin.get_name())
+		this.debug('plugin=%s', this.get_name())
 
 		let plugin_class = undefined
 
 		// RENDERING PLUGIN IS LOADED FROM A NPM PACKAGE
-		if ( T.isString(arg_plugin.topology_plugin_package) )
+		if ( T.isString(this.topology_plugin_package) )
 		{
 			// TODO : loading packages without full path?
 			let file_path = undefined
-			const pkg = arg_plugin.topology_plugin_package
+			const pkg = this.topology_plugin_package
 
 			file_path = self.runtime.context.get_absolute_path('./node_modules/', pkg)
 			let file_path_stats = file_path ? fs.statSync(file_path) : undefined
@@ -108,22 +108,22 @@ export default class TopologyDefinePlugin extends TopologyDefineItem
 
 			if (file_path)
 			{
-				console.log(context + ':load_rendering_plugins:package=%s for plugin=%s at=%s', pkg, arg_plugin.get_name(), file_path)
+				console.log(context + ':load_rendering_plugins:package=%s for plugin=%s at=%s', pkg, this.get_name(), file_path)
 				plugin_class = require(file_path)
 			}
 			else
 			{
 				file_path = undefined
-				console.error(context + ':load_rendering_plugins:not found package=%s for plugin=%s at=%s', pkg, arg_plugin.get_name())
+				console.error(context + ':load_rendering_plugins:not found package=%s for plugin=%s at=%s', pkg, this.get_name())
 			}
 		}
 
 
 		// LOAD A PLUGIN FROM A PATH
-		else if ( T.isString(arg_plugin.topology_plugin_file) )
+		else if ( T.isString(this.topology_plugin_file) )
 		{
-			const file_path = self.runtime.context.get_absolute_path(arg_plugin.topology_plugin_file)
-			console.log(context + ':load_rendering_plugins:file_path=%s for plugin=%s', file_path, arg_plugin.get_name())
+			const file_path = self.runtime.context.get_absolute_path(this.topology_plugin_file)
+			console.log(context + ':load_rendering_plugins:file_path=%s for plugin=%s', file_path, this.get_name())
 
 			plugin_class = require(file_path)
 		}
@@ -139,10 +139,20 @@ export default class TopologyDefinePlugin extends TopologyDefineItem
 
 			const plugin = new plugin_class(plugins_mgr)
 			plugins_mgr.load_at_first(plugin)
+			plugin.$plugin_class = plugin_class
+			plugin.find_rendering_function = (type)=>{
+				if ( T.isFunction(plugin.$plugin_class.find_rendering_function) )
+				{
+					// console.log('plugin.$plugin_class.find_rendering_function FOUND')
+					return plugin.$plugin_class.find_rendering_function(type)
+				}
+				// console.log('plugin.$plugin_class.find_rendering_function NOT FOUND')
+				return undefined
+			}
 
 			this.topology_plugin_instance = plugin
 
-			console.log(context + ':load_rendering_plugins:plugin=%s is loaded', arg_plugin.get_name())
+			console.log(context + ':load_rendering_plugins:plugin=%s is loaded', this.get_name())
 		}
 			
 			
@@ -163,14 +173,24 @@ export default class TopologyDefinePlugin extends TopologyDefineItem
 	{
 		if ( this.topology_plugin_type != 'rendering')
 		{
+			console.warn(context + ':find_rendering_function:not a rendering plugin:' + this.get_name())
 			return undefined
 		}
 
 		if ( ! T.isObject(this.topology_plugin_instance) || ! this.topology_plugin_instance.is_rendering_plugin )
 		{
+			console.warn(context + ':find_rendering_function:no rendering plugin instance:' + this.get_name())
 			return undefined
 		}
 
-		return this.topology_plugin_instance.find_rendering_function(arg_type)
+		if ( ! T.isFunction(this.topology_plugin_instance.find_rendering_function) )
+		{
+			console.warn(context + ':find_rendering_function:no rendering plugin function:' + this.get_name())
+			return undefined
+		}
+
+		const fn = this.topology_plugin_instance.find_rendering_function(arg_type)
+		// console.log(fn, context + ':find_rendering_function:rendering function for ' + this.get_name())
+		return fn
 	}
 }

@@ -112,7 +112,7 @@ function load_config(arg_state, arg_initial_config, arg_base_dir, arg_world_dir,
 		arg_state.config.nodes = load_nodes(logs, config.nodes, arg_world_dir)
 		if (arg_state.config.nodes && ! arg_state.config.nodes.error)
 		{
-			arg_state.config.tenants = load_tenants(logs, config.tenants, arg_state.config.plugins, arg_world_dir)
+			arg_state.config.tenants = load_tenants(logs, config.tenants, config.plugins, arg_world_dir)
 
 			if (arg_state.config.tenants && ! arg_state.config.tenants.error)
 			{

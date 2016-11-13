@@ -61,9 +61,9 @@ export default class TopologyDefineWorld extends TopologyDefineItem
 		this.load_loggers()
 		this.load_security()
 		
+		this.declare_collection('plugins', 'plugin', TopologyDefinePlugin, this.load_plugin.bind(this))
 		this.declare_collection('tenants', 'tenant', TopologyDefineTenant)
 		this.declare_collection('nodes',   'node',   TopologyDefineNode)
-		this.declare_collection('plugins', 'plugin', TopologyDefinePlugin, this.load_plugin.bind(this))
 
 		assert( T.isObject(this._runtime) && this._runtime.is_server_runtime, context + ':constructor')
 
@@ -123,15 +123,24 @@ export default class TopologyDefineWorld extends TopologyDefineItem
 	 */
 	load_plugin(arg_plugin)
 	{
+		this.enter_group('load_plugin')
+		// this.debug('plugin', arg_plugin)
+
+		let promise = undefined
 		switch(arg_plugin.topology_plugin_type){
 			case 'rendering': {
 				assert( T.isObject(arg_plugin) && arg_plugin.is_topology_define_plugin, context + ':load_rendering_plugin:bad plugin object')
-				return arg_plugin.load_rendering_plugin(this._runtime)
+				promise = arg_plugin.load_rendering_plugin(this._runtime)
+				this.leave_group('load_plugin:rendering:async')
+				return promise
 			}
 			case '...':{
+				this.leave_group('load_plugin:unknow:async')
 				return Promise.resolve(true)
 			}
 		}
+
+		this.leave_group('load_plugin')
 		return Promise.reject('bad plugin type [' + arg_plugin.topology_plugin_type + ']')
 	}
 

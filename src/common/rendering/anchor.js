@@ -15,7 +15,8 @@ let context = 'common/rendering/anchor'
 
 // DEFAULT STATE
 const default_state = {
-	label:undefined
+	label:undefined,
+	command:undefined
 }
 
 // DEFAULT SETTINGS
@@ -24,7 +25,6 @@ const default_settings = {
 	style:undefined,
 	id:undefined,
 	href:undefined,
-	command:undefined,
 	blank:false
 }
 
@@ -46,14 +46,14 @@ export default (arg_settings, arg_state={}, arg_rendering_context, arg_rendering
 	
 	// GET SETTINGS ATTRIBUTES
 	const href_value = (T.isString(settings.href) && settings.href.length > 0) ? settings.href : '#'
-	const cmd_value = (T.isString(settings.command) && settings.command.length > 0) ? settings.command : undefined
+
+	// GET STATE ATTRIBUTES
+	const label_value = state.label ? rendering_context.rendering_factory(state.label, arg_rendering_context, settings.children).get_final_vtree(undefined, rendering_result) : undefined
+	const cmd_value = (T.isString(state.command) && state.command.length > 0) ? state.command : undefined
 	if (cmd_value)
 	{
 		settings.class = settings.class ? settings.class + ' devapt-command' : 'devapt-command'
 	}
-
-	// GET STATE ATTRIBUTES
-	const label_value = state.label ? rendering_context.rendering_factory(state.label, arg_rendering_context) : undefined
 
 	// BUILD TAG
 	const tag_id = settings.id ? settings.id : 'tag_' + uid()

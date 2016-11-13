@@ -5,7 +5,8 @@ import VNode from 'virtual-dom/vnode/vnode'
 import VText from 'virtual-dom/vnode/vtext'
 
 // COMMON IMPORTS
-import DefaultRendering from './index'
+import uid from '../utils/uid'
+import RenderingResult from './rendering_result'
 
 
 let context = 'common/rendering/rendering_factory'
@@ -22,65 +23,63 @@ let context = 'common/rendering/rendering_factory'
 
 
 const from_string = (arg_item, arg_rendering_context=undefined)=>{
-	return new VText(arg_item) // TODO
+	if (arg_rendering_context && arg_rendering_context.topology_defined_application && arg_rendering_context.topology_defined_application.find_resource)
+	{
+		arg_rendering_context.trace_fn(context + ':from_string:search item [' + arg_item + '] in defined application [' + arg_rendering_context.topology_defined_application.get_name() + ']')
+
+		const r = arg_rendering_context.topology_defined_application.find_resource(arg_item)
+		if (r)
+		{
+			const res_settings = r.get_settings_js()
+			arg_rendering_context.trace_fn(res_settings, 'res_settings')
+
+			return from_object(res_settings, arg_rendering_context)
+		}
+
+		arg_rendering_context.trace_fn(context + ':from_string:item [' + arg_item + '] not found in defined application')
+	}
+	
+
+	const result = new RenderingResult()
+	result.add_vtree('tag_' + uid(), new VText(arg_item) )
+	return result
 }
+
 
 
 const from_object = (arg_item, arg_rendering_context=undefined)=>{
 
-	const type = T.isString(arg_item.type) ? arg_item.type.toLocaleLowerCase() : undefined
-	const settings = T.isObject(arg_item.settings) ? arg_item.settings : undefined
+	const type     = T.isString(arg_item.type)     ? arg_item.type.toLocaleLowerCase() : (T.isString(arg_item.class_name) ? arg_item.class_name.toLocaleLowerCase() : undefined)
+	const settings = T.isObject(arg_item.settings) ? arg_item.settings : {}
 	const state    = T.isObject(arg_item.state)    ? arg_item.state : undefined
+	
+	settings.children = T.isObject(arg_item.children) ? arg_item.children : {}
+
+	// DEBUG
+	// debugger
+	// console.log(arg_item, 'from_object:arg_item')
+	// console.log(type, 'from_object:type')
+	// console.log(settings, 'from_object:settings')
+	// console.log(state, 'from_object:state')
 
 	if (arg_rendering_context && arg_rendering_context.topology_defined_application && arg_rendering_context.topology_defined_application.find_rendering_function)
 	{
+		// console.log(context + ':from_object:search rendering function into application plugins for ' + type)
+
 		const f = arg_rendering_context.topology_defined_application.find_rendering_function(type)
-		return f(settings, state, arg_rendering_context).get_final_vtree()
+		if (f)
+		{
+			// console.log(context + ':from_object:search rendering function into application plugins: FOUND')
+
+			return f(settings, state, arg_rendering_context)
+		}
 	}
 
-	switch(type) {
-		case 'button':
-			return DefaultRendering.button(settings, state, arg_rendering_context).get_final_vtree()
-		
-		case 'label':
-			return DefaultRendering.label(settings, state, arg_rendering_context).get_final_vtree()
-		
-		case 'anchor':
-			return DefaultRendering.anchor(settings, state, arg_rendering_context).get_final_vtree()
-		
-		case 'image':
-			return DefaultRendering.image(settings, state, arg_rendering_context).get_final_vtree()
-		
-		case 'input':
-		case 'input-field':
-				return DefaultRendering.input_field(settings, state, arg_rendering_context).get_final_vtree()
-		
-		case 'list':
-			return DefaultRendering.list(settings, state, arg_rendering_context).get_final_vtree()
-		
-		case 'table':
-			return DefaultRendering.table(settings, state, arg_rendering_context).get_final_vtree()
-		
-		case 'Script':
-			return DefaultRendering.script(settings, state, arg_rendering_context).get_final_vtree()
-		
-		case 'menubar':
-			return DefaultRendering.menubar(settings, state, arg_rendering_context).get_final_vtree()
-		
-		// case 'Page':
-		// case 'Tabs':
-		// case 'Tree':
-		// case 'TableTree':
-		
-		case 'hbox':
-			return DefaultRendering.hbox(settings, state, arg_rendering_context).get_final_vtree()
-		
-		case 'vbox':
-			return DefaultRendering.vbox(settings, state, arg_rendering_context).get_final_vtree()
-	}
-
-	return new VText( arg_item.toString() ) // TODO
+	const result = new RenderingResult()
+	result.add_vtree('tag_' + uid(), new VText( arg_item.toString() ) )
+	return result
 }
+
 
 
 /**
@@ -88,13 +87,25 @@ const from_object = (arg_item, arg_rendering_context=undefined)=>{
  * 
  * @param {any} arg_item - item configuration.
  * @param {object} arg_rendering_context - rendering context: { trace_fn:..., topology_defined_application:..., credentials:..., rendering_factory:... }.
+ * @param {object} arg_children - private view children settings
  * 
  * @returns {RenderingResult}
  */
-export default (arg_item, arg_rendering_context=undefined)=>{
+export default (arg_item, arg_rendering_context=undefined, arg_children={})=>{
+	arg_rendering_context.trace_fn = T.isFunction(arg_rendering_context.trace_fn) ? arg_rendering_context.trace_fn : ()=>{}
+	
+	arg_rendering_context.trace_fn('-------- rendering_factory:ENTER --------')
+	// arg_rendering_context.trace_fn(arg_children, 'children')
+	arg_rendering_context.trace_fn(T.isString(arg_item) ? arg_item : 'not a string', 'item')
+
 	// ITEM IS A STRING: a text or a view name
 	if( T.isString(arg_item) )
 	{
+		if (arg_item in arg_children)
+		{
+			// console.log('rendering_factory:item [' + arg_item + '] found into children')
+			return from_object(arg_children[arg_item], arg_rendering_context)
+		}
 		return from_string(arg_item, arg_rendering_context)
 	}
 
@@ -104,6 +115,10 @@ export default (arg_item, arg_rendering_context=undefined)=>{
 		return from_object(arg_item, arg_rendering_context)
 	}
 
-	console.error(context + ':create:unknow item', arg_item)
-	return undefined
+	// console.log(arg_item, context + ':create:unknow item')
+	console.error(context + ':unknow item with typeof:' + typeof arg_item)
+	
+	const result = new RenderingResult()
+	result.add_vtree('tag_' + uid(), new VText( context + ':unknow item with typeof:' + typeof arg_item ) )
+	return result
 }

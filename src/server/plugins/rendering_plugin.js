@@ -52,9 +52,9 @@ export default class RenderingPlugin extends FeaturesPlugin
      */
 	get_feature_class(arg_class_name)
 	{
-		assert( T.isString(arg_class_name), context + ':get_class:bad class string')
+		assert( T.isString(arg_class_name), context + ':get_feature_class:bad class string')
 		
-		assert(false, context + ':get_class:not yet implemented')
+		assert(false, context + ':get_feature_class:not yet implemented')
 		
 		return undefined
 	}
@@ -173,7 +173,7 @@ export default class RenderingPlugin extends FeaturesPlugin
 	 * 
 	 * @returns {Function} - rendering function.
 	 */
-	find_rendering_function(arg_type)
+	static find_rendering_function(arg_type)
 	{
 		return undefined
 	}

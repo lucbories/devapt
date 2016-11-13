@@ -556,9 +556,9 @@ export default class UI extends Loggable
 			(tag)=>{
 				const has_tag = false // TODO
 				const e = document.createElement('script')
-				e.text = tag
+				e.text = tag.content
+				e.setAttribute('id', tag.id)
 				e.setAttribute('type', 'text/javascript')
-				e.setAttribute('name', 'todo')
 				document.body.appendChild(e)
 			}
 		)

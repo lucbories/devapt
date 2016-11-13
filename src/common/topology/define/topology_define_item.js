@@ -197,63 +197,28 @@ export default class TopologyDefineItem extends Instance
 			item_init:arg_init_cb,
 
 			collection:new CollectionVersion(),
-			// latest:new Collection(),
-			// versions:new Collection(),
 			
 			has:(arg_name, arg_version)=>{
 				if (arg_version == 'latest')
 				{
 					return this.topology_children[arg_plural_name].collection.has(arg_name)
-					// return this.topology_children[arg_plural_name].latest.has(arg_name)
 				}
 				return this.topology_children[arg_plural_name].collection.has_version(arg_name, arg_version)
-				// return this.topology_children[arg_plural_name].versions.find_by_filter( filter_version(arg_name, arg_version) )
 			},
 			get:(arg_name, arg_version)=>{
 				if (arg_version == 'latest')
 				{
 					return this.topology_children[arg_plural_name].collection.get_latest_item(arg_name)
-					// return this.topology_children[arg_plural_name].latest.find_by_name(arg_name)
 				}
 				return this.topology_children[arg_plural_name].collection.get_item_of_version(arg_name, arg_version)
-				// return this.topology_children[arg_plural_name].versions.find_by_filter( filter_version(arg_name, arg_version) )
 			},
 			add:(arg_item)=>{
 				this.debug('collection[' + arg_plural_name + '].add item[' + arg_item.get_name() + ']')
 				this.topology_children[arg_plural_name].collection.add(arg_item)
-				// if ( T.isObject(arg_item) && arg_item.is_topology_define_item )
-				// {
-				// 	const name = arg_item.get_name()
-				// 	if ( this.topology_children[arg_plural_name].latest.has(name) )
-				// 	{
-				// 		const latest = this.topology_children[arg_plural_name].latest.get(name)
-				// 		if ( this.compare_versions('<', latest.get_topology_version(), arg_item.get_topology_version()) )
-				// 		{
-				// 			this.topology_children[arg_plural_name].latest.remove(latest)
-				// 			this.topology_children[arg_plural_name].latest.add(arg_item)
-				// 		}
-				// 	} else {
-				// 		this.topology_children[arg_plural_name].latest.add(arg_item)
-				// 	}
-				// 	this.topology_children[arg_plural_name].versions.add(arg_item)
-				// }
 			},
 			remove:(arg_item)=>{
 				this.debug('collection[' + arg_plural_name + '].remove item[' + arg_item.get_name() + ']')
 				this.topology_children[arg_plural_name].collection.remove(arg_item)
-				// if ( T.isObject(arg_item) && arg_item.is_topology_item )
-				// {
-				// 	const name = arg_item.get_name()
-				// 	const version = arg_item.get_topology_version()
-				// 	if ( this.topology_children[arg_plural_name].latest.find_by_filter( filter_version(name, version) ) )
-				// 	{
-				// 		this.topology_children[arg_plural_name].latest.remove(arg_item)
-				// 	}
-				// 	if ( this.topology_children[arg_plural_name].versions.find_by_filter( filter_version(name, version) ) )
-				// 	{
-				// 		this.topology_children[arg_plural_name].versions.remove(arg_item)
-				// 	}
-				// }
 			}
 		}
 
@@ -263,13 +228,12 @@ export default class TopologyDefineItem extends Instance
 		}
 
 		this[arg_single_name] = (arg_name, arg_version='latest')=>{
+			// console.log('find item [' + arg_name + '] of version [' + arg_version + '] of collection [' + arg_plural_name + ']')
 			if (arg_version == 'latest')
 			{
 				return this.topology_children[arg_plural_name].collection.get_latest_item(arg_name)
-				// return this.topology_children[arg_plural_name].latest.find_by_name(arg_name)
 			}
 			return this.topology_children[arg_plural_name].collection.get_item_of_version(arg_name, arg_version)
-			// return this.topology_children[arg_plural_name].versions.find_by_filter( filter_version(arg_name, arg_version) )
 		}
 
 		this.leave_group('declare_collection of ' + arg_plural_name)

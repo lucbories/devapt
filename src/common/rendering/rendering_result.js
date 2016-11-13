@@ -12,6 +12,7 @@ const vdom_to_json = vdom_as_json.toJson
 
 // COMMON IMPORTS
 import {is_browser, is_server} from '../utils/is_browser'
+import uid from '../utils/uid'
 
 
 let context = 'common/rendering/rendering_result'
@@ -39,23 +40,29 @@ export default class RenderingResult
 	 * 
 	 * API:
 	 * 		->constructor():nothing - create an empty rendering result instance.
+	 * 		
+	 * 		->add_result(arg_result, arg_merge_vnodes=true):nothing - merge RenderingResult instances.
 	 * 
 	 * 		->add_html(arg_tag_id, arg_html):nothing - take Html text and convert it to a virtual tree.
 	 * 		->add_vtree(arg_tag_id, arg_vtree):nothing - add a virtual tree.
 	 * 
+	 * 		->get_vtree_json(arg_tag_id):VTree - get an existing VTree as Json.
+	 * 		->get_vtree(arg_id):VTree - get an existing VTree instance.
+	 * 		->get_html(arg_id)
+	 * 		
+	 * 		->get_final_vtree(arg_final_id, arg_parent_result):VNode - get final VTree.
+	 * 		->get_final_html(arg_final_id, arg_parent_result):string - get Html code for an existing vtree.
+	 * 
 	 * 		->set_headers(arg_headers)
 	 * 
-	 * 		->set_head_scripts_urls(arg_urls)
-	 * 		->set_head_scripts_tags(arg_tags)
+	 * 		->add_head_scripts_urls(arg_urls)
+	 * 		->add_head_scripts_tags(arg_tags)
 	 * 
-	 * 		->set_body_scripts_urls(arg_urls)
-	 * 		->set_body_scripts_tags(arg_tags)
+	 * 		->add_body_scripts_urls(arg_urls)
+	 * 		->add_body_scripts_tags(arg_tags)
 	 * 
-	 * 		->set_head_styles_urls(arg_tags)
-	 * 		->set_head_styles_tags(arg_tags)
-	 * 		
-	 * 		->add_result(arg_result)
-	 * 		->get_html(arg_id)
+	 * 		->add_head_styles_urls(arg_tags)
+	 * 		->add_head_styles_tags(arg_tags)
 	 * 
      * @returns {nothing}
 	 */
@@ -63,62 +70,56 @@ export default class RenderingResult
 	{
 		this.is_rendering_result = true
 
+		this.uid = 'RR_' + uid()
 		this.vtrees = {}
 
 		this.headers = []
+
 		this.head_scripts_urls = []
 		this.head_scripts_tags = []
 		this.body_scripts_urls = []
 		this.body_scripts_tags = []
+
 		this.head_styles_urls = []
 		this.head_styles_tags = []
+		this.body_styles_urls = []
+		this.body_styles_tags = []
+
+		this.head_links_urls = []
 	}
 
 
 
 	/**
-	 * Add a RenderingResult instance.
+	 * Merge RenderingResult instances.
 	 * 
 	 * @param {RenderingResult} arg_result - rendering result to add to this result.
+	 * @param {boolean} arg_merge_vnodes - flag to merge or not vnodes (default:true) (optional)
 	 * 
 	 * @returns {nothing}
 	 */
-	add_result(arg_result)
+	add_result(arg_result, arg_merge_vnodes=true)
 	{
-		this.vtrees = Object.assign(this.vtrees, arg_result.vtrees)
+		// console.log(context + ':add_result [' + this.uid + ']:merge=' + (arg_merge_vnodes ? 'y' : 'n'), this.body_scripts_urls.length, arg_result.body_scripts_urls.length)
 
-		this.head_scripts_urls = Array.concat(this.head_scripts_urls, arg_result.head_scripts_urls)
-		this.head_scripts_tags = Array.concat(this.head_scripts_tags, arg_result.head_scripts_tags)
-		this.body_scripts_urls = Array.concat(this.body_scripts_urls, arg_result.body_scripts_urls)
-		this.body_scripts_tags = Array.concat(this.body_scripts_tags, arg_result.body_scripts_tags)
-		this.head_styles_urls  = Array.concat(this.head_styles_urls,  arg_result.head_styles_urls)
-		this.head_styles_tags  = Array.concat(this.head_styles_tags,  arg_result.head_styles_tags)
-	}
-
-
-
-	/**
-	 * Get final VTree.
-	 * 
-	 * @param {string|undefined} arg_final_id - final tree id (optional).
-	 * 
-	 * @returns {VNode}
-	 */
-	get_final_vtree(arg_final_id)
-	{
-		if (this.vtrees.length == 0)
+		if (arg_merge_vnodes)
 		{
-			return new VText('')
+			this.vtrees = Object.assign(this.vtrees, arg_result.vtrees)
 		}
+		
+		const asset_compare = _.isEqual
 
-		if (this.vtrees.length == 1)
-		{
-			const trees = _.toArray(this.vtrees)
-			return trees[0]
-		}
+		this.head_scripts_urls = _.uniqWith( _.concat(this.head_scripts_urls, arg_result.head_scripts_urls), asset_compare )
+		this.head_scripts_tags = _.uniqWith( _.concat(this.head_scripts_tags, arg_result.head_scripts_tags), asset_compare )
+		this.body_scripts_urls = _.uniqWith( _.concat(this.body_scripts_urls, arg_result.body_scripts_urls), asset_compare )
+		this.body_scripts_tags = _.uniqWith( _.concat(this.body_scripts_tags, arg_result.body_scripts_tags), asset_compare )
 
-		const settings = T.isString(arg_final_id) ? { id:arg_final_id } : undefined
-		return new VNode('DIV', settings, _.toArray(this.vtrees), 'id', undefined)
+		this.head_styles_urls  = _.uniqWith( _.concat(this.head_styles_urls,  arg_result.head_styles_urls),  asset_compare )
+		this.head_styles_tags  = _.uniqWith( _.concat(this.head_styles_tags,  arg_result.head_styles_tags),  asset_compare )
+		this.body_styles_urls  = _.uniqWith( _.concat(this.body_styles_urls,  arg_result.body_styles_urls),  asset_compare )
+		this.body_styles_tags  = _.uniqWith( _.concat(this.body_styles_tags,  arg_result.body_styles_tags),  asset_compare )
+
+		this.head_links_urls   = _.uniqWith( _.concat(this.head_links_urls,   arg_result.head_links_urls),   asset_compare )
 	}
 
 
@@ -158,7 +159,7 @@ export default class RenderingResult
 
 
 	/**
-	 * Get VTreeas Json.
+	 * Get an existing VTree as Json.
 	 * 
 	 * @param {string} arg_tag_id - tag id string.
 	 * @param {VNode} arg_vtree - virtual-dom virtual tree.
@@ -224,6 +225,76 @@ export default class RenderingResult
 
 
 	/**
+	 * Get final VTree.
+	 * 
+	 * @param {string|undefined} arg_final_id - final tree id (optional).
+	 * @param {RenderingResult} arg_parent_result - parent result to merge assets into (optional).
+	 * 
+	 * @returns {VNode}
+	 */
+	get_final_vtree(arg_final_id, arg_parent_result)
+	{
+		// MERGE THIS ASSETS INTO PARENT RESULT ASSETS
+		if ( T.isObject(arg_parent_result) && arg_parent_result.is_rendering_result)
+		{
+			arg_parent_result.add_result(this, false)
+		}
+
+		// NO VNODE
+		const size = _.size(this.vtrees)
+		if (size == 0)
+		{
+			return new VText('')
+		}
+
+		// ONLY ONE VNODE
+		if (size == 1)
+		{
+			const trees = _.toArray(this.vtrees)
+			return trees[0]
+		}
+
+		// MANY VNODES
+		const settings = T.isString(arg_final_id) ? { id:arg_final_id } : undefined
+		return new VNode('DIV', settings, _.toArray(this.vtrees), 'id', undefined)
+	}
+
+
+
+	/**
+	 * Get Html code for an existing vtree.
+	 * 
+	 * @param {string|undefined} arg_final_id - final tree id (optional).
+	 * @param {RenderingResult} arg_parent_result - parent result to merge assets into (optional).
+	 * 
+	 * @returns {string}
+	 */
+	get_final_html(arg_final_id, arg_parent_result)
+	{
+		const vtree = this.get_final_vtree(arg_final_id, arg_parent_result)
+		if (! vtree)
+		{
+			return undefined
+		}
+
+		try
+		{
+			const e = create_element(vtree)
+			if (e)
+			{
+				return is_browser() ? e.innerHTML : e.toString()
+			}
+		}
+		catch(e)
+		{
+			console.error(context + ':', e)
+		}
+		return undefined
+	}
+
+
+
+	/**
 	 * Set headers.
 	 * 
 	 * @param {array} set_headers - headers strings array.
@@ -239,91 +310,91 @@ export default class RenderingResult
 
 
 	/**
-	 * Set header scripts urls.
+	 * Add header scripts urls.
 	 * 
 	 * @param {array} arg_urls - scripts urls strings array.
 	 * 
 	 * @returns {nothing}.
 	 */
-	set_head_scripts_urls(arg_urls)
+	add_head_scripts_urls(arg_urls=[])
 	{
-		assert( T.isArray(arg_urls), context + ':set_head_scripts_urls:bad head scripts urls array')
-		this.head_scripts_urls = arg_urls
+		assert( T.isArray(arg_urls), context + ':add_head_scripts_urls:bad head scripts urls array')
+		this.head_scripts_urls = _.concat(this.head_scripts_urls, arg_urls)
 	}
 
 
 
 	/**
-	 * Set header scripts tags.
+	 * Add header scripts tags.
 	 * 
 	 * @param {array} arg_tags - scripts tags strings array.
 	 * 
 	 * @returns {nothing}.
 	 */
-	set_head_scripts_tags(arg_tags)
+	add_head_scripts_tags(arg_tag=[])
 	{
-		assert( T.isArray(arg_tags), context + ':set_head_scripts_tags:bad head scripts tags array')
-		this.head_scripts_tags = arg_tags
+		assert( T.isArray(arg_tags), context + ':add_head_scripts_tags:bad head scripts tags array')
+		this.head_scripts_tags = _.concat(this.head_scripts_tag, arg_tags)
 	}
 
 
 
 	/**
-	 * Set body scripts urls.
+	 * Add body scripts urls.
 	 * 
 	 * @param {array} arg_urls - scripts urls strings array.
 	 * 
 	 * @returns {nothing}.
 	 */
-	set_body_scripts_urls(arg_urls)
+	add_body_scripts_urls(arg_urls=[])
 	{
-		assert( T.isArray(arg_urls), context + ':set_body_scripts_urls:bad body scripts urls array')
-		this.body_scripts_urls = arg_urls
+		assert( T.isArray(arg_urls), context + ':add_body_scripts_urls:bad body scripts urls array')
+		this.body_scripts_urls = _.concat(this.body_scripts_urls, arg_urls)
 	}
 
 
 
 	/**
-	 * Set body scripts tags.
+	 * Add body scripts tags.
 	 * 
 	 * @param {array} arg_tags - scripts tags strings array.
 	 * 
 	 * @returns {nothing}.
 	 */
-	set_body_scripts_tags(arg_tags)
+	add_body_scripts_tags(arg_tags=[])
 	{
-		assert( T.isArray(arg_tags), context + ':set_body_scripts_tags:bad body scripts tags array')
-		this.body_scripts_tags = arg_tags
+		assert( T.isArray(arg_tags), context + ':add_body_scripts_tags:bad body scripts tags array')
+		this.body_scripts_tags = _.concat(this.body_scripts_tags, arg_tags)
 	}
 
 
 
 	/**
-	 * Set header styles urls.
+	 * Add header styles urls.
 	 * 
 	 * @param {array} arg_urls - styles urls strings array.
 	 * 
 	 * @returns {nothing}.
 	 */
-	set_head_styles_urls(arg_urls)
+	add_head_styles_urls(arg_urls=[])
 	{
-		assert( T.isArray(arg_urls), context + ':set_head_styles_urls:bad head styles urls array')
-		this.head_styles_urls = arg_urls
+		assert( T.isArray(arg_urls), context + ':add_head_styles_urls:bad head styles urls array')
+		this.head_styles_urls = _.concat(this.head_styles_urls, arg_urls)
 	}
 
 
 
 	/**
-	 * Set header styles tags.
+	 * Add header styles tags.
 	 * 
 	 * @param {array} arg_tags - styles tags strings array.
 	 * 
 	 * @returns {nothing}.
 	 */
-	set_head_styles_tags(arg_tags)
+	add_head_styles_tags(arg_tags=[])
 	{
-		assert( T.isArray(arg_tags), context + ':set_head_styles_tags:bad head styles tags array')
-		this.head_styles_tags = arg_tags
+		assert( T.isArray(arg_tags), context + ':add_head_styles_tags:bad head styles tags array')
+		this.head_styles_tags = _.concat(this.head_styles_tags, arg_tags)
 	}
 }
 

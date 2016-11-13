@@ -110,6 +110,8 @@ export default class TopologyDefineApplication extends TopologyDefineItem
 		{
 			const package_name = used_packages_array[package_index]
 			const pkg = tenant.package(package_name)
+			// console.log('application.find_resource ' + arg_name + ' in package ' + package_name + ' for type ' + arg_type)
+
 			const resource = pkg.find_resource(arg_name, arg_type)
 			// console.log(resource, 'application.find_resource ' + arg_name + ' in package ' + package_name + ' for type ' + arg_type)
 			
@@ -248,13 +250,21 @@ export default class TopologyDefineApplication extends TopologyDefineItem
 		for( ; plugin_index < used_plugins_array.length ; plugin_index++)
 		{
 			const plugin_name = used_plugins_array[plugin_index]
-			const plugin = tenant.plugin(plugin_name)
-			const rendering_fn = plugin.find_rendering_function(arg_type)
-			console.log(context + ':find_rendering_function:type=' + arg_type + ' in plugin ' + plugin_name + (rendering_fn ? ' found' : ' not found'))
-			
-			if (rendering_fn)
+			const plugin = tenant.get_topology_owner().plugin(plugin_name)
+			if ( ! plugin )
 			{
-				return rendering_fn
+				console.error(context + ':find_rendering_function:plugin not found for [' + plugin_name + ']')
+			} else {
+				if ( T.isFunction(plugin.find_rendering_function) )
+				{
+					const rendering_fn = plugin.find_rendering_function(arg_type)
+					// console.log(rendering_fn, context + ':find_rendering_function:type=' + arg_type + ' in plugin ' + plugin_name + (rendering_fn ? ' found' : ' not found'))
+				
+					if (rendering_fn)
+					{
+						return rendering_fn
+					}
+				}
 			}
 		}
 

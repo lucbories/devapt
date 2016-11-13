@@ -86,10 +86,6 @@ export default class TopologyDefinePackage extends TopologyDefineItem
 	find_resource(arg_name, arg_type=undefined)
 	{
 		// console.log('package.find_resource ' + arg_name + ' in package ' + this.get_name() + ' for type ' + arg_type)
-		// if (arg_name == 'topology_physical')
-		// {
-		// 	console.log('package.find_resource views=%a', this.views().latest.get_all_names() )
-		// }
 
 		if (arg_type)
 		{
@@ -108,8 +104,8 @@ export default class TopologyDefinePackage extends TopologyDefineItem
 				case 'models':      return this.model(arg_name)
 				
 				case 'view':
-				case 'views':       /*result = this.view(arg_name)*/
-					this.views().get_latest_items().forEach(
+				case 'views':       result = this.view(arg_name)
+					/*this.views().get_latest_items().forEach(
 						(view)=>{
 							if (arg_name == view.get_name())
 							{
@@ -117,7 +113,7 @@ export default class TopologyDefinePackage extends TopologyDefineItem
 								console.log('package.find_resource ' + arg_name + ' FOUND')
 							}
 						}
-					)
+					)*/
 					// console.log('package.find_resource ' + arg_name + ' in package ' + this.get_name() + ' for views', result)
 					if (!result)
 					{

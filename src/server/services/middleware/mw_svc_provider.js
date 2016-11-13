@@ -193,15 +193,6 @@ export default class MiddlewareSvcProvider extends ServiceExecProvider
 		
 		// RENDER TREE
 		const renderer_result = renderer.render_content(arg_view_name, arg_menubar_name, arg_credentials)
-		// if ( T.isString(renderer_result) )
-		// {
-		// 	result = new RenderingResult()
-		// 	result.add_html('content', renderer_result)
-		// }
-		// else if ( T.isObject(renderer_result) && renderer_result.is_rendering_result )
-		// {
-		// 	result = renderer_result
-		// }
 
 		return renderer_result
 	}

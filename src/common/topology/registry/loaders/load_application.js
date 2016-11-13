@@ -17,6 +17,10 @@ let error_msg_bad_license = context + ':bad config - world.tenants.*.application
 let error_msg_bad_url = context + ':bad config - world.tenants.*.applications.*.url should be a string'
 let error_msg_bad_file_config = context + ':bad config - world.tenants.*.applications.*.from_file content should be an object'
 
+let error_msg_bad_packages = context + ':bad config - world.tenants.*.applications.*: packages should be an object'
+let error_msg_bad_plugins = context + ':bad config - world.tenants.*.applications.*: plugins should be an object'
+let error_msg_bad_services = context + ':bad config - world.tenants.*.applications.*: services should be an object'
+
 let error_msg_bad_used_packages = context + ':bad config - world.tenants.*.applications.*.used_packages should be an array'
 let error_msg_bad_used_plugins = context + ':bad config - world.tenants.*.applications.*.used_plugins should be an array'
 let error_msg_bad_used_services = context + ':bad config - world.tenants.*.applications.*.used_services should be an array'
@@ -41,7 +45,10 @@ function load_application(logs, arg_app_name, arg_app_config, arg_config_package
 {
 	logs.info(context, 'loading world.tenants.*.applications.' + arg_app_name)
 	
-	
+	assert(arg_config_packages, error_msg_bad_packages)
+	assert(arg_config_plugins, error_msg_bad_plugins)
+	assert(arg_config_services, error_msg_bad_services)
+
 	try{
 		// LOAD FROM FILE
 		if ( T.isString(arg_app_config.from_file) )
@@ -113,7 +120,7 @@ function load_application(logs, arg_app_name, arg_app_config, arg_config_package
 			function(plugin_name)
 			{
 				assert(T.isString(plugin_name), error_msg_bad_plugin_name)
-				assert(plugin_name in arg_config_plugins, error_msg_plugin_not_found + ' for ' + plugin_name)
+				assert(plugin_name in arg_config_plugins, error_msg_used_plugin_not_found + ' for ' + plugin_name)
 			}
 		)
 		

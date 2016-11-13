@@ -62,17 +62,20 @@ export default class FeaturesPlugin extends Plugin
 			return new feature_class(arg_name, arg_settings, arg_state)
 		}
 		
-		assert(false, context + ':not yet implemented')
+		assert(false, context + ':create:not yet implemented')
 		
 		return undefined
 	}
+
 	
     
 	/**
      * Get a feature class.
 	 * @abstract
 	 * @static
+	 * 
      * @param {string} arg_class_name - feature class name.
+	 * 
      * @returns {object} feature class.
      */
 	static get_class(arg_class_name)
@@ -85,41 +88,50 @@ export default class FeaturesPlugin extends Plugin
 	}
 	
     
+
 	/**
      * Get a feature class.
 	 * @abstract
+	 * 
      * @param {string} arg_class_name - feature class name.
+	 * 
      * @returns {object} feature class.
      */
 	get_feature_class(arg_class_name)
 	{
-		assert( T.isString(arg_class_name), context + ':get_class:bad class string')
+		assert( T.isString(arg_class_name), context + ':get_feature_class:bad class string')
 		
-		assert(false, context + ':get_class:not yet implemented')
+		assert(false, context + ':get_feature_class:not yet implemented')
 		
 		return false
 	}
 	
     
+
 	/**
      * Test if a feature class is known into self contained plugins.
 	 * @abstract
+	 * 
      * @param {string} arg_class_name - feature class name.
+	 * 
      * @returns {boolean} feature class found or not.
      */
 	has(arg_class_name)
 	{
 		assert( T.isString(arg_class_name), context + ':bad class string')
 		
-		assert(false, context + ':not yet implemented')
+		assert(false, context + ':has:not yet implemented')
 		
 		return false
 	}
+
 	
 	
 	/**
 	 * Load a feature class from a script file.
+	 * 
 	 * @param {string} arg_path - path file name
+	 * 
 	 * @returns {object|undefined} - class object
 	 */
 	load_feature_class(arg_path)

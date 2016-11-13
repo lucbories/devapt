@@ -154,11 +154,11 @@ export default class AuthenticationManager extends PluginsManager
 					}
 				)
 				
-				this.leave_group('load:jsonfile or database')
+				this.leave_group('load_plugin:jsonfile or database')
 				return true
 			}
 			case 'token': {
-				this.leave_group('load:token')
+				this.leave_group('load_plugin:token')
 				return true // TODO: plugin auth token
 			}
 		}

@@ -4,7 +4,6 @@ import assert from 'assert'
 
 // SERVER IMPORTS
 import RenderingPlugin from '../plugins/rendering_plugin'
-import * as DefaultComponents from '../rendering/default/index'
 import * as DefaultRendering from '../../common/rendering/index'
 
 
@@ -27,102 +26,54 @@ export default class DefaultPlugin extends RenderingPlugin
 	}
 	
 	
-	// create(arg_class_name, arg_name, arg_settings, arg_state)
-	// {
-	// 	assert( T.isString(arg_class_name), context + ':create:bad class string')
-		
-	// 	const component_class = DefaultPlugin.get_class(arg_class_name)
-	// 	if (component_class)
-	// 	{
-	// 		return new component_class(arg_name, arg_settings, arg_state)
-	// 	}
-		
-	// 	assert(false, context + ':create:bad class name')
-	// 	return undefined
-	// }
-	
-    
-	/**
-     * Get a feature class.
-     * @param {string} arg_class_name - feature class name.
-     * @returns {object} feature class.
-     */
-	// get_feature_class(arg_class_name)
-	// {
-	// 	assert( T.isString(arg_class_name), context + ':get_class:bad class string')
-		
-	// 	return DefaultPlugin.get_class(arg_class_name)
-	// }
-	
-	
-	/**
-     * Get a feature class.
-     * @param {string} arg_class_name - feature class name.
-     * @returns {object} feature class.
-	 */
-/*	static get_class(arg_class_name)
-	{
-		assert( T.isString(arg_class_name), context + ':get_class:bad class string')
-		
-		switch(arg_class_name)
-		{
-			case 'Button': return DefaultComponents.Button
-			case 'InputField': return DefaultComponents.InputField
-			case 'Tree':   return DefaultComponents.Tree
-			case 'TableTree':   return DefaultComponents.TableTree
-			case 'HBox':   return DefaultComponents.HBox
-			case 'VBox':   return DefaultComponents.VBox
-			case 'List':   return DefaultComponents.List
-			case 'Table':  return DefaultComponents.Table
-			case 'Page':   return DefaultComponents.Page
-			case 'Script': return DefaultComponents.Script
-			case 'Menubar': return DefaultComponents.Menubar
-			
-			case 'Container':  return DefaultComponents.Container
-			case 'Tabs':  return DefaultComponents.Tabs
-		}
-		
-		assert(false, context + ':bad class name')
-		return undefined
-	}
-	
-	
 	has(arg_class_name)
 	{
 		assert( T.isString(arg_class_name), context + ':has:bad class string')
 		
 		switch(arg_class_name)
 		{
-			case 'Button':
-			case 'InputField':
-			case 'List':
-			case 'Table':
-			case 'Script':
-			case 'Menubar':
+			// SPECIAL CASE, NOT RENDERING FUNCTIONS
+			case 'rendering_normalize':
+			case 'RenderingResult':
+			case 'rendering_factory':
 			
-			case 'Container':
-			case 'Page':
-			case 'Tabs':
-			case 'Tree':
-			case 'TableTree':
-			case 'HBox':
-			case 'VBox':
+			// RENDERING FUNCTIONS
+			case 'container':
+			case 'button':
+			case 'label':
+			case 'anchor':
+			case 'image':
+			case 'inputfield':
+			case 'input':
+			case 'input-field':
+			case 'list':
+			case 'table':
+			case 'script':
+			case 'menubar':
+			case 'page':
+			case 'page_content':
+			case 'tabs':
+			case 'tree':
+			case 'tabletree':
+			case 'hbox':
+			case 'vbox':
 				return true
 		}
 		
 		return false
-	}*/
+	}
 	
 
 	
 	/**
 	 * Find a rendering function.
+	 * @static
 	 * 
 	 * @param {string} arg_type - rendering item type.
 	 * 
 	 * @returns {Function} - rendering function.
 	 */
-	find_rendering_function(arg_type)
+	static find_rendering_function(arg_type)
 	{
 		if ( ! T.isString(arg_type) )
 		{
@@ -131,6 +82,20 @@ export default class DefaultPlugin extends RenderingPlugin
 		
 		switch(arg_type.toLocaleLowerCase())
 		{
+			// SPECIAL CASE, NOT RENDERING FUNCTIONS
+			case 'rendering_normalize':
+				return DefaultRendering.rendering_normalize
+
+			case 'RenderingResult':
+				return DefaultRendering.RenderingResult
+
+			case 'rendering_factory':
+				return DefaultRendering.rendering_factory
+			
+			// RENDERING FUNCTIONS
+			case 'container':
+				return DefaultRendering.container
+
 			case 'button':
 				return DefaultRendering.button
 			
@@ -160,15 +125,25 @@ export default class DefaultPlugin extends RenderingPlugin
 			case 'menubar':
 				return DefaultRendering.menubar
 			
-			// case 'page':
-			// case 'tabs':
-			// case 'tree':
-			// case 'tabletree':
+			case 'page':
+				return DefaultRendering.page
+			
+			case 'page_content':
+				return DefaultRendering.page_content
+			
+			case 'tabs':
+				return DefaultRendering.tabs
+			
+			case 'tree':
+				return DefaultRendering.tree
+
+			case 'tabletree':
+				return DefaultRendering.tabletree
 
 			case 'hbox':
 				return DefaultRendering.hbox
 			
-			case 'vbox':	
+			case 'vbox':
 				return DefaultRendering.vbox
 		}
 

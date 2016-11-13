@@ -68,8 +68,9 @@ export default (arg_settings, arg_state={}, arg_rendering_context, arg_rendering
 				}
 			}
 
-			if ( T.isObjetc(item) && T.isString(item.label) && item.label.length > 0)
+			if ( T.isObject(item) && T.isString(item.label) && item.label.length > 0)
 			{
+				item.settings = item.settings ? item.settings : {}
 				return {
 					type:'anchor',
 					settings:{
@@ -85,7 +86,7 @@ export default (arg_settings, arg_state={}, arg_rendering_context, arg_rendering
 					}
 				}
 			}
-
+			
 			return undefined
 		}
 	)

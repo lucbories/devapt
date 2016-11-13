@@ -33,7 +33,7 @@ export default (arg_default_settings, arg_default_state, arg_settings, arg_state
 	const state    = _.merge({}, arg_default_state, arg_state)
 	
 	const rendering_context = {
-		trace_fn:arg_rendering_context.trace_fn,
+		trace_fn: T.isFunction(arg_rendering_context.trace_fn) ? arg_rendering_context.trace_fn : ()=>{},
 		credentials:arg_rendering_context.credentials,
 		rendering_factory: T.isFunction(arg_rendering_context.rendering_factory) ? arg_rendering_context.rendering_factory : (v)=>v,
 		topology_defined_application:arg_rendering_context.topology_defined_application
@@ -43,6 +43,12 @@ export default (arg_default_settings, arg_default_state, arg_settings, arg_state
 	if (! T.isString(settings.id) )
 	{
 		settings.id = 'tag_' + uid()
+	}
+
+	// SET CHILDREN
+	if (! T.isObject(settings.children) )
+	{
+		settings.children = {}
 	}
 
 	// DEBUG
