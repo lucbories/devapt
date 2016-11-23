@@ -1,7 +1,7 @@
 
 import T from 'typr'
 // import assert from 'assert'
-import uuid from 'node-uuid'
+import uuid from 'uuid'
 
 import MetricsRecord from '../base/metrics_record'
 
