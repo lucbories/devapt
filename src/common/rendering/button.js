@@ -53,7 +53,7 @@ export default (arg_settings, arg_state={}, arg_rendering_context, arg_rendering
 	// BUILD TAG
 	const tag_id = settings.id
 	const tag_children = label_value
-	const tag_props = { id:tag_id, type:type_value, style:settings.style, class:settings.class }
+	const tag_props = { id:tag_id, type:type_value, style:settings.style, className:settings.class }
 	const tag = h('button', tag_props, tag_children)
 	
 	rendering_result.add_vtree(tag_id, tag)

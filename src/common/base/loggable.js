@@ -50,15 +50,15 @@ export default class Loggable
 	 * 		separate_level_2():nothing
 	 * 		separate_level_3():nothing
 	 * 
-	 * @param {string} arg_context - trace context.
+	 * @param {string} arg_log_context - trace context.
 	 * @param {LoggerManager} arg_logger_manager - logger manager instance.
 	 * 
 	 * @returns {nothing}
 	 */
-	constructor(arg_context, arg_logger_manager)
+	constructor(arg_log_context, arg_logger_manager)
 	{
 		this.is_loggable = true
-		this.$context = arg_context
+		this.$context = T.isString(arg_log_context) ? arg_log_context : context
 		
 		this.is_trace_enabled = true
 		
@@ -429,10 +429,11 @@ export default class Loggable
 	 */
 	error(...args)
 	{
-		if(this.is_trace_enabled)
-		{
+		// if(this.is_trace_enabled)
+		// {
 			this.get_logger_manager().error( [this.$context].concat(args) )
-		}
+			console.error( [this.$context].concat(args) )
+		// }
 	}
 	
 	

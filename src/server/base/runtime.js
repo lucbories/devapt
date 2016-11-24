@@ -74,7 +74,7 @@ class Runtime extends RuntimeBase
 		this.context = new Context(this)
 		this.security_mgr = new Security(context, { 'logger_manager':this.logger_manager } )
 		
-		this.state_store = topology_registry
+		this._state_store = topology_registry
 		this.topology_registry = topology_registry
 		this.defined_world_topology = undefined
 		this.deployed_local_topology= undefined

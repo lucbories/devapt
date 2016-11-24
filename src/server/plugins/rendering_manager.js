@@ -26,9 +26,9 @@ export default class RenderingManager extends FeaturesManager
 	 * @param {LoggerManager} arg_logger_manager - logger manager object (optional).
      * @returns {nothing}
      */
-	constructor(arg_log_context, arg_logger_manager)
+	constructor(arg_runtime, arg_log_context, arg_logger_manager)
 	{
-		super(arg_log_context ? arg_log_context : context, arg_logger_manager)
+		super(arg_runtime, arg_log_context ? arg_log_context : context, arg_logger_manager)
 		
 		this.is_rendering_manager = true
 	}

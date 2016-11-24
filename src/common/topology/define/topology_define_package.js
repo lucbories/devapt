@@ -105,16 +105,6 @@ export default class TopologyDefinePackage extends TopologyDefineItem
 				
 				case 'view':
 				case 'views':       result = this.view(arg_name)
-					/*this.views().get_latest_items().forEach(
-						(view)=>{
-							if (arg_name == view.get_name())
-							{
-								result = view
-								console.log('package.find_resource ' + arg_name + ' FOUND')
-							}
-						}
-					)*/
-					// console.log('package.find_resource ' + arg_name + ' in package ' + this.get_name() + ' for views', result)
 					if (!result)
 					{
 						console.log('package.find_resource ' + arg_name + ' NOT FOUND')

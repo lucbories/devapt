@@ -2,13 +2,13 @@
 import T from 'typr'
 import assert from 'assert'
 import _ from 'lodash'
-import virtualize from 'vdom-virtualize'
 import VNode from 'virtual-dom/vnode/vnode'
 import VText from 'virtual-dom/vnode/vtext'
 import html_to_vdom from 'html-to-vdom'
 import vdom_as_json from 'vdom-as-json'
 import create_element from 'virtual-dom/create-element'
 const vdom_to_json = vdom_as_json.toJson
+const vdom_from_json = vdom_as_json.fromJson
 
 // COMMON IMPORTS
 import {is_browser, is_server} from '../utils/is_browser'
@@ -159,6 +159,46 @@ export default class RenderingResult
 
 
 	/**
+	 * Convert all VNode to json objects.
+	 * 
+	 * @returns {RenderingResult}
+	 */
+	convert_to_json()
+	{
+		let i = 0
+		const keys = Object.keys(this.vtrees)
+		const l = keys.length
+		for( ; i < l ; i++)
+		{
+			const key = keys[i]
+			this.vtrees[key] = vdom_to_json( this.vtrees[key] ) 
+		}
+		return this
+	}
+
+
+
+	/**
+	 * Convert all VNode to json objects.
+	 * 
+	 * @returns {RenderingResult}
+	 */
+	convert_from_json()
+	{
+		let i = 0
+		const keys = Object.keys(this.vtrees)
+		const l = keys.length
+		for( ; i < l ; i++)
+		{
+			const key = keys[i]
+			this.vtrees[key] = vdom_from_json( this.vtrees[key] ) 
+		}
+		return this
+	}
+
+
+
+	/**
 	 * Get an existing VTree as Json.
 	 * 
 	 * @param {string} arg_tag_id - tag id string.
@@ -168,8 +208,8 @@ export default class RenderingResult
 	 */
 	get_vtree_json(arg_tag_id)
 	{
-		const vtree = this.get_vtree(arg_id)
-		if (! vtree)
+		const vtree = this.get_vtree(arg_tag_id)
+		if (vtree)
 		{
 			return vdom_to_json( arg_vtree )
 		}

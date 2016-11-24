@@ -19,7 +19,6 @@ const context = 'browser/components/component'
  */
 export default class Component extends Bindable
 {
-	
 	/**
 	 * Creates an instance of Component.
 	 * @extends Bindable
@@ -87,7 +86,7 @@ export default class Component extends Bindable
 						let target_object = this
 						if ( T.isString(target_view) && target_view != 'this' )
 						{
-							target_object = this.runtime.ui.get(target_view)
+							target_object = this.runtime._ui.get(target_view)
 						}
 						else if ( T.isString(target_dom_selector) )
 						{
@@ -122,7 +121,7 @@ export default class Component extends Bindable
 							let timeline_objects = []
 							target_views.forEach(
 								(view_name) => {
-									const view = this.runtime.ui.get(view_name)
+									const view = this.runtime._ui.get(view_name)
 									if (view)
 									{
 										timeline_objects.push(view)
@@ -156,7 +155,7 @@ export default class Component extends Bindable
 						let target_object = this
 						if ( T.isString(target_view) && target_view != 'this' )
 						{
-							target_object = this.runtime.ui.get(target_view)
+							target_object = this.runtime._ui.get(target_view)
 						}
 						else if ( T.isString(target_dom_selector) )
 						{

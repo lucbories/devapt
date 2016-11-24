@@ -28,12 +28,13 @@ export default class PluginsManager extends Errorable
 	 * @param {LoggerManager} arg_logger_manager - logger manager object (optional).
 	 * @returns {nothing}
 	 */
-	constructor(arg_log_context, arg_logger_manager)
+	constructor(arg_runtime, arg_log_context, arg_logger_manager)
 	{
 		super(arg_log_context ? arg_log_context : context, arg_logger_manager)
 		
 		this.is_plugins_manager = true
 		
+		this._runtime = arg_runtime
 		this.registered_plugins = new Collection()
 		this.enabled_plugins = new Collection()
 	}
@@ -68,7 +69,7 @@ export default class PluginsManager extends Errorable
 					const PluginClass = ('default' in required) ? required.default : required
 					// console.log('loading rendering plugin class', PluginClass)
 					
-					plugin = new PluginClass(this)
+					plugin = new PluginClass(this._runtime, this)
 				}
 				catch(e)
 				{

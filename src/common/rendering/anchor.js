@@ -48,8 +48,9 @@ export default (arg_settings, arg_state={}, arg_rendering_context, arg_rendering
 	const href_value = (T.isString(settings.href) && settings.href.length > 0) ? settings.href : '#'
 
 	// GET STATE ATTRIBUTES
-	const label_value = state.label ? rendering_context.rendering_factory(state.label, arg_rendering_context, settings.children).get_final_vtree(undefined, rendering_result) : undefined
+	const label_value = state.label ? rendering_context.rendering_factory(state.label, arg_rendering_context, settings.children).get_final_vtree(undefined, rendering_result) : 'no label'
 	const cmd_value = (T.isString(state.command) && state.command.length > 0) ? state.command : undefined
+	const url = (T.isString(state.url) && state.url.length > 0) ? state.url : ''
 	if (cmd_value)
 	{
 		settings.class = settings.class ? settings.class + ' devapt-command' : 'devapt-command'
@@ -58,7 +59,7 @@ export default (arg_settings, arg_state={}, arg_rendering_context, arg_rendering
 	// BUILD TAG
 	const tag_id = settings.id ? settings.id : 'tag_' + uid()
 	const tag_children = label_value
-	let tag_props = { id:tag_id, style:settings.style, class:settings.class, href:href_value, 'data-devapt-command':cmd_value }
+	let tag_props = { id:tag_id, style:settings.style, className:settings.class, href:href_value && href_value != '#' ? href_value : '#' + url, attributes:{ 'data-devapt-command':cmd_value } }
 	if (settings.blank)
 	{
 		tag_props._blank = ''

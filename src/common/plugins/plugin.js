@@ -31,10 +31,10 @@ export default class Plugin extends Instance
 	 * 
 	 * @returns {nothing}
 	 */
-	constructor(arg_manager, arg_name, arg_class, arg_settings, arg_log_context)
+	constructor(arg_runtime, arg_manager, arg_name, arg_class, arg_settings, arg_log_context)
 	{
 		const create_context = T.isString(arg_log_context) ? arg_log_context : context
-		assert( T.isObject(arg_manager) && arg_manager.is_plugins_manager, create_context + ':bad manager object for ' + arg_name)
+		assert( T.isObject(arg_manager) && arg_manager.is_plugins_manager, create_context + ':bad manager object for ' + arg_name + ' - ' + arg_log_context)
 		assert( T.isString(arg_name), create_context + ':bad name string')
 		assert( T.isString(arg_class.toString()), create_context + ':bad class string for ' + arg_name)
 		assert( T.isObject(arg_settings), create_context + ':bad settings object for ' + arg_name)
@@ -45,6 +45,7 @@ export default class Plugin extends Instance
 		
 		this.is_plugin = true
 		
+		this._runtime = arg_runtime
 		this.$version = arg_settings.version
 		this.manager = arg_manager
 		this.is_enabled = false

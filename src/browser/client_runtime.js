@@ -33,7 +33,25 @@ export default class ClientRuntime extends RuntimeBase
 {
 	/**
 	 * Create a client Runtime instance.
-	 * @extends Loggable
+	 * @extends RuntimeBase
+	 * 
+	 * 	API:
+	 * 		->constructor()
+	 * 		->load(arg_settings):nothing - Load runtime settings.
+	 * 
+	 * 		->register_service(arg_svc_name, arg_svc_settings):Promise(Service) - Register a remote service.
+	 * 		->service(arg_name):Service - Get a service by its name.
+	 * 
+	 * 		->command(arg_name):object - Get a command by its name.
+	 * 
+	 * 		->ping():nothing - Emit a ping request through SocketIO.
+	 * 
+	 * 		->get_state_store():object - Get state store, a Redux data store.(INHERITED)
+	 * 		->get_store_reducers():function - Get reducer pure function: (previous state, action) => new state.
+	 * 		->handle_store_change():nothing - Handle Redux store changes.
+	 * 		->create_store_observer(arg_component):unsubscribe function - Create a store change observer.
+	 * 
+	 * 		->router():Router - Get runtime router.
 	 * 
 	 * @returns {nothing}
 	 */
@@ -51,12 +69,14 @@ export default class ClientRuntime extends RuntimeBase
 		
 		this.is_browser_runtime = true
 		
-		this.services = {}
-		this.services_promises = {}
-		this.ui = undefined
+		this._services = {}
+		this._services_promises = {}
+		this._ui = undefined
 		this._router = undefined
+		this._commands = undefined
 		
 		this.info('Client Runtime is created')
+		this.disable_trace()
 	}
 	
 	
@@ -79,7 +99,7 @@ export default class ClientRuntime extends RuntimeBase
 		
 		// GET INITIAL STATE
 		const initial_state = window ? window.__INITIAL_STATE__ : {error:'no browser window object'}
-		console.log(initial_state, 'initialState')
+		this.debug(initial_state, 'initialState')
 		
 		// GET DEFAULT REDUCER
 		if ( T.isFunction(arg_settings.reducers) )
@@ -96,41 +116,39 @@ export default class ClientRuntime extends RuntimeBase
 		// CREATE STATE STORE
 		const reducer = this.get_store_reducers()
 		const self = this
-		this.state_store = new ReduxStore(reducer, initial_state, context, this.logger_manager)
-		this.state_store_unsubscribe = this.state_store.subscribe( self.handle_store_change.bind(self) )
-		this.state_store.dispatch( {type:'store_created'} )
+		this._state_store = new ReduxStore(reducer, initial_state, context, this.logger_manager)
+		this._state_store_unsubscribe = this._state_store.subscribe( self.handle_store_change.bind(self) )
+		this._state_store.dispatch( {type:'store_created'} )
 		
 		// CREATE CREDENTIALS INSTANCE
-		const credentials_settings = this.state_store.get_state().get('credentials', undefined)
-		// console.log('credentials_settings', credentials_settings)
+		const credentials_settings = this._state_store.get_state().get('credentials', undefined)
+		this.debug('credentials_settings', credentials_settings)
+
 		const credentials_update_handler = (arg_credentials_map)=>{
-			this.state_store.dispatch( {type:'SET_CREDENTIALS', credentials:arg_credentials_map } )
+			this._state_store.dispatch( {type:'SET_CREDENTIALS', credentials:arg_credentials_map } )
 		}
 		const credentials_datas = credentials_settings ? credentials_settings.toJS() : Credentials.get_empty_credentials()
 		this.session_credentials = new Credentials(credentials_datas, credentials_update_handler)
 
 		// CREATE UI WRAPPER
-		this.ui = new UI(this, this.state_store)
+		this._ui = new UI(this, this._state_store)
 		
 		// CREATE NAVIGATION ROUTER
 		this._router = new Router()
-		this._router.init()
 
 		// ADD COMMANDS ROUTE
-		const app_url = this.state_store.get_state().get('app_url', undefined)
-		const commands = this.state_store.get_state().get('commands', {}).toJS()
-		Object.keys(commands).forEach(
+		this._commands = this._state_store.get_state().get('commands', {}).toJS()
+		Object.keys(this._commands).forEach(
 			(cmd_name)=>{
-				const cmd = commands[cmd_name]
+				const cmd = this._commands[cmd_name]
 				if ( T.isString(cmd.url) )
 				{
-					const route = T.isString(app_url) ? '/' + app_url + cmd.url : cmd.url
-
 					// VIEW RENDERING
 					if ( T.isString(cmd.view) )
 					{
-						console.log(context + ':load:add route handler for cmd [' + cmd_name + '] with view:' + cmd.view)
+						this.debug('load:add route handler for cmd [' + cmd_name + '] with view:' + cmd.view)
 
+						const route = cmd.url
 						const menubar = T.isString(cmd.menubar) ? cmd.menubar : undefined
 						this._router.add_handler(route, ()=>this._router.display_content(cmd.view, menubar) )
 						return
@@ -140,16 +158,21 @@ export default class ClientRuntime extends RuntimeBase
 					const middleware = cmd.middleware
 					if ( T.isString(middleware) )
 					{
-						console.log(context + ':load:add route handler for cmd [' + cmd_name + '] with middleware:' + middleware)
-
-						this._router.add_handler(route, ()=>this.ui.render_with_middleware(cmd, route, this.session_credentials) )
+						this.debug('load:add route handler for cmd [' + cmd_name + '] with middleware:' + middleware)
+						
+						const app_url = this._state_store.get_state().get('app_url', undefined)
+						const mw_route = T.isString(app_url) ? '/' + app_url + cmd.url : cmd.url
+						this._router.add_handler(cmd.url, ()=>this._ui.render_with_middleware(cmd, mw_route, this.session_credentials) )
 						return
 					}
 
-					console.error(context + ':load:no route handler for cmd [' + cmd_name + ']:unknow cmd bad view/middleware')
+					this.error('load:no route handler for cmd [' + cmd_name + ']:unknow cmd bad view/middleware')
 				}
 			}
 		)
+
+		// ENABLE HASH HANDLING
+		this._router.init()
 
 		this.leave_group('load')
 		this.separate_level_1()
@@ -170,15 +193,14 @@ export default class ClientRuntime extends RuntimeBase
 		const self = this
 		this.enter_group('register_service:' + arg_svc_name)
 		
-		if (arg_svc_name in this.services_promises)
+		if (arg_svc_name in this._services_promises)
 		{
-			console.log(this.services_promises[arg_svc_name], 'this.services_promises[arg_svc_name]')
 			this.leave_group('register_service:svc promise found for ' + arg_svc_name)
-			return this.services_promises[arg_svc_name]
+			return this._services_promises[arg_svc_name]
 		}
 
 		this.debug('register_service:create svc promise:' + arg_svc_name)
-		this.services_promises[arg_svc_name] = new Promise(
+		this._services_promises[arg_svc_name] = new Promise(
 			function(resolve, reject)
 			{
 				self.register_service_self(resolve, reject, arg_svc_name, arg_svc_settings)
@@ -194,13 +216,13 @@ export default class ClientRuntime extends RuntimeBase
 		this.info('Client Service is created (async):' + arg_svc_name)
 	
 		this.leave_group('register_service:async')
-		return this.services_promises[arg_svc_name]
+		return this._services_promises[arg_svc_name]
 	}
 
 	
 	
 	/**
-	 * Register a remote service.
+	 * Register a remote service (end of process).
 	 * 
 	 * @param {string} arg_svc_name - service name.
 	 * @param {object} arg_svc_settings - service settings.
@@ -216,7 +238,7 @@ export default class ClientRuntime extends RuntimeBase
 		// this.enter_group('register_service_self')
 		
 
-		// const app_credentials = this.state_store.get_state().get('credentials')
+		// const app_credentials = this._state_store.get_state().get('credentials')
 		const app_credentials = this.session_credentials.get_credentials()
 		const request_svc_settings = 'request_settings'
 		const reply_svc_settings = 'reply_settings'
@@ -230,11 +252,11 @@ export default class ClientRuntime extends RuntimeBase
 		}
 
 		// TEST IF SERVICE IS ALREADY REGISTERED
-		if (this.services && (arg_svc_name in this.services) )
+		if (this._services && (arg_svc_name in this._services) )
 		{
 			this.debug('register_service_self:SERVICE IS ALREADY REGISTERED for ' + arg_svc_name)
 
-			const svc = this.services[arg_svc_name]
+			const svc = this._services[arg_svc_name]
 			// console.log(context + ':register_service_self:SERVICE IS ALREADY REGISTERED:svc', svc)
 			this.debug('register_service:svc promise resolved:' + arg_svc_name)
 			arg_resolve_cb(svc)
@@ -260,7 +282,7 @@ export default class ClientRuntime extends RuntimeBase
 			}
 			const svc = new Service(arg_svc_name, arg_svc_settings)
 			// console.log(context + ':register_service_self:SERVICE FROM GIVEN SETTINGS:svc', svc)
-			self.services[arg_svc_name] = svc
+			self._services[arg_svc_name] = svc
 			this.debug('register_service:svc promise resolved:' + arg_svc_name)
 			arg_resolve_cb(svc)
 
@@ -280,7 +302,7 @@ export default class ClientRuntime extends RuntimeBase
 				// console.log(context + ':register_service_self:SERVICE FROM SERVER SETTINGS:response', response)
 				arg_svc_settings = response.settings
 				assert( T.isObject(arg_svc_settings), context + ':register_service:bad service settings object')
-				console.log(context + ':register_service_self:SERVICE FROM SERVER SETTINGS:arg_svc_settings', arg_svc_settings)
+				self.debug('register_service_self:SERVICE FROM SERVER SETTINGS:arg_svc_settings', arg_svc_settings)
 
 				// GET APPLICATION CREDENTIALS
 				// TODO CHECK CREDENTIAL FORMAT STRING -> MAP ?
@@ -291,10 +313,10 @@ export default class ClientRuntime extends RuntimeBase
 				}
 
 				const svc = new Service(arg_svc_name, arg_svc_settings)
-				console.log(context + ':register_service_self:SERVICE FROM SERVER SETTINGS:svc', svc)
+				self.debug('register_service_self:SERVICE FROM SERVER SETTINGS:svc', svc)
 
-				self.services[arg_svc_name] = svc
-				delete self.services_promises[arg_svc_name]
+				self._services[arg_svc_name] = svc
+				delete self._services_promises[arg_svc_name]
 
 				self.debug('register_service:svc promise resolved:' + arg_svc_name)
 				arg_resolve_cb(svc)
@@ -303,7 +325,6 @@ export default class ClientRuntime extends RuntimeBase
 
 		get_settings_stream.onError(
 			(error) => {
-				console.error(context + ':register_service:error:' + error)
 				self.error('register_service:svc promise rejected:' + arg_svc_name + ' with error:' + error)
 				arg_reject_cb(context + ':register_service:request error for  [' + arg_svc_name + '] error=' + error)
 			}
@@ -336,13 +357,30 @@ export default class ClientRuntime extends RuntimeBase
 	service(arg_name)
 	{
 		// console.info('getting/creating service', arg_name)
-		return (arg_name in this.services) ? this.services[arg_name] : undefined
+		return (arg_name in this._services) ? this._services[arg_name] : undefined
+	}
+	
+	
+	
+	/**
+	 * Get a command by its name.
+	 * 
+	 * @param {string} arg_name - command name.
+	 * 
+	 * @returns {object}
+	 */
+	command(arg_name)
+	{
+		// console.info('getting/creating service', arg_name)
+		return (arg_name in this._commands) ? this._commands[arg_name] : undefined
 	}
 	
 
 	
 	/**
-	 * Emit a ping request through SocketIO
+	 * Emit a ping request through SocketIO.
+	 * 
+	 * @returns {nothing}
 	 */
 	ping()
 	{
@@ -360,19 +398,19 @@ export default class ClientRuntime extends RuntimeBase
 	get_store_reducers()
 	{
 		return (arg_previous_state, arg_action) => {
-			console.info(context + ':reducer 1:type=' + arg_action.type + ' for ' + arg_action.component)
+			this.info('reducer 1:type=' + arg_action.type + ' for ' + arg_action.component)
 			
 			// ADD JSON RESOURCE SETTINGS
 			if ( T.isString(arg_action.type) && arg_action.type == 'ADD_JSON_RESOURCE' && T.isString(arg_action.resource) && T.isObject(arg_action.json) )
 			{
-				console.log(context + ':reducer:ADD_JSON_RESOURCE', arg_action.resource, arg_action.json)
+				this.debug('reducer:ADD_JSON_RESOURCE', arg_action.resource, arg_action.json)
 				return arg_previous_state.setIn(['children', arg_action.resource], fromJS(arg_action.json) )
 			}
 
 			// SET SESSION CREDENTIALS
 			if ( T.isString(arg_action.type) && arg_action.type == 'SET_CREDENTIALS' && T.isObject(arg_action.credentials) )
 			{
-				console.log(context + ':reducer:SET_CREDENTIALS', arg_action.credentials)
+				this.debug('reducer:SET_CREDENTIALS', arg_action.credentials)
 				return arg_previous_state.set('credentials', arg_action.credentials)
 			}
 
@@ -380,7 +418,7 @@ export default class ClientRuntime extends RuntimeBase
 			if ( T.isString(arg_action.component) )
 			{
 				// console.info(context + ':reducer 2:type=' + arg_action.type + ' for ' + arg_action.component)
-				const component = this.ui.get(arg_action.component)
+				const component = this._ui.get(arg_action.component)
 				
 				if ( T.isObject(component) && component.is_component )
 				{
@@ -397,11 +435,16 @@ export default class ClientRuntime extends RuntimeBase
 						
 						// console.log(context + ':reducer 4:prev_component_state', prev_component_state.toJS())
 						
-						const new_component_state = component.reduce_action(prev_component_state, arg_action)
-						
+						let new_component_state = component.reduce_action(prev_component_state, arg_action)
+						if (new_component_state != prev_component_state)
+						{
+							const prev_state_version = prev_component_state.get('state_version', 0)
+							new_component_state = new_component_state.set('state_version', prev_state_version + 1)
+						}
+
 						// console.log(context + ':reducer 4:new_component_state', new_component_state.toJS())
 						
-						let state = this.state_store.get_state()
+						let state = this._state_store.get_state()
 						state = state.setIn(component.get_state_path(), new_component_state)
 						// console.log(context + ':reducer 4:state', state.toJS())
 						
@@ -417,16 +460,17 @@ export default class ClientRuntime extends RuntimeBase
 	
 	/**
 	 * Handle Redux store changes.
+	 * 
 	 * @returns {nothing}
 	 */
 	handle_store_change()
 	{
 		// let previous_state = this.current_state
-		// this.current_state = this.state_store.get_state()
+		// this.current_state = this._state_store.get_state()
 		
 		/// TODO
 		
-		console.info(context + ':handle_store_change:global', this.state_store.get_state())
+		this.info('handle_store_change:global', this._state_store.get_state())
 	}
 	
 	
@@ -435,6 +479,7 @@ export default class ClientRuntime extends RuntimeBase
 	 * Create a store change observer.
 	 * 
 	 * @param {Component} arg_component - component instance.
+	 * 
 	 * @returns {function} - store unsubscribe function.
 	 */
 	create_store_observer(arg_component)
@@ -459,7 +504,7 @@ export default class ClientRuntime extends RuntimeBase
 			// }
 		}
 		
-		let unsubscribe = this.state_store.subscribe(handle_change)
+		let unsubscribe = this._state_store.subscribe(handle_change)
 		
 		handle_change()
 		

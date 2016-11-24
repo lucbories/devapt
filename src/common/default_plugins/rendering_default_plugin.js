@@ -2,12 +2,12 @@
 import T from 'typr'
 import assert from 'assert'
 
-// SERVER IMPORTS
+// COMMON IMPORTS
 import RenderingPlugin from '../plugins/rendering_plugin'
-import * as DefaultRendering from '../../common/rendering/index'
+import * as DefaultRendering from '../rendering/index'
 
 
-const context = 'server/default_plugins/rendering_default_plugin'
+const context = 'common/default_plugins/rendering_default_plugin'
 
 
 
@@ -20,9 +20,9 @@ const context = 'server/default_plugins/rendering_default_plugin'
  */
 export default class DefaultPlugin extends RenderingPlugin
 {
-	constructor(arg_manager)
+	constructor(arg_runtime, arg_manager)
 	{
-		super(arg_manager, 'default', '1.0.0')
+		super(arg_runtime, arg_manager, 'default', '1.0.0')
 	}
 	
 	

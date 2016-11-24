@@ -49,15 +49,18 @@ export default class Router extends RouterState
 		super(log_context)
 
 		this.is_router = true
-		this.router_engine = Crossroads
+
+		this._router_engine = Crossroads
+		this._hasher = Hasher
 
 		// DEBUG
 		// log all routes
-		this.router_engine.routed.add(console.log, console)
+		this._router_engine.routed.add( (request, data)=>{ console.log('route found', request, data) } ) 
+		
 		// log all requests that were bypassed / not matched
-		this.router_engine.bypassed.add(console.log, console)
+		this._router_engine.bypassed.add( (request)=>{ console.log('route not found', request) } )
 
-		assert( T.isObject(this.state_store), context + ':constructor:bad state_store object')
+		assert( T.isObject(this._state_store), context + ':constructor:bad state_store object')
 	}
 
 
@@ -91,9 +94,12 @@ export default class Router extends RouterState
 		// SETUP HASHER
 		const parseHash = (arg_newHash, arg_oldHash) => {
 			console.log('Hasher parse cb for new [%s] and old [%s]', arg_newHash, arg_oldHash)
-			this.router_engine.parse(arg_newHash)
+
+			// debugger
+
+			this._router_engine.parse(arg_newHash)
 		}
-		Hasher.prependHash = '/'
+		Hasher.prependHash = ''
 		Hasher.initialized.add(parseHash) //parse initial hash
 		Hasher.changed.add(parseHash) //parse hash changes
 		Hasher.init() //start listening for history change
@@ -113,7 +119,7 @@ export default class Router extends RouterState
 	{
 		console.log('Crossroads add route handler for route:', arg_route)
 
-		this.router_engine.addRoute(arg_route,
+		this._router_engine.addRoute(arg_route,
 			(...args) => {
 				var hash = Hasher.getHash()
 				
@@ -135,20 +141,14 @@ export default class Router extends RouterState
 	 */
 	parse(arg_url)
 	{
-		const app_url = this.state_store.get_state().get('app_url', undefined)
-		const has_app_url = app_url.length > 0 && arg_url.length > app_url.length && arg_url.substr(0, app_url.length) == app_url
-		
-		if (app_url.length > 0 && ! has_app_url)
-		{
-			arg_url = (app_url[0] == '/' ? '' : '/') + app_url + arg_url
-		}
+		arg_url = (app_url.length > 0 && app_url[0] == '/' ? '' : '/') + app_url + arg_url
 		
 		if ( arg_url.endsWith('/') )
 		{
 			arg_url = arg_url.substr(0, arg_url.length - 1)
 		}
 
-		this.router_engine.parse(arg_url)
+		this._router_engine.parse(arg_url)
 	}
 
 	
@@ -161,11 +161,21 @@ export default class Router extends RouterState
 	 * 
 	 * @returns {nothing}
 	 */
-	update_hash_self(arg_view_name, arg_menubar_name)
+	// update_hash_self(arg_view_name, arg_menubar_name)
+	// {
+	// 	Hasher.changed.active = false
+	// 	Hasher.setHash('view=' + arg_view_name + ',menubar=' + arg_menubar_name)
+	// 	Hasher.changed.active = true
+	// }
+
+	set_hash_if_empty(arg_hash)
 	{
-		Hasher.changed.active = false
-		Hasher.setHash('view=' + arg_view_name + ',menubar=' + arg_menubar_name)
-		Hasher.changed.active = true
+		if ( Hasher.getHash() == '' )
+		{
+			Hasher.changed.active = false
+			Hasher.setHash(arg_hash)
+			Hasher.changed.active = true
+		}
 	}
 
 
@@ -179,14 +189,9 @@ export default class Router extends RouterState
 	 */
 	evaluate_command(arg_command_name)
 	{
-		const commands = this.state_store.get_state().get('commands', undefined)
-		if (!commands)
-		{
-			return Promise.reject('no commands found for [' + arg_command_name + ']')
-		}
-		let command = commands.get(arg_command_name)
-		command = command ? command.toJS() : undefined
+		let command = this.command(arg_command_name)
 		console.log(command, 'evaluate_command:command')
+
 		const type = T.isString(command.type) && command.type.length > 0 ? command.type.toLocaleLowerCase() : undefined
 		const url = T.isString(command.type) && command.url.length > 0 ? command.url : ''
 		const middleware = T.isString(command.middleware) && command.middleware.length > 0 ? command.middleware : undefined
@@ -199,9 +204,9 @@ export default class Router extends RouterState
 
 		switch(type){
 			case 'display':{
-				const app_url = this.state_store.get_state().get('app_url', undefined)
+				const app_url = this._state_store.get_state().get('app_url', undefined)
 				const route = T.isString(app_url) ? '/' + app_url + url : url
-				this.runtime.ui.render_with_middleware(command, route, this.session_credentials)
+				this.runtime._ui.render_with_middleware(command, route, this.session_credentials)
 				return Promise.resolve('done')
 			}
 		}
@@ -223,9 +228,9 @@ export default class Router extends RouterState
 	{
 		this.enter_group('display_content_self')
 
-		let page_content = this.runtime.ui.page.content
-		let page_menubar = this.runtime.ui.page.menubar
-		const page_breadcrumbs = this.runtime.ui.page.breadcrumbs
+		let page_content = this.runtime._ui.page.content
+		let page_menubar = this.runtime._ui.page.menubar
+		const page_breadcrumbs = this.runtime._ui.page.breadcrumbs
 
 		let promises = []
 
@@ -244,10 +249,10 @@ export default class Router extends RouterState
 		if (! page_content && T.isString(arg_view_name) )
 		{
 			this.debug('page content doesn t exist and view name is valid:', arg_view_name)
-			const page_content_promise = this.runtime.ui.render(arg_view_name)
+			const page_content_promise = this.runtime._ui.render(arg_view_name)
 			.then(
 				(controller)=>{
-					this.runtime.ui.page.content = controller
+					this.runtime._ui.page.content = controller
 				}
 			)
 			promises.push(page_content_promise)
@@ -269,10 +274,10 @@ export default class Router extends RouterState
 		if (! page_menubar && T.isString(arg_menubar_name) )
 		{
 			this.debug('page menubar doesn t exist and menubar name is valid:', arg_menubar_name)
-			const page_menubar_promise  = this.runtime.ui.render(arg_menubar_name)
+			const page_menubar_promise  = this.runtime._ui.render(arg_menubar_name)
 			.then(
 				(controller)=>{
-					this.runtime.ui.page.menubar = controller
+					this.runtime._ui.page.menubar = controller
 				}
 			)
 			promises.push(page_menubar_promise)

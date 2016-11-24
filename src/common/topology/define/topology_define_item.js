@@ -61,6 +61,15 @@ export default class TopologyDefineItem extends Instance
 		const log_context = arg_log_context ? arg_log_context : context
 		assert( T.isObject(arg_settings), log_context + ':bad settings object')
 		
+		// DECORATE STATE WITH A VERSION
+		if ( (! arg_settings.get) && arg_settings && arg_settings.state && !arg_settings.state.state_version)
+		{
+			arg_settings.state.state_version = 0
+		} else if ( arg_settings.setIn && arg_settings.has('state') && ! arg_settings.hasIn(['state', 'state_version']) )
+		{
+			arg_settings = arg_settings.setIn(['state', 'state_version'], 0)
+		}
+
 		super('defined_topology', arg_class ? arg_class : 'TopologyDefineItem', arg_name, arg_settings, log_context)
 		
 		this.is_topology_define_item = true
@@ -257,6 +266,7 @@ export default class TopologyDefineItem extends Instance
 		// console.info('load_collection of ' + arg_collection_name)
 		
 		const promises = []
+		// TODO ???
 		const collection_settings = this.get_setting(arg_collection_name, this.get_setting(['resources_by_type', arg_collection_name], undefined))
 		if (collection_settings)
 		{
@@ -274,6 +284,8 @@ export default class TopologyDefineItem extends Instance
 					{
 						settings.set('package', this.get_topology_package())
 					}
+
+					settings.set('name', name)
 					
 					const item = new arg_topology_class(name, settings)
 					item.topology_owner = this

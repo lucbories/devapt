@@ -2,11 +2,11 @@
 import T from 'typr'
 import assert from 'assert'
 
-// SERVER IMPORTS
+// COMMON IMPORTS
 import FeaturesPlugin from './features_plugin'
 
 
-const context = 'server/plugins/rendering_plugin'
+const context = 'common/plugins/rendering_plugin'
 
 
 
@@ -20,14 +20,16 @@ export default class RenderingPlugin extends FeaturesPlugin
     /**
      * Create a rendering Plugin instance.
 	 * @extends Instance
-	 * @param {PluginsManager} arg_manager - plugins manager
-	 * @param {string} arg_name - plugin name
+	 * 
+	 * @param {RuntimeBase} arg_runtime - runtime instance.
+	 * @param {PluginsManager} arg_manager - plugins manager.
+	 * @param {string} arg_name - plugin name.
 	 * @param {string} arg_version - plugin version.
 	 * @returns {nothing}
      */
-	constructor(arg_manager, arg_name, arg_version)
+	constructor(arg_runtime, arg_manager, arg_name, arg_version)
 	{
-		super(arg_manager, arg_name, 'RenderingPlugin', { version: arg_version }, context)
+		super(arg_runtime, arg_manager, arg_name, 'RenderingPlugin', { version: arg_version }, context)
 		
 		this.is_rendering_plugin = true
 		

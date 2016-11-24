@@ -2,10 +2,13 @@
 import T from 'typr'
 import assert from 'assert'
 
+// COMMON IMPORTS
+import RenderingBuilder from '../../../common/rendering/rendering_builder'
+
 // SERVER IMPORTS
 import ExecutableRouteResources from './executable_route_get_resource'
 import ServiceExecProvider from '../base/service_exec_provider'
-import Render from '../../rendering/render'
+
 
 let context = 'server/services/resources/resources_svc_provider'
 
@@ -114,7 +117,7 @@ export default class ResourcesSvcProvider extends ServiceExecProvider
 				
 				// GET ASSETS CONFIG
 				const assets_for_region = this.service.get_assets_services_names('all')
-				const renderer = new Render(assets_for_region.style, assets_for_region.script, assets_for_region.image, assets_for_region.html)
+				const renderer = new RenderingBuilder(this.runtime, assets_for_region.style, assets_for_region.script, assets_for_region.image, assets_for_region.html)
 				const html = renderer.add(resource).render()
 				return Promise.resolve(html)
 			}

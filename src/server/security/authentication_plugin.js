@@ -1,5 +1,5 @@
-// SERVER IMPORTS
-import Plugin from '../plugins/plugin'
+// COMMON IMPORTS
+import Plugin from '../../common/plugins/plugin'
 
 
 let context = 'server/security/authentication_plugin'
@@ -17,6 +17,7 @@ export default class AuthenticationPlugin extends Plugin
 	/**
 	 * Create an Authentication base class.
 	 * 
+	 * @param {RuntimeBase} arg_runtime - runtime instance.
 	 * @param {AuhtenticationManager} arg_manager - authentication plugins manager.
 	 * @param {string} arg_name - plugin name.
 	 * @param {string} arg_class - plugin class name.
@@ -24,9 +25,9 @@ export default class AuthenticationPlugin extends Plugin
 	 * 
 	 * @returns {nothing}
 	 */
-	constructor(arg_manager, arg_name, arg_class, arg_log_context)
+	constructor(arg_runtime, arg_manager, arg_name, arg_class, arg_log_context)
 	{
-		super(arg_manager, arg_name, (arg_class ? arg_class.toString() : 'AuthenticationPlugin'), { version: '1.0.0' }, arg_log_context ? arg_log_context : context)
+		super(arg_runtime, arg_manager, arg_name, (arg_class ? arg_class.toString() : 'AuthenticationPlugin'), { version: '1.0.0' }, arg_log_context ? arg_log_context : context)
 		
 		this.is_authentication_plugin = true
 	}

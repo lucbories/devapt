@@ -450,6 +450,13 @@ export default class AuthenticationManager extends PluginsManager
 		}
 		
 		this.error_bad_credentials_format()
+		
+		console.log(arg_request.url, 'arg_request.url')
+		console.log(arg_request.queries, 'arg_request.queries')
+		console.log(arg_request.password, 'arg_request')
+		console.log(arg_request.query(), 'arg_request.query')
+		console.log(arg_request.params, 'arg_request.params')
+
 		return undefined
 	}
 	

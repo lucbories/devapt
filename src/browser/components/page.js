@@ -1,7 +1,7 @@
 // NPM IMPORTS
 // import T from 'typr'
 // import assert from 'assert'
-import virtualize from 'vdom-virtualize'
+import vdom_parser from 'vdom-parser'
 // import document from 'global/document'
 
 import diff from 'virtual-dom/diff'
@@ -73,8 +73,8 @@ export default class Page
 		{
 			console.log('Page.render_html_with_vdom:init')
 
-			this.target_tree_head = virtualize(this.target_elem_head)
-			this.target_tree_body = virtualize(this.target_elem_body)
+			this.target_tree_head = vdom_parser(this.target_elem_head)
+			this.target_tree_body = vdom_parser(this.target_elem_body)
 
 			this.target_node_head = create_element(this.target_tree_head)
 			this.target_node_body = create_element(this.target_tree_body)

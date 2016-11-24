@@ -1,5 +1,5 @@
-// SERVER IMPORTS
-import FeaturesPlugin from './features_plugin'
+// COMMON IMPORTS
+import FeaturesPlugin from '../../common/plugins/features_plugin'
 
 
 const context = 'server/plugins/services_plugin'
@@ -16,14 +16,17 @@ export default class ServicesPlugin extends FeaturesPlugin
     /**
      * Create a ServicesPlugin instance.
 	 * @extends Instance
+	 * 
+	 * @param {RuntimeBase} arg_runtime - runtime instance.
 	 * @param {PluginsManager} arg_manager - plugins manager
 	 * @param {string} arg_name - plugin name
 	 * @param {string} arg_version - plugin version.
+	 * 
 	 * @returns {nothing}
      */
-	constructor(arg_manager, arg_name, arg_version)
+	constructor(arg_runtime, arg_manager, arg_name, arg_version)
 	{
-		super(arg_manager, arg_name, 'ServicesPlugin', { version: arg_version }, context)
+		super(arg_runtime, arg_manager, arg_name, 'ServicesPlugin', { version: arg_version }, context)
 		
 		this.is_services_plugin = true
 	}

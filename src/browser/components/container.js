@@ -295,10 +295,10 @@ export default class Container extends Component
 	/**
 	 * Store actions reducer pure function.
 	 * 
-	 * @param {object} arg_previous_state - previous state.
+	 * @param {Immutable.Map} arg_previous_state - previous state.
 	 * @param {object} arg_action - store action: { type:'', component:'', ...}
 	 * 
-	 * @returns {object} - new state
+	 * @returns {Immutable.Map} - new state
 	 */
 	reduce_action(arg_previous_state, arg_action)
 	{

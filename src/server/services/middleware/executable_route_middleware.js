@@ -4,7 +4,7 @@ import assert from 'assert'
 
 // SERVER IMPORTS
 import runtime from '../../base/runtime'
-import Renderer from '../../rendering/render'
+import RenderingBuilder from '../../../common/rendering/rendering_builder'
 import ExecutableRoute from '../../executables/executable_route'
 
 
@@ -107,8 +107,8 @@ export default class ExecutableRouteMiddleware extends ExecutableRoute
 			else if ( T.isString(arg_cfg_route.page_view) )
 			{
 				mw_cb = (req, res) => {
-					console.log(assets_style_selected, 'get_route_cb:mw:assets_style_selected')
-					const renderer = new Renderer(assets_style_selected, assets_script_selected, assets_image_selected, assets_html_selected, arg_application)
+					// console.log(req.devapt_assets_services, 'get_route_cb:mw:req.devapt_assets_services')
+					const renderer = new RenderingBuilder(runtime, req.devapt_assets_services.style, req.devapt_assets_services.script, req.devapt_assets_services.image, req.devapt_assets_services.html, arg_application)
 					
 					const title = undefined
 					const credentials = req.devapt_credentials

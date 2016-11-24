@@ -31,7 +31,7 @@ export default class AuthenticationLowDbPlugin extends AuthenticationPlugin
 	 */
 	constructor(arg_manager, arg_name, arg_log_context)
 	{
-		super(arg_manager, arg_name, 'AuthenticationLowDbPlugin', arg_log_context ? arg_log_context : context)
+		super(runtime, arg_manager, arg_name, 'AuthenticationLowDbPlugin', arg_log_context ? arg_log_context : context)
 		
 		this.is_authentication_lowdb_plugin = true
 		

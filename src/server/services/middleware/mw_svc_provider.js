@@ -3,10 +3,10 @@ import T from 'typr'
 import assert from 'assert'
 
 // COMMON IMPORTS
-import RenderingResult from '../../../common/rendering/rendering_result'
+import RenderingResult  from '../../../common/rendering/rendering_result'
+import RenderingBuilder from '../../../common/rendering/rendering_builder'
 
 // SERVER IMPORTS
-import Renderer from '../../rendering/render'
 import ExecutableRouteMiddleware from './executable_route_middleware'
 import ServiceExecProvider from '../base/service_exec_provider'
 
@@ -74,6 +74,8 @@ export default class MiddlewareSvcProvider extends ServiceExecProvider
 				let route_mw_file = undefined
 				let route_page_view = undefined
 				let route_page_menubar = undefined
+
+				// TODO REPLACE FOREACH TO END LOOP ON FOUND
 				routes.forEach(
 					(route_cfg)=>{
 						const loop_route = route_cfg.route.endsWith('/') ? route_cfg.route.slice(0, target_route.length - 1) : route_cfg.route
@@ -108,6 +110,9 @@ export default class MiddlewareSvcProvider extends ServiceExecProvider
 
 						return Promise.resolve(rendering_result)
 					}
+
+					// BAD ROUTE CONFIG
+					return Promise.reject(context + ':process:route not found for target [' + target_route + ']')
 				}
 				catch(e)
 				{
@@ -147,6 +152,19 @@ export default class MiddlewareSvcProvider extends ServiceExecProvider
 			
 			mw_cfg = require(path_file_name).service_cfg
 			// console.log(mw_cfg, 'mw_cfg')
+		}
+		catch(e)
+		{
+			console.log(context + ':process_mw_file:middleware loading error:' + e)
+			this.error('process_mw_file:middleware file not found or not valid')
+			
+			this.leave_group('ExecutableRouteMiddleware.exec_http')
+			return undefined
+		}
+
+		// PROCESSING MIDDLEWARE
+		try {
+			this.info('Processing middleware view')
 			
 			const view = mw_cfg.view
 			const menubar = mw_cfg.menubar
@@ -157,8 +175,9 @@ export default class MiddlewareSvcProvider extends ServiceExecProvider
 		}
 		catch(e)
 		{
-			console.log(context + ':process_mw_file:middleware loading error:' + e)
-			this.error(':process_mw_file:middleware file not found or not valid')
+			console.log(context + ':process_mw_file:middleware processing error:' + e)
+			this.error('process_mw_file:middleware processing error', e)
+
 			this.leave_group('ExecutableRouteMiddleware.exec_http')
 			return undefined
 		}
@@ -189,7 +208,7 @@ export default class MiddlewareSvcProvider extends ServiceExecProvider
 		// CREATE RENDERING RESULT AND BUILDER
 		let result = undefined
 		const arg_application = undefined
-		const renderer = new Renderer(assets.style, assets.script, assets.image, assets.html, arg_application)
+		const renderer = new RenderingBuilder(this.runtime, assets.style, assets.script, assets.image, assets.html, arg_application)
 		
 		// RENDER TREE
 		const renderer_result = renderer.render_content(arg_view_name, arg_menubar_name, arg_credentials)

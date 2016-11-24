@@ -41,7 +41,7 @@ export default class RuntimeBase extends Settingsable
 		this.is_base_runtime = true
 		
 		this.current_state = undefined
-		this.state_store = undefined
+		this._state_store = undefined
 		
 		if ( ! this.is_server_runtime )
 		{
@@ -72,8 +72,8 @@ export default class RuntimeBase extends Settingsable
 	 */
 	get_state_store()
 	{
-		assert( T.isObject(this.state_store), context + ':get_state_store:bad state_store object')
-		return this.state_store
+		assert( T.isObject(this._state_store), context + ':get_state_store:bad state_store object')
+		return this._state_store
 	}
 	
 	
@@ -101,7 +101,7 @@ export default class RuntimeBase extends Settingsable
 	handle_store_change()
 	{
 		// let previous_state = this.current_state
-		// this.current_state = this.state_store.get_state()
+		// this.current_state = this._state_store.get_state()
 		
 		/// TODO
 		

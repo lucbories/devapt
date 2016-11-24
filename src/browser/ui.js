@@ -14,8 +14,7 @@ import RecordsTable from './components/records_table'
 import Page from './components/page'
 
 // VTREE
-import virtualize from 'vdom-virtualize'
-// import document from 'global/document'
+import vdom_parser from 'vdom-parser'
 
 import diff from 'virtual-dom/diff'
 import patch from 'virtual-dom/patch'
@@ -116,11 +115,11 @@ export default class UI extends Loggable
 	create(arg_name)
 	{
 		const current_state = this.store.get_state()
-		let state_path = []
+		let state_path = ['views']
 		const component_state = this.find_state(current_state, arg_name, state_path)
 		console.log('component_state', component_state)
 		assert( T.isObject(component_state), context + ':create:bad state object for ' + arg_name)
-		state_path.shift()
+		
 		this.state_by_path[arg_name] = state_path
 		
 		const type = component_state.has('browser_type') ? component_state.get('browser_type') : component_state.get('type')
@@ -219,8 +218,8 @@ export default class UI extends Loggable
 	 */
 	find_state(arg_state, arg_name, arg_state_path = [])
 	{
-		// const js_state = arg_state.toJS()
-		// console.log('ui.find_state for ' + arg_name, arg_state_path, js_state)
+		const js_state = arg_state && arg_state.toJS ? arg_state.toJS() : arg_state
+		console.log('ui.find_state for ' + arg_name, arg_state_path, js_state)
 		
 		if (! arg_state)
 		{
@@ -231,44 +230,51 @@ export default class UI extends Loggable
 		if (! T.isFunction(arg_state.get) )
 		{
 			// GLOBAL STATE IS NOT AN IMMUTABLE.MAP
-			// console.error(context + ':find_state:state is not an Immutable for ' + arg_name)
+			console.error(context + ':find_state:state is not an Immutable for ' + arg_name)
 			// console.log(context + ':find_state:state:', arg_state)
 			return undefined
 		}
 		
 		// FOUND ON ROOT
-		arg_state_path.push( arg_state.get('name').toString() )
 		if ( arg_state.has('name') )
 		{
-			if ( arg_state.get('name') == arg_name )
+			const name = arg_state.get('name').toString()
+			arg_state_path.push(name)
+			if ( name == arg_name )
 			{
-				// console.log('ui.find_state FOUND 1 for ' + arg_name, arg_state_path)
+				console.log('ui.find_state FOUND 1 for ' + arg_name, arg_state_path)
 				return arg_state
 			}
 		}
 		
-		// LOOKUP ON CHILDREN
-		if ( arg_state.has('children') )
+		// LOOKUP ON VIEWS CHILDREN
+		let children_key = 'children'
+		if (arg_state_path.length == 1 && arg_state_path[0] == 'views')
 		{
-			arg_state_path.push('children')
+			children_key = 'views'
+			arg_state_path.pop()
+		}
+		if ( arg_state.has(children_key) )
+		{
+			arg_state_path.push(children_key)
 			
-			if ( arg_state.hasIn( ['children', arg_name] ) )
+			if ( arg_state.hasIn( [children_key, arg_name] ) )
 			{
 				arg_state_path.push(arg_name)
-				// console.log('ui.find_state FOUND 2 for ' + arg_name, arg_state_path)
-				return arg_state.getIn( ['children', arg_name] )
+				console.log('ui.find_state FOUND 2 for ' + arg_name, arg_state_path)
+				return arg_state.getIn( [children_key, arg_name] )
 			}
 			
 			let result = undefined
-			arg_state.get('children').forEach(
-				(child_state/*, key*/) => {
+			arg_state.get(children_key).forEach(
+				(child_state, key) => {
 					if (! result)
 					{
-						// console.log('ui.find_state loop on child ' + key + ' for ' + arg_name, arg_state_path)
+						console.log('ui.find_state loop on child ' + key + ' for ' + arg_name, arg_state_path)
 						result = this.find_state(child_state, arg_name, arg_state_path)
 						if (result)
 						{
-							// console.log('ui.find_state FOUND 3 for ' + arg_name, arg_state_path)
+							console.log('ui.find_state FOUND 3 for ' + arg_name, arg_state_path)
 							return
 						}
 					}
@@ -276,15 +282,18 @@ export default class UI extends Loggable
 			)
 			if (result)
 			{
-				// console.log('ui.find_state FOUND 4 for ' + arg_name, arg_state_path, result.toJS())
+				console.log('ui.find_state FOUND 4 for ' + arg_name, arg_state_path, result && result.toJS ? result.toJS() : result)
 				return result
 			}
 			
 			arg_state_path.pop() // CHILDREN
 		}
 		
-		arg_state_path.pop() // NAME
-		
+		if ( arg_state.has('name') )
+		{
+			arg_state_path.pop() // NAME
+		}
+
 		// console.error('state not found for ' + arg_name)
 		return undefined
 	}
@@ -393,11 +402,15 @@ export default class UI extends Loggable
 			let url = arg_route + '?' + arg_credentials.get_url_part()
 			this._router.add_handler(url,
 				()=> {
-					$.get(url).then(
-						(html)=>{
-							this.body_page.render_html(html) // TODO
-						}
-					)
+					// $.get(url).then(
+					// 	(html)=>{
+					// 		this.body_page.render_html(html) // TODO
+					// 	}
+					// )
+					const url_callback = (html)=>{
+						this.body_page.render_html(html)
+					}
+					window.devapt().ajax.get_html(url, url_callback)
 				}
 			)
 		}
@@ -439,7 +452,11 @@ export default class UI extends Loggable
 							get_url_cb()
 						}
 
-						return this.process_rendering_result(rendering_result_response.datas)
+						if ( T.isObject(rendering_result_response.datas) && rendering_result_response.datas.is_rendering_result )
+						{
+							return this.process_rendering_result(rendering_result_response.datas, arg_credentials)
+						}
+						throw('rendering failed for middleware [' + arg_cmd.middleware + '] on route [' + arg_route + ']')
 					},
 			
 					(reason)=>{
@@ -462,23 +479,41 @@ export default class UI extends Loggable
 				console.error(context + ':render_with_middleware:error 1 for ' + arg_cmd.url, reason)
 			}
 		)
+		.catch(
+			(reason)=>{
+				console.error(context + ':render_with_middleware:error for ' + arg_cmd.url, reason)
+			}
+		)
 	}
 
 
 
-	process_rendering_result(arg_rendering_result)
+	process_rendering_result(arg_rendering_result, arg_credentials)
 	{
-		console.log(context + ':process_rendering_result:rendering result:', arg_rendering_result)
+		this.enter_group('process_rendering_result')
+		this.debug('rendering result', arg_rendering_result)
+		
+		if (! arg_credentials)
+		{
+			arg_credentials = this.runtime.session_credentials
+		}
+
+		this.assets_urls_templates = arg_rendering_result.assets_urls_templates
 		
 		// PROCESS HEADERS
-		this.process_rendering_result_headers(arg_rendering_result.headers)
+		this.process_rendering_result_headers(arg_rendering_result.headers, arg_credentials)
 
 		// PROCESS HTML CONTENT
 		const ids = []
 		_.forEach(arg_rendering_result.vtrees,
 			(new_vtree_json, id)=>{
+				// GET NEW TREE AND STATE
 				let new_vtree = vdom_from_json(new_vtree_json)
-				console.log(context + ':process_rendering_result:id,new_vtree:', id, new_vtree)
+				new_vtree.prototype = VNode.prototype
+				// const new_state = s
+				
+				this.debug('id:', id)
+				this.debug('new_vtree:', new_vtree)
 
 				ids.push(id)
 
@@ -494,14 +529,18 @@ export default class UI extends Loggable
 				if (id in this.vtrees)
 				{
 					prev_vtree = this.vtrees[id]
+					
+					// CHECK IF PREVIOUS VIEW STATE IS DIFFERENT FROM NEW VIEW STATE
+					// const p 
+
 				} else {
 					if (element)
 					{
-						console.log(context + ':process_rendering_result:element found for id=' + id, element)
+						this.debug('element found for id=' + id, element)
 
-						prev_vtree = virtualize(element)
+						prev_vtree = vdom_parser(element)
 					} else {
-						console.log(context + ':process_rendering_result:create element for id=' + id)
+						this.debug('create element for id=' + id)
 
 						const content = document.getElementById('content')
 						assert(content, context + ':process_rendering_result:bad content element')
@@ -512,14 +551,18 @@ export default class UI extends Loggable
 
 				if (prev_vtree)
 				{
-					console.log(context + ':process_rendering_result:prev_vtree found for id=' + id, prev_vtree)
+					this.debug('prev_vtree found for id=' + id, prev_vtree)
 
 					if ( T.isArray(prev_vtree) )
 					{
 						prev_vtree = new VNode('DIV', {}, prev_vtree, 'id', undefined)
 					}
 					const patches = diff(prev_vtree, new_vtree)
+					this.debug('patches', patches)
+					
 					element = patch(element, patches)
+					this.debug('element', element)
+
 					this.vtrees_targets[id] = element
 				}
 
@@ -527,16 +570,28 @@ export default class UI extends Loggable
 			}
 		)
 
-		// PROCESS BODY SCRIPTS TAGS
-		this.process_rendering_result_body_scripts_tags(arg_rendering_result.body_scripts_tags)
+		// PROCESS HEAD STYLES AND SCRIPTS
+		this.process_rendering_result_styles_urls (document.head, arg_rendering_result.head_styles_urls, arg_credentials)
+		this.process_rendering_result_styles_tags (document.head, arg_rendering_result.head_styles_tags, arg_credentials)
+		this.process_rendering_result_scripts_urls(document.head, arg_rendering_result.head_scripts_urls, arg_credentials)
+		this.process_rendering_result_scripts_tags(document.head, arg_rendering_result.head_scripts_tags, arg_credentials)
 
+		// PROCESS BODY STYLES AND SCRIPTS
+		this.process_rendering_result_styles_urls (document.body, arg_rendering_result.body_styles_urls, arg_credentials)
+		this.process_rendering_result_styles_tags (document.body, arg_rendering_result.body_styles_tags, arg_credentials)
+		this.process_rendering_result_scripts_urls(document.body, arg_rendering_result.body_scripts_urls, arg_credentials)
+		this.process_rendering_result_scripts_tags(document.body, arg_rendering_result.body_scripts_tags, arg_credentials)
+
+		window.devapt().content_rendered()
+
+		this.leave_group('process_rendering_result')
 		return ids
 	}
 
 
-	process_rendering_result_headers(arg_rendering_result_headers)
+	process_rendering_result_headers(arg_rendering_result_headers=[], arg_credentials)
 	{
-		console.log(context + ':process_rendering_result_headers:rendering headers:', arg_rendering_result_headers)
+		this.debug('process_rendering_result_headers:rendering headers', arg_rendering_result_headers)
 		
 		arg_rendering_result_headers.forEach(
 			(header)=>{
@@ -548,18 +603,128 @@ export default class UI extends Loggable
 	}
 
 
-	process_rendering_result_body_scripts_tags(arg_rendering_result_body_scripts_tags)
+	get_asset_url(arg_url, arg_type, arg_credentials)
 	{
-		console.log(context + ':process_rendering_result_body_scripts_tags:rendering body_scripts_tags:', arg_rendering_result_body_scripts_tags)
+		const template = this.assets_urls_templates[arg_type]
+		const url = T.isString(template) ? template.replace('{{url}}', arg_url) : arg_url
+		const credentials_tag = '{{credentials_url}}'
+
+		if (url.indexOf(credentials_tag) >= 0)
+		{
+			return url.replace(credentials_tag, arg_credentials.get_url_part())
+		}
+
+		return url + '?' + arg_credentials.get_url_part()
+	}
+
+
+	process_rendering_result_scripts_urls(arg_dom_element, arg_rendering_result_scripts_urls=[], arg_credentials)
+	{
+		this.debug('process_rendering_result_scripts_urls:rendering body_scripts_urls', arg_rendering_result_scripts_urls)
 		
-		arg_rendering_result_body_scripts_tags.forEach(
+		arg_rendering_result_scripts_urls.forEach(
+			(url)=>{
+				url.src = this.get_asset_url(url.src, 'script', arg_credentials)
+
+				let e = document.getElementById(url.id)
+				if (e)
+				{
+					if (e.getAttribute('src') == url.src)
+					{
+						return
+					}
+					e.parentNode.removeChild(e)
+				}
+				
+				e = document.createElement('script')
+				e.setAttribute('id', url.id)
+				e.setAttribute('src', url.src)
+				e.setAttribute('type', 'text/javascript')
+				arg_dom_element.appendChild(e)
+			}
+		)
+	}
+
+
+	process_rendering_result_scripts_tags(arg_dom_element, arg_rendering_result_scripts_tags=[], arg_credentials)
+	{
+		this.debug('process_rendering_result_scripts_tags:rendering body_scripts_tags', arg_rendering_result_scripts_tags)
+		
+		arg_rendering_result_scripts_tags.forEach(
 			(tag)=>{
-				const has_tag = false // TODO
-				const e = document.createElement('script')
+				let e = document.getElementById(tag.id)
+				if (e)
+				{
+					if (e.text == tag.content)
+					{
+						return
+					}
+					e.parentNode.removeChild(e)
+				}
+
+				e = document.createElement('script')
 				e.text = tag.content
 				e.setAttribute('id', tag.id)
 				e.setAttribute('type', 'text/javascript')
-				document.body.appendChild(e)
+				arg_dom_element.appendChild(e)
+			}
+		)
+	}
+
+
+	process_rendering_result_styles_urls(arg_dom_element, arg_rendering_result_styles_urls=[], arg_credentials)
+	{
+		this.debug('process_rendering_result_styles_urls:rendering body_styles_urls', arg_rendering_result_styles_urls)
+		
+		arg_rendering_result_styles_urls.forEach(
+			(url)=>{
+				url.href = this.get_asset_url(url.href, 'style', arg_credentials)
+				
+				let e = document.getElementById(url.id)
+				if (e)
+				{
+					console.log('e exists', e)
+					if (e.getAttribute('href') == url.href)
+					{
+						return
+					}
+					console.log('existing e is different', e, url.href)
+					e.parentNode.removeChild(e)
+				}
+				
+				e = document.createElement('link')
+				e.setAttribute('id', url.id)
+				e.setAttribute('href', url.href)
+				e.setAttribute('media', url.media ? url.media : 'all')
+				e.setAttribute('rel', 'stylesheet')
+				arg_dom_element.appendChild(e)
+			}
+		)
+	}
+
+
+	process_rendering_result_styles_tags(arg_dom_element, arg_rendering_result_scripts_tags=[], arg_credentials)
+	{
+		this.debug('process_rendering_result_styles_tags:rendering body_styles_tags', arg_rendering_result_scripts_tags)
+		
+		arg_rendering_result_scripts_tags.forEach(
+			(tag)=>{
+				let e = document.getElementById(tag.id)
+				if (e)
+				{
+					if (e.text == tag.content)
+					{
+						return
+					}
+
+					e.parentNode.removeChild(e)
+				}
+
+				e = document.createElement('style')
+				e.text = tag.content
+				e.setAttribute('id', tag.id)
+				e.setAttribute('type', 'text/stylesheet')
+				arg_dom_element.appendChild(e)
 			}
 		)
 	}

@@ -53,7 +53,7 @@ export default (arg_settings, arg_state={}, arg_rendering_context, arg_rendering
 	const items_value   = T.isArray(state.items)   ? state.items : undefined
 
 	// BUILD THEAD
-	const cell_fn = (cell) => T.isFunction(rendering_context.rendering_factory) ? rendering_context.rendering_factory(cell, rendering_context).get_final_vtree(undefined, rendering_result) : cell.toString()
+	const cell_fn = (cell) => T.isFunction(rendering_context.rendering_factory) ? rendering_context.rendering_factory(cell, rendering_context, settings.children).get_final_vtree(undefined, rendering_result) : cell.toString()
 	const li_fn = (content)=>h('li', undefined, cell_fn(content) )
 
 	// BUILD TAG

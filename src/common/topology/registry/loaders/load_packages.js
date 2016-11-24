@@ -209,27 +209,34 @@ function load_package(logs, arg_package_name, arg_package_config, arg_base_dir, 
 					
 					if ( config[type_name] && T.isObject(config[type_name]) )
 					{
-						Object.keys(config[type_name]).forEach(
-							(res_name) => {
-								logs.debug(context, 'loading world...packages.' + arg_package_name + ' resources file:' + resource_file + ' of type:' + type_name + ' for ' + res_name)
+						load_package_children(logs, arg_package_name, arg_package_config, config[type_name], type_name, relative_path_name)
+
+						// Object.keys(config[type_name]).forEach(
+						// 	(res_name) => {
+						// 		logs.debug(context, 'loading world...packages.' + arg_package_name + ' resources file:' + resource_file + ' of type:' + type_name + ' for ' + res_name)
 								
-								let res_obj = config[type_name][res_name]
+						// 		let res_obj = config[type_name][res_name]
 								
-								if (type_name !== 'menus' && type_name !== 'models')
-								{
-									res_obj.class_name = res_obj.class_name ? res_obj.class_name : res_obj.type
-									assert(T.isString(res_obj.class_name), error_msg_bad_resource_config + ' for file ' + resource_file + ' for resource ' + res_name)
-								}
+						// 		if (type_name !== 'menus' && type_name !== 'models')
+						// 		{
+						// 			res_obj.class_name = res_obj.class_name ? res_obj.class_name : res_obj.type
+						// 			assert(T.isString(res_obj.class_name), error_msg_bad_resource_config + ' for file ' + resource_file + ' for resource ' + res_name)
+						// 		}
 								
-								res_obj.collection = type_name
-								res_obj.name = res_name
+						// 		res_obj.collection = type_name
+						// 		res_obj.name = res_name
 								
-								arg_package_config.resources_by_name[res_name] = res_obj
-								arg_package_config.resources_by_type[type_name][res_name] = res_obj
-								arg_package_config.resources_by_file[relative_path_name][res_name] = res_obj
-								arg_package_config[type_name][res_name] = res_obj
-							}
-						)
+						// 		arg_package_config.resources_by_name[res_name] = res_obj
+						// 		arg_package_config.resources_by_type[type_name][res_name] = res_obj
+						// 		arg_package_config.resources_by_file[relative_path_name][res_name] = res_obj
+						// 		arg_package_config[type_name][res_name] = res_obj
+
+						// 		if ( T.isObject(res_obj.children) )
+						// 		{
+						// 			load_package_children(logs, arg_package_name, arg_package_config, res_obj.children, type_name, relative_path_name)
+						// 		}
+						// 	}
+						// )
 					}
 				}
 			)
@@ -238,6 +245,37 @@ function load_package(logs, arg_package_name, arg_package_config, arg_base_dir, 
 	
 	logs.info(context, 'loading world...packages.' + arg_package_name + ':END')
 	return arg_package_config
+}
+
+
+function load_package_children(logs, arg_package_name, arg_package_config, arg_children, type_name, relative_path_name)
+{
+	Object.keys(arg_children).forEach(
+		(res_name) => {
+			logs.debug(context, 'loading world...packages.' + arg_package_name + ' resource children for ' + res_name)
+			
+			let res_obj = arg_children[res_name]
+			
+			if (type_name !== 'menus' && type_name !== 'models')
+			{
+				res_obj.class_name = res_obj.class_name ? res_obj.class_name : res_obj.type
+				assert(T.isString(res_obj.class_name), error_msg_bad_resource_config + ' for resource ' + res_name)
+			}
+			
+			res_obj.collection = type_name
+			res_obj.name = res_name
+			
+			arg_package_config.resources_by_name[res_name] = res_obj
+			arg_package_config.resources_by_type[type_name][res_name] = res_obj
+			arg_package_config.resources_by_file[relative_path_name][res_name] = res_obj
+			arg_package_config[type_name][res_name] = res_obj
+
+			if ( T.isObject(res_obj.children) )
+			{
+				load_package_children(logs, arg_package_name, arg_package_config, res_obj.children, type_name, relative_path_name)
+			}
+		}
+	)
 }
 
 

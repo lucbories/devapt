@@ -35,9 +35,9 @@ const context = 'server/default_plugins/services_default_plugin'
  */
 export default class DefaultServicesPlugin extends ServicesPlugin
 {
-	constructor(arg_manager)
+	constructor(arg_runtime, arg_manager)
 	{
-		super(arg_manager, 'DefaultServices', '1.0.0')
+		super(arg_runtime, arg_manager, 'DefaultServices', '1.0.0')
 	}
 	
 	

@@ -235,6 +235,13 @@ export default class TopologyDefineApplication extends TopologyDefineItem
 	 */
 	find_rendering_function(arg_type)
 	{
+		if ( (! T.isString(arg_type) ) || arg_type.length == 0)
+		{
+			debugger
+			this.error(context + ':find_rendering_function:bad type:', arg_type, typeof arg_type)
+			return undefined
+		}
+
 		const tenant = this.get_topology_owner()
 		if (! tenant)
 		{

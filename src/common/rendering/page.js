@@ -96,7 +96,10 @@ export default (arg_settings, arg_state={}, arg_rendering_context, arg_rendering
 
 
 	// BUILD CONTENT
-	const render = (item) => T.isFunction(rendering_factory) ? rendering_factory(item, rendering_context, settings.children).get_final_vtree(undefined, rendering_result) : item.toString()
+	const render = (item) => {
+		// console.log(item, context + ':render:item')
+		return T.isFunction(rendering_factory) ? rendering_factory(item, rendering_context, settings.children).get_final_vtree(undefined, rendering_result) : item.toString()
+	}
 
 
 	// BUILD SCRIPTS TAGS

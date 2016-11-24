@@ -58,16 +58,45 @@ export default (arg_settings, arg_state={}, arg_rendering_context, arg_rendering
 	rendering_context.trace_fn(items_value, context + ':items_value')
 
 	// BUILD THEAD, TBODY, TFOOT
-	const cell_fn = (cell) => T.isFunction(rendering_factory) ? rendering_factory(cell, rendering_context, settings.children).get_final_vtree(undefined, rendering_result) : cell.toString()
-	const th_fn = (header) =>h('th', undefined, cell_fn(header) )
-	const td_fn = (content)=>h('td', undefined, cell_fn(content) )
+	const cell_fn = (cell) =>{
+		return T.isFunction(rendering_factory) ? rendering_factory(cell, rendering_context, settings.children).get_final_vtree(undefined, rendering_result) : cell.toString()
+	}
+	const th_fn = (header, index) =>{
+		if ( T.isObject(header) && T.isString(header.key) && ! T.isString(header.type) )
+		{
+			if ( T.isString(header.value) )
+			{
+				return h('th', { id:settings.id + '_' + header.key }, header.value)
+			}
+			if ( T.isString(header.view) )
+			{
+				return h('th', { id:settings.id + '_' + header.key }, [ cell_fn(header.view) ] )
+			}
+		}
+		return h('th', undefined, cell_fn(header) )
+	}
+	const td_fn = (content, index)=>{
+		if ( T.isObject(content) && T.isString(content.key) && ! T.isString(content.type) )
+		{
+			if ( T.isString(content.value) )
+			{
+				return h('td', { id:settings.id + '_' + content.key }, content.value)
+			}
+			if ( T.isString(content.view) )
+			{
+				return h('td', { id:settings.id + '_' + content.key }, [ cell_fn(content.view) ] )
+			}
+		}
+		return h('td', undefined, cell_fn(content) )
+	}
 
-	const tr_td_fn = (cells)  =>h('tr', undefined, (T.isArray(cells) ? cells : [cells]).map(td_fn) )
-	const tr_th_fn = (cells)  =>h('tr', undefined, (T.isArray(cells) ? cells : [cells]).map(th_fn) )
+	const tr_td_fn = (cells, index)  =>h('tr', { id:settings.id + '_head_row_' + index }, (T.isArray(cells) ? cells : [cells]).map(td_fn) )
+	const tr_th_fn = (cells, index)  =>h('tr', { id:settings.id + '_body_row_' + index }, (T.isArray(cells) ? cells : [cells]).map(th_fn) )
+	const tr_tf_fn = (cells, index)  =>h('tr', { id:settings.id + '_foot_row_' + index }, (T.isArray(cells) ? cells : [cells]).map(th_fn) )
 	
 	const thead_children = headers_value ? (T.isArray(headers_value) ? headers_value : [headers_value]).map(tr_th_fn) : undefined
 	const tbody_children = items_value   ? (T.isArray(items_value)   ? items_value   : [items_value]).map(tr_td_fn)   : undefined
-	const tfoot_children = footers_value ? (T.isArray(footers_value) ? footers_value : [footers_value]).map(tr_th_fn) : undefined
+	const tfoot_children = footers_value ? (T.isArray(footers_value) ? footers_value : [footers_value]).map(tr_tf_fn) : undefined
 
 	const thead = h('thead', undefined, thead_children)
 	const tbody = h('tbody', undefined, tbody_children)

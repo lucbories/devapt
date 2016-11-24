@@ -41,19 +41,20 @@ const default_settings = {
 export default (arg_settings, arg_state={}, arg_rendering_context, arg_rendering_result)=>{
 	// NORMALIZE ARGS
 	const { settings, state, rendering_context, rendering_result } = rendering_normalize(default_settings, default_state, arg_settings, arg_state, arg_rendering_context, arg_rendering_result, context)
-	
+	const rendering_factory = rendering_context ? rendering_context.rendering_factory : undefined
+
 	// GET SETTINGS ATTRIBUTES
 
 	// GET STATE ATTRIBUTES
 	const items_value   = T.isArray(state.items)   ? state.items : undefined
 
-	// BUILD THEAD
-	const cell_fn = (cell) => T.isFunction(rendering_context.rendering_factory) ? rendering_context.rendering_factory(cell, rendering_context).get_final_vtree(undefined, rendering_result) : cell.toString()
+	// BUILD CELL
+	const cell_fn = (cell) => T.isFunction(rendering_factory) ? rendering_factory(cell, rendering_context, settings.children).get_final_vtree(undefined, rendering_result) : cell.toString()
 
 	// BUILD TAG
 	const tag_id = settings.id
 	const tag_children = items_value ? items_value.map(cell_fn) : undefined
-	const tag_props = { id:tag_id, style:settings.style, class:settings.class }
+	const tag_props = { id:tag_id, style:settings.style, className:settings.class }
 	const tag = h('div', tag_props, tag_children )
 	
 	rendering_result.add_vtree(tag_id, tag)

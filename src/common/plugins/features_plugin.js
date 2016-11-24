@@ -2,12 +2,11 @@
 import T from 'typr'
 import assert from 'assert'
 
-// SERVER IMPORTS
-import Plugin from '../../common/plugins/plugin'
-import runtime from '../base/runtime'
+// COMMON IMPORTS
+import Plugin from './plugin'
 
 
-const context = 'server/plugins/rendering_plugin'
+const context = 'common/plugins/features_plugin'
 
 
 
@@ -21,16 +20,19 @@ export default class FeaturesPlugin extends Plugin
     /**
      * Create a Featured Plugin instance.
 	 * @extends Instance
-	 * @param {PluginsManager} arg_manager - plugins manager
-	 * @param {string} arg_name - plugin name
-	 * @param {string} arg_class - plugin class name
-	 * @param {object} arg_settings - plugin settings map
+	 * 
+	 * @param {RuntimeBase} arg_runtime - runtime instance.
+	 * @param {PluginsManager} arg_manager - plugins manager.
+	 * @param {string} arg_name - plugin name.
+	 * @param {string} arg_class - plugin class name.
+	 * @param {object} arg_settings - plugin settings map.
 	 * @param {string|undefined} arg_log_context - optional.
+	 * 
 	 * @returns {nothing}
      */
-	constructor(arg_manager, arg_name, arg_class, arg_settings, arg_log_context)
+	constructor(arg_runtime, arg_manager, arg_name, arg_class, arg_settings, arg_log_context)
 	{
-		super(arg_manager, arg_name, arg_class, arg_settings, arg_log_context ? arg_log_context : context)
+		super(arg_runtime, arg_manager, arg_name, arg_class, arg_settings, arg_log_context ? arg_log_context : context)
 		
 		this.is_features_plugin = true
 	}
@@ -140,7 +142,7 @@ export default class FeaturesPlugin extends Plugin
 		
 		try
 		{
-			const file_path_name = runtime.context.get_absolute_plugin_path(arg_path)
+			const file_path_name = this._runtime.context.get_absolute_plugin_path(arg_path)
 			// console.info('loading plugin at [' + arg_path + '] at [' + file_path_name + ']')
 			
 			const required = require(file_path_name)

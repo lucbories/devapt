@@ -1,6 +1,6 @@
 // NPM IMPORTS
 import T from 'typr'
-import uuid from 'node-uuid'
+import uuid from 'uuid'
 
 // SERVER IMPORTS
 import MetricsRecord from '../base/metrics_record'

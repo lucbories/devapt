@@ -26,9 +26,9 @@ export default class FeaturesManager extends PluginsManager
 	 * 
 	 * @returns {nothing}
 	 */
-	constructor(arg_log_context, arg_logger_manager)
+	constructor(arg_runtime, arg_log_context, arg_logger_manager)
 	{
-		super(arg_log_context ? arg_log_context : context, arg_logger_manager)
+		super(arg_runtime, arg_log_context ? arg_log_context : context, arg_logger_manager)
 		
 		this.is_features_manager = true
 		

@@ -27,12 +27,12 @@
   "scripts": {
     "build": "gulp",
     "test": "mocha --recursive --reporter spec --compilers js:babel-register src/test",
-    "test:common:base":  "mocha --recursive --reporter spec --compilers js:babel-register src/test/unit/common/base",
+    "test:common:base": "mocha --recursive --reporter spec --compilers js:babel-register src/test/unit/common/base",
     "test:common:cache": "mocha --recursive --reporter spec --compilers js:babel-register src/test/unit/common/cache",
     "test:common:datas": "mocha --recursive --reporter spec --compilers js:babel-register src/test/unit/common/datas",
     "test:common:rendering": "mocha --recursive --reporter spec --compilers js:babel-register src/test/unit/common/rendering",
-    "test:common:topology":  "mocha --recursive --reporter spec --compilers js:babel-register src/test/unit/common/topology",
-    "test:common:utils":     "mocha --recursive --reporter spec --compilers js:babel-register src/test/unit/common/utils",
+    "test:common:topology": "mocha --recursive --reporter spec --compilers js:babel-register src/test/unit/common/topology",
+    "test:common:utils": "mocha --recursive --reporter spec --compilers js:babel-register src/test/unit/common/utils",
     "test:empty": "mocha --reporter spec --compilers js:babel-register",
     "test:watch": "npm run test -- --watch",
     "test:unit:common": "npm run test:empty -- src/test/unit/common/base",
@@ -97,7 +97,6 @@
     "mysql": ">=2.8.0",
     "node-cache": ">=3.2.1",
     "node-forge": ">=0.6.39",
-    "node-uuid": ">=1.4.7",
     "object-sizeof": ">=1.0.10",
     "passport": ">=0.2.2",
     "passport-facebook": ">=1.0.3",
@@ -120,7 +119,9 @@
     "socket.io": ">=1.3.7",
     "socketio": ">=1.0.0",
     "typr": ">=0.2.1",
+    "uuid": "^3.0.0",
     "vdom-as-json": "^1.0.9",
+    "vdom-parser": "^1.3.4",
     "vdom-virtualize": "^2.0.0",
     "virtual-dom": "^2.1.1",
     "winston": ">=1.0.1"
@@ -158,6 +159,8 @@
     "mocha": ">=2.4.5",
     "requirejs": ">=2.1.20",
     "run-sequence": ">=1.1.5",
-    "showdown": ">=1.4.2"
+    "showdown": ">=1.4.2",
+    "vinyl-buffer": "^1.0.0",
+    "vinyl-source-stream": "^1.1.0"
   }
 }

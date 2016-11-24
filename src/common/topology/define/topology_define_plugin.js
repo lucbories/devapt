@@ -137,7 +137,7 @@ export default class TopologyDefinePlugin extends TopologyDefineItem
 				plugin_class = plugin_class.default
 			}
 
-			const plugin = new plugin_class(plugins_mgr)
+			const plugin = new plugin_class(arg_runtime, plugins_mgr)
 			plugins_mgr.load_at_first(plugin)
 			plugin.$plugin_class = plugin_class
 			plugin.find_rendering_function = (type)=>{
