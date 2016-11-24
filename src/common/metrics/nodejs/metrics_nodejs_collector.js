@@ -1,7 +1,7 @@
 
 // import T from 'typr'
 // import assert from 'assert'
-// import uuid from 'node-uuid'
+// import uuid from 'uuid'
 
 import runtime from '../../base/runtime'
 
