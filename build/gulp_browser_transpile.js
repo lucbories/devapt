@@ -14,19 +14,16 @@ const BABEL_CONFIG = {
 	presets: ['es2015']
 }
 
-module.exports = function (gulp, plugins)
+module.exports = function (gulp, plugins, arg_task_name)
 {
-	return function (arg_task_name)
-	{
-		gulp.task(arg_task_name,
-			() => {
-				return gulp.src(SRC_BROWSER_JS)
-					.pipe( plugins.changed(DST_BROWSER) )
-					.pipe( plugins.sourcemaps.init() )
-					.pipe( plugins.babel(BABEL_CONFIG) )
-					.pipe( plugins.sourcemaps.write('.') )
-					.pipe( gulp.dest(DST_BROWSER) )
-			}
-		)
-	}
+	gulp.task(arg_task_name,
+		() => {
+			return gulp.src(SRC_BROWSER_JS)
+				.pipe( plugins.changed(DST_BROWSER) )
+				.pipe( plugins.sourcemaps.init() )
+				.pipe( plugins.babel(BABEL_CONFIG) )
+				.pipe( plugins.sourcemaps.write('.') )
+				.pipe( gulp.dest(DST_BROWSER) )
+		}
+	)
 }

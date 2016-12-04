@@ -37,7 +37,7 @@ export default class RecordsTable extends Table
 		this.table_jqo = $("#" + this.get_dom_id())
 		this.records = {}
 		
-		const state = this.get_initial_state()
+		const state = this.get_state_js()
 		this.fields = ('fields' in state) ? state.fields : []
 		this.labels = ('labels' in state) ? state.labels : []
 		this.records_key = ('records_key' in state) ? state.records_key : 'records'

@@ -36,6 +36,58 @@ export default class Table extends Container
 		// DEBUG
 		// this.enable_trace()
 	}
+
+
+
+	/**
+	 * Get view children components.
+	 * 
+	 * @returns {array} - list of Component.
+	 */
+	get_children_component()
+	{
+		if ( ! this._children_component)
+		{
+			this._children_component = []
+
+			const items = this.get_state_value('items', [])
+			console.log(context + ':get_children_component:init with items:', items)
+
+			items.forEach(
+				(row)=>{
+					if ( T.isArray(row) )
+					{
+						row.forEach(
+							(cell)=>{
+								if ( T.isObject(cell) )
+								{
+									if (cell.is_component)
+									{
+										this._children_component.push(cell)
+										return
+									}
+									if ( T.isString(cell.key) )
+									{
+										if ( T.isString(cell.view) )
+										{
+											const component = window.devapt().ui(cell.view)
+											if (component && component.is_component)
+											{
+												this._children_component.push(component)
+											}
+										}
+									}
+								}
+							}
+						)
+				
+					}
+				}
+			)
+		}
+
+		return this._children_component
+	}
 	
 	
 	
@@ -275,8 +327,45 @@ export default class Table extends Container
 			var arg_collection_name = arg_collection_def.collection_name
 			var arg_collection_jqo = $(arg_collection_def.collection_dom_id)
 			
+			function htmlDecode(t)
+			{
+				if (t) return $('<div />').html(t).text();
+			}
+
 			var collection_dom_template_default = "<tr> <td></td> <td> {collection_key} </td> <td id='{collection_id}'>{collection_value}</td> </tr>"
-			var collection_dom_template = arg_collection_def.collection_dom_template ? arg_collection_def.collection_dom_template : collection_dom_template_default
+			var collection_dom_template = arg_collection_def.collection_dom_template ? htmlDecode(arg_collection_def.collection_dom_template) : collection_dom_template_default
+			
+			// var entityMap = {
+			// "&": "&amp;",
+			// "<": "&lt;",
+			// ">": "&gt;",
+			// '"': '&quot;',
+			// "'": '&#39;',
+			// "/": '&#x2F;'
+			// };
+
+			// var entityUnmap = {
+			// 	"&amp;" : "&",
+			// 	"&lt;"  : "<",
+			// 	"&gt;"  : ">",
+			// 	'&quot;': '"',
+			// 	'&#39;' : "'",
+			// 	'&#x2F;': "/"
+			// };
+
+			// function escapeHtml(string) {
+			// 	return String(string).replace(/[&<>"'\/]/g, function (s) {
+			// 		return entityMap[s];
+			// 	});
+			// }
+			// function unescapeHtml(string) {
+			// 	return String(string).replace(/[&<>"'\/]/g, function (s) {
+			// 		return entityUnmap[s];
+			// 	});
+			// }
+			
+			// console.log(context + ':update_section_collection:template', arg_collection_def.collection_dom_template)
+			// console.log(context + ':update_section_collection:default', collection_dom_template_default)
 
 			var collection_key_safe = undefined
 			var collection_value = undefined
@@ -305,6 +394,9 @@ export default class Table extends Container
 
 						// collection_value_html = "<tr> <td></td> <td>" + collection_key + "</td> <td id='" + collection_id + "'>" + collection_value + "</td> </tr>"
 						collection_value_html = collection_dom_template.replace('{collection_key}', collection_key).replace('{collection_id}', collection_id).replace('{collection_value}', collection_value)
+						
+						// console.log(context + ':update_section_collection:html', collection_value_html)
+			
 						arg_collection_jqo.after(collection_value_html)
 						collection_value_jqo = $("#" + collection_id)
 					}

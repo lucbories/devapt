@@ -137,11 +137,8 @@ export default class Topology extends Component
 	 */
 	init()
 	{
-		this.mode = this.get_initial_state()['mode']
-		this.svc = this.get_initial_state()['service']
-		// this.runtime.register_service(this.svc)
-		
-		// console.log(context + ':init:mode %s, svc %s', this.mode, this.svc)
+		this.mode = this.get_state_value('mode')
+		this.svc = this.get_state_value('service')
 	}
 	
 	

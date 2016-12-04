@@ -1,6 +1,6 @@
 // NPM IMPORTS
 import fs from 'fs'
-import ini_parser from 'ini'
+// import ini_parser from 'ini'
 
 
 
@@ -147,10 +147,10 @@ let parser = {
 		var self = this
 		// logs.info('parser', 'write [%s]', arg_file_path_name);
 		
-		if (arg_file_path_name.substr(-4).toLocaleLowerCase() === '.ini')
-		{
-			return self.write_ini(arg_file_path_name, arg_config)
-		}
+		// if (arg_file_path_name.substr(-4).toLocaleLowerCase() === '.ini')
+		// {
+		// 	return self.write_ini(arg_file_path_name, arg_config)
+		// }
 		
 		if (arg_file_path_name.substr(-5).toLocaleLowerCase() === '.json')
 		{
@@ -159,11 +159,11 @@ let parser = {
 	},
 	
 	
-	write_ini: function(arg_file_path_name, arg_config)
-	{
-		// logs.info('parser', 'write_ini [%s]', arg_file_path_name);
-		return fs.writeFileSync(arg_file_path_name, ini_parser.stringify(arg_config, {}))
-	},
+	// write_ini: function(arg_file_path_name, arg_config)
+	// {
+	// 	// logs.info('parser', 'write_ini [%s]', arg_file_path_name);
+	// 	return fs.writeFileSync(arg_file_path_name, ini_parser.stringify(arg_config, {}))
+	// },
 	
 	
 	write_json: function(arg_file_path_name, arg_config)

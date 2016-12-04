@@ -134,12 +134,6 @@ export default class Tree extends Component
 	 */
 	init()
 	{
-		// this.mode = this.get_initial_state()['mode']
-		// this.svc = this.get_initial_state()['service']
-		// this.runtime.register_service(this.svc)
-		
-		// console.log(context + ':init:mode %s, svc %s', this.mode, this.svc)
-		// console.log(context + ':init')
 	}
 	
 	
@@ -168,7 +162,7 @@ export default class Tree extends Component
 
 		var html = ''
 		// html = '<table><tbody>'
-		html += this.render_node(arg_tree, 1, this.initial_state.label)
+		html += this.render_node(arg_tree, 1, this.get_state_value('label') )
 		// html += '</tbody></table>'
 		// console.log('update_tree', html)
 		

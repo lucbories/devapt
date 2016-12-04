@@ -251,9 +251,12 @@ export default class RenderingBuilder extends Loggable
 	/**
 	 * Get application initial state.
 	 * 
+	 * @param {string} arg_view_name - main view name.
+	 * @param {string} arg_menubar_name - main menubar name.
+	 * 
 	 * @returns {string} - state string.
 	 */
-	get_initial_state()
+	get_initial_state(arg_view_name, arg_menubar_name)
 	{
 		let initial_state = this._application ? this._application.export_settings() : {}
 
@@ -277,6 +280,21 @@ export default class RenderingBuilder extends Loggable
 		initial_state.app_assets = this._application ? this._application.app_assets : null
 		initial_state.commands   = this._application ? this._application.get_resources_settings('commands') : {}
 		initial_state.views      = this._application ? this._application.get_resources_settings('views') : {}
+		initial_state.menubars   = this._application ? this._application.get_resources_settings('menubars') : {}
+		initial_state.menus      = this._application ? this._application.get_resources_settings('menus') : {}
+		initial_state.models     = this._application ? this._application.get_resources_settings('models') : {}
+		if (! initial_state.views.content)
+		{
+			initial_state.views.content = {
+				name:'content',
+				type:'Container',
+				state:{
+					items:[arg_view_name, arg_menubar_name]
+				},
+				settings:{},
+				children:{}
+			}
+		}
 
 		return JSON.stringify(initial_state)
 	}
@@ -332,10 +350,10 @@ export default class RenderingBuilder extends Loggable
 			type:'table'
 		}
 
-		const stored_state = this.get_initial_state()
 		const view_name = T.isString(arg_view) ? arg_view : ( ( T.isObject(arg_view) && arg_view.is_component ) ? arg_view.get_name() : default_view_name )
 		const menubar_name = T.isString(arg_menubar) ? arg_menubar : ( ( T.isObject(arg_menubar) && arg_menubar.is_component ) ? arg_menubar.get_name() : default_menubar_name )
 		const content_result = this.render_content(view_name, menubar_name, arg_credentials, arg_assets_services)
+		const stored_state = this.get_initial_state(view_name, menubar_name)
 
 		const page = {
 			type:'page',

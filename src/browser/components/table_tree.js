@@ -200,7 +200,7 @@ export default class TableTree extends Component
 		{
 			return
 		}
-		this.render_node(sub_tree, 1, this.initial_state.label, ! collapsed)
+		this.render_node(sub_tree, 1, this.get_state_value(label), ! collapsed)
 
 		if (collapsed)
 		{

@@ -125,7 +125,7 @@ export default class Router extends RouterState
 				
 				console.log('Crossroads route cb with hash [%s] and args:', hash, args)
 
-				return  arg_handler(args)
+				return arg_handler(args)
 			}
 		)
 	}

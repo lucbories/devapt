@@ -48,6 +48,7 @@ export default class DefaultPlugin extends RenderingPlugin
 			case 'input-field':
 			case 'list':
 			case 'table':
+			case 'recordstable':
 			case 'script':
 			case 'menubar':
 			case 'page':
@@ -117,6 +118,7 @@ export default class DefaultPlugin extends RenderingPlugin
 				return DefaultRendering.list
 			
 			case 'table':
+			case 'recordstable':
 				return DefaultRendering.table
 			
 			case 'script':

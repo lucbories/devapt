@@ -2,8 +2,6 @@
 'use strict'
 
 var fs = require('fs')
-var gulpShowdown = require('gulp-showdown')
-var headerfooter = require('gulp-headerfooter')
 
 
 var SRC_README  = 'README.md'
@@ -30,34 +28,33 @@ var footer = fs.readFileSync(FILE_HTML_FOOTER)
 /*
 	GENERATE DOCS API
 */
-module.exports = function (gulp/*, plugins*/)
+module.exports = function (gulp, plugins, arg_task_name)
 {
-	return function (arg_task_name)
-	{
-		gulp.task(arg_task_name,
-			function(/*cb*/)
-			{
-				gulp.src(SRC_README)
-					.pipe(gulpShowdown())
-					.pipe(gulp.dest(DST_PROJECT_PART))
-					
-				gulp.src(SRC_PROJECT)
-					.pipe(gulpShowdown())
-					.pipe(gulp.dest(DST_PROJECT_PART))
-					
-				gulp.src(SRC_TUTORIALS)
-					.pipe(gulpShowdown())
-					.pipe(gulp.dest(DST_TUTORIALS_PART))
+	gulp.task(arg_task_name,
+		function(done)
+		{
+			gulp.src(SRC_README)
+				.pipe(plugins.gulpShowdown())
+				.pipe(gulp.dest(DST_PROJECT_PART))
+				
+			gulp.src(SRC_PROJECT)
+				.pipe(plugins.gulpShowdown())
+				.pipe(gulp.dest(DST_PROJECT_PART))
+				
+			gulp.src(SRC_TUTORIALS)
+				.pipe(plugins.gulpShowdown())
+				.pipe(gulp.dest(DST_TUTORIALS_PART))
 
-				gulp.src(SRC_FEATURES)
-					.pipe(gulpShowdown())
-					.pipe(gulp.dest(DST_FEATURES_PART))
+			gulp.src(SRC_FEATURES)
+				.pipe(plugins.gulpShowdown())
+				.pipe(gulp.dest(DST_FEATURES_PART))
 
-				gulp.src(DST_PROJECT_PART + '/*.html')
-					.pipe(headerfooter.header(header))
-					.pipe(headerfooter.footer(footer))
-					.pipe(gulp.dest(DST_PROJECT))
-			}
-		)
-	}
+			gulp.src(DST_PROJECT_PART + '/*.html')
+				.pipe(plugins.headerfooter.header(header))
+				.pipe(plugins.headerfooter.footer(footer))
+				.pipe(gulp.dest(DST_PROJECT))
+			
+			return done()
+		}
+	)
 }

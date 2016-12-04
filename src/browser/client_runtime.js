@@ -76,7 +76,9 @@ export default class ClientRuntime extends RuntimeBase
 		this._commands = undefined
 		
 		this.info('Client Runtime is created')
+
 		this.disable_trace()
+		this.update_trace_enabled()
 	}
 	
 	
@@ -98,8 +100,8 @@ export default class ClientRuntime extends RuntimeBase
 		// this.loggers.push( new LoggerSvc(true, svc_logger_settings) )
 		
 		// GET INITIAL STATE
-		const initial_state = window ? window.__INITIAL_STATE__ : {error:'no browser window object'}
-		this.debug(initial_state, 'initialState')
+		const initial_app_state = window ? window.__INITIAL_STATE__ : {error:'no browser window object'}
+		this.debug(initial_app_state, 'initialState')
 		
 		// GET DEFAULT REDUCER
 		if ( T.isFunction(arg_settings.reducers) )
@@ -116,7 +118,7 @@ export default class ClientRuntime extends RuntimeBase
 		// CREATE STATE STORE
 		const reducer = this.get_store_reducers()
 		const self = this
-		this._state_store = new ReduxStore(reducer, initial_state, context, this.logger_manager)
+		this._state_store = new ReduxStore(reducer, initial_app_state, context, this.logger_manager)
 		this._state_store_unsubscribe = this._state_store.subscribe( self.handle_store_change.bind(self) )
 		this._state_store.dispatch( {type:'store_created'} )
 		
@@ -143,17 +145,6 @@ export default class ClientRuntime extends RuntimeBase
 				const cmd = this._commands[cmd_name]
 				if ( T.isString(cmd.url) )
 				{
-					// VIEW RENDERING
-					if ( T.isString(cmd.view) )
-					{
-						this.debug('load:add route handler for cmd [' + cmd_name + '] with view:' + cmd.view)
-
-						const route = cmd.url
-						const menubar = T.isString(cmd.menubar) ? cmd.menubar : undefined
-						this._router.add_handler(route, ()=>this._router.display_content(cmd.view, menubar) )
-						return
-					}
-					
 					// MIDDLEWARE RENDERING
 					const middleware = cmd.middleware
 					if ( T.isString(middleware) )
@@ -166,6 +157,17 @@ export default class ClientRuntime extends RuntimeBase
 						return
 					}
 
+					// VIEW RENDERING
+					if ( T.isString(cmd.view) )
+					{
+						this.debug('load:add route handler for cmd [' + cmd_name + '] with view:' + cmd.view)
+
+						const route = cmd.url
+						const menubar = T.isString(cmd.menubar) ? cmd.menubar : undefined
+						this._router.add_handler(route, ()=>this._router.display_content(cmd.view, menubar) )
+						return
+					}
+					
 					this.error('load:no route handler for cmd [' + cmd_name + ']:unknow cmd bad view/middleware')
 				}
 			}
@@ -404,7 +406,21 @@ export default class ClientRuntime extends RuntimeBase
 			if ( T.isString(arg_action.type) && arg_action.type == 'ADD_JSON_RESOURCE' && T.isString(arg_action.resource) && T.isObject(arg_action.json) )
 			{
 				this.debug('reducer:ADD_JSON_RESOURCE', arg_action.resource, arg_action.json)
-				return arg_previous_state.setIn(['children', arg_action.resource], fromJS(arg_action.json) )
+
+				if ( T.isString(arg_action.collection) )
+				{
+					if ( T.isArray(arg_action.path) )
+					{
+						return arg_previous_state.setIn([arg_action.collection, arg_action.resource].concat(arg_action.path), fromJS(arg_action.json) )
+					}
+
+					return arg_previous_state.setIn([arg_action.collection, arg_action.resource], fromJS(arg_action.json) )
+				}
+
+				if ( T.isArray(arg_action.path) )
+				{
+					return arg_previous_state.setIn(arg_action.path, fromJS(arg_action.json) )
+				}
 			}
 
 			// SET SESSION CREDENTIALS
@@ -490,8 +506,10 @@ export default class ClientRuntime extends RuntimeBase
 		
 		const handle_change = () => {
 			let next_state = arg_component.get_state()
-			
-			if ( ! next_state.equals(current_state) )
+			// console.log(context + ':handle_change:arg_component', arg_component)
+			// console.log(context + ':handle_change:next_state', next_state)
+
+			if ( next_state && ! next_state.equals(current_state) )
 			{
 				// console.info(context + ':create_store_observer:state changes for ' + arg_component.get_name())
 				

@@ -5,8 +5,10 @@ import assert from 'assert'
 // SERVER IMPORTS
 import NodeFeature from './node_feature'
 import Bus from '../messaging/bus'
-import BusClient from '../messaging/simplebus_client'
-import BusServer from '../messaging/simplebus_server'
+import SimpleBusClient from '../messaging/simplebus_client'
+import SimpleBusServer from '../messaging/simplebus_server'
+import QueueLibBusClient from '../messaging/queuelibbus_client'
+import QueueLibBusServer from '../messaging/queuelibbus_server'
 
 
 
@@ -166,10 +168,19 @@ export default class BusNodeFeature extends NodeFeature
 		switch(arg_gw_type)
 		{
 			case 'simplebus_client':
-				return new BusClient(arg_gw_name, arg_gw_settings, context)
+				return new SimpleBusClient(arg_gw_name, arg_gw_settings, context)
+			
 			case 'simplebus_server':
+				return new SimpleBusServer(arg_gw_name, arg_gw_settings, context)
+			
+			case 'queuelibbus_client':
+				return new QueueLibBusClient(arg_gw_name, arg_gw_settings, context)
+
+			case 'queuelibbus_server':
+				return new QueueLibBusServer(arg_gw_name, arg_gw_settings, context)
+				
 			default:
-				return new BusServer(arg_gw_name, arg_gw_settings, context)
+				return undefined
 		}
 	}
 	

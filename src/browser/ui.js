@@ -2,16 +2,19 @@
 import T from 'typr'
 import assert from 'assert'
 import _ from 'lodash'
+import { fromJS } from 'immutable'
 
 // BROWSER IMPORTS
 import Loggable from '../common/base/loggable'
 import Component from './components/component'
 import Table from './components/table'
+import Tabs from './components/tabs'
 import Tree from './components/tree'
 import TableTree from './components/table_tree'
 import Topology from './components/topology'
 import RecordsTable from './components/records_table'
 import Page from './components/page'
+import Sparklines from './components/sparklines'
 
 // VTREE
 import vdom_parser from 'vdom-parser'
@@ -52,7 +55,7 @@ export default class UI extends Loggable
 	 * 		->constructor(arg_runtime, arg_store)
 	 * 		->get(arg_name):Component - Get a UI component by its name.
 	 * 		->create(arg_name):Component - Create a UI component.
-	 * 		->find_state(arg_state, arg_name, arg_state_path = []):Immutable.Map|undefined - Find a UI component state.
+	 * 		->find_component_desc(arg_state, arg_name, arg_state_path = []):Immutable.Map|undefined - Find a UI component state.
 	 * 		->render(arg_view_name):Promise(Component) - Render a view by its name.
 	 * 
 	 * @param {object} arg_runtime - client runtime.
@@ -82,6 +85,8 @@ export default class UI extends Loggable
 		this.vtrees_targets = {}
 
 		this.body_page = new Page()
+
+		// this.update_trace_enabled()
 	}
 	
 	
@@ -114,25 +119,72 @@ export default class UI extends Loggable
 	 */
 	create(arg_name)
 	{
-		const current_state = this.store.get_state()
+		// GET APPLICATION STATE AND INIT APPLICATION STATE PATH
+		const current_app_state = this.store.get_state()
+		this.debug('search in views for ' + arg_name)
 		let state_path = ['views']
-		const component_state = this.find_state(current_state, arg_name, state_path)
-		console.log('component_state', component_state)
-		assert( T.isObject(component_state), context + ':create:bad state object for ' + arg_name)
-		
+
+		// GET COMPONENT DESCRIPTION : { type:'...', name:'...', settings:{...}, state:{...}, children:{...} }
+		let component_desc = this.find_component_desc(current_app_state, arg_name, state_path)
+		if (! component_desc)
+		{
+			this.debug('search in menubars for ' + arg_name)
+			state_path = ['menubars']
+			component_desc = this.find_component_desc(current_app_state, arg_name, state_path)
+
+			if (!component_desc)
+			{
+				this.debug('state not found for ' + arg_name)
+				// console.log(current_app_state, 'current_app_state')
+				this.debug('state_path', state_path)
+			}
+		}
+
+		if ( ! (T.isObject(component_desc) && component_desc.has && component_desc.get) )
+		{
+			this.debug('create:bad component description Immutable for ' + arg_name)
+			return undefined
+		}
+
+		if ( ! ( component_desc.has('type') && component_desc.has('state') /*&& component_desc.has('settings')*/ && component_desc.has('name') ) )
+		{
+			this.debug('create:bad component description for ' + arg_name)
+			return undefined
+		}
+
+		// console.log('component_desc', component_desc)
+
+		// assert( T.isObject(component_desc) && component_desc.has && component_desc.get, context + ':create:bad component description Immutable for ' + arg_name)
+		// assert( component_desc.has('type') && component_desc.has('state') /*&& component_desc.has('settings')*/ && component_desc.has('name'), context + ':create:bad component description for ' + arg_name)
+
+		// REGISTER COMPONENT APPLICATION STATE PATH
 		this.state_by_path[arg_name] = state_path
+		this.state_by_path[arg_name].push('state')
+
+		// GET COMPONENT TYPE
+		const type = component_desc.has('browser_type') ? component_desc.get('browser_type') : component_desc.get('type')
+		assert( T.isString(type), context + ':create:bad component desctription type string for ' + arg_name)
 		
-		const type = component_state.has('browser_type') ? component_state.get('browser_type') : component_state.get('type')
-		assert( T.isString(type), context + ':create:bad type string for ' + arg_name)
-		
+		// GET COMPONENT STATE
+		let comp_state = component_desc.get('state')
+		comp_state = comp_state.set('name', arg_name)
+		comp_state = comp_state.set('type', type)
+		comp_state = comp_state.set('state_path', fromJS(state_path) )
+		// console.log('ui:create:path,state:', state_path, comp_state)
+
 		switch(type)
 		{
 			case 'Table':
 				{
-					const comp_state = component_state.toJS()
 					const comp = new Table(this.runtime, comp_state)
-					comp.state_path = state_path
-					// console.log('ui:create:path', state_path, comp_state)
+					this.cache[arg_name] = comp
+					comp.load()
+					return comp
+				}
+			
+			case 'Tabs':
+				{
+					const comp = new Tabs(this.runtime, comp_state)
 					this.cache[arg_name] = comp
 					comp.load()
 					return comp
@@ -140,10 +192,7 @@ export default class UI extends Loggable
 			
 			case 'TableTree':
 				{
-					const comp_state = component_state.toJS()
 					const comp = new TableTree(this.runtime, comp_state)
-					comp.state_path = state_path
-					// console.log('ui:create:path', state_path, comp_state)
 					this.cache[arg_name] = comp
 					comp.load()
 					return comp
@@ -151,10 +200,7 @@ export default class UI extends Loggable
 			
 			case 'Topology':
 				{
-					const comp_state = component_state.toJS()
 					const comp = new Topology(this.runtime, comp_state)
-					comp.state_path = state_path
-					// console.log('ui:create:path', state_path, comp_state)
 					this.cache[arg_name] = comp
 					comp.load()
 					return comp
@@ -162,10 +208,7 @@ export default class UI extends Loggable
 			
 			case 'RecordsTable':
 				{
-					const comp_state = component_state.toJS()
 					const comp = new RecordsTable(this.runtime, comp_state)
-					comp.state_path = state_path
-					// console.log('ui:create:path', state_path, comp_state)
 					this.cache[arg_name] = comp
 					comp.load()
 					return comp
@@ -173,15 +216,20 @@ export default class UI extends Loggable
 			
 			case 'Tree':
 				{
-					const comp_state = component_state.toJS()
 					const comp = new Tree(this.runtime, comp_state)
-					comp.state_path = state_path
-					// console.log('ui:create:path', state_path, comp_state)
 					this.cache[arg_name] = comp
 					comp.load()
 					return comp
 				}
-			
+
+			case 'Sparklines':
+				{
+					const comp = new Sparklines(this.runtime, comp_state)
+					this.cache[arg_name] = comp
+					comp.load()
+					return comp
+				}
+
 			case 'Button':
 			case 'HBox':
 			case 'VBox':
@@ -192,10 +240,7 @@ export default class UI extends Loggable
 			case 'Tabs':
 			default:
 				{
-					const comp_state = component_state.toJS()
 					const comp = new Component(this.runtime, comp_state)
-					comp.state_path = state_path
-					// console.log('ui:create:path', state_path, comp_state)
 					this.cache[arg_name] = comp
 					comp.load()
 					return comp
@@ -216,10 +261,10 @@ export default class UI extends Loggable
 	 * 
 	 * @returns {Immutable.Map|undefined} - component state object.
 	 */
-	find_state(arg_state, arg_name, arg_state_path = [])
+	find_component_desc(arg_state, arg_name, arg_state_path = [])
 	{
 		const js_state = arg_state && arg_state.toJS ? arg_state.toJS() : arg_state
-		console.log('ui.find_state for ' + arg_name, arg_state_path, js_state)
+		this.debug('ui.find_component_desc for ' + arg_name, arg_state_path, js_state)
 		
 		if (! arg_state)
 		{
@@ -230,8 +275,8 @@ export default class UI extends Loggable
 		if (! T.isFunction(arg_state.get) )
 		{
 			// GLOBAL STATE IS NOT AN IMMUTABLE.MAP
-			console.error(context + ':find_state:state is not an Immutable for ' + arg_name)
-			// console.log(context + ':find_state:state:', arg_state)
+			console.error(context + ':find_component_desc:state is not an Immutable for ' + arg_name)
+			this.debug(context + ':find_component_desc:state:', arg_state)
 			return undefined
 		}
 		
@@ -242,7 +287,7 @@ export default class UI extends Loggable
 			arg_state_path.push(name)
 			if ( name == arg_name )
 			{
-				console.log('ui.find_state FOUND 1 for ' + arg_name, arg_state_path)
+				this.debug('ui.find_component_desc FOUND 1 for ' + arg_name, arg_state_path)
 				return arg_state
 			}
 		}
@@ -254,6 +299,21 @@ export default class UI extends Loggable
 			children_key = 'views'
 			arg_state_path.pop()
 		}
+		if (arg_state_path.length == 1 && arg_state_path[0] == 'menubars')
+		{
+			children_key = 'menubars'
+			arg_state_path.pop()
+		}
+		if (arg_state_path.length == 1 && arg_state_path[0] == 'menus')
+		{
+			children_key = 'menus'
+			arg_state_path.pop()
+		}
+		if (arg_state_path.length == 1 && arg_state_path[0] == 'models')
+		{
+			children_key = 'models'
+			arg_state_path.pop()
+		}
 		if ( arg_state.has(children_key) )
 		{
 			arg_state_path.push(children_key)
@@ -261,7 +321,7 @@ export default class UI extends Loggable
 			if ( arg_state.hasIn( [children_key, arg_name] ) )
 			{
 				arg_state_path.push(arg_name)
-				console.log('ui.find_state FOUND 2 for ' + arg_name, arg_state_path)
+				this.debug('ui.find_component_desc FOUND 2 for ' + arg_name, arg_state_path)
 				return arg_state.getIn( [children_key, arg_name] )
 			}
 			
@@ -270,19 +330,19 @@ export default class UI extends Loggable
 				(child_state, key) => {
 					if (! result)
 					{
-						console.log('ui.find_state loop on child ' + key + ' for ' + arg_name, arg_state_path)
-						result = this.find_state(child_state, arg_name, arg_state_path)
+						this.debug('ui.find_component_desc loop on child ' + key + ' for ' + arg_name, arg_state_path)
+						result = this.find_component_desc(child_state, arg_name, arg_state_path)
 						if (result)
 						{
-							console.log('ui.find_state FOUND 3 for ' + arg_name, arg_state_path)
-							return
+							this.debug('ui.find_component_desc FOUND 3 for ' + arg_name, arg_state_path)
+							return result
 						}
 					}
 				}
 			)
 			if (result)
 			{
-				console.log('ui.find_state FOUND 4 for ' + arg_name, arg_state_path, result && result.toJS ? result.toJS() : result)
+				this.debug('ui.find_component_desc FOUND 4 for ' + arg_name, arg_state_path, result && result.toJS ? result.toJS() : result)
 				return result
 			}
 			
@@ -310,14 +370,13 @@ export default class UI extends Loggable
 	render(arg_view_name)
 	{
 		this.enter_group('render')
-		console.log(context + ':render:enter')
 
 		this.leave_group('render:async')
-		console.log(context + ':render:leave async')
+		
 		return this.runtime.register_service('rest_api_resources_query_1')
 		.then(
 			(service)=>{
-				console.log(context + ':render:get service for ' + arg_view_name)
+				// console.log(context + ':render:get service for ' + arg_view_name)
 				return service.get( {collection:'views', 'resource':arg_view_name} )
 			},
 			
@@ -327,7 +386,7 @@ export default class UI extends Loggable
 		)
 		.then(
 			(stream)=>{
-				console.log(context + ':render:get listen stream for ' + arg_view_name)
+				// console.log(context + ':render:get listen stream for ' + arg_view_name)
 				return new Promise(
 					function(resolve, reject)
 					{
@@ -351,12 +410,12 @@ export default class UI extends Loggable
 		)
 		.then(
 			(response)=>{
-				console.log(context + ':render:get response for ' + arg_view_name, response)
+				// console.log(context + ':render:get response for ' + arg_view_name, response)
 
 				if (response.result == 'done')
 				{
-					console.log(context + ':render:dispatch ADD_JSON_RESOURCE action for ' + arg_view_name)
-					const action = { type:'ADD_JSON_RESOURCE', resource:arg_view_name, json:response.datas }
+					// console.log(context + ':render:dispatch ADD_JSON_RESOURCE action for ' + arg_view_name)
+					const action = { type:'ADD_JSON_RESOURCE', resource:arg_view_name, collection:'views', json:response.datas }
 					this.store.dispatch(action)
 					return this.create(arg_view_name)
 				}
@@ -393,9 +452,14 @@ export default class UI extends Loggable
 
 	render_with_middleware(arg_cmd, arg_route, arg_credentials)
 	{
+		this.enable_trace()
 		console.log(context + ':render_with_middleware:cmd,route,credentials:', arg_cmd, arg_route, arg_credentials)
 
 		const middleware = arg_cmd.middleware
+
+
+		// CHECK IF COMPONENT IS ALREADY RENDERED
+		
 
 		// GET AN URL HTML CONTENT
 		const get_url_cb = ()=>{
@@ -471,6 +535,15 @@ export default class UI extends Loggable
 								document.getElementById(id).style.display = 'block'
 							}
 						)
+
+						if ( T.isString(arg_cmd.view) )
+						{
+							const component = this.get(arg_cmd.view)
+							if (component)
+							{
+								component.update()
+							}
+						}
 					}
 				)
 			},
@@ -484,6 +557,56 @@ export default class UI extends Loggable
 				console.error(context + ':render_with_middleware:error for ' + arg_cmd.url, reason)
 			}
 		)
+	}
+
+
+
+	process_component_creation(arg_id)
+	{
+		this.enter_group('process_component_creation')
+		this.debug('process_component_creation:id', arg_id)
+
+		if (arg_id == 'content')
+		{
+			// UPDATE CONTENT ITEMS
+			const nodes = document.getElementById('content').childNodes
+			const children = []
+			nodes.forEach(
+				(item)=>{
+					this.debug('process_component_creation:item.id=' + item.id)
+
+					if ( children.indexOf(item.id) < 0 )
+					{
+						const component = this.get(item.id)
+						if (component && component.is_component)
+						{
+							children.push(item.id)
+							component.update()
+						}
+					}
+				}
+			)
+			
+			// UPDATE CONTENT STATE
+			const prev_state = this.store.get_state().getIn(['views', 'content'], undefined)
+			if (prev_state)
+			{
+				const new_state = prev_state.setIn(['state', 'items'], children)
+				const action = { type:'ADD_JSON_RESOURCE', resource:'content', collection:'views', json:new_state.toJS() }
+				this.store.dispatch(action)
+			}
+
+			this.leave_group('process_component_creation:content')
+			return
+		}
+
+		if ( this.store.get_state().hasIn(['views', arg_id]) )
+		{
+			const component = this.get(arg_id)
+			component.update()
+		}
+
+		this.leave_group('process_component_creation')
 	}
 
 
@@ -510,7 +633,6 @@ export default class UI extends Loggable
 				// GET NEW TREE AND STATE
 				let new_vtree = vdom_from_json(new_vtree_json)
 				new_vtree.prototype = VNode.prototype
-				// const new_state = s
 				
 				this.debug('id:', id)
 				this.debug('new_vtree:', new_vtree)
@@ -519,6 +641,7 @@ export default class UI extends Loggable
 
 				if ( T.isArray(new_vtree) )
 				{
+					this.debug('create content DIV for id=' + id)
 					new_vtree = new VNode('DIV', { id:'content' }, new_vtree, 'id', undefined)
 				}
 
@@ -528,11 +651,8 @@ export default class UI extends Loggable
 				let prev_vtree = undefined
 				if (id in this.vtrees)
 				{
+					this.debug('previous vtree found for id=' + id)
 					prev_vtree = this.vtrees[id]
-					
-					// CHECK IF PREVIOUS VIEW STATE IS DIFFERENT FROM NEW VIEW STATE
-					// const p 
-
 				} else {
 					if (element)
 					{
@@ -544,6 +664,7 @@ export default class UI extends Loggable
 
 						const content = document.getElementById('content')
 						assert(content, context + ':process_rendering_result:bad content element')
+
 						element = create_element(new_vtree)
 						content.appendChild(element)
 					}
@@ -583,6 +704,10 @@ export default class UI extends Loggable
 		this.process_rendering_result_scripts_tags(document.body, arg_rendering_result.body_scripts_tags, arg_credentials)
 
 		window.devapt().content_rendered()
+
+		ids.map(
+			(id)=>this.process_component_creation(id)
+		)
 
 		this.leave_group('process_rendering_result')
 		return ids
@@ -683,12 +808,12 @@ export default class UI extends Loggable
 				let e = document.getElementById(url.id)
 				if (e)
 				{
-					console.log('e exists', e)
+					// console.log('e exists', e)
 					if (e.getAttribute('href') == url.href)
 					{
 						return
 					}
-					console.log('existing e is different', e, url.href)
+					// console.log('existing e is different', e, url.href)
 					e.parentNode.removeChild(e)
 				}
 				

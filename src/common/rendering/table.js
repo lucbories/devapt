@@ -90,8 +90,8 @@ export default (arg_settings, arg_state={}, arg_rendering_context, arg_rendering
 		return h('td', undefined, cell_fn(content) )
 	}
 
-	const tr_td_fn = (cells, index)  =>h('tr', { id:settings.id + '_head_row_' + index }, (T.isArray(cells) ? cells : [cells]).map(td_fn) )
-	const tr_th_fn = (cells, index)  =>h('tr', { id:settings.id + '_body_row_' + index }, (T.isArray(cells) ? cells : [cells]).map(th_fn) )
+	const tr_th_fn = (cells, index)  =>h('tr', { id:settings.id + '_head_row_' + index }, (T.isArray(cells) ? cells : [cells]).map(th_fn) )
+	const tr_td_fn = (cells, index)  =>h('tr', { id:settings.id + '_body_row_' + index }, (T.isArray(cells) ? cells : [cells]).map(td_fn) )
 	const tr_tf_fn = (cells, index)  =>h('tr', { id:settings.id + '_foot_row_' + index }, (T.isArray(cells) ? cells : [cells]).map(th_fn) )
 	
 	const thead_children = headers_value ? (T.isArray(headers_value) ? headers_value : [headers_value]).map(tr_th_fn) : undefined

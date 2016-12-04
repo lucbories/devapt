@@ -1,17 +1,18 @@
-
+// NPM IMPORTS
 import T from 'typr'
 import assert from 'assert'
+import Immutable from 'immutable'
 
-import Settingsable from '../../common/base/settingsable'
+// COMMON IMPORTS
+import Settingsable from './settingsable'
 
 
-const context = 'browser/components/stateable'
-
+const context = 'common/base/stateable'
 
 
 
 /**
- * @file UI stateable base class.
+ * @file Stateable base class.
  * 
  * @author Luc BORIES
  * 
@@ -30,8 +31,12 @@ export default class Stateable extends Settingsable
 	 * 		->get_state_store():object - get state store.
 	 * 		->get_state_path():array|string - get state path into store.
 	 * 		->get_state_value(arg_key_or_path, arg_default_value=undefined):any - get a state value at path.
+	 * 
 	 * 		->handle_state_change(arg_previous_state, arg_new_state):nothing - handle state changes (to be implemented in sub classes)
+	 * 		->register_state_value_change_handle(arg_path, arg_listener):nothing - Register a state value change listener.
+	 * 
 	 * 		->dispatch_action(arg_action_type, arg_options):nothing - dispatch state changes actions.
+	 * 
 	 * 		->get_name():string - get instance name.
 	 * 
 	 * @param {object} arg_settings - settings plain object
@@ -50,11 +55,19 @@ export default class Stateable extends Settingsable
 		this.is_component = true
 		
 		this.runtime = arg_runtime
-		this.initial_state = arg_state
+		this._initial_state = arg_state
 		this._state_store = this.runtime.get_state_store()
 		assert( T.isObject(this._state_store), context + ':constructor:bad state_store object')
-		this.state_path = undefined
 		
+		// SET STATE PATH
+		this.state_path = undefined
+		if ( arg_state && T.isFunction(arg_state.has) && T.isFunction(arg_state.get) && arg_state.has('state_path') )
+		{
+			this.state_path = arg_state.get('state_path').toArray()
+		}
+
+		this._state_value_listeners = []
+
 		// console.info(context + ':constructor:creating component ' + this.get_name())
 	}
 	
@@ -63,11 +76,30 @@ export default class Stateable extends Settingsable
 	/**
 	 * Get initial state, an immutable object from a Redux data store.
 	 * 
-	 * @returns {object} - component state.
+	 * @returns {Immutable.Map} - component state.
 	 */
 	get_initial_state()
 	{
-		return this.initial_state
+		return this._initial_state
+	}
+	
+	
+	
+	/**
+	 * Get current state, an immutable object from a Redux data store.
+	 * 
+	 * @returns {Immutable.Map} - component state.
+	 */
+	get_state()
+	{
+		const path = this.state_path
+		
+		// console.log(context + ':get_state', this._state_store.get_state().toJS())
+		// console.log(context + ':state_path', this.state_path)
+		// console.log(context + ':state', this._state_store.get_state().getIn(path))
+		// console.log(context + ':state js', this._state_store.get_state().getIn(path).toJS())
+		
+		return this._state_store.get_state().getIn(path)
 	}
 	
 	
@@ -77,15 +109,17 @@ export default class Stateable extends Settingsable
 	 * 
 	 * @returns {object} - component state.
 	 */
-	get_state()
+	get_state_js()
 	{
 		const path = this.state_path
 		
-		// console.log('component:get_state', this.runtime.get_state().toJS())
-		// console.log('component:state_path', this.state_path)
-		// console.log('component:state', this.runtime.get_state().getIn(path).toJS())
+		// console.log(context + ':get_state', this._state_store.get_state().toJS())
+		console.log(context + ':state_path', this.state_path)
+		console.log(context + ':state', this._state_store.get_state().getIn(path))
+		console.log(context + ':state js', this._state_store.get_state().getIn(path).toJS())
 		
-		return this._state_store.get_state().getIn(path)
+		const state = this._state_store.get_state().getIn(path)
+		return state & state.toJS ? state.toJS() : {}
 	}
 	
 	
@@ -129,7 +163,7 @@ export default class Stateable extends Settingsable
 		if ( T.isString(arg_key_or_path) )
 		{
 			const value = state.has(arg_key_or_path) ? state.get(arg_key_or_path) : arg_default_value
-			return T.isFunction(value.toJS) ? value.toJS() : value
+			return value && T.isFunction(value.toJS) ? value.toJS() : value
 		}
 
 		if ( T.isArray(arg_key_or_path) )
@@ -145,18 +179,62 @@ export default class Stateable extends Settingsable
 	
 	/**
 	 * Handle component state changes.
-	 * @abstract
 	 * 
 	 * @param {Immutable.Map} arg_previous_state - previous state map.
 	 * @param {Immutable.Map} arg_new_state - new state map.
 	 * 
 	 * @returns {nothing}
 	 */
-	handle_state_change(/*arg_previous_state, arg_new_state*/)
+	handle_state_change(arg_previous_state, arg_new_state)
 	{
-		// IMPLEMENTED IN SUB CLASSES
+		if ( T.isArray(this._state_value_listeners) && this._state_value_listeners.length > 0 )
+		{
+			this._state_value_listeners.forEach(
+				(handle)=>{
+					const prev_value = arg_previous_state.getIn(handle.path)
+					const new_value = arg_new_state.getIn(handle.path)
+
+					// console.log(context + ':handle_state_change', prev_value, new_value)
+
+					if ( ! Immutable.is(prev_value, new_value) )
+					{
+						handle.listener(handle.path, prev_value, new_value)
+					}
+				}
+			)
+		}
 	}
-	
+
+
+
+	/**
+	 * Register a state value change listener.
+	 * 
+	 * @param {string|array} arg_path - component state value path array or string with a dot separator.
+	 * @param {string|function} arg_listener - state value change listener, function or method name.
+	 * 
+	 * @returns {nothing}
+	 */
+	register_state_value_change_handle(arg_path, arg_listener)
+	{
+		// CHECK PATH
+		if ( T.isString(arg_path) )
+		{
+			arg_path = arg_path.split('.')
+		}
+		assert( T.isArray(arg_path), context + ':handle_state_path_change:bad path array')
+
+		// CHECK LISTENER
+		if ( T.isString(arg_listener) )
+		{
+			assert( arg_listener in (this), context + ':handle_state_path_change:listerner method string not found')
+			arg_listener = this[arg_listener].bind(this)
+		}
+		assert( T.isFunction(arg_listener), context + ':handle_state_path_change:bad listener function')
+		
+		this._state_value_listeners.push( { path:arg_path, listener:arg_listener })
+	}
+
 	
 	
 	/**
@@ -205,10 +283,10 @@ export default class Stateable extends Settingsable
 	/**
 	 * Get name.
 	 * 
-	 * @returns {string} - component name.
+	 * @returns {string} - instance name.
 	 */
 	get_name()
 	{
-		return this.initial_state['name']
+		return this.get_state_value('name', undefined)
 	}
 }
