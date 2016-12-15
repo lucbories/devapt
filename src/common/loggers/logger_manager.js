@@ -49,50 +49,51 @@ export default class LoggerManager
 	{
 		// console.log(arg_settings, context + ':arg_settings')
 		
-		if (! this.is_client_runtime)
+		
+		if (this.loggers.length > 0)
 		{
-			if (this.loggers.length > 0)
-			{
-				const old_loggers = this.loggers
-				old_loggers.forEach(
-					(logger, index) => {
-						delete this.loggers[index]
-					}
-				)
-				this.loggers = []
-			}
-
-			let runtime = undefined
-
-			if (is_server())
-			{
-				runtime = require(server_runtime_file).default
-			}
-
-			else if (is_browser())
-			{
-				runtime = window.devapt().runtime()
-			}
-
-			if (runtime.node)
-			{
-				this.loggers.push( new LoggerMsgPost(true, runtime.node.get_logs_bus().get_input_stream()) )
-				// this.info('msg logger created')
-			}
-
-			if ( T.isObject(arg_settings) && ('console' in arg_settings) )
-			{
-				const LoggerConsole = require('./logger_console').default
-				// console.log('add console logger')
-				this.loggers.push( new LoggerConsole(true, arg_settings['console']) )
-			}
-			if ( T.isObject(arg_settings) && ('winston' in arg_settings) )
-			{
-				const LoggerWinston = require('./logger_winston').default
-				// console.log('add winston logger')
-				this.loggers.push( new LoggerWinston(true, arg_settings['winston']) )
-			}
+			const old_loggers = this.loggers
+			old_loggers.forEach(
+				(logger, index) => {
+					delete this.loggers[index]
+				}
+			)
+			this.loggers = []
 		}
+
+		// GET RUNTIME
+		let runtime = undefined
+		if (is_server())
+		{
+			runtime = require(server_runtime_file).default
+		}
+		else if (is_browser())
+		{
+			runtime = window.devapt().runtime()
+		}
+
+
+		// ADD LOGGER ADAPTERS
+		if (runtime.node)
+		{
+			this.loggers.push( new LoggerMsgPost(true, runtime.node.get_logs_bus().get_input_stream()) )
+			// this.info('msg logger created')
+		}
+
+		if ( T.isObject(arg_settings) && ('console' in arg_settings) )
+		{
+			const LoggerConsole = require('./logger_console').default
+			// console.log('add console logger')
+			this.loggers.push( new LoggerConsole(true, arg_settings['console']) )
+		}
+
+		if ( is_server() && T.isObject(arg_settings) && ('winston' in arg_settings) )
+		{
+			const LoggerWinston = require('./logger_winston').default
+			// console.log('add winston logger')
+			this.loggers.push( new LoggerWinston(true, arg_settings['winston']) )
+		}
+		
 		
 		this.$settings = arg_settings
 	}

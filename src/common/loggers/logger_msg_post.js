@@ -34,9 +34,11 @@ export default class LoggerMessagePost extends Logger
 	
 	
 	/**
-	 * Logger DEBUG implementation.
+	 * Logger implementation.
+	 * 
 	 * @param {string} arg_level - log level string.
-	 * @param {string} arg_msg - message string.
+	 * @param {string} arg_text - message string.
+	 * 
 	 * @returns {nothing}
 	 */
 	process(arg_level, arg_text)

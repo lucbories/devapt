@@ -76,11 +76,13 @@ const merge = Ramda.merge
  */
 export const extract = (arg_field_config) => {
 	// console.log(arg_field_config, context + ':extract:arg_field_config')
+
 	assert( T.isObject(arg_field_config), context + ':flat:bad field object')
 	
 	const field_name = prop_default('unnamed field', 'name', arg_field_config)
 	const field_path = prop_default(undefined, 'path', arg_field_config)
 	const field_value = prop_default(undefined, 'value', arg_field_config)
+
 	// console.log(field_name, context + ':extract:field_name')
 	// console.log(field_path, context + ':extract:field_path')
 	// console.log(field_value, context + ':extract:field_value')
@@ -132,6 +134,7 @@ export const extract = (arg_field_config) => {
 	// XFORM = VALUE FROM STRING PATH
 	if ( T.isString(field_path) )
 	{
+		// console.log('transform:value_extractor:value for field=%s path=%s', field_name, field_path)
 		const value_extractor = {
 			name:field_name,
 			extract:validate_method( prop(field_path) )
@@ -162,7 +165,16 @@ export const extract = (arg_field_config) => {
 	// RETURN PROPERTY WITH KEY = NAME
 	const value_extractor = {
 		name:field_name,
-		extract:validate_method( prop_default(default_value, field_name) )
+		extract:validate_method(
+			(value)=>{
+				// console.log('transform:value_extractor:value for field=%s:', field_name, value)
+				if ( T.isObject(value) )
+				{
+					return prop_default(default_value, field_name)(value)
+				}
+				return T.isUndefined(value) ? default_value : value
+			}
+		)
 	}
 	
 	return value_extractor
