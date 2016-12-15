@@ -5,20 +5,19 @@ import Bacon from 'baconjs'
 import { fromJS } from 'immutable'
 
 // COMMON IMPORTS
-import Credentials from '../common/base/credentials'
-import ReduxStore from '../common/state_store/redux_store'
-import RuntimeBase from '../common/base/runtime_base'
-// import LoggerManager from '../common/loggers/logger_manager'
+import Credentials from '../../common/base/credentials'
+import ReduxStore from '../../common/state_store/redux_store'
+import RuntimeBase from '../../common/base/runtime_base'
 
 // BROWSER IMPORTS
-import ConsoleLogger from './console_logger'
-import StreamLogger from './stream_logger'
+import ConsoleLogger from '../loggers/console_logger'
+import StreamLogger from '../loggers/stream_logger'
 import Service from './service'
 import UI from './ui'
 import Router from './router'
 
 
-let context = 'browser/runtime'
+let context = 'browser/runtime/client_runtime'
 
 
 
@@ -65,7 +64,28 @@ export default class ClientRuntime extends RuntimeBase
 		
 		const stream_logger = new StreamLogger(undefined, true)
 		this.get_logger_manager().loggers.push(stream_logger)
-		
+
+		stream_logger.get_stream().subscribe(
+			(arg_log)=>{
+				console.log(context + ':stream_logger:logs', arg_log)
+				if (this._state_store)
+				{
+					const logs_array = []
+					const ts = arg_log.ts
+					const level = arg_log.level
+					arg_log.logs.forEach(
+						(log)=>logs_array.push([ts, level, log])
+					)
+					const action = {
+						type:'ADD_JSON_LOGS',
+						logs:logs_array
+					}
+					this._state_store.dispatch(action)
+				}
+			}
+		)
+
+		this.logs_stream = stream_logger.get_stream()
 		
 		this.is_browser_runtime = true
 		
@@ -78,7 +98,7 @@ export default class ClientRuntime extends RuntimeBase
 		this.info('Client Runtime is created')
 
 		this.disable_trace()
-		this.update_trace_enabled()
+		// this.update_trace_enabled()
 	}
 	
 	
@@ -402,6 +422,14 @@ export default class ClientRuntime extends RuntimeBase
 		return (arg_previous_state, arg_action) => {
 			this.info('reducer 1:type=' + arg_action.type + ' for ' + arg_action.component)
 			
+			// ADD LOG RECORD
+			if ( T.isString(arg_action.type) && arg_action.type == 'ADD_JSON_LOGS' && T.isArray(arg_action.logs) )
+			{
+				const path = ['logs', 'state', 'items']
+				const logs = arg_previous_state.getIn(path, []).concat(arg_action.logs)
+				return arg_previous_state.setIn(path, logs)
+			}
+
 			// ADD JSON RESOURCE SETTINGS
 			if ( T.isString(arg_action.type) && arg_action.type == 'ADD_JSON_RESOURCE' && T.isString(arg_action.resource) && T.isObject(arg_action.json) )
 			{

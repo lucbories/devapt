@@ -1,5 +1,5 @@
 
-import Logger from '../common/loggers/logger'
+import Logger from '../../common/loggers/logger'
 
 
 

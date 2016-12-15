@@ -1,12 +1,13 @@
-
+// NPM IMPORTS
 import T from 'typr'
 import assert from 'assert'
-
 import { fromJS } from 'immutable'
+
+// BROWSER IMPORTS
 import Component from './component'
 
 
-const context = 'browser/components/container'
+const context = 'browser/base/container'
 
 
 
@@ -425,7 +426,7 @@ export default class Container extends Component
 			
 			if ( T.isFunction(this.strategy_update) )
 			{
-				const new_items = arg_new_state.get('items').toArray()
+				const new_items = arg_new_state.get('items').toJS()
 				
 				this.strategy_update(new_items)
 			}
@@ -446,7 +447,7 @@ export default class Container extends Component
 			{
 				// console.info(context + ':handle_state_change:update items')
 				
-				const new_items = arg_new_state.get('items').toArray()
+				const new_items = arg_new_state.get('items').toJS()
 				
 				if (new_items.length == 0)
 				{

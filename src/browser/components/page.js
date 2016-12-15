@@ -2,12 +2,9 @@
 // import T from 'typr'
 // import assert from 'assert'
 import vdom_parser from 'vdom-parser'
-// import document from 'global/document'
-
 import diff from 'virtual-dom/diff'
 import patch from 'virtual-dom/patch'
 import create_element from 'virtual-dom/create-element'
-
 import VNode from 'virtual-dom/vnode/vnode'
 import VText from 'virtual-dom/vnode/vtext'
 import html_to_vdom from 'html-to-vdom'
@@ -16,12 +13,12 @@ import html_to_vdom from 'html-to-vdom'
 // import Credentials from '../../common/base/credentials'
 
 const convertHTML = html_to_vdom({
-    VNode: VNode,
-    VText: VText
+	VNode: VNode,
+	VText: VText
 })
 
 
-let context = 'browser/components/page'
+// let context = 'browser/components/page'
 
 
 

@@ -1,10 +1,12 @@
-
+// NPM IMPORTS
 import T from 'typr'
 import assert from 'assert'
 
 // COMMON IMPORTS
 import uid from '../../common/utils/uid'
-import Component from './component'
+
+// BROWSER IMPORTS
+import Component from '../base/component'
 
 
 const context = 'browser/components/table_tree'

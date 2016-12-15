@@ -9,9 +9,10 @@ import uid from '../../common/utils/uid.js'
 // BROWSER IMPORTS
 import Stateable from '../../common/base/stateable'
 import Binding from './binding'
+import Rendering from './rendering'
 
 
-const context = 'browser/components/component'
+const context = 'browser/base/component'
 
 
 
@@ -49,16 +50,13 @@ export default class Component extends Stateable
 			this._name = 'component_' + uid()
 		}
 
-		// SET DOM ID
-		this._dom_id = arg_state.get('dom_id', this._name)
-		this._dom_element = document.getElementById(this._dom_id)
-		this._dom_vnode = undefined
-
 		// CHILDREN COMPONENTS
 		this._children_components = undefined
 
+		this.is_loaded = false
 		this._bindings = {}
-		this._runtime = this.runtime
+		this._runtime = this.get_runtime()
+		this._rendering = new Rendering(this, arg_state.get('dom_id', this._name))
 
 		// console.info(context + ':constructor:creating component ' + this.get_name())
 	}
@@ -78,11 +76,25 @@ export default class Component extends Stateable
 	
 	
 	/**
-	 * Get DOM id
+	 * Get DOM id.
+	 * 
+	 * @returns {string} - component DOM id.
 	 */
 	get_dom_id()
 	{
-		return this._dom_id
+		return this._rendering.get_dom_id()
+	}
+	
+	
+	
+	/**
+	 * Test DOM Element instance.
+	 * 
+	 * @returns {boolean}
+	 */
+	has_dom_element()
+	{
+		return this._rendering.has_dom_element()
 	}
 	
 	
@@ -92,34 +104,59 @@ export default class Component extends Stateable
 	 */
 	get_dom_element()
 	{
-		if (this._dom_id && ! this._dom_element)
-		{
-			this._dom_element = document.getElementById(this._dom_id)
-		}
-		return this._dom_element
+		return this._rendering.get_dom_element()
+	}
+	
+	
+	
+	/**
+	 * Set DOM element.
+	 * 
+	 * @param {Element} arg_element - element instance.
+	 * 
+	 * @returns {nothing}
+	 */
+	set_dom_element(arg_element)
+	{
+		this._rendering.set_dom_element(arg_element)
+	}
+	
+	
+	
+	/**
+	 * Test DOM Virtual Node.
+	 * 
+	 * @returns {boolean}
+	 */
+	has_dom_vnode()
+	{
+		return this._rendering.has_dom_vnode()
 	}
 	
 	
 	
 	/**
 	 * Get DOM Virtual Node.
+	 * 
+	 * @returns {VNode}
 	 */
 	get_dom_vnode()
 	{
-		return this._dom_vnode
+		return this._rendering.get_dom_vnode()
 	}
 	
 	
 	
 	/**
-	 * Get DOM Virtual Node.
+	 * Set DOM Virtual Node.
+	 * 
+	 * @param {VNode} arg_vnode - VNode instance.
+	 * 
+	 * @returns {nothing}
 	 */
 	set_dom_vnode(arg_vnode)
 	{
-		if ( T.isObject(arg_vnode) )
-		{
-			this._dom_vnode = arg_vnode
-		}
+		this._rendering.set_dom_vnode(arg_vnode)
 	}
 
 
@@ -164,6 +201,31 @@ export default class Component extends Stateable
 		// TODO: request rendering html on the server
 		console.error('browser/component:render:not yet implemented')
 	}
+	
+	
+	
+	/**
+	 * PROCESS RENDERING VNODE: CREATE OR UPDATE DOM ELEMENT.
+	 */
+	process_rendering_vnode(arg_rendering_result, arg_credentials)
+	{
+		this._rendering.process_rendering_vnode(arg_rendering_result, arg_credentials)
+
+		// PROCESS CHILDREN
+		// ...
+	}
+
+
+
+	/**
+	 * Save rendering virtul node. Update component VNode with current component HTML.
+	 * 
+	 * @returns {nothing}
+	 */
+	save_rendering()
+	{
+		this._rendering.save_rendering()
+	}
 
 
 
@@ -174,17 +236,21 @@ export default class Component extends Stateable
 	 */
 	update()
 	{
-		console.log(this.get_name(), context + ':update:this.get_name()')
-		// console.log(this.get_dom_id(), context + ':update:this.get_dom_id()')
+		this.debug(':update:name=' + this.get_name() + ',dom_id=' + this.get_dom_id() )
 
-		var new_elm = document.getElementById(this._dom_id)
+		var new_elm = document.getElementById(this.get_dom_id())
 		var prev_elm = this.get_dom_element()
 		// console.log(prev_elm, context + ':update:prev_elm')
 		// console.log(new_elm,  context + ':update:new_elm')
 
+		if (!new_elm)
+		{
+			return
+		}
+
 		if (prev_elm != new_elm)
 		{
-			console.log(context + ':update:prev_elm <> new_elm')
+			this.debug(':update:prev_elm <> new_elm')
 			if (prev_elm.parentNode)
 			{
 				prev_elm.parentNode.removeChild(prev_elm)
@@ -194,7 +260,7 @@ export default class Component extends Stateable
 		
 		if ( T.isFunction(this._update_self) )
 		{
-			console.log(context + ':update:call _update_self')
+			this.debug(':update:call _update_self')
 			this._update_self(prev_elm, new_elm)
 		}
 
@@ -210,50 +276,13 @@ export default class Component extends Stateable
 	 */
 	update_children()
 	{
-		console.log(context + ':update_children')
+		this.debug(':update_children')
 		this.get_children_component().forEach(
 			(component)=>{
-				console.log(context + ':update_children:component=' + component.get_name())
+				this.debug(':update_children:component=' + component.get_name())
 				component.update()
 			}
 		)
-	}
-
-
-
-	/**
-	 * Get view children components.
-	 * 
-	 * @returns {array} - list of Component.
-	 */
-	get_children_component()
-	{
-		if ( ! this._children_component)
-		{
-			this._children_component = []
-
-			const items = this.get_state_value('items', [])
-			console.log(context + ':get_children_component:init with items:', items)
-
-			items.forEach(
-				(item)=>{
-					console.log(context + ':get_children_component:loop on item:', item)
-					if ( T.isString(item) )
-					{
-						const component = window.devapt().ui(item)
-						if (component && component.is_component)
-						{
-							this._children_component.push(component)
-							return
-						}
-					}
-				}
-			)
-		}
-
-		
-		console.log(context + ':get_children_component:', this._children_component)
-		return this._children_component
 	}
 
 
@@ -294,12 +323,18 @@ export default class Component extends Stateable
 	 */
 	load(arg_state)
 	{
+		if (this.is_loaded)
+		{
+			console.info(context + ':load:already loaded component ' + this.get_name())
+			return
+		}
+
 		const self = this
-		// console.info(context + ':load:loading component ' + this.get_name())
+		console.info(context + ':load:loading component ' + this.get_name())
 		
 		if (! this.store_unsubscribe)
 		{
-			this.store_unsubscribe = this.runtime.create_store_observer(this)
+			this.store_unsubscribe = this.get_runtime().create_store_observer(this)
 		}
 		
 		const state = arg_state ? arg_state : this.get_state()
@@ -317,14 +352,43 @@ export default class Component extends Stateable
 			{
 				bindings.services.forEach(
 					(bind_cfg) => {
-						bind_cfg.type = bind_cfg.timeline ? 'timeline' : 'service'
+						bind_cfg.type = bind_cfg.timeline ? 'timeline' : (bind_cfg.dom_event ? 'emitter_jquery' : 'service')
 						const id = 'binding_' + uid()
 						this._bindings[id] = new Binding(id, this._runtime, this)
 						this._bindings[id].load(bind_cfg)
 					}
 				)
 			}
-			
+
+			if ( T.isArray(bindings.streams) )
+			{
+				bindings.streams.forEach(
+					(bind_cfg) => {
+						console.log(context + ':load:stream binding:', bind_cfg)
+						let stream = bind_cfg.source_stream ? bind_cfg.source_stream : undefined
+						
+						if ( T.isString(stream) )
+						{
+							switch(stream.toLocaleLowerCase()) {
+								case 'logs': stream = this._runtime.logs_stream; break
+								default:
+									console.log(context + ':load:stream binding:unknow named stream', stream.toLocaleLowerCase())
+									stream = undefined
+							}
+						}
+
+						if ( T.isObject(stream) && stream.is_stream )
+						{
+							bind_cfg.type = 'stream'
+							bind_cfg.source_stream = stream
+							const id = 'binding_' + uid()
+							this._bindings[id] = new Binding(id, this._runtime, this)
+							this._bindings[id].load(bind_cfg)
+							console.log(context + ':load:stream bound:', id, bind_cfg)
+						}
+					}
+				)
+			}
 			
 			if ( T.isArray(bindings.dom) )
 			{
@@ -338,6 +402,8 @@ export default class Component extends Stateable
 				)
 			}
 		}
+
+		this.is_loaded = true
 	}
 	
 	
@@ -378,7 +444,7 @@ export default class Component extends Stateable
 	dispatch_update_state_action(arg_new_state)
 	{
 		const new_state = arg_new_state.toJS()
-		console.log(context + ':dispatch_update_state_action:new state:', new_state)
+		// console.log(context + ':dispatch_update_state_action:new state:', new_state)
 
 		const action = { type:'ADD_JSON_RESOURCE', resource:this.get_name(), path:this.get_state_path(), json:new_state }
 		window.devapt().ui().store.dispatch(action)
@@ -396,9 +462,46 @@ export default class Component extends Stateable
 	 */
 	dispatch_update_state_value_action(arg_path, arg_value)
 	{
-		console.log(context + ':dispatch_update_state_value_action:path,value:', arg_path, arg_value)
+		// console.log(context + ':dispatch_update_state_value_action:path,value:', arg_path, arg_value)
 		
 		const new_state = this.get_state().setIn(arg_path, arg_value)
 		this.dispatch_update_state_action(new_state)
+	}
+
+
+
+	/**
+	 * Get view children components.
+	 * 
+	 * @returns {array} - list of Component.
+	 */
+	get_children_component()
+	{
+		if ( ! this._children_component)
+		{
+			this._children_component = []
+
+			const items = this.get_state_value('items', [])
+			this.debug(':get_children_component:init with items:', items)
+
+			items.forEach(
+				(item)=>{
+					this.debug(':get_children_component:loop on item:', item)
+					if ( T.isString(item) )
+					{
+						const component = window.devapt().ui(item)
+						if (component && component.is_component)
+						{
+							this._children_component.push(component)
+							return
+						}
+					}
+				}
+			)
+		}
+
+		
+		this.debug(':get_children_component:', this._children_component)
+		return this._children_component
 	}
 }

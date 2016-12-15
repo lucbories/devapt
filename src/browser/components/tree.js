@@ -1,8 +1,9 @@
-
+// NPM IMPORTS
 import T from 'typr'
 import assert from 'assert'
 
-import Component from './component'
+// BROWSER IMPORTS
+import Component from '../base/component'
 
 
 const context = 'browser/components/tree'

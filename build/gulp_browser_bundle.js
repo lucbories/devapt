@@ -23,6 +23,12 @@ const browserify_settings = {
 module.exports = function (gulp, plugins, arg_task_name)
 {
 	var bundler = browserify(browserify_settings)
+	// bundler.transform(
+	// 	{
+	// 		global: true
+	// 	},
+	// 	'uglifyify'
+	// )
 
 	gulp.task(arg_task_name, bundle)
 
@@ -30,9 +36,11 @@ module.exports = function (gulp, plugins, arg_task_name)
 		bundler
 			.ignore('sequelize')
 			.ignore('restify')
+			.ignore('winston')
+			.ignore('passport')
 			.ignore('socket.io')
 			.ignore('node-forge')
-			.require('./dist/browser/client_runtime.js', { expose:'client_runtime' } )
+			.require('./dist/browser/runtime/client_runtime.js', { expose:'client_runtime' } )
 			.require('./public/js/forge.min.js', { expose:'forge-browser' } )
 		
 		var stream = bundler.bundle()

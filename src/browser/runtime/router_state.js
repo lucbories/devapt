@@ -1,13 +1,13 @@
 // NPM IMPORTS
 import T from 'typr'
-import assert from 'assert'
+// import assert from 'assert'
 import { fromJS } from 'immutable'
 
 // COMMON IMPORTS
-import Stateable from '../common/base/stateable'
+import Stateable from '../../common/base/stateable'
 
 
-const context = 'browser/router_state'
+const context = 'browser/runtime/router_state'
 
 
 

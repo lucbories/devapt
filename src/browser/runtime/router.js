@@ -8,7 +8,7 @@ import Hasher from 'hasher'
 import RouterState from './router_state'
 
 
-const context = 'browser/router'
+const context = 'browser/runtime/router'
 
 
 

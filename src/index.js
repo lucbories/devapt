@@ -1,14 +1,16 @@
-// SERVER IMPORTS
-import runtime from './server/base/runtime'
+// COMMON IMPORTS
 import RenderingBuilder from './common/rendering/rendering_builder'
+import RenderingPlugin from './common/plugins/rendering_plugin'
+import DefaultRenderingPlugin from './common/default_plugins/rendering_default_plugin'
+
+// BROWSER IMPORTS
 import Component from './browser/components/component'
 import Container from './browser/components/container'
 
-import RenderingPlugin from './common/plugins/rendering_plugin'
+// SERVER IMPORTS
+import runtime from './server/base/runtime'
 import ServicesPlugin from './server/plugins/services_plugin'
 import ServersPlugin from './server/plugins/servers_plugin'
-
-import DefaultRenderingPlugin from './common/default_plugins/rendering_default_plugin'
 import DefaultServicesPlugin from './server/default_plugins/services_default_plugin'
 
 

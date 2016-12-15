@@ -3,7 +3,7 @@ import T from 'typr'
 import assert from 'assert'
 
 // BROWSER IMPORTS
-import Component from './component'
+import Component from '../base/component'
 
 
 const context = 'browser/components/topology'

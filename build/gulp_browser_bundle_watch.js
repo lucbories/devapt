@@ -34,19 +34,29 @@ module.exports = function (gulp, plugins, arg_task_name)
 	gulp.task(arg_task_name, bundle)
 	
 	var bundler = watchify( browserify(opts) )
-
-	bundler.on('update', bundle); // on any dep update, runs the bundler
-	bundler.on('log', plugins.util.log); // output build logs to terminal
+	
 	bundler
 		.ignore('sequelize')
 		.ignore('restify')
 		.ignore('socket.io')
 		.ignore('node-forge')
-		.require('./dist/browser/client_runtime.js', { expose:'client_runtime' } )
+		.require('./dist/browser/runtime/client_runtime.js', { expose:'client_runtime' } )
 		.require('./public/js/forge.min.js', { expose:'forge-browser' } )
 
+
+	bundler.on('update', bundle); // on any dep update, runs the bundler
+	bundler.on('log', plugins.util.log); // output build logs to terminal
+	
 	function bundle() {
 		console.log('A browser file was changed, running task [%s]', arg_task_name)
+
+		// bundler
+		// 	.ignore('sequelize')
+		// 	.ignore('restify')
+		// 	.ignore('socket.io')
+		// 	.ignore('node-forge')
+		// 	.require('./dist/browser/client_runtime.js', { expose:'client_runtime' } )
+		// 	.require('./public/js/forge.min.js', { expose:'forge-browser' } )
 		
 		var stream = bundler.bundle()
 			.on('error', plugins.util.log.bind(plugins.util, 'Browserify Error'))
@@ -62,7 +72,7 @@ module.exports = function (gulp, plugins, arg_task_name)
 			.pipe( plugins.sourcemaps.init() )
 			.pipe( plugins.sourcemaps.write('.') )
 			.pipe( gulp.dest(DST) )
-			.pipe( plugins.livereload() )
+			// .pipe( plugins.livereload() )
 		
 		return stream
 	}

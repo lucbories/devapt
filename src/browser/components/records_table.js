@@ -1,7 +1,8 @@
-
+// NPM IMPORTS
 import T from 'typr'
 // import assert from 'assert'
 
+// BROWSER IMPORTS
 import Table from './table'
 
 

@@ -1,8 +1,9 @@
-
+// NPM IMPORTS
 import T from 'typr'
 import assert from 'assert'
 
-import Container from './container'
+// BROWSER IMPORTS
+import Container from '../base/container'
 
 
 const context = 'browser/components/table'
@@ -149,8 +150,8 @@ export default class Table extends Container
 	 */
 	ui_items_prepend(arg_items_array)
 	{
-		// console.log(context + ':ui_items_prepend:arg_items_array', arg_items_array)
-		this.info('prepend a row')
+		console.log(context + ':ui_items_prepend:arg_items_array', arg_items_array.length)
+		// this.info('prepend a row')
 		
 		// TODO : update strategy: cleat and replace, update by counts comparison, update by ids comparison...
 		// this.ui_items_clear()
@@ -206,7 +207,7 @@ export default class Table extends Container
 	 */
 	ui_items_remove_last(arg_count)
 	{
-		// console.log(context + ':ui_items_remove_last:arg_count', arg_count)
+		console.log(context + ':ui_items_remove_last:arg_count', arg_count)
 		
 		if (arg_count <= 0)
 		{
@@ -226,6 +227,42 @@ export default class Table extends Container
 		$('tr:gt(' + last + ')', table_body).remove()
 	}
 	
+	
+	
+	/**
+	 * Build a row.
+	 *
+	 * @param {array} arg_row_array - row values array.
+	 * @param {integer} arg_row_index - row index.
+	 * @param {integer} arg_max_cols - max columns number.
+	 * 
+	 * @returns {string} - HTML TR string
+	 */
+	build_row(arg_row_array, arg_row_index, arg_max_cols)
+	{
+		let html_row = '<tr>'
+		
+		// console.log(context + ':build_row:rows_index=%i', row_index, row_array, arg_max_cols)
+		
+		if( ! T.isArray(arg_row_array) )
+		{
+			console.warn(context + ':build_row:row_array is not an array at rows_index=%i', arg_row_index, arg_row_array)
+			return
+		}
+
+		arg_row_array.forEach(
+			(cell, index) => {
+				if (arg_max_cols && index > arg_max_cols)
+				{
+					return
+				}
+				html_row += '<td>' + cell + '</td>'
+			}
+		)
+		
+		html_row += '</tr>'
+		return html_row
+	}
 	
 	
 	
@@ -260,33 +297,21 @@ export default class Table extends Container
 		
 		arg_rows_array.forEach(
 			(row_array, row_index) => {
-				let html_row = '<tr>'
-				
-				// console.log(context + ':update_rows:rows_index=%i', row_index, row_array)
-				
-				row_array.forEach(
-					(cell, index) => {
-						if (max_cols && index > max_cols)
-						{
-							return
-						}
-						html_row += '<td>' + cell + '</td>'
-					}
-				)
-				
-				html_row += '</tr>'
+
+				const html_row = this.build_row(row_array, row_index, max_cols)
+				// if (this.is_logs_table_component) console.log('html_row', html_row)
 				
 				if (max_rows && (rows_count + row_index) > max_rows)
 				{
 					if (max_rows_action == 'remove_bottom')
 					{
 						// TODO
-						console.log('TODO remove_bottom')
+						console.warn('TODO remove_bottom')
 					}
 					else if (max_rows_action == 'remove_top')
 					{
 						// TODO
-						console.log('TODO remove_top')
+						console.warn('TODO remove_top')
 					}
 					else
 					{
@@ -294,6 +319,8 @@ export default class Table extends Container
 					}
 					
 				}
+
+				// console.log(context + ':update_rows:rows_index=%i mode=%s', row_index, arg_options.mode, table_body)
 				if (arg_options.mode == 'prepend')
 				{
 					table_body.prepend(html_row)

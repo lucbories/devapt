@@ -2,8 +2,8 @@
 import T from 'typr'
 import assert from 'assert'
 
-// COMPONENT IMPORTS
-import Component from './component'
+// BROWSER IMPORTS
+import Component from '../base/component'
 
 
 const plugin_name = 'Sparklines' 
@@ -71,7 +71,7 @@ export default class Sparklines extends Component
 						const values = this.get_state_value('items', [])
 						// console.log(context + ':update:values', values)
 
-						if ( T.isArray(values) )
+						if ( T.isArray(values) && values.length > 0 )
 						{
 							this.sparkline.draw(values)
 						}
@@ -82,7 +82,7 @@ export default class Sparklines extends Component
 				console.log(context + ':_update_self:create Sparkline')
 				const values = this.get_state_value('items', [])
 				this.sparkline = new window.Sparkline(arg_new_element, this.options)
-				if ( T.isArray(values) )
+				if ( T.isArray(values) && values.length > 0 )
 				{
 					this.sparkline.draw(values)
 				}
@@ -98,7 +98,7 @@ export default class Sparklines extends Component
 		if (this.sparkline)
 		{
 			const values = arg_new_value && arg_new_value.toJS() ? arg_new_value.toJS() : []
-			if ( T.isArray(values) )
+			if ( T.isArray(values) && values.length > 0 )
 			{
 				this.sparkline.draw(values)
 			}

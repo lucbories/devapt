@@ -1,11 +1,13 @@
+// NPM IMPORTS
 import T from 'typr'
 import assert from 'assert'
-
 import Bacon from 'baconjs'
-import { transform } from '../common/utils/transform'
+
+// COMMON IMPORTS
+import { transform } from '../../common/utils/transform'
 
 
-let context = 'browser/service'
+let context = 'browser/runtime/service'
 
 
 /**
@@ -269,7 +271,7 @@ export default class Service
 				}
 
 				self[op_name] = (method_cfg) => {
-					console.log(context + ':op:%s:%s:cfg=', this.get_name(), op_name, method_cfg)
+					// console.log(context + ':op:%s:%s:cfg=', this.get_name(), op_name, method_cfg)
 
 					// DEFINE REQUEST PAYLOAD
 					const payload = {

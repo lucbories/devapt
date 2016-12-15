@@ -1,8 +1,9 @@
-
+// NPM IMPORTS
 import T from 'typr'
-import assert from 'assert'
+// import assert from 'assert'
 
-import Container from './container'
+// BROWSER IMPORTS
+import Container from '../base/container'
 
 
 const context = 'browser/components/tabs'
