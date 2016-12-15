@@ -54,10 +54,12 @@ const from_string = (arg_item, arg_rendering_context=undefined)=>{
 
 const from_object = (arg_item, arg_rendering_context=undefined)=>{
 
-	const type     = T.isString(arg_item.type)     ? arg_item.type.toLocaleLowerCase() : (T.isString(arg_item.class_name) ? arg_item.class_name.toLocaleLowerCase() : undefined)
-	const settings = T.isObject(arg_item.settings) ? arg_item.settings : {}
-	const state    = T.isObject(arg_item.state)    ? arg_item.state : undefined
-	const children = T.isObject(arg_item.children) ? arg_item.children : {}
+	const rendering = T.isString(arg_item.rendering) ? arg_item.rendering : undefined
+	const item_type = T.isString(arg_item.type)     ? arg_item.type.toLocaleLowerCase() : (T.isString(arg_item.class_name) ? arg_item.class_name.toLocaleLowerCase() : undefined)
+	const settings  = T.isObject(arg_item.settings) ? arg_item.settings : {}
+	const state     = T.isObject(arg_item.state)    ? arg_item.state : undefined
+	const children  = T.isObject(arg_item.children) ? arg_item.children : {}
+	const type      = rendering ? rendering : item_type
 
 	// DEBUG
 	// debugger

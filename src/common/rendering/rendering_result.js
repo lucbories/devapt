@@ -134,7 +134,7 @@ export default class RenderingResult
 	 */
 	add_html(arg_tag_id, arg_html)
 	{
-		assert( T.isString(arg_tag_id) && arg_tag_id.length > 0, context + ':set_vtree:bad tag id string')
+		assert( T.isString(arg_tag_id) && arg_tag_id.length > 0, context + ':add_html:bad tag id string')
 		assert( T.isString(arg_html), context + ':set_html:bad html string')
 		this.vtrees[arg_tag_id] = vdom_to_json( convertHTML(arg_html) )
 	}
