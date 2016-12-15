@@ -2,10 +2,12 @@
 import T from 'typr'
 import assert from 'assert'
 
+// COMMON IMPORTS
+import Stream from '../../../common/messaging/stream'
+
+import runtime from '../../base/runtime'
 // SERVER IMPORTS
 import SocketIOServiceProvider from '../base/socketio_service_provider'
-import runtime from '../../base/runtime'
-import Stream from '../../messaging/stream'
 
 
 let context = 'server/services/messages/messages_svc_provider'

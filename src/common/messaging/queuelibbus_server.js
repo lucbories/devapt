@@ -6,13 +6,13 @@ import QueueServer  from 'node-queue-lib/lib/core/node-queue-server'
 import QueueLib from 'node-queue-lib'
 import http from 'http'
 
-// SERVER IMPORTS
+// COMMON IMPORTS
 import Stream from './stream'
 import BusGateway from './bus_gateway'
 
 
 
-let context = 'server/messaging/queuelibbus_server'
+let context = 'common/messaging/queuelibbus_server'
 
 
 

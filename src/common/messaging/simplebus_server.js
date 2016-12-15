@@ -3,13 +3,13 @@ import T from 'typr'
 import assert from 'assert'
 import Simplebus from 'simplebus'
 
-// SERVER IMPORTS
+// COMMON IMPORTS
 import Stream from './stream'
 import BusGateway from './bus_gateway'
 
 
 
-let context = 'server/messaging/simplebus_server'
+let context = 'common/messaging/simplebus_server'
 
 
 

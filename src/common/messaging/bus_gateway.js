@@ -3,12 +3,12 @@ import T from 'typr'
 import assert from 'assert'
 
 // COMMON IMPORTS
-import Instance from '../../common/base/instance'
-import DistributedMessage from '../../common/base/distributed_message'
-import DistributedMetrics from '../../common/base/distributed_metrics'
-import DistributedLogs from '../../common/base/distributed_logs'
+import Instance from '..//base/instance'
+import DistributedMessage from '../base/distributed_message'
+import DistributedMetrics from '../base/distributed_metrics'
+import DistributedLogs from '../base/distributed_logs'
 
-let context = 'server/messaging/bus_gateway'
+let context = 'common/messaging/bus_gateway'
 
 
 

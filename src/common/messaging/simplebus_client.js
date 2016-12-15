@@ -1,20 +1,20 @@
 // NPM IMPORTS
 import T from 'typr'
 import assert from 'assert'
-import QueueLib from 'node-queue-lib'
+import Simplebus from 'simplebus'
 
-// SERVER IMPORTS
+// COMMON IMPORTS
 import Stream from './stream'
 import BusGateway from './bus_gateway'
 
 
 
-let context = 'server/messaging/queue-lib_client'
+let context = 'common/messaging/simplebus_client'
 
 
 
 /**
- * @file QueueLib bus client.
+ * @file QueueLib messages bus client.
  * 
  * @author Luc BORIES
  * @license Apache-2.0
@@ -32,11 +32,10 @@ export default class QueueLibBusClient extends BusGateway
 	 */
 	constructor(arg_name, arg_log_context, arg_logger_manager)
 	{
-		super('QueueLibBusClient', arg_name, arg_log_context, arg_logger_manager)
+		super('QueueLibClient', arg_name, arg_log_context, arg_logger_manager)
 		
-		this.is_queuelibbus_client = true
-		
-		this._bus_client = undefined
+		this.is_simplebus_client = true
+		this.simplebus_client = undefined
 		
 		this.load()
 
@@ -51,7 +50,7 @@ export default class QueueLibBusClient extends BusGateway
 	
 	
 	/**
-	 * Create a bus client.
+	 * Create a simplebus client.
 	 * @returns {nothing}
 	 */
 	load()
@@ -62,14 +61,12 @@ export default class QueueLibBusClient extends BusGateway
 		super.load()
 		
 		// GET REMOTE SERVER SETTINGS
-		this.server_host = this.get_setting('host', 'localhost')
-		this.server_port = this.get_setting('port', '99999')
+		this.server_host = this.get_setting('host', undefined)
+		this.server_port = this.get_setting('port', undefined)
 		
 		// CREATE CLIENT OF REMOTE BUS
 		// console.log(context + ':load:host=%s port=%s', this.server_host, this.server_port)
-		const url = 'ws://' + this.server_host + ':' + this.server_port
-		const queue_name = 'messages'
-		this._bus_client = new QueueLib(url, queue_name, 'broadcast')
+		this.simplebus_client = Simplebus.createClient(this.server_port, this.server_host)
 	}
 
 
@@ -115,10 +112,9 @@ export default class QueueLibBusClient extends BusGateway
 			return
 		}
 
-		assert( T.isObject(this._bus_client), context + ':post_remote:bad this._bus_client object')
-		assert( T.isFunction(this._bus_client.publish), context + ':post_remote:bad this._bus_client.post function')
-		
-		this._bus_client.publish(arg_msg)
+		assert( T.isObject(this.simplebus_client), context + ':post_remote:bad this.simplebus_client object')
+		assert( T.isFunction(this.simplebus_client.post), context + ':post_remote:bad this.simplebus_client.post function')
+		this.simplebus_client.post(arg_msg)
 	}
 	
 	
@@ -141,61 +137,49 @@ export default class QueueLibBusClient extends BusGateway
 			return this.started_promise
 		}
 
-		if (this._bus_client)
+		if (this.simplebus_client)
 		{
-			// console.log(context + ':enable:start queuelib client %s', self.get_name())
+			// console.log(context + ':enable:start simplebus client %s', self.get_name())
 			
 			const name = self.get_name()
 
-			this.started_promise = Promise.resolve()
-			.then(
-				()=>{
-					// console.log(context + ':enable:queuelib client is started for %s', self.get_name())
+			this.started_promise = new Promise(
+				(resolve/*, reject*/) => {
+					const on_started = () => {
+						// console.log(context + ':enable:simplebus client is started for %s', self.get_name())
 
-					// SET SOCKET CLIENT HANDLERS
-					self.is_started = true
-					
-					resolve()
-					
-					assert( T.isObject(self.subscribe), context + ':enable:bad this.subscribe object')
-					self.subscribe(name)
+						// SET SOCKET CLIENT HANDLERS
+						self.is_started = true
+						
+						resolve()
+						
+						assert( T.isObject(self.subscribe), context + ':enable:bad this.subscribe object')
+						self.subscribe(name)
 
-					// SUBSCRIBE
-					console.log(context + ':enable:is this._bus_client.subscribe function', T.isFunction(self._bus_client.subscribe))
-					assert( T.isFunction(self._bus_client.subscribe), context + ':enable:bad this._bus_client.subscribe function')
-					
-					self._bus_callback = (err, subscriber)=>{
-						// PROCESS ERROR
-						subscriber.on('error',
-							(err)=>{
-								//
-							}
-						)
-
-						// PROCESS DATAS
-						subscriber.on('data',
-							(data, accept)=>{
-								console.log(context + ':fetch data at [' + this.server_host + ':' + this.server_port + '] :', data.path, data.event, data.value)
-								
-								const msg = data.value
-								
-								// DEBUG
+						// SUBSCRIBE
+						console.log(context + ':enable:is this.simplebus_client.subscribe function', T.isFunction(self.simplebus_client.subscribe))
+						// assert( T.isFunction(self.simplebus_client.subscribe), context + ':enable:bad this.simplebus_client.subscribe function')
+						self.simplebus_client.subscribe(
+							undefined,
+							(msg) => {
 								console.log(context + ':enable:output bus:transporter=%s sender=%s target=%s', msg.transporter, msg.sender, msg.target)
 								self.debug('output bus:transporter=%s sender=%s target=%s', msg.transporter, msg.sender, msg.target)
-								
 								self.output_stream.push(msg)
-								accept()
 							}
 						)
-					}
-					self._bus_client.subscribe(self._bus_callback)
 
-					self.info('Messages bus client is started')
-				}
-			)
-			.catch(
-				(reason)=>{
-					this.error('bus connect failure:' + reason)
+						self.simplebus_client.on('connect', self.on_client_connect.bind(self))
+						self.simplebus_client.on('close', self.on_client_close.bind(self))
+						self.simplebus_client.on('data', self.on_client_data.bind(self))
+						self.simplebus_client.on('end', self.on_client_end).bind(self)
+						self.simplebus_client.on('error', self.on_client_error.bind(self))
+						self.simplebus_client.on('timeout', self.on_client_timeout.bind(self))
+
+						self.info('Messages bus client is started')
+					}
+
+					// START CLIENT
+					self.simplebus_client.start(on_started)
 				}
 			)
 		}
@@ -216,9 +200,9 @@ export default class QueueLibBusClient extends BusGateway
 	{
 		this.enter_group('disable Bus client')
 		
-		if (this._bus_client)
+		if (this.simplebus_client)
 		{
-			this._bus_client.close(self._bus_callback)
+			this.simplebus_client.stop()
 		}
 		
 		this.leave_group('disable Bus client')
@@ -237,6 +221,43 @@ export default class QueueLibBusClient extends BusGateway
 	{
 		assert(this.is_started, context + ':subscribe:' + this.get_name() + ' is not started for subscription ' + arg_recipient_name)
 		// console.log(context + ':subscribe:bus=%s, recipient=%s', this.get_name(), arg_recipient_name)
-		this.subscribe_to_bus(arg_recipient_name, this._bus_client)
+		this.subscribe_to_bus(arg_recipient_name, this.simplebus_client)
+	}
+    
+	
+	
+	on_client_connect()
+	{
+		console.log(context + ':connect on bus client')
+	}
+
+
+	on_client_data()
+	{
+		console.log(context + ':data on bus client')
+	}
+
+
+	on_client_error(e)
+	{
+		console.log(context + ':error on bus client', e)
+	}
+
+
+	on_client_close()
+	{
+		console.log(context + ':close on bus client')
+	}
+
+
+	on_client_end()
+	{
+		console.log(context + ':end on bus client')
+	}
+
+
+	on_client_timeout()
+	{
+		console.log(context + ':timeout on bus client')
 	}
 }

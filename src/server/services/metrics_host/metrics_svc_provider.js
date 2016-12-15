@@ -2,8 +2,10 @@
 import T from 'typr'
 import assert from 'assert'
 
+// COMMON IMPORTS
+import Stream from '../../../common/messaging/stream'
+
 // SERVER IMPORTS
-import Stream from '../../messaging/stream'
 import runtime from '../../base/runtime'
 import SocketIOServiceProvider from '../base/socketio_service_provider'
 

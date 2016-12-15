@@ -3,13 +3,11 @@ import T from 'typr'
 import assert from 'assert'
 
 // COMMON IMPORTS
-import Instance from '../../common/base/instance'
-
-// SERVER IMPORTS
+import Instance from '../base/instance'
 import Stream from './stream'
 
 
-let context = 'server/messaging/bus'
+let context = 'common/messaging/bus'
 
 
 

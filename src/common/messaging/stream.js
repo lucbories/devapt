@@ -5,7 +5,7 @@ import Baconjs from 'baconjs'
 import sizeof from 'object-sizeof'
 
 
-let context = 'server/messaging/stream'
+let context = 'common/messaging/stream'
 
 
 
@@ -23,6 +23,8 @@ export default class Stream
 	 */
 	constructor()
 	{
+		this.is_stream = true
+
 		this.source_stream = new Baconjs.Bus()
 		this.transformed_stream = this.source_stream
 		
@@ -75,6 +77,31 @@ export default class Stream
 	set_transformed_stream(arg_stream)
 	{
 		this.transformed_stream = arg_stream
+		return this
+	}
+
+
+
+	/**
+	 * Set output stream transformation.
+	 * 
+	 * @param {function} arg_stream_transformation - function (source stream)=>{ return transformed stream }.
+	 * 
+	 * @returns {Stream} - this
+	 */
+	set_transformation(arg_stream_transformation)
+	{
+		assert( T.isFunction(arg_stream_transformation), context + ':transform:bad function')
+		const src = this.source_stream
+		const tr = this.transformed_stream
+
+		try {
+			this.transformed_stream = arg_stream_transformation(src)
+		} catch(e) {
+			this.transformed_stream = tr
+			console.error(context + ':set_transformation', e)
+		}
+		
 		return this
 	}
 	

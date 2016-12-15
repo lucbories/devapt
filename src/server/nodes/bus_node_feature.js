@@ -2,13 +2,15 @@
 import T from 'typr'
 import assert from 'assert'
 
+// COMMON IMPORTS
+import Bus from '../../common/messaging/bus'
+import SimpleBusClient from '../../common/messaging/simplebus_client'
+import SimpleBusServer from '../../common/messaging/simplebus_server'
+import QueueLibBusClient from '../../common/messaging/queuelibbus_client'
+import QueueLibBusServer from '../../common/messaging/queuelibbus_server'
+
 // SERVER IMPORTS
 import NodeFeature from './node_feature'
-import Bus from '../messaging/bus'
-import SimpleBusClient from '../messaging/simplebus_client'
-import SimpleBusServer from '../messaging/simplebus_server'
-import QueueLibBusClient from '../messaging/queuelibbus_client'
-import QueueLibBusServer from '../messaging/queuelibbus_server'
 
 
 
