@@ -1,7 +1,17 @@
 // NPM IMPORTS
 import T from 'typr'
 import assert from 'assert'
-import forge from 'node-forge'
+
+// COMMON IMPORTS
+import {is_browser} from '../../common/utils/is_browser'
+
+let  forge = undefined
+if ( is_browser() )
+{
+	forge = require('forge-browser').forge
+} else {
+	forge = require('node-forge')
+}
 
 // COMMON IMPORTS
 import Credentials from '../../common/base/credentials'
@@ -15,6 +25,7 @@ import AuthenticationLowDbPlugin from './authentication_plugin_lowdb'
 
 
 let context = 'server/security/authentication_manager'
+
 
 
 
@@ -454,7 +465,7 @@ export default class AuthenticationManager extends PluginsManager
 		console.log(arg_request.url, 'arg_request.url')
 		console.log(arg_request.queries, 'arg_request.queries')
 		console.log(arg_request.password, 'arg_request')
-		console.log(arg_request.query(), 'arg_request.query')
+		console.log( T.isFunction(arg_request.query) ? arg_request.query() : arg_request.query, 'arg_request.query')
 		console.log(arg_request.params, 'arg_request.params')
 
 		return undefined

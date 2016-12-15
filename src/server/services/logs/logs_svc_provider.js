@@ -57,6 +57,7 @@ export default class LogsSvcProvider extends SocketIOServiceProvider
 				let logs_record = {
 					ts:undefined,
 					level: undefined,
+					source:undefined,
 					logs:[]
 				}
 				
@@ -64,6 +65,7 @@ export default class LogsSvcProvider extends SocketIOServiceProvider
 					(value) => {
 						logs_record.ts = value.ts,
 						logs_record.level = value.level,
+						logs_record.source = value.source,
 						logs_record.logs = logs_record.logs.concat(value.logs)
 					}
 				)
@@ -89,24 +91,28 @@ export default class LogsSvcProvider extends SocketIOServiceProvider
 		const msg_cb = (arg_msg) => {
 			let logs_ts = undefined
 			let logs_level = undefined
+			let logs_source = undefined
 			let logs_array = undefined
 			
 			if ( T.isObject(arg_msg) && T.isString(arg_msg.target) && T.isObject(arg_msg.payload) )
 			{
 				logs_ts = arg_msg.payload.ts
 				logs_level = arg_msg.payload.level
+				logs_source = arg_msg.payload.source
 				logs_array = arg_msg.payload.logs
 			}
 			else if ( T.isString(arg_msg.level) && T.isArray(arg_msg.logs) )
 			{
 				logs_ts = arg_msg.ts
 				logs_level = arg_msg.level
+				logs_source = arg_msg.source
 				logs_array = arg_msg.logs
 			}
 			
 			const logs_record = {
 				ts: logs_ts,
 				level: logs_level,
+				source: logs_source,
 				logs:logs_array
 			}
 				

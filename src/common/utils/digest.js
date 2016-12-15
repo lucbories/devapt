@@ -1,7 +1,6 @@
 // NPM IMPORTS
 import T from 'typr'
 import assert from 'assert'
-// import nodeforge from 'node-forge'
 
 // COMMON IMPORTS
 import { is_browser } from './is_browser'
