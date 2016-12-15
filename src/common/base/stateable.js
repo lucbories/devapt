@@ -70,6 +70,18 @@ export default class Stateable extends Settingsable
 
 		// console.info(context + ':constructor:creating component ' + this.get_name())
 	}
+
+
+
+	/**
+	 * Get runtime instance.
+	 * 
+	 * @returns {RuntimeBase}
+	 */
+	get_runtime()
+	{
+		return this.runtime
+	}
 	
 	
 	

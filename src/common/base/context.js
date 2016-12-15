@@ -4,8 +4,17 @@ import assert from 'assert'
 import fs from 'fs'
 import path from 'path'
 import mustache from 'mustache'
-import forge from 'node-forge'
 
+// COMMON IMPORTS
+import {is_browser} from '../utils/is_browser'
+
+let  forge = undefined
+if ( is_browser() )
+{
+	forge = require('forge-browser').forge
+} else {
+	forge = require('node-forge')
+}
 
 let context = 'common/base/context'
 

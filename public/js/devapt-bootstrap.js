@@ -216,6 +216,8 @@ private_devapt.content_rendered = function()
 // UPDATE ANCHORS WITH COMMANDS ATTRIBUTES
 private_devapt.init_anchors_commands = function()
 {
+	console.log('devapt-bootstrap:init_anchors_commands')
+
 	var label = undefined
 	var href = undefined
 	var cmd = undefined

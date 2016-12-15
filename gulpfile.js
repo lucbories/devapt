@@ -14,6 +14,7 @@ var DST = 'dist'
 
 var plugins = require('gulp-load-plugins')( { DEBUG:false } )
 
+// PREVIOUS BABEL PRESET: "stage-0", "es2015"
 
 
 function getTask(arg_file_name, arg_task_name)
@@ -63,7 +64,7 @@ gulp.task('livereload',
 // DEVAPT - COMMON
 // **************************************************************************************************
 getTask('gulp_common_transpile', 'build_common_transpile')
-gulp.task('build_common', gulp.series('build_common_transpile', (done)=>done()) )
+gulp.task('build_common', gulp.series('build_common_transpile') )
 
 gulp.task('watch_common',
 	() => {
@@ -220,3 +221,22 @@ gulp.task('test',        gulp.series('build_common_transpile', 'build_server_tra
 
 gulp.task('watch', gulp.series('default', gulp.parallel(...watch_tasks) ) )
 
+// TESTS
+
+// var sourcemaps = require('gulp-sourcemaps');
+// var transpile  = require('gulp-es6-module-transpiler');
+
+// gulp.task('compile',
+// 	function()
+// 	{
+// 		return gulp.src('src/**/*.js')
+// 		.pipe(sourcemaps.init())
+// 		.pipe( transpile(
+// 			{
+// 				formatter: 'bundle'
+// 			} )
+// 		)
+// 		.pipe(sourcemaps.write('./'))
+// 		.pipe(gulp.dest('dist2'));
+// 	}
+// )
