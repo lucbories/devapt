@@ -1,5 +1,5 @@
 // NPM IMPORTS
-import T from 'typr'
+import T from 'typr/lib/typr'
 // import assert from 'assert'
 // import _ from 'lodash'
 // import vdom_as_json from 'vdom-as-json'

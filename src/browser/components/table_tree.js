@@ -1,5 +1,5 @@
 // NPM IMPORTS
-import T from 'typr'
+import T from 'typr/lib/typr'
 import assert from 'assert'
 
 // COMMON IMPORTS

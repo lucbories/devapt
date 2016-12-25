@@ -1,5 +1,5 @@
 // NPM IMPORTS
-import T from 'typr'
+import T from 'typr/lib/typr'
 import assert from 'assert'
 import vdom_parser from 'vdom-parser'
 import diff from 'virtual-dom/diff'
