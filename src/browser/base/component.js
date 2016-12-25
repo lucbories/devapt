@@ -8,7 +8,7 @@ import uid from '../../common/utils/uid.js'
 
 // BROWSER IMPORTS
 import Stateable from '../../common/base/stateable'
-import Binding from './binding'
+import BindingsLoader from './bindings_loader'
 import Rendering from './rendering'
 
 
@@ -28,6 +28,42 @@ export default class Component extends Stateable
 	/**
 	 * Creates an instance of Component.
 	 * @extends Stateable
+	 * 
+	 * 	API
+	 * 		->get_name():string - Get name.
+	 * 		->get_dom_id():string - Get DOM id.
+	 * 		
+	 * 		->has_dom_element():boolean - Test DOM Element instance.
+	 * 		->get_dom_element():Element - Get DOM element.
+	 * 		->set_dom_element(arg_element):nothing -Set DOM element.
+	 * 
+	 * 		->on_dom_event(arg_dom_event, arg_dom_selector, arg_handler, arg_data=undefined, arg_debug=true):nothing - Mount dom event handler with delegator.
+	 * 		
+	 * 		->has_dom_vnode():boolean - Test DOM Virtual Node.
+	 * 		->get_dom_vnode():VNode - Get DOM Virtual Node.
+	 * 		->set_dom_vnode(arg_vnode):nothing - Set DOM Virtual Node.
+	 * 
+	 * 		->show():nothing - Show component.
+	 * 		->hide():nothing - Hide component.
+	 * 
+	 * 		->render():Promise - Render component DOM element.
+	 * 		->process_rendering_vnode(arg_rendering_result, arg_credentials):nothing - Process rendering VNode: create or update DOM element.
+	 * 		->save_rendering():nothing - Save rendering virtul node. Update component VNode with current component HTML.
+	 * 
+	 * 		->update():Promise - Update view with current state.
+	 * 		->update_children():Promise - Update view with current state.
+	 * 
+	 * 		->clear():Promise - Clear component to initial values.
+	 * 		->destroy():Promise - Destroy component DOM element.
+	 * 
+	 * 		->load(arg_state):nothing - Load and apply a component configuration.
+	 * 		->init_bindings():nothing - Init bindings.
+	 * 		->unload():nothing - Unload a component configuration.
+	 * 
+	 *		->dispatch_update_state_action(arg_new_state):nothing - Dispatch update state action.
+	 * 		->dispatch_update_state_value_action(arg_path, arg_value):nothing - Dispatch update state action.
+	 * 
+	 * 		->get_children_component():array - Get view children components.
 	 * 
 	 * @param {RuntimeBase} arg_runtime - client runtime.
 	 * @param {Immutable.Map} arg_state - component initial state.
@@ -53,7 +89,9 @@ export default class Component extends Stateable
 		// CHILDREN COMPONENTS
 		this._children_components = undefined
 
-		this.is_loaded = false
+		this._is_loaded = false
+		this._is_visible = false
+		this._visiblility = undefined
 		this._bindings = {}
 		this._runtime = this.get_runtime()
 		this._rendering = new Rendering(this, arg_state.get('dom_id', this._name))
@@ -101,6 +139,8 @@ export default class Component extends Stateable
 	
 	/**
 	 * Get DOM element.
+	 * 
+	 * @returns {Element}
 	 */
 	get_dom_element()
 	{
@@ -119,6 +159,38 @@ export default class Component extends Stateable
 	set_dom_element(arg_element)
 	{
 		this._rendering.set_dom_element(arg_element)
+	}
+
+
+	/**
+	 * Test if component element has given parant element.
+	 * 
+	 * @param {Element} arg_element - parent element to test.
+	 * 
+	 * @returns {boolean}
+	 */
+	has_parent(arg_element)
+	{
+		const dom_elem = this.get_dom_element()
+		return dom_elem && dom_elem.parentElement == arg_element
+	}
+	
+	
+	
+	/**
+	 * Mount dom event handler.
+	 * 
+	 * @{string}   arg_dom_event - dom event name.
+	 * @{string}   arg_dom_selector - dom selector string ('tag_name.class1.class2').
+	 * @{function} arg_handler - handler function f(component, event name, selection, event, target).
+	 * @{any}      arg_data - handler datas, default undefined (optional).
+	 * @{boolean}  arg_debug - trace flag, default true (optional).
+	 * 
+	 * @returns {nothing}
+	 */
+	on_dom_event(arg_dom_event, arg_dom_selector, arg_handler, arg_data=undefined, arg_debug=true)
+	{
+		this._rendering.on_dom_event(arg_dom_event, arg_dom_selector, arg_handler, arg_data, arg_debug)
 	}
 	
 	
@@ -162,13 +234,38 @@ export default class Component extends Stateable
 
 
 	/**
+	 * Get visibility.
+	 * 
+	 * @param {boolean} arg_check - if true, check style display value.
+	 * 
+	 * @returns {boolean}
+	 */
+	is_visible(arg_check=false)
+	{
+		if (arg_check)
+		{
+			const dom_elem = this.get_dom_element()
+			this._is_visible = dom_elem && dom_elem.style.display != 'none'
+		}
+		return this._is_visible
+	}
+
+
+
+	/**
 	 * Show component.
 	 * 
 	 * @returns {nothing}
 	 */
 	show()
 	{
-		$('#' + this.get_dom_id() ).show()
+		const dom_elem = this.get_dom_element()
+		if (dom_elem)
+		{
+			dom_elem.style.display = this._visiblility ? this._visiblility : 'block'
+			this._is_visible = true
+		}
+		// $('#' + this.get_dom_id() ).show()
 	}
 
 
@@ -180,7 +277,14 @@ export default class Component extends Stateable
 	 */
 	hide()
 	{
-		$('#' + this.get_dom_id() ).hide()
+		const dom_elem = this.get_dom_element()
+		if (dom_elem)
+		{
+			this._visiblility = dom_elem.style.display == 'none' ? undefined : dom_elem.style.display
+			dom_elem.style.display = 'none'
+			this._is_visible = false
+		}
+		// $('#' + this.get_dom_id() ).hide()
 	}
 
 
@@ -211,6 +315,7 @@ export default class Component extends Stateable
 	{
 		this._rendering.process_rendering_vnode(arg_rendering_result, arg_credentials)
 
+		this._is_visible = true
 		// PROCESS CHILDREN
 		// ...
 	}
@@ -236,7 +341,8 @@ export default class Component extends Stateable
 	 */
 	update()
 	{
-		this.debug(':update:name=' + this.get_name() + ',dom_id=' + this.get_dom_id() )
+		this.enter_group('update')
+		this.debug('update:name=' + this.get_name() + ',dom_id=' + this.get_dom_id() )
 
 		var new_elm = document.getElementById(this.get_dom_id())
 		var prev_elm = this.get_dom_element()
@@ -245,6 +351,7 @@ export default class Component extends Stateable
 
 		if (!new_elm)
 		{
+			this.leave_group('update')
 			return
 		}
 
@@ -265,6 +372,7 @@ export default class Component extends Stateable
 		}
 
 		this.update_children()
+		this.leave_group('update')
 	}
 
 
@@ -276,13 +384,16 @@ export default class Component extends Stateable
 	 */
 	update_children()
 	{
-		this.debug(':update_children')
+		this.enter_group('update_children')
+
 		this.get_children_component().forEach(
 			(component)=>{
 				this.debug(':update_children:component=' + component.get_name())
 				component.update()
 			}
 		)
+
+		this.leave_group('update_children')
 	}
 
 
@@ -306,10 +417,14 @@ export default class Component extends Stateable
 	 */
 	destroy()
 	{
+		this.enter_group('destroy')
+
 		if (this._dom_element)
 		{
 			this._dom_element.parentNode.removeChild(this._dom_element)
 		}
+		
+		this.leave_group('destroy')
 	}
 	
 	
@@ -323,14 +438,17 @@ export default class Component extends Stateable
 	 */
 	load(arg_state)
 	{
-		if (this.is_loaded)
+		this.enter_group('load')
+
+		if (this._is_loaded)
 		{
-			console.info(context + ':load:already loaded component ' + this.get_name())
+			// console.info(context + ':load:already loaded component ' + this.get_name())
+			this.leave_group('load:already loaded')
 			return
 		}
 
-		const self = this
-		console.info(context + ':load:loading component ' + this.get_name())
+		// const self = this
+		// console.info(context + ':load:loading component ' + this.get_name())
 		
 		if (! this.store_unsubscribe)
 		{
@@ -342,9 +460,30 @@ export default class Component extends Stateable
 		
 		if (! state)
 		{
+			this.leave_group('load:no state found')
 			return
 		}
-		
+
+		this.init_bindings()
+
+		this.update()
+
+		this._is_loaded = true
+		this.leave_group('load')
+	}
+	
+	
+	
+	/**
+	 * Init bindings.
+	 * 
+	 * @returns {nothing} 
+	 */
+	init_bindings()
+	{
+		this.enter_group('init_bindings')
+
+		const state = this.get_state()
 		const bindings = state.has('bindings') ? state.get('bindings').toJS() : undefined
 		if ( T.isObject(bindings) )
 		{
@@ -354,8 +493,7 @@ export default class Component extends Stateable
 					(bind_cfg) => {
 						bind_cfg.type = bind_cfg.timeline ? 'timeline' : (bind_cfg.dom_event ? 'emitter_jquery' : 'service')
 						const id = 'binding_' + uid()
-						this._bindings[id] = new Binding(id, this._runtime, this)
-						this._bindings[id].load(bind_cfg)
+						this._bindings[id] = BindingsLoader.load(id, this._runtime, this, bind_cfg)
 					}
 				)
 			}
@@ -364,17 +502,12 @@ export default class Component extends Stateable
 			{
 				bindings.streams.forEach(
 					(bind_cfg) => {
-						console.log(context + ':load:stream binding:', bind_cfg)
+						// console.log(context + ':load:stream binding:', bind_cfg)
 						let stream = bind_cfg.source_stream ? bind_cfg.source_stream : undefined
 						
 						if ( T.isString(stream) )
 						{
-							switch(stream.toLocaleLowerCase()) {
-								case 'logs': stream = this._runtime.logs_stream; break
-								default:
-									console.log(context + ':load:stream binding:unknow named stream', stream.toLocaleLowerCase())
-									stream = undefined
-							}
+							stream = this.get_named_stream(stream)
 						}
 
 						if ( T.isObject(stream) && stream.is_stream )
@@ -382,10 +515,21 @@ export default class Component extends Stateable
 							bind_cfg.type = 'stream'
 							bind_cfg.source_stream = stream
 							const id = 'binding_' + uid()
-							this._bindings[id] = new Binding(id, this._runtime, this)
-							this._bindings[id].load(bind_cfg)
-							console.log(context + ':load:stream bound:', id, bind_cfg)
+							this._bindings[id] = BindingsLoader.load(id, this._runtime, this, bind_cfg)
+
+							// console.log(context + ':load:stream bound:', id, bind_cfg)
 						}
+					}
+				)
+			}
+			
+			if ( T.isArray(bindings.jquery) )
+			{
+				bindings.jquery.forEach(
+					(bind_cfg) => {
+						bind_cfg.type = 'emitter_jquery'
+						const id = 'binding_' + uid()
+						this._bindings[id] = BindingsLoader.load(id, this._runtime, this, bind_cfg)
 					}
 				)
 			}
@@ -394,16 +538,15 @@ export default class Component extends Stateable
 			{
 				bindings.dom.forEach(
 					(bind_cfg) => {
-						bind_cfg.type = 'emitter_jquery'
+						bind_cfg.type = 'emitter_dom'
 						const id = 'binding_' + uid()
-						this._bindings[id] = new Binding(id, this._runtime, this)
-						this._bindings[id].load(bind_cfg)
+						this._bindings[id] = BindingsLoader.load(id, this._runtime, this, bind_cfg)
 					}
 				)
 			}
 		}
 
-		this.is_loaded = true
+		this.leave_group('init_bindings')
 	}
 	
 	
@@ -415,11 +558,13 @@ export default class Component extends Stateable
 	 */
 	unload()
 	{
+		this.enter_group('unload')
+
 		assert( T.isFunction(this.store_unsubscribe), context + ':unload:bad store_unsubscribe function')
 		
 		// UNBIND ALL BINDINGS
 		_.forEach(this._bindings,
-			(binding, id)=>{
+			(binding/*, id*/)=>{
 				binding._unsubscribe()
 				if (binding._unsubscribe_state_update)
 				{
@@ -430,6 +575,27 @@ export default class Component extends Stateable
 
 		// DETACH STORE CHANGE LISTENER
 		this.store_unsubscribe()
+
+		this.leave_group('unload')
+	}
+
+
+
+	/**
+	 * Get a named stream.
+	 * 
+	 * @param {string} arg_stream_name - stream name.
+	 * 
+	 * @returns {Stream|undefined} - found stream.
+	 */
+	get_named_stream(arg_stream_name)
+	{
+		switch(arg_stream_name.toLocaleLowerCase()) {
+			case 'runtime_logs': return this._runtime.logs_stream
+		}
+		
+		console.warn(context + ':get_named_stream:%s:unknow named stream', this.get_name(), arg_stream_name.toLocaleLowerCase())
+		return undefined
 	}
 
 
@@ -462,6 +628,11 @@ export default class Component extends Stateable
 	 */
 	dispatch_update_state_value_action(arg_path, arg_value)
 	{
+		if (! T.isArray(arg_path) )
+		{
+			console.error(context + ':dispatch_update_state_value_action:bad path array:path,value:', arg_path, arg_value)
+			return
+		}
 		// console.log(context + ':dispatch_update_state_value_action:path,value:', arg_path, arg_value)
 		
 		const new_state = this.get_state().setIn(arg_path, arg_value)

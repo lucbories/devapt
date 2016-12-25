@@ -59,26 +59,20 @@ export default class ClientRuntime extends RuntimeBase
 		super(context)
 
 		// INIT LOGGING FEATURE ON BROWSER
-		const console_logger = new ConsoleLogger(true)
-		this.get_logger_manager().loggers.push(console_logger)
+		// const console_logger = new ConsoleLogger(true)
+		// this.get_logger_manager().loggers.push(console_logger)
 		
 		const stream_logger = new StreamLogger(undefined, true)
 		this.get_logger_manager().loggers.push(stream_logger)
 
 		stream_logger.get_stream().subscribe(
 			(arg_log)=>{
-				console.log(context + ':stream_logger:logs', arg_log)
+				// console.log(context + ':stream_logger:logs', arg_log)
 				if (this._state_store)
 				{
-					const logs_array = []
-					const ts = arg_log.ts
-					const level = arg_log.level
-					arg_log.logs.forEach(
-						(log)=>logs_array.push([ts, level, log])
-					)
 					const action = {
 						type:'ADD_JSON_LOGS',
-						logs:logs_array
+						logs:arg_log.logs
 					}
 					this._state_store.dispatch(action)
 				}
@@ -100,7 +94,168 @@ export default class ClientRuntime extends RuntimeBase
 		this.disable_trace()
 		// this.update_trace_enabled()
 	}
+
+
+
+	/**
+	 * 
+	 */
+	shoud_log_bindingd_stream()
+	{
+		return false
+	}
+
+
+
+	/**
+	 * Get application initial state: from browser cache or from DOM script.
+	 * 	State strategy is {
+	 * 		source:'browser' or 'session' or 'html',
+	 * 		save_period: 5000, milliseconds between two state saves, 0 to disable save
+	 * 		state_key: '...' name of the store key which corresponding value contains the key name of the application state.
+	 * 	}
+	 * 
+	 * @param {object} arg_app_state_strategy - strategy to manage application state.
+	 * 
+	 * @returns {object}
+	 */
+	get_app_initial_state(arg_app_state_strategy)
+	{
+		const browser_supports_storage = (typeof(Storage) !== "undefined")
+		const source = ( T.isObject(arg_app_state_strategy) && browser_supports_storage) ? arg_app_state_strategy.source : 'html'
+		const app_state_key = T.isObject(arg_app_state_strategy) && T.isString(arg_app_state_strategy.state_key) ? arg_app_state_strategy.state_key : '__DEVAPT_APP_STATE_KEY__'
+		
+		let state = undefined
+		const window_state = window ? window.__INITIAL_STATE__ : {error:'no browser window object'}
+		switch(source) {
+			case 'browser':{
+				const store_key = localStorage.getItem(app_state_key)
+				if (! T.isString(store_key) )
+				{
+					state = window_state
+					break
+				}
+				const state_str = localStorage.getItem(store_key)
+				console.log('get_app_initial_state:state_str', typeof state_str)
+				state = T.isString(state_str) ? JSON.parse(state_str) : window_state
+				break
+			}
+			case 'session':{
+				const store_key = sessionStorage.getItem(app_state_key)
+				if (! T.isString(store_key) )
+				{
+					state = window_state
+					break
+				}
+				const state_str = sessionStorage.getItem(store_key)
+				console.log('get_app_initial_state:state_str', typeof state_str)
+				state = T.isString(state_str)  ? JSON.parse(state_str) : window_state
+				break
+			}
+			case 'html':{
+				state = window_state
+				break
+			}
+		}
+
+		return state ? state : {error:'no app state found'}
+	}
 	
+
+
+	/**
+	 * Configure application state save: to browser local or session storage.
+	 * 	State strategy is {
+	 * 		source:'browser' or 'session' or 'html',
+	 * 		save_period: 5000, milliseconds between two state saves, 0 to disable save
+	 * 		state_key: '...' name of the store key which corresponding value contains the key name of the application state.
+	 * 	}
+	 * 
+	 * @returns {nothing}
+	 */
+	init_app_state_save()
+	{
+		this.enter_group('init_app_state_save')
+		
+		// GET AND CHECK PERIOD
+		let period = this.app_state_strategy.save_period
+		if (period == 0 || ! T.isNumber(period) )
+		{
+			this.leave_group('init_app_state_save:disabled with not period > 0')
+			return
+		}
+		if (period < 3000)
+		{
+			period = 3000
+		}
+
+		// CHECK STORAGE BROWSER SUPPORT
+		const browser_supports_storage = (typeof(Storage) !== "undefined")
+		if (! browser_supports_storage)
+		{
+			this.error('init_app_state_save:no storage support')
+			this.leave_group('init_app_state_save:error')
+			return
+		}
+
+		// CHECK STRATEGY
+		if (! T.isObject(this.app_state_strategy) )
+		{
+			this.error('init_app_state_save:no state save strategy')
+			this.leave_group('init_app_state_save:error')
+			return
+		}
+		
+		// GET ATTRIBUTES
+		const source = this.app_state_strategy.source
+		const app_state_key = T.isString(this.app_state_strategy.state_key) ? this.app_state_strategy.state_key : '__DEVAPT_APP_STATE_KEY__'
+		
+		const state = this._state_store.get_state()
+		const state_app = T.isObject(state) && state.getIn ? state.getIn(['credentials', 'application'], undefined) : undefined
+		const app = T.isString(state_app) ? state_app.toLocaleUpperCase() : 'NO_APP_NAME'
+		const default_store_key = '__DEVAPT_APP_STATE_' + app + '__'
+
+		// GET SAVE CALLBACK
+		let save_cb = undefined
+		switch(source) {
+			case 'browser':{
+				let store_key = localStorage.getItem(app_state_key)
+				if (! T.isString(store_key) )
+				{
+					store_key = default_store_key
+					localStorage.setItem(app_state_key, store_key)
+				}
+				save_cb = ()=>{
+					const state_str = JSON.stringify(this._state_store.get_state().toJS())
+					localStorage.setItem(store_key, state_str)
+				}
+				break
+			}
+			case 'session':{
+				let store_key = sessionStorage.getItem(app_state_key)
+				if (! T.isString(store_key) )
+				{
+					store_key = default_store_key
+					sessionStorage.setItem(app_state_key, store_key)
+				}
+				save_cb = ()=>{
+					const state_str = JSON.stringify(this._state_store.get_state().toJS())
+					sessionStorage.setItem(store_key, state_str)
+				}
+				break
+			}
+		}
+
+		// REGISTER PERIODICAL SAVES
+		if (save_cb)
+		{
+			this.info('init_app_state_save:register saves with period=%s', period)
+			setTimeout(save_cb, period)
+		}
+
+		this.leave_group('init_app_state_save')
+	}
+
 	
 	
 	/**
@@ -120,8 +275,9 @@ export default class ClientRuntime extends RuntimeBase
 		// this.loggers.push( new LoggerSvc(true, svc_logger_settings) )
 		
 		// GET INITIAL STATE
-		const initial_app_state = window ? window.__INITIAL_STATE__ : {error:'no browser window object'}
+		const initial_app_state = this.get_app_initial_state(arg_settings.app_state_strategy)
 		this.debug(initial_app_state, 'initialState')
+		this.app_state_strategy = arg_settings.app_state_strategy
 		
 		// GET DEFAULT REDUCER
 		if ( T.isFunction(arg_settings.reducers) )

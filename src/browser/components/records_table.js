@@ -165,7 +165,7 @@ export default class RecordsTable extends Table
 	 */
 	update_record_values(arg_record_values)
 	{
-		// console.log(arg_record_values, 'table.update_record_values:values')
+		// console.log(context + ':update_record_values:values', arg_record_values)
 		
 		var self = this
 		

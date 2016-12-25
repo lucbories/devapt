@@ -29,13 +29,13 @@ export default class ConsoleLogger extends Logger
 	/**
 	 * Logger DEBUG implementation.
 	 * 
-	 * @param {string} arg_msg - message string.
+	 * @param {array} arg_opds - log record array.
 	 * 
 	 * @returns {nothing}
 	 */
-	debug_self(arg_msg)
+	debug_self(...arg_opds)
 	{
-		console.debug(arg_msg)
+		console.debug( Logger.format(arg_opds) )
 	}
 	
 	
@@ -43,13 +43,13 @@ export default class ConsoleLogger extends Logger
 	/**
 	 * Logger INFO implementation.
 	 * 
-	 * @param {string} arg_msg - message string.
+	 * @param {array} arg_opds - log record array.
 	 * 
 	 * @returns {nothing}
 	 */
-	info_self(arg_msg)
+	info_self(...arg_opds)
 	{
-		console.info(arg_msg)
+		console.info( Logger.format(arg_opds) )
 	}
 	
 	
@@ -57,13 +57,13 @@ export default class ConsoleLogger extends Logger
 	/**
 	 * Logger WARN implementation.
 	 * 
-	 * @param {string} arg_msg - message string.
+	 * @param {array} arg_opds - log record array.
 	 * 
 	 * @returns {nothing}
 	 */
-	warn_self(arg_msg)
+	warn_self(...arg_opds)
 	{
-		console.warn(arg_msg)
+		console.warn( Logger.format(arg_opds) )
 	}
 	
 	
@@ -71,12 +71,12 @@ export default class ConsoleLogger extends Logger
 	/**
 	 * Logger ERROR implementation.
 	 * 
-	 * @param {string} arg_msg - message string.
+	 * @param {array} arg_opds - log record array.
 	 * 
 	 * @returns {nothing}
 	 */
-	error_self(arg_msg)
+	error_self(...arg_opds)
 	{
-		console.error(arg_msg)
+		console.error( Logger.format(arg_opds) )
 	}
 }

@@ -6,6 +6,9 @@ import Logger from '../../common/loggers/logger'
 import Stream from '../../common/messaging/stream'
 
 
+const context = 'browser/loggers/stream_logger'
+
+
 
 /**
  * @file Stream logger class.
@@ -27,28 +30,25 @@ export default class StreamLogger extends Logger
 		super(arg_enabled)
 		
 		this.is_stream_console = true
+
 		this.stream = arg_stream ? arg_stream : new Stream()
 
 		const max_logs_per_msg = 10
 		const delay_per_logs_msg = 100
 
-		const limit_cb = (grouped_stream/*, group_start_event*/) => {
+		const limit_cb = (grouped_stream) => {
 			const map_cb = (values) => {
 				// console.log(values, 'limit.map.values')
 				
 				let logs_record = {
-					ts:undefined,
-					level: undefined,
 					source:undefined,
 					logs:[]
 				}
 				
 				values.forEach(
 					(value) => {
-						logs_record.ts = value.ts,
-						logs_record.level = value.level,
 						logs_record.source = value.source,
-						logs_record.logs = logs_record.logs.concat(value.logs)
+						logs_record.logs.push(value)
 					}
 				)
 				
@@ -62,7 +62,7 @@ export default class StreamLogger extends Logger
 		
 		const key_cb = (value) => {
 			// console.log(value.level, 'value.level')
-			return value.level
+			return value.source
 		}
 		
 		
@@ -70,42 +70,9 @@ export default class StreamLogger extends Logger
 			return grouped_stream
 		}
 		
-		const msg_cb = (arg_msg) => {
-			// console.log(arg_msg, 'arg_msg')
-
-			let logs_ts = undefined
-			let logs_level = undefined
-			let logs_source = undefined
-			let logs_array = undefined
-			
-			if ( T.isObject(arg_msg) && T.isString(arg_msg.target) && T.isObject(arg_msg.payload) )
-			{
-				logs_ts = arg_msg.payload.ts
-				logs_level = arg_msg.payload.level
-				logs_source = arg_msg.payload.source
-				logs_array = arg_msg.payload.logs
-			}
-			else if ( T.isString(arg_msg.level) && T.isArray(arg_msg.logs) )
-			{
-				logs_ts = arg_msg.ts
-				logs_level = arg_msg.level
-				logs_source = arg_msg.source
-				logs_array = arg_msg.logs
-			}
-			
-			const logs_record = {
-				ts: logs_ts,
-				level: logs_level,
-				source: logs_source,
-				logs:logs_array
-			}
-				
-			return logs_record
-		}
-		
 		
 		const transform = (stream)=>{
-			return stream.map(msg_cb).groupBy(key_cb, limit_cb).flatMap(flatmap_cb)
+			return stream.groupBy(key_cb, limit_cb).flatMap(flatmap_cb)
 		}
 		
 		this.stream.set_transformation(transform)
@@ -122,91 +89,98 @@ export default class StreamLogger extends Logger
 	{
 		return this.stream
 	}
-	
+
+
+
+	/**
+	 * Convert log array to log object.
+	 * 
+	 * @param {array} arg_log_array - log record array (length= )
+	 * 
+	 * @returns {object} - log record object { ts, level, source, context, instance, group, action, text }
+	 */
+	convert_array_to_object(arg_log_array, arg_level, arg_source)
+	{
+		if (! T.isArray(arg_log_array) || arg_log_array.length < 6)
+		{
+			console.error(context + ':convert_array_to_object:not a valid log array:' + typeof arg_log_array, arg_log_array)
+			return undefined
+		}
+
+		// console.log(context + ':convert_array_to_object:', arg_log_array, arg_log_array[3].length)
+		if (arg_log_array[3].length == 0)
+		{
+			const parts = arg_log_array[5].split(':')
+			// console.log(context + ':convert_array_to_object:part 3 = "":', arg_log_array[3], arg_log_array[5], parts)
+
+			if (parts.length > 1 )
+			{
+				arg_log_array[3] = parts[1]
+				arg_log_array[5] = parts.splice(2).join(':')
+			}
+		}
+
+		return {
+			ts:arg_log_array[0],
+			level:arg_level,
+			source:arg_source,
+			context:arg_log_array[1],
+			instance:arg_log_array[2],
+			group:arg_log_array[3],
+			action:arg_log_array[4],
+			text:arg_log_array[5] + arg_log_array.splice(6).join(',')
+		}
+	}
 	
 	
 	/**
 	 * Logger DEBUG implementation.
 	 * 
-	 * @param {string} arg_msg - message string.
+	 * @param {array} arg_opds - log record array.
 	 * 
 	 * @returns {nothing}
 	 */
-	debug_self(arg_msg)
+	debug_self(arg_opds)
 	{
-		if (! T.isString(arg_msg) )
-		{
-			console.log(context + 'debug_self:not a string:' + typeof arg_msg, arg_msg)
-			return
-		}
-
-		const log_record = {
-			ts:Date.now(),
-			level:'DEBUG',
-			source:'BROWSER',
-			logs:[arg_msg.toString()]
-			// logs:[{log:arg_msg}]
-		}
-		this.stream.push(log_record)
+		this.stream.push( this.convert_array_to_object(arg_opds, 'DEBUG', 'BROWSER') )
 	}
 	
 	
 	/**
 	 * Logger INFO implementation.
 	 * 
-	 * @param {string} arg_msg - message string.
+	 * @param {array} arg_opds - log record array.
 	 * 
 	 * @returns {nothing}
 	 */
-	info_self(arg_msg)
+	info_self(arg_opds)
 	{
-		const log_record = {
-			ts:new Date(),
-			level:'INFO',
-			source:'BROWSER',
-			logs:[arg_msg]
-			// logs:[{log:arg_msg}]
-		}
-		this.stream.push(log_record)
+		this.stream.push( this.convert_array_to_object(arg_opds, 'INFO', 'BROWSER') )
 	}
 	
 	
 	/**
 	 * Logger WARN implementation.
 	 * 
-	 * @param {string} arg_msg - message string.
+	 * @param {array} arg_opds - log record array.
 	 * 
 	 * @returns {nothing}
 	 */
-	warn_self(arg_msg)
+	warn_self(arg_opds)
 	{
-		const log_record = {
-			ts:new Date(),
-			level:'WARN',
-			source:'BROWSER',
-			logs:[arg_msg]
-			// logs:[{log:arg_msg}]
-		}
-		this.stream.push(log_record)
+		this.stream.push( this.convert_array_to_object(arg_opds, 'WARN', 'BROWSER') )
 	}
 	
 	
 	/**
 	 * Logger ERROR implementation.
 	 * 
-	 * @param {string} arg_msg - message string.
+	 * @param {array} arg_opds - log record array.
 	 * 
 	 * @returns {nothing}
 	 */
-	error_self(arg_msg)
+	error_self(arg_opds)
 	{
-		const log_record = {
-			ts:new Date(),
-			level:'ERROR',
-			source:'BROWSER',
-			logs:[arg_msg]
-			// logs:[{log:arg_msg}]
-		}
-		this.stream.push(log_record)
+		this.stream.push( this.convert_array_to_object(arg_opds, 'ERROR', 'BROWSER') )
 	}
 }

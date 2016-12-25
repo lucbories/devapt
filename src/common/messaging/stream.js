@@ -21,12 +21,12 @@ export default class Stream
 	 * Create a stream.
 	 * @returns {nothing}
 	 */
-	constructor()
+	constructor(arg_stream=undefined)
 	{
 		this.is_stream = true
 
-		this.source_stream = new Baconjs.Bus()
-		this.transformed_stream = this.source_stream
+		this._source_stream = arg_stream ? arg_stream : new Baconjs.Bus()
+		this._transformed_stream = this._source_stream
 		
 		this.counters = {}
 		this.counters.msg_count = 0
@@ -34,7 +34,7 @@ export default class Stream
 		this.counters.errors_count = 0
 		this.counters.subscribers_count = 0
 		
-		this.source_stream.onError(
+		this._source_stream.onError(
 			() => {
 				this.counters.errors_count += 1
 			}
@@ -50,7 +50,22 @@ export default class Stream
 	 */
 	get_source_stream()
 	{
-		return this.source_stream
+		return this._source_stream
+	}
+
+
+
+	/**
+	 * Create a Stream instance with a DOM event source stream.
+	 * 
+	 * @param {string} arg_dom_elem - DOM element.
+	 * @param {string} arg_event_name - DOM event name.
+	 * 
+	 * @returns {Stream}
+	 */
+	static from_dom_event(arg_dom_elem, arg_event_name)
+	{
+		return new Stream( Baconjs.fromEvent(arg_dom_elem, arg_event_name) )
 	}
 
 
@@ -62,7 +77,7 @@ export default class Stream
 	 */
 	get_transformed_stream()
 	{
-		return this.transformed_stream
+		return this._transformed_stream
 	}
 
 
@@ -76,7 +91,7 @@ export default class Stream
 	 */
 	set_transformed_stream(arg_stream)
 	{
-		this.transformed_stream = arg_stream
+		this._transformed_stream = arg_stream
 		return this
 	}
 
@@ -92,13 +107,13 @@ export default class Stream
 	set_transformation(arg_stream_transformation)
 	{
 		assert( T.isFunction(arg_stream_transformation), context + ':transform:bad function')
-		const src = this.source_stream
-		const tr = this.transformed_stream
+		const src = this._source_stream
+		const tr = this._transformed_stream
 
 		try {
-			this.transformed_stream = arg_stream_transformation(src)
+			this._transformed_stream = arg_stream_transformation(src)
 		} catch(e) {
-			this.transformed_stream = tr
+			this._transformed_stream = tr
 			console.error(context + ':set_transformation', e)
 		}
 		
@@ -147,7 +162,7 @@ export default class Stream
 		this.counters.msg_size += sizeof(arg_value)
 		
 		// console.log(arg_value,  context + ':push:value')
-		this.source_stream.push(arg_value)
+		this._source_stream.push(arg_value)
 	}
 	
 	
@@ -163,13 +178,13 @@ export default class Stream
 		
 		this.counters.subscribers_count += 1
 		
-		const unsubscribe = this.transformed_stream.onValue(arg_handler)
+		const unsubscribe = this._transformed_stream.onValue(arg_handler)
 		return  () => {
 			this.counters.subscribers_count -= 1
 			unsubscribe()
 		}
 		
-		// return this.transformed_stream.onValue(
+		// return this._transformed_stream.onValue(
 		// 	(value) => {
 		// 		console.log(value,  context + ':subscribe:value')
 		// 	}

@@ -69,6 +69,17 @@ export default class RouterState extends Stateable
 	}
 
 
+	/**
+	 * Get name.
+	 * 
+	 * @returns {string}
+	 */
+	get_name()
+	{
+		return 'router'
+	}
+
+
 
 	/**
 	 * Load and apply a container component configuration.

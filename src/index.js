@@ -4,8 +4,8 @@ import RenderingPlugin from './common/plugins/rendering_plugin'
 import DefaultRenderingPlugin from './common/default_plugins/rendering_default_plugin'
 
 // BROWSER IMPORTS
-import Component from './browser/components/component'
-import Container from './browser/components/container'
+import Component from './browser/base/component'
+import Container from './browser/base/container'
 
 // SERVER IMPORTS
 import runtime from './server/base/runtime'

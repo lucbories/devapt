@@ -62,8 +62,12 @@ export default (arg_settings, arg_state={}, arg_rendering_context, arg_rendering
 		return T.isFunction(rendering_factory) ? rendering_factory(cell, rendering_context, settings.children).get_final_vtree(undefined, rendering_result) : cell.toString()
 	}
 	const th_fn = (header, index) =>{
-		if ( T.isObject(header) && T.isString(header.key) && ! T.isString(header.type) )
+		if ( T.isObject(header) && ! T.isString(header.type) )
 		{
+			if ( !T.isString(header.key) )
+			{
+				header.key = header.view
+			}
 			if ( T.isString(header.value) )
 			{
 				return h('th', { id:settings.id + '_' + header.key }, header.value)
@@ -73,7 +77,7 @@ export default (arg_settings, arg_state={}, arg_rendering_context, arg_rendering
 				return h('th', { id:settings.id + '_' + header.key }, [ cell_fn(header.view) ] )
 			}
 		}
-		return h('th', undefined, cell_fn(header) )
+		return h('th', { id:settings.id + '_th_' + index }, cell_fn(header) )
 	}
 	const td_fn = (content, index)=>{
 		if ( T.isObject(content) && T.isString(content.key) && ! T.isString(content.type) )

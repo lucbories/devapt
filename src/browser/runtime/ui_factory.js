@@ -15,7 +15,7 @@ import Tree from '../components/tree'
 import TableTree from '../components/table_tree'
 import Topology from '../components/topology'
 import RecordsTable from '../components/records_table'
-// import Page from '../components/page'
+import InputField from '../components/input-field'
 import Sparklines from '../components/sparklines'
 
 
@@ -26,14 +26,14 @@ const DEBUG_TRACE_FIND_STATE=false
 
 
 /**
- * @file UI interaction class.
+ * @file UI factory class.
  * @author Luc BORIES
  * @license Apache-2.0
  */
 export default class UIFactory extends Loggable
 {
 	/**
-	 * Create a UI instance.
+	 * Create a UI factory instance.
 	 * 
 	 * 	API:
 	 * 		->constructor(arg_runtime, arg_store)
@@ -160,6 +160,14 @@ export default class UIFactory extends Loggable
 
 		switch(type)
 		{
+			case 'input-field':
+			case 'InputField':
+				{
+					const comp = new InputField(this.runtime, comp_state)
+					this.cache[arg_name] = comp
+					comp.load()
+					return comp
+				}
 			case 'LogsTable':
 				{
 					const comp = new LogsTable(this.runtime, comp_state)

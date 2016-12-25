@@ -123,15 +123,8 @@ export default class Stateable extends Settingsable
 	 */
 	get_state_js()
 	{
-		const path = this.state_path
-		
-		// console.log(context + ':get_state', this._state_store.get_state().toJS())
-		console.log(context + ':state_path', this.state_path)
-		console.log(context + ':state', this._state_store.get_state().getIn(path))
-		console.log(context + ':state js', this._state_store.get_state().getIn(path).toJS())
-		
-		const state = this._state_store.get_state().getIn(path)
-		return state & state.toJS ? state.toJS() : {}
+		const state = this.get_state()
+		return state && state.toJS ? state.toJS() : {}
 	}
 	
 	
@@ -199,6 +192,11 @@ export default class Stateable extends Settingsable
 	 */
 	handle_state_change(arg_previous_state, arg_new_state)
 	{
+		if (! arg_previous_state)
+		{
+			return
+		}
+		
 		if ( T.isArray(this._state_value_listeners) && this._state_value_listeners.length > 0 )
 		{
 			this._state_value_listeners.forEach(

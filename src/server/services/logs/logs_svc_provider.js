@@ -119,7 +119,7 @@ export default class LogsSvcProvider extends SocketIOServiceProvider
 			return logs_record
 		}
 		
-		self.logs_bus_stream_transfomed = self.logs_bus_stream.transformed_stream.map(msg_cb).groupBy(key_cb, limit_cb).flatMap(flatmap_cb)
+		self.logs_bus_stream_transfomed = self.logs_bus_stream.get_transformed_stream().map(msg_cb).groupBy(key_cb, limit_cb).flatMap(flatmap_cb)
 		
 		self.logs_bus_stream_transfomed.onValue(
 			(logs_record) => {

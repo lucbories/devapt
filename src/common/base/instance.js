@@ -61,7 +61,7 @@ export default class Instance extends Stateable
 		assert( T.isString(arg_name) && arg_name.length > 0, context + ':bad name [' + arg_name + ']')
 		
 		const my_uid = uid()
-		const my_info = `[${arg_collection},${arg_name},${my_uid}] `
+		const my_info = `[${arg_collection},${my_uid}] `
 		const my_context = arg_log_context ? arg_log_context + my_info : context + my_info
 		
 		

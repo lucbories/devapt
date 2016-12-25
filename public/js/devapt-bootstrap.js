@@ -67,7 +67,7 @@ private_devapt.create_runtime = function()
 {
 	console.log('devapt-bootstrap:create_runtime')
 	
-	function reducers(prev_state, action)
+	function reducers(prev_state/*, action*/)
 	{
 		if (! prev_state)
 		{
@@ -88,7 +88,12 @@ private_devapt.create_runtime = function()
 	var runtime_settings = {
 		reducers:reducers,
 		default_view:"${arg_default_view}",
-		default_menubar:"${arg_default_menubar}"
+		default_menubar:"${arg_default_menubar}",
+		app_state_strategy:{
+			source:'html', // 'browser' or 'session' or 'html',
+			save_period:5000, // milliseconds between two state save
+			state_key:'__DEVAPT_APP_STATE_KEY__'
+		}
 	}
 	var ClientRuntime = require('client_runtime').default
 	var private_runtime = new ClientRuntime()
@@ -145,7 +150,7 @@ private_devapt.on_runtime_created = function(arg_callback, arg_operand)
 }
 
 
-private_devapt.runtime_created = function(arg_callback, arg_operand)
+private_devapt.runtime_created = function()
 {
 	console.log('devapt-bootstrap:runtime_created')
 
@@ -252,6 +257,24 @@ private_devapt.init_anchors_commands = function()
 
 
 // *********************************************************************************
+// UPDATE ANCHORS WITH COMMANDS ATTRIBUTES
+private_devapt.init_app_state_save = function()
+{
+	console.log('devapt-bootstrap:init_app_state_save')
+
+	var runtime = private_devapt.runtime()
+	if (! runtime)
+	{
+		console.error('devapt-bootstrap:init_app_state_save:no runtime')
+		return
+	}
+
+	runtime.init_app_state_save()
+}
+
+
+
+// *********************************************************************************
 // AJAX
 private_devapt.ajax = function() { return private_devapt.private_ajax }
 private_devapt.private_ajax = {}
@@ -287,3 +310,4 @@ private_devapt.private_ajax.get_json = private_devapt.private_ajax.get_html
 window.devapt().on_dom_loaded( window.devapt().create_runtime )
 window.devapt().on_runtime_created( window.devapt().render_page_content )
 window.devapt().on_content_rendered( window.devapt().init_anchors_commands )
+window.devapt().on_content_rendered( window.devapt().init_app_state_save )

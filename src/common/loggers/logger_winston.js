@@ -213,44 +213,52 @@ export default class LoggerWinston extends Logger
 	
 	/**
 	 * Logger DEBUG implementation.
-	 * @param {string} arg_msg - message string.
+	 * 
+	 * @param {array} arg_opds - log record array.
+	 * 
 	 * @returns {nothing}
 	 */
-	debug_self(arg_msg)
+	debug_self(arg_opds)
 	{
-		this.logger.log('debug', arg_msg)
+		this.logger.log('debug', arg_opds)
 	}
 	
 	
 	/**
 	 * Logger INFO implementation.
-	 * @param {string} arg_msg - message string.
+	 * 
+	 * @param {array} arg_opds - log record array.
+	 * 
 	 * @returns {nothing}
 	 */
-	info_self(arg_msg)
+	info_self(arg_opds)
 	{
-		this.logger.log('info', arg_msg)
+		this.logger.log('info', arg_opds)
 	}
 	
 	
 	/**
 	 * Logger WARN implementation.
-	 * @param {string} arg_msg - message string.
+	 * 
+	 * @param {array} arg_opds - log record array.
+	 * 
 	 * @returns {nothing}
 	 */
-	warn_self(arg_msg)
+	warn_self(arg_opds)
 	{
-		this.logger.log('warn', arg_msg)
+		this.logger.log('warn', arg_opds)
 	}
 	
 	
 	/**
 	 * Logger ERROR implementation.
-	 * @param {string} arg_msg - message string.
+	 * 
+	 * @param {array} arg_opds - log record array.
+	 * 
 	 * @returns {nothing}
 	 */
-	error_self(arg_msg)
+	error_self(arg_opds)
 	{
-		this.logger.log('error', arg_msg)
+		this.logger.log('error', arg_opds)
 	}
 }

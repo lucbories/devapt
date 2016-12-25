@@ -40,9 +40,11 @@ export default class Rendering
 		this._component = arg_component
 
 		this._dom_id = arg_dom_id
-		this._dom_element = document.getElementById(arg_dom_id)
+		this._event_delegator = undefined
+		this.set_dom_element( document.getElementById(arg_dom_id) )
 		this._dom_vnode = undefined
-		this.event_delegator = undefined
+
+		// this.enable_trace()
 	}
 	
 	
@@ -78,16 +80,14 @@ export default class Rendering
 	 */
 	get_dom_element()
 	{
-		if (this._dom_id && ! this._dom_element)
-		{
-			this._dom_element = document.getElementById(this._dom_id)
-		}
 		return this._dom_element
 	}
 
 
 	has_child_element(arg_parent_element, arg_child_element)
 	{
+		this._component.enter_group('has_child_element')
+
 		const elements = arg_parent_element ? arg_parent_element.children : undefined
 
 		if (elements && elements.length > 0)
@@ -99,11 +99,14 @@ export default class Rendering
 				child = elements[i]
 				if (child == arg_child_element)
 				{
+					this._component.leave_group('has_child_element:found')
 					return true
 				}
+				++i
 			}
 		}
 
+		this._component.leave_group('has_child_element:not found')
 		return false
 	}
 	
@@ -118,13 +121,16 @@ export default class Rendering
 	 */
 	set_dom_element(arg_element)
 	{
+		this._component.enter_group('set_dom_element')
+
 		assert( (typeof arg_element) == 'object', context + ':set_dom_element:bad element object')
 		
 		const new_elm = arg_element
 		const prev_elm = this.get_dom_element()
 		const parent_elm = prev_elm ? prev_elm.parentNode : undefined
+
 		// console.log(prev_elm, context + ':set_dom_element:prev_elm')
-		console.log(new_elm,  context + ':set_dom_element:new_elm')
+		// console.log(new_elm,  context + ':set_dom_element:new_elm')
 		// console.log(parent_elm,  context + ':set_dom_element:parent_elm')
 
 		// REMOVE PREVIOUS NODE FROM ITS PARENT
@@ -137,9 +143,9 @@ export default class Rendering
 			}
 
 			// DISABLE EVENT DELEGATION
-			if (this.event_delegator)
+			if (this._event_delegator)
 			{
-				this.event_delegator.destroy()
+				this._event_delegator.destroy()
 			}
 		}
 
@@ -156,18 +162,49 @@ export default class Rendering
 		this._dom_element = new_elm
 		
 		// ENABLE EVENT DELEGATION FOR ALL DOM SUB ELEMENTS
-		if (! this.event_delegator)
+		if (! this._event_delegator)
 		{
 			const EventDelegate = require('dom-delegate').Delegate
-			this.event_delegator = new EventDelegate(this._dom_element)
+			this._event_delegator = new EventDelegate(this._dom_element)
 		} else {
-			this.event_delegator.root(this._dom_element)
+			this._event_delegator.root(this._dom_element)
 		}
 
+		this._component.leave_group('set_dom_element')
+	}
+	
+	
+	
+	/**
+	 * Mount dom event handler.
+	 * 
+	 * @{string}   arg_dom_event - dom event name.
+	 * @{string}   arg_dom_selector - dom selector string ('tag_name.class1.class2').
+	 * @{function} arg_handler - handler function f(component, event name, selection, event, target).
+	 * @{any}      arg_data - handler datas, default undefined (optional).
+	 * @{boolean}  arg_debug - trace flag, default true (optional).
+	 * 
+	 * @returns {boolean}
+	 */
+	on_dom_event(arg_dom_event, arg_dom_selector, arg_handler, arg_data=undefined, arg_debug=true)
+	{
+		assert( T.isObject(this._event_delegator), context + ':on_dom_event:bad event delegator object' )
+
 		const name = this._component.get_name()
-		this.event_delegator.on('click', 'td',
-			(e)=>{
-				console.log(context + ':dom event delegate:%s', name, e.target)
+		this._event_delegator.on(arg_dom_event, arg_dom_selector,
+			(event, target)=>{
+				if (arg_debug)
+				{
+					console.log(context + ':dom event delegate:component=%s event=%s selector=%s target=', name, arg_dom_event, arg_dom_selector, target, event, arg_data)
+				}
+
+				if ( T.isFunction(arg_handler) )
+				{
+					arg_handler(this._component, arg_dom_event, arg_dom_selector, event, target, arg_data)
+				}
+
+				event.stopPropagation()
+				return false
 			}
 		)
 	}
@@ -255,7 +292,7 @@ export default class Rendering
 		// console.log(context + ':process_rendering_vnode:%s:vnode', this._component.get_name(), arg_vnode)
 		
 
-		const ui = window.devapt().ui()
+		// const ui = window.devapt().ui()
 
 
 		// GET COMPONENT ATTRIBUTES

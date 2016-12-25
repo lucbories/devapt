@@ -333,6 +333,7 @@ export const transform = (arg_xform) => {
 	{
 		fields.forEach(
 			(field) => {
+				// console.log('tranform:WITHOUT ARRAY TO FLAT:fields.forEach', field)
 				const value_extractor = extract(field)
 				extractors.push(value_extractor)
 			}
@@ -343,13 +344,7 @@ export const transform = (arg_xform) => {
 	const output_xformer = out(extractors, result_type)
 	
 	const output_extractor = (arg_value) => {
-		if ( T.isObject(arg_value) )
-		{
-			const output_value = output_xformer(arg_value)
-			// console.log(context + ':output_extractor:isObject:output_value', output_value)
-			return output_value
-		}
-		
+
 		if ( T.isArray(arg_value) )
 		{
 			let results = []
@@ -362,7 +357,19 @@ export const transform = (arg_xform) => {
 			// console.log(context + ':output_extractor:isArray:results', results)
 			return results
 		}
-		
+
+		if ( T.isObject(arg_value) )
+		{
+			const output_value = output_xformer(arg_value)
+			// console.log(context + ':output_extractor:isObject:output_value', output_value)
+			return output_value
+		}
+
+		if (! loop_on_keys)
+		{
+			console.warn(context + ':output_extractor:not object/array:results', arg_value)
+		}
+
 		return undefined
 	}
 	

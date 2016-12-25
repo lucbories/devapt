@@ -388,7 +388,7 @@ export default class Loggable
 	{
 		if(this.is_trace_enabled)
 		{
-			this.get_logger_manager().debug( [this.$context].concat(args) )
+			this.get_logger_manager().debug(Date.now(), this.$context, this.get_name(), '', 'trace', ...args)
 		}
 	}
 	
@@ -403,7 +403,7 @@ export default class Loggable
 	{
 		if(this.is_trace_enabled)
 		{
-			this.get_logger_manager().info( [this.$context].concat(args) )
+			this.get_logger_manager().info(Date.now(), this.$context, this.get_name(), '', 'trace', ...args)
 		}
 	}
 	
@@ -417,7 +417,7 @@ export default class Loggable
 	{
 		if(this.is_trace_enabled)
 		{
-			this.get_logger_manager().warn( [this.$context].concat(args) )
+			this.get_logger_manager().warn(Date.now(), this.$context, this.get_name(), '', 'trace', ...args)
 		}
 	}
 	
@@ -429,11 +429,9 @@ export default class Loggable
 	 */
 	error(...args)
 	{
-		// if(this.is_trace_enabled)
-		// {
-			this.get_logger_manager().error( [this.$context].concat(args) )
-			console.error( [this.$context].concat(args) )
-		// }
+		this.get_logger_manager().error(Date.now(), this.$context, this.get_name(), '', 'trace', ...args)
+
+		console.error(Date.now(), this.$context, this.get_name(), '', 'trace', ...args)
 	}
 	
 	
@@ -446,7 +444,7 @@ export default class Loggable
 	{
 		if(this.is_trace_enabled)
 		{
-			this.get_logger_manager().debug(this.$context, '[' + arg_group + '] ------- ENTER -------')
+			this.get_logger_manager().debug(Date.now(), this.$context, this.get_name(), arg_group, 'enter', '[' + arg_group + '] ------- ENTER -------')
 		}
 	}
 	
@@ -460,7 +458,7 @@ export default class Loggable
 	{
 		if(this.is_trace_enabled)
 		{
-			this.get_logger_manager().debug(this.$context, '[' + arg_group + '] ------- LEAVE -------')
+			this.get_logger_manager().debug(Date.now(), this.$context, this.get_name(), arg_group, 'leave', '[' + arg_group + '] ------- LEAVE -------')
 		}
 	}
 	
@@ -473,7 +471,7 @@ export default class Loggable
 	{
 		if(this.is_trace_enabled)
 		{
-			this.get_logger_manager().debug(this.$context, '==========================================================================================================================')
+			this.get_logger_manager().debug(Date.now(), this.$context, this.get_name(), '', 'trace', '==========================================================================================================================')
 		}
 	}
 	
@@ -486,7 +484,7 @@ export default class Loggable
 	{
 		if(this.is_trace_enabled)
 		{
-			this.get_logger_manager().debug([this.$context, '--------------------------------------------------------------------------------------------------------------------------'])
+			this.get_logger_manager().debug(Date.now(), this.$context, this.get_name(), '', 'trace', '--------------------------------------------------------------------------------------------------------------------------')
 		}
 	}
 	
@@ -499,7 +497,7 @@ export default class Loggable
 	{
 		if(this.is_trace_enabled)
 		{
-			this.get_logger_manager().debug([this.$context, '*************************************************************************************************************************'])
+			this.get_logger_manager().debug(Date.now(), this.$context, this.get_name(), '', 'trace', '*************************************************************************************************************************')
 		}
 	}
 }

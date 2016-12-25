@@ -186,13 +186,13 @@ export default class Logger
 	 * 
 	 * @returns {nothing}
 	 */
-	debug(...arg_opds)
+	debug(arg_opds)
 	{
 		if (this.is_trace_enabled && this.is_trace_enabled_debug)
 		{
 			if ( T.isFunction(this.debug_self) )
 			{
-				this.debug_self( Logger.format(arg_opds) )
+				this.debug_self(arg_opds)
 			}
 		}
 	}
@@ -206,13 +206,13 @@ export default class Logger
 	 * 
 	 * @returns {nothing}
 	 */
-	info(...arg_opds)
+	info(arg_opds)
 	{
 		if (this.is_trace_enabled && this.is_trace_enabled_info)
 		{
 			if ( T.isFunction(this.info_self) )
 			{
-				this.info_self( Logger.format(arg_opds) )
+				this.info_self(arg_opds)
 			}
 		}
 	}
@@ -226,13 +226,13 @@ export default class Logger
 	 * 
 	 * @returns {nothing}
 	 */
-	warn(...arg_opds)
+	warn(arg_opds)
 	{
 		if (this.is_trace_enabled && this.is_trace_enabled_warn)
 		{
 			if ( T.isFunction(this.warn_self) )
 			{
-				this.warn_self( Logger.format(arg_opds) )
+				this.warn_self(arg_opds)
 			}
 		}
 	}
@@ -246,13 +246,13 @@ export default class Logger
 	 * 
 	 * @returns {nothing}
 	 */
-	error(...arg_opds)
+	error(arg_opds)
 	{
 		if (this.is_trace_enabled && this.is_trace_enabled_error)
 		{
 			if ( T.isFunction(this.error_self) )
 			{
-				this.error_self( Logger.format(arg_opds) )
+				this.error_self(arg_opds)
 			}
 		}
 	}

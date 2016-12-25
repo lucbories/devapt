@@ -111,7 +111,7 @@ export default class MetricsBusSvcProvider extends SocketIOServiceProvider
 		}
 		
 		this.metrics_bus_stream = runtime.node.get_metrics_bus().get_output_stream()
-		self.msg_bus_stream_transfomed = self.metrics_bus_stream.transformed_stream.filter(msg_filter_cb).map(msg_cb).groupBy(key_cb, limit_cb).flatMap(flatmap_cb)
+		self.msg_bus_stream_transfomed = self.metrics_bus_stream.get_transformed_stream().filter(msg_filter_cb).map(msg_cb).groupBy(key_cb, limit_cb).flatMap(flatmap_cb)
 		
 		self.msg_bus_stream_transfomed.onValue(
 			(metrics_record) => {

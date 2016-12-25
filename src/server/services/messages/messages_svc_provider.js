@@ -145,7 +145,7 @@ export default class MessagesSvcProvider extends SocketIOServiceProvider
 			return [message_record]
 		}
 		
-		self.messages_bus_stream_transfomed = self.messages_bus_stream.transformed_stream.map(msg_cb)
+		self.messages_bus_stream_transfomed = self.messages_bus_stream.get_transformed_stream().map(msg_cb)
 		
 		self.messages_bus_stream_transfomed.onValue(
 			(values) => {
