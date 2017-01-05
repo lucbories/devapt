@@ -52,11 +52,11 @@ export default class Stateable extends Settingsable
 		const log_context = arg_log_context ? arg_log_context : context
 		super(arg_settings, log_context, arg_logger_manager)
 		
-		this.is_component = true
+		this.is_stateable = true
 		
-		this.runtime = arg_runtime
+		this._runtime = arg_runtime
 		this._initial_state = arg_state
-		this._state_store = this.runtime.get_state_store()
+		this._state_store = this._runtime.get_state_store()
 		assert( T.isObject(this._state_store), context + ':constructor:bad state_store object')
 		
 		// SET STATE PATH
@@ -80,7 +80,7 @@ export default class Stateable extends Settingsable
 	 */
 	get_runtime()
 	{
-		return this.runtime
+		return this._runtime
 	}
 	
 	

@@ -320,6 +320,7 @@ export default class Context
 			credentials_datas.credentials_str = credentials_str
 			credentials_datas.credentials_url = credentials_url
 			credentials_datas.credentials_basic_base64 = base64_encoded
+			credentials_datas.url = '{{url}}'
 
 			// 	credentials_token:credentials_obj.token,
 			// 	credentials_user_name:credentials_obj.username,

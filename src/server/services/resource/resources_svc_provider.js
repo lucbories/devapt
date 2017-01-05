@@ -70,7 +70,7 @@ export default class ResourcesSvcProvider extends ServiceExecProvider
 		this.debug('application_name', application_name)
 		// console.log('application_name', application_name)
 		
-		const defined_tenant = this.runtime.defined_world_topology.tenant(tenant_name)
+		const defined_tenant = this.get_runtime().defined_world_topology.tenant(tenant_name)
 		assert( T.isObject(defined_tenant) && defined_tenant.is_topology_define_tenant, context + ':process:bad tenant object')
 
 		const application = defined_tenant.application(application_name)
@@ -87,7 +87,10 @@ export default class ResourcesSvcProvider extends ServiceExecProvider
 				assert( T.isString(args.resource) && args.resource.length > 0, context + ':process:get:bad resource name string')
 				const resource_name = args.resource
 				const type = (collection && collection) != '*' ? collection : undefined
+				
+				// DEBUG
 				console.log('find resource name=%s with type=%s for tenant=%s and app=%s', resource_name, type, tenant_name, application_name)
+
 				const resource_instance = application.find_resource(resource_name, type)
 
 				if (!  T.isObject(resource_instance) )
@@ -107,20 +110,20 @@ export default class ResourcesSvcProvider extends ServiceExecProvider
 				return Promise.resolve( application.get_resources_names(collection) )
 			}
 
-			case 'render': {
-				if (collection != 'views')
-				{
-					return Promise.reject('bad collection, render need views collection')
-				}
-				assert( T.isString(args.resource) && args.resource.length > 0, context + ':process:get:bad resource name string')
-				const resource_name = args.resource
+			// case 'render': { // TODO
+			// 	if (collection != 'views')
+			// 	{
+			// 		return Promise.reject('bad collection, render need views collection')
+			// 	}
+			// 	assert( T.isString(args.resource) && args.resource.length > 0, context + ':process:get:bad resource name string')
+			// 	const resource_name = args.resource
 				
-				// GET ASSETS CONFIG
-				const assets_for_region = this.service.get_assets_services_names('all')
-				const renderer = new RenderingBuilder(this.runtime, assets_for_region.style, assets_for_region.script, assets_for_region.image, assets_for_region.html)
-				const html = renderer.add(resource).render()
-				return Promise.resolve(html)
-			}
+			// 	// GET ASSETS CONFIG
+			// 	const assets_for_region = this.service.get_assets_services_names('all')
+			// 	const renderer = new RenderingBuilder(this.runtime, assets_for_region.style, assets_for_region.script, assets_for_region.image, assets_for_region.html)
+			// 	const html = renderer.add(resource).render() // TODO
+			// 	return Promise.resolve(html)
+			// }
 		}
 
 		return Promise.reject('unknow method [' + arg_method + ']')

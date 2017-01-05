@@ -77,7 +77,9 @@ export default class Component extends Stateable
 		const default_settings = {}
 		super(default_settings, arg_runtime, arg_state, log_context)
 		
-		this.is_component = true
+		this.is_component   = true
+		this.is_menubar     = false
+		this.is_breadcrumbs = false
 
 		// SET NAME
 		this._name = arg_state.get('name', undefined)
@@ -90,13 +92,17 @@ export default class Component extends Stateable
 		this._children_components = undefined
 
 		this._is_loaded = false
+		// this._is_rendered = false
 		this._is_visible = false
 		this._visiblility = undefined
 		this._bindings = {}
 		this._runtime = this.get_runtime()
+		this._builder = undefined
 		this._rendering = new Rendering(this, arg_state.get('dom_id', this._name))
 
 		// console.info(context + ':constructor:creating component ' + this.get_name())
+
+		// this.enable_trace()
 	}
 	
 	
@@ -162,8 +168,9 @@ export default class Component extends Stateable
 	}
 
 
+
 	/**
-	 * Test if component element has given parant element.
+	 * Test if component element has given parent element.
 	 * 
 	 * @param {Element} arg_element - parent element to test.
 	 * 
@@ -172,7 +179,60 @@ export default class Component extends Stateable
 	has_parent(arg_element)
 	{
 		const dom_elem = this.get_dom_element()
+		if (!arg_element)
+		{
+			return !! dom_elem.parentElement
+		}
 		return dom_elem && dom_elem.parentElement == arg_element
+	}
+	
+
+
+	/**
+	 * Parent element.
+	 * 
+	 * @returns {Element} - parent element.
+	 */
+	get_parent_element()
+	{
+		const dom_elem = this.get_dom_element()
+		return dom_elem ? dom_elem.parentElement : undefined
+	}
+
+
+
+	/**
+	 * Set given parent element.
+	 * 
+	 * @param {Element} arg_parent_element - parent element.
+	 * 
+	 * @returns {boolean}
+	 */
+	set_parent(arg_parent_element)
+	{
+		const dom_elem = this.get_dom_element()
+		if (dom_elem && arg_parent_element)
+		{
+			arg_parent_element.appendChild(dom_elem)
+		}
+	}
+
+
+
+	/**
+	 * Set given parent element.
+	 * 
+	 * @param {Component} arg_component - parent element component.
+	 * 
+	 * @returns {nothing}
+	 */
+	set_parent_of(arg_component)
+	{
+		const dom_elem = this.get_dom_element()
+		if (dom_elem && arg_component && arg_component.has_parent())
+		{
+			arg_component.get_parent_element().appendChild(dom_elem)
+		}
 	}
 	
 	
@@ -263,6 +323,9 @@ export default class Component extends Stateable
 		if (dom_elem)
 		{
 			dom_elem.style.display = this._visiblility ? this._visiblility : 'block'
+			
+			console.log(context + ':show:this._visiblility=%s, dom_elem.style.display=%s', this._visiblility, dom_elem.style.display)
+
 			this._is_visible = true
 		}
 		// $('#' + this.get_dom_id() ).show()
@@ -292,18 +355,57 @@ export default class Component extends Stateable
 	/**
 	 * Render component DOM element.
 	 * 
-	 * @returns {Promise}
+	 * @param {boolean} arg_force - should force creation of a new VNode if a previous rendering exists.
+	 * 
+	 * @returns {Promise} - Promise of this to chain promises.
 	 */
-	render()
+	render(arg_force)
 	{
-		const is_rendered = this.get_state_value('is_rendered', false)
-		if (is_rendered)
+		this.enter_group('render')
+
+		// const is_rendered = this.get_state_value('is_rendered', false)
+		// if (! arg_force && this._is_rendered)
+		// {
+		// 	this.leave_group('render:already rendered')
+		// 	return Promise.resolve()
+		// }
+		
+		let promise = Promise.resolve()
+		if (arg_force)
 		{
-			return
+			this.debug('render:force rendering')
+			promise = this._rendering.render()
 		}
 
-		// TODO: request rendering html on the server
-		console.error('browser/component:render:not yet implemented')
+		promise = promise.then(
+			()=>{
+				// SHOULD RENDER VNODE
+				if ( ! this.has_dom_vnode())
+				{
+					this.debug('render:should create vnode')
+					const p = this._rendering.render()
+					this.leave_group('render:vnode is created')
+					return p
+				}
+				
+				// DISPLAY VNODE
+				if ( this.has_dom_vnode())
+				{
+					const vnode = this.get_dom_vnode()
+					const p = this.process_rendering_vnode(vnode)
+					this.leave_group('render:vnode is rendered')
+					return p
+				}
+
+				// RENDERING FAILED
+				this.error('render:render:no vnode to render')
+				this.leave_group('render:no vnode to render')
+				return Promise.reject(context + ':render:no dom vnode to render for ' + this.get_name())
+			}
+		)
+
+		this.leave_group('renderasync')
+		return promise
 	}
 	
 	

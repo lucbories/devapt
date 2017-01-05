@@ -136,6 +136,8 @@ export default class RenderingBuilderAssets extends Loggable
 		const name = this.assets_scripts_service_name
 		const url = this.get_assets_url(this.assets_scripts_service_consumer, name, arg_url)
 
+		// console.log(context + ':get_assets_script_url:name=%s, arg_url=%s, url=%s', name, arg_url, url)
+
 		this.leave_group('get_assets_script_url')
 		return url
 	}

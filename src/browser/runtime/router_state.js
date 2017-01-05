@@ -6,6 +6,9 @@ import { fromJS } from 'immutable'
 // COMMON IMPORTS
 import Stateable from '../../common/base/stateable'
 
+// BROWSER IMPORTS
+import DisplayCommand from '../commands/display_command'
+
 
 const context = 'browser/runtime/router_state'
 
@@ -392,21 +395,28 @@ export default class RouterState extends Stateable
 	 * 
 	 * @returns {Promise} - Resolved result is a boolean: success or failure
 	 */
-	display_content(arg_view_name, arg_menubar_name)
+	display_content(arg_view_name, arg_menubar_name, arg_breadcrumbs=undefined)
 	{
 		this.enter_group('display_content')
 		
 		this.debug('arg_view_name=' + arg_view_name)
 		this.debug('arg_menubar_name=' + arg_menubar_name)
+		this.debug('arg_breadcrumbs=' + arg_breadcrumbs)
 		
 
 		let promise = null
 		try
 		{
-			if ( T.isFunction(this.display_content_self) )
-			{
-				promise = this.display_content_self(arg_view_name, arg_menubar_name)
+			const cmd_settings = {
+				name:'router.display_content',
+				type:'display',
+				view:arg_view_name,
+				menubar:arg_menubar_name,
+				breadcrumbs:arg_breadcrumbs
 			}
+			const cmd = new DisplayCommand(this._runtime, cmd_settings)
+
+			this.get_runtime().ui().pipe_display_command(cmd)
 		}
 		catch(e)
 		{

@@ -171,9 +171,17 @@ private_devapt.render_page_content = function(arg_operand)
 	console.log('devapt-bootstrap:render_page_content')
 	
 	var json_result = arg_operand ? arg_operand : window.__INITIAL_CONTENT__ 
-	console.log(json_result, 'js-devapt-init-content')
+	// console.log(json_result, 'js-devapt-init-content')
+	
+	const cmd_settings = {
+		name:'devapt-bootstrap:render_page_content',
+		type:'display',
+		rendering_result:json_result
+	}
 
-	window.devapt().ui().process_rendering_result(json_result)
+	const cmd = window.devapt().ui().create_display_command(cmd_settings)
+	window.devapt().ui().pipe_display_command(cmd)
+
 	window.devapt().router().set_hash_if_empty('/')
 }
 
@@ -275,6 +283,35 @@ private_devapt.init_app_state_save = function()
 
 
 // *********************************************************************************
+// UPDATE ANCHORS WITH COMMANDS ATTRIBUTES
+private_devapt.init_scripts_load_events = function()
+{
+	console.log('devapt-bootstrap:init_scripts_load_events')
+
+	var scripts = document.getElementsByTagName('script')
+	var i = 0
+	for( ; i < scripts.length ; i++)
+	{
+		var e = scripts[i]
+		var tag = e.tagName
+		var id = e.getAttribute('id')
+		var url = e.getAttribute('src')
+
+		console.log('ASSET init event for tag=%s, id=%s, url=%s', tag, id, url)
+
+		e.onload = ()=>{
+			console.log('ASSET loaded tag=%s, id=%s, url=%s', tag, id, url)
+		}
+
+		e.onerror = ()=>{
+			console.error('ASSET loading error tag=%s, id=%s, url=%s', tag, id, url)
+		}
+	}
+}
+
+
+
+// *********************************************************************************
 // AJAX
 private_devapt.ajax = function() { return private_devapt.private_ajax }
 private_devapt.private_ajax = {}
@@ -307,7 +344,10 @@ private_devapt.private_ajax.get_html = function (arg_url, arg_callback)
 private_devapt.private_ajax.get_json = private_devapt.private_ajax.get_html
 
 
+window.devapt().init_scripts_load_events()
 window.devapt().on_dom_loaded( window.devapt().create_runtime )
 window.devapt().on_runtime_created( window.devapt().render_page_content )
 window.devapt().on_content_rendered( window.devapt().init_anchors_commands )
 window.devapt().on_content_rendered( window.devapt().init_app_state_save )
+
+

@@ -235,6 +235,8 @@ export default class Container extends Component
 		}
 
 		this.init_bindings()
+
+		this.update()
 		
 		this.is_loaded = true
 	}

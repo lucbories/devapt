@@ -1,18 +1,22 @@
 // NPM IMPORTS
 import T from 'typr/lib/typr'
 // import assert from 'assert'
-// import _ from 'lodash'
-// import vdom_as_json from 'vdom-as-json'
-// const vdom_from_json = vdom_as_json.fromJson
-// import VNode from 'virtual-dom/vnode/vnode'
+import _ from 'lodash'
+import { fromJS } from 'immutable'
 
 // COMMON IMPORTS
 import Loggable from '../../common/base/loggable'
+import DefaultRenderingPlugin from '../../common/default_plugins/rendering_default_plugin'
+import RenderingBuilder from '../../common/rendering/rendering_builder'
+import RenderingPlugin from '../../common/plugins/rendering_plugin'
+import Stream from '../../common/messaging/stream'
 
 // BROWSER IMPORTS
 import UIFactory from './ui_factory'
 import UIRendering from './ui_rendering'
 import Page from '../components/page'
+import LayoutSimple from '../base/layout_simple'
+import DisplayCommand from '../commands/display_command'
 
 
 const context = 'browser/runtime/ui'
@@ -49,11 +53,24 @@ export default class UI extends Loggable
 
 		this.is_ui = true
 
-		this.runtime = arg_runtime
+		this._runtime = arg_runtime
 		this.store = arg_store
+
+		this.classes = {}
+		this.classes.RenderingPlugin = RenderingPlugin
+		this.classes.DefaultRenderingPlugin = DefaultRenderingPlugin
 		
 		this._ui_factory = new UIFactory(arg_runtime, arg_store)
 		this._ui_rendering = new UIRendering(arg_runtime, this)
+		this._ui_builder = new RenderingBuilder(arg_runtime, this._ui_rendering._assets_urls_templates, undefined)
+		// this._ui_layout = undefined
+		this._ui_layout = new LayoutSimple(this._runtime, {name:'main layout', type:'simple'})
+		this._ui_layout._ui = this
+
+		this._rendering_plugins = []
+		this._rendering_plugins_counter = 0
+		this._rendering_plugins_map = {}
+		this._ordered_used_plugins_name = []
 
 		this.page = {
 			menubar:undefined,
@@ -65,7 +82,256 @@ export default class UI extends Loggable
 
 		this.body_page = new Page()
 
-		this.enable_trace()
+		this._display_command_waiting = []
+		this._display_command_timer = undefined
+		this._display_commands_pipe = new Stream()
+		this._display_commands_pipe.subscribe(
+			(cmd)=>{
+				console.log(context + ':pipe_display_command.subscribe:do', cmd.get_name(), cmd)
+				cmd.do()
+			}
+		)
+
+		// this.enable_trace()
+	}
+
+
+
+	/**
+	 * Test if UI is loaded and is ready to process display commands.
+	 * 
+	 * @returns {boolean} - true:UI is ready to process display commands,false:UI isn't ready.
+	 */
+	is_loaded()
+	{
+		return this._rendering_plugins_counter > 0 && this._rendering_plugins_counter == this._rendering_plugins.length
+	}
+
+
+	/**
+	 * Create a DisplayCommand instance.
+	 * 
+	 * @param {object} arg_cmd_settings - command settings.
+	 * 
+	 * @returns {DisplayCommand}
+	 */
+	create_display_command(arg_cmd_settings)
+	{
+		return new DisplayCommand(this._runtime, arg_cmd_settings)
+	}
+
+
+
+	/**
+	 * Append a display command to the UI commands pipe.
+	 * If UI isn't ready to process display command, delay append.
+	 * Commands are pushed into a stream.
+	 * 
+	 * @param {DisplayCommand} arg_display_command - display command to pipe.
+	 * 
+	 * @returns {nothing}
+	 */
+	pipe_display_command(arg_display_command)
+	{
+		if ( ! (T.isObject(arg_display_command) && arg_display_command.is_display_command) )
+		{
+			console.warn(context + ':pipe_display_command:bad display command', arg_display_command)
+			return
+		}
+
+		if ( ! this.is_loaded() )
+		{
+			console.log(context + ':pipe_display_command:UI is not loaded')
+
+			this._display_command_waiting.push(arg_display_command)
+
+			if (! this._display_command_timer)
+			{
+				console.log(context + ':pipe_display_command:create a timer')
+
+				const finished_cb = ()=>{
+					if (! this.is_loaded())
+					{
+						console.log(context + ':pipe_display_command:UI is not loaded, delay of 50ms')
+
+						this._display_command_timer = setTimeout(finished_cb, 50)
+						return
+					}
+
+					console.log(context + ':pipe_display_command:UI is loaded')
+					this._display_command_timer = undefined
+					let cmd = this._display_command_waiting.shift()
+					while(cmd)
+					{
+						console.log(context + ':pipe_display_command:shift cmd=', cmd.get_name(), cmd)
+						this._display_commands_pipe.push(cmd)
+						cmd = this._display_command_waiting.shift()
+					}
+				}
+
+				this._display_command_timer = setTimeout(finished_cb, 50)
+			}
+			return
+		}
+
+		console.log(context + ':pipe_display_command:UI is already loaded', arg_display_command.get_name(), arg_display_command)
+		this._display_commands_pipe.push(arg_display_command)
+
+		// const finished_cb = ()=>{
+		// 	if (this.is_loaded())
+		// 	{
+		// 		console.log(context + ':pipe_display_command:UI is loaded')
+
+		// 		this._display_commands_pipe.push(arg_display_command)
+		// 	} else {
+		// 		console.log(context + ':pipe_display_command:UI is not loaded, delay of 50ms')
+
+		// 		setTimeout(finished_cb, 50)
+		// 	}
+		// }
+
+		// finished_cb()
+	}
+
+	add_waiting_display_command()
+	{
+
+	}
+
+
+
+	/**
+	 * Get current application layout.
+	 * 
+	 * @returns {Layout}
+	 */
+	get_current_layout()
+	{
+		return this._ui_layout
+	}
+
+	
+	
+	/**
+	 * Get a resolver function to find UI component description.
+	 * 
+	 * @returns {function} - (string)=>Immutable.Map|undefined.
+	 */
+	get_resource_description_resolver()
+	{
+		return (arg_name, arg_collection=undefined)=>{
+			if ( T.isString(arg_collection) )
+			{
+				const result = this._ui_factory.find_component_desc(this.store.get_state(), arg_name, [arg_collection])
+				// console.log('get_resource_description_resolver:name=%s,collection=%s', arg_name, arg_collection, result)
+				return result.toJS()
+			}
+
+			const collections = ['views', 'menubars']
+			let index = 0
+			while(collections.length > index)
+			{
+				const result = this._ui_factory.find_component_desc(this.store.get_state(), arg_name, [collections[index]])
+				if (result)
+				{
+					// console.log('get_resource_description_resolver:name=%s,collection=%s', arg_name, collections[index], result)
+					return result.toJS()
+				}
+				index++
+			}
+			return undefined
+		}
+	}
+
+	get_rendering_function_resolver()
+	{
+		return (arg_type)=>{
+			// console.log(context + ':get_rendering_function_resolver():type=' + arg_type, this._ordered_used_plugins_name, this._rendering_plugins_map)
+
+			let not_found = true
+			let index = 0
+			let plugin = undefined
+			let f = undefined
+			while(this._ordered_used_plugins_name.length > index && not_found)
+			{
+				const plugin_name = this._ordered_used_plugins_name[index]
+				if (plugin_name in this._rendering_plugins_map)
+				{
+					plugin = this._rendering_plugins_map[plugin_name]
+					
+					f = plugin.find_rendering_function(arg_type)
+					if ( T.isFunction(f) )
+					{
+						not_found = false
+					}
+
+					// console.log(context + ':get_rendering_function_resolver():type=' + arg_type + ' iterate on plugin=%s, found=%b, function=', plugin.get_name(), not_found, f)
+				}
+				index++
+			}
+			return f
+		}
+	}
+
+	get_rendering_class_resolver()
+	{
+		return (arg_type)=>{
+			// console.log(context + ':get_rendering_class_resolver():type=' + arg_type, this._ordered_used_plugins_name, this._rendering_plugins_map)
+			
+			let not_found = true
+			let index = 0
+			let plugin = undefined
+			let c = undefined
+			while(this._ordered_used_plugins_name.length > index && not_found)
+			{
+				const plugin_name = this._ordered_used_plugins_name[index]
+				if (plugin_name in this._rendering_plugins_map)
+				{
+					plugin = this._rendering_plugins_map[plugin_name]
+
+					c = plugin.get_feature_class(arg_type)
+					if ( T.isFunction(c) )
+					{
+						not_found = false
+					}
+					
+					// console.log(context + ':get_rendering_class_resolver():type=' + arg_type + ' iterate on plugin=%s, found=%b, class=', plugin.get_name(), not_found, c)
+				}
+				index++
+			}
+			return c
+		}
+	}
+
+
+	load()
+	{
+		// this._ui_layout = new LayoutSimple(this._runtime, {name:'main layout', type:'simple'})
+
+		// LOAD PLUGINS CLASSES
+		// console.log('LOAD PLUGINS CLASSES:name=DefaultRenderingPlugin')
+		this.register_rendering_plugin(DefaultRenderingPlugin)
+		this._rendering_plugins_counter += 1
+
+		const plugins_urls = this.store.get_state().get('plugins_urls', fromJS({})).toJS()
+		const ordered_plugins = this.store.get_state().get('used_plugins', fromJS([])).toJS()
+		this._ordered_used_plugins_name = ordered_plugins
+
+		_.forEach(ordered_plugins,
+			(plugin_name)=>{
+				if (plugin_name in plugins_urls)
+				{
+					this._rendering_plugins_counter += 1
+
+					const url = plugins_urls[plugin_name]
+					const url_src = this._ui_rendering.get_asset_url('plugins/' + url, 'script', this._runtime.session_credentials)
+					
+					// console.log('LOAD PLUGINS CLASSES:name=%s,url=%s', plugin_name, url_src)
+
+					this._ui_rendering.create_dom_url_element(document.body, 'script', 'js-' + plugin_name, url_src, 'text/javascript')
+				}
+			}
+		)
 	}
 	
 	
@@ -103,161 +369,66 @@ export default class UI extends Loggable
 	 * 
 	 * @param {string} arg_name - component name.
 	 * 
-	 * @returns {Component}
+	 * @returns {Promise} - Promise of a Component instance.
 	 */
 	create(arg_name)
 	{
-		return this._ui_factory.create(arg_name)
+		const component_promise = this._ui_factory.create(arg_name)
+		// component._builder = this._ui_builder
+		return component_promise
 	}
 
 
 
 	/**
-	 * Render a view by its name. Request view content an definition to the server if needed.
+	 * Register a browser rendering plugin.
 	 * 
-	 * @param {string} arg_view_name - resource view name.
+	 * @param{RenderingPlugin} arg_plugin - rendering plugin.
 	 * 
-	 * @returns {Promise} - Promise of a view controller
+	 * @returns {nothing}
 	 */
-	render(arg_view_name)
+	register_rendering_plugin(arg_plugin_class)
 	{
-		this.enter_group('render')
-
-		this.leave_group('render:async')
-		
-		return this.runtime.register_service('rest_api_resources_query_1')
-		.then(
-			(service)=>{
-				// console.log(context + ':render:get service for ' + arg_view_name)
-				return service.get( {collection:'views', 'resource':arg_view_name} )
-			},
-			
-			(reason)=>{
-				console.error(context + ':render:error 1 for ' + arg_view_name, reason)
-			}
-		)
-		.then(
-			(stream)=>{
-				// console.log(context + ':render:get listen stream for ' + arg_view_name)
-				return new Promise(
-					function(resolve, reject)
-					{
-						stream.onValue(
-							(response)=>{
-								resolve(response)
-							}
-						)
-						stream.onError(
-							(reason)=>{
-								reject(reason)
-							}
-						)
-					}
-				)
-			},
-			
-			(reason)=>{
-				console.error(context + ':render:error 2 for ' + arg_view_name, reason)
-			}
-		)
-		.then(
-			(response)=>{
-				// console.log(context + ':render:get response for ' + arg_view_name, response)
-
-				if (response.result == 'done')
-				{
-					// console.log(context + ':render:dispatch ADD_JSON_RESOURCE action for ' + arg_view_name)
-					const action = { type:'ADD_JSON_RESOURCE', resource:arg_view_name, collection:'views', json:response.datas }
-					this.store.dispatch(action)
-					return this.create(arg_view_name)
-				}
-
-				return undefined
-			},
-			
-			(reason)=>{
-				console.error(context + ':render:error 3 for ' + arg_view_name, reason)
-			}
-		)
-		.then(
-			(resource_instance)=>{
-				if (! resource_instance)
-				{
-					return 'Bad resource instance'
-				}
-
-				return resource_instance.render()
-			},
-			
-			(reason)=>{
-				console.error(context + ':render:error 4 for ' + arg_view_name, reason)
-			}
-		)
-		// .then(
-		// 	(html)=>{
-		// 		//...
-		// 	}
-		// )
-
-	}
-
-
-	render_with_middleware(arg_cmd, arg_route, arg_credentials)
-	{
-		this.enable_trace()
-		this.enter_group('render_with_middleware')
-		console.log(context + ':render_with_middleware:cmd,route,credentials:', arg_cmd, arg_route, arg_credentials)
-
-		// const middleware = arg_cmd.middleware
-
-
-		// CHECK IF COMPONENT IS ALREADY RENDERED
-		
-		const menubar_name = arg_cmd.menubar ? arg_cmd.menubar : this.store.get_state().get('default_menubar', undefined)
-		let menubar_id = undefined
-		if ( T.isString(menubar_name) && this.has(menubar_name) )
+		if ( ! arg_plugin_class)
 		{
-			const view = this.get(menubar_name)
-			menubar_id = view.get_dom_id()
-		}
-
-		const view_name = arg_cmd.view
-		if ( T.isString(view_name) && this.has(view_name) )
-		{
-			const view = this.get(view_name)
-			const view_id = view.get_dom_id()
-			const do_not_hide = menubar ? [view_id, menubar_id] : [view_id]
-
-			this._ui_rendering.clear_content(do_not_hide)
-			view.show()
-
-			this.leave_group('render_with_middleware:done with existing view')
+			console.warn(context + ':register_rendering_browser:bad plugin class', arg_plugin_class)
 			return
 		}
 
-		// GET AN URL HTML CONTENT
-		const get_url_cb = ()=>{
-			let url = arg_route + '?' + arg_credentials.get_url_part()
-			this._router.add_handler(url,
-				()=> {
-					// $.get(url).then(
-					// 	(html)=>{
-					// 		this.body_page.render_html(html) // TODO
-					// 	}
-					// )
-					const url_callback = (html)=>{
-						this.body_page.render_html(html)
-					}
-					window.devapt().ajax.get_html(url, url_callback)
-				}
-			)
+		const manager= {
+			is_plugins_manager:true
+		}
+		const plugin = new arg_plugin_class(this._runtime, manager)
+		plugin.find_rendering_function = (type)=>{
+			const f =  arg_plugin_class.find_rendering_function(type)
+			return f
 		}
 
-		this.runtime.register_service(arg_cmd.middleware)
+		console.log(context + ':register_rendering_browser:plugin=' + plugin.get_name())
+		
+		this._rendering_plugins.push(plugin)
+		this._rendering_plugins_map[plugin.get_name()] = plugin
+	}
+
+
+
+	/**
+	 * Request server about middleware rendering.
+	 * 
+	 * @param {string} arg_middleware - middleware name.
+	 * @param {string} arg_svc_route  - requested route.
+	 * 
+	 * @returns {Promise} - Promise of a RenderingResult instance.
+	 */
+	request_middleware(arg_middleware, arg_svc_route)
+	{
+		this.enter_group('request_middleware:middleware=' + arg_middleware + ' route=' + arg_svc_route)
+
+		const promise = this._runtime.register_service(arg_middleware)
 		.then(
 			(service)=>{
-				console.log(context + ':render_with_middleware:get rendering for ' + arg_cmd.url)
-				return service.get( { route:arg_cmd.url } )
+				// console.log(context + ':render_with_middleware:get rendering for ' + arg_cmd.url)
+				return service.get( { route:arg_svc_route } )
 			},
 			
 			(reason)=>{
@@ -266,13 +437,13 @@ export default class UI extends Loggable
 		)
 		.then(
 			(stream)=>{
-				console.log(context + ':render_with_middleware:get listen stream for ' + arg_cmd.url)
+				// console.log(context + ':render_with_middleware:get listen stream for ' + arg_cmd.url)
 				return new Promise(
 					function(resolve, reject)
 					{
 						stream.onValue(
 							(response)=>{
-								resolve(response)
+								resolve(response.datas)
 							}
 						)
 						stream.onError(
@@ -282,65 +453,19 @@ export default class UI extends Loggable
 						)
 					}
 				)
-
-				.then(
-					(rendering_result_response)=>{
-						if (! rendering_result_response)
-						{
-							get_url_cb()
-						}
-
-						if ( T.isObject(rendering_result_response.datas) && rendering_result_response.datas.is_rendering_result )
-						{
-							return this._ui_rendering.process_rendering_result(rendering_result_response.datas, arg_credentials)
-						}
-						throw('rendering failed for middleware [' + arg_cmd.middleware + '] on route [' + arg_route + ']')
-					},
-			
-					(reason)=>{
-						console.error(context + ':render_with_middleware:error 2 for ' + arg_cmd.url, reason)
-					}
-				)
-
-				.then(
-					(arg_content_ids)=>{
-						arg_content_ids.forEach(
-							(id)=>{
-								document.getElementById(id).style.display = 'block'
-							}
-						)
-
-						if ( T.isString(arg_cmd.view) )
-						{
-							const component = this.get(arg_cmd.view)
-							if (component)
-							{
-								component.update()
-							}
-						}
-					}
-				)
 			},
 
 			(reason)=>{
-				console.error(context + ':render_with_middleware:error 1 for ' + arg_cmd.url, reason)
+				console.error(context + ':render_with_middleware:error 1 for ' + arg_svc_route, reason)
 			}
 		)
 		.catch(
 			(reason)=>{
-				console.error(context + ':render_with_middleware:error for ' + arg_cmd.url, reason)
+				console.error(context + ':render_with_middleware:error for ' + arg_svc_route, reason)
 			}
 		)
 
-		this.leave_group('render_with_middleware:async')
-	}
-
-
-	/**
-	 * 
-	 */
-	process_rendering_result(arg_rendering_result, arg_credentials)
-	{
-		return this._ui_rendering.process_rendering_result(arg_rendering_result, arg_credentials)
+		this.leave_group('request_middleware:async')
+		return promise
 	}
 }

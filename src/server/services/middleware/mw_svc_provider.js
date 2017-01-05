@@ -3,7 +3,7 @@ import T from 'typr'
 import assert from 'assert'
 
 // COMMON IMPORTS
-import RenderingResult  from '../../../common/rendering/rendering_result'
+// import RenderingResult  from '../../../common/rendering/rendering_result'
 import RenderingBuilder from '../../../common/rendering/rendering_builder'
 
 // SERVER IMPORTS
@@ -143,7 +143,7 @@ export default class MiddlewareSvcProvider extends ServiceExecProvider
 		let mw_cfg = undefined
 
 		// CHECK PATH
-		const path_file_name = this.runtime.context.get_absolute_path(arg_mw_file)
+		const path_file_name = this.get_runtime().context.get_absolute_path(arg_mw_file)
 		assert(T.isString(path_file_name), context + ':bad middleware file path string')
 		
 		// LOAD MIDDLEWARE FILE
@@ -206,12 +206,11 @@ export default class MiddlewareSvcProvider extends ServiceExecProvider
 		const assets = this.service.get_assets_services_names('any')
 
 		// CREATE RENDERING RESULT AND BUILDER
-		let result = undefined
 		const arg_application = undefined
 		const renderer = new RenderingBuilder(this.runtime, assets.style, assets.script, assets.image, assets.html, arg_application)
 		
 		// RENDER TREE
-		const renderer_result = renderer.render_content(arg_view_name, arg_menubar_name, arg_credentials)
+		const renderer_result = renderer.render_json_content(arg_view_name, arg_menubar_name, arg_credentials)
 
 		return renderer_result
 	}

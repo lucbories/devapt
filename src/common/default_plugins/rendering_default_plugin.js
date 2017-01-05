@@ -6,8 +6,8 @@ import assert from 'assert'
 import RenderingPlugin from '../plugins/rendering_plugin'
 import * as DefaultRendering from '../rendering/index'
 
-
-const context = 'common/default_plugins/rendering_default_plugin'
+const plugin_name = 'default_plugins'
+const context = 'common/' + plugin_name + '/rendering_default_plugin'
 
 
 
@@ -22,19 +22,49 @@ export default class DefaultPlugin extends RenderingPlugin
 {
 	constructor(arg_runtime, arg_manager)
 	{
-		super(arg_runtime, arg_manager, 'default', '1.0.0')
+		super(arg_runtime, arg_manager, 'DefaultRendering', '1.0.0')
 	}
+
+
+
+	/**
+	 * Get plugin js asset files for browser loading.
+	 * 
+	 * @returns {string}
+	 */
+	get_browser_plugin_file_url()
+	{
+		// return plugin_name + '/devapt-default-rendering.js'
+		return undefined
+	}
+
+	
+    
+	/**
+     * Get a feature class.
+	 * 
+     * @param {string} arg_class_name - feature class name.
+     * 
+	 * @returns {object|undefined} feature class.
+     */
+	get_feature_class(arg_class_name)
+	{
+		assert( T.isString(arg_class_name), context + ':get_feature_class:bad class string')
+		
+		return undefined
+	}
+
 	
 	
 	has(arg_class_name)
 	{
 		assert( T.isString(arg_class_name), context + ':has:bad class string')
 		
-		switch(arg_class_name)
+		switch(arg_class_name.toLocaleLowerCase())
 		{
 			// SPECIAL CASE, NOT RENDERING FUNCTIONS
 			case 'rendering_normalize':
-			case 'RenderingResult':
+			case 'renderingresult':
 			case 'rendering_factory':
 			
 			// RENDERING FUNCTIONS
@@ -87,7 +117,7 @@ export default class DefaultPlugin extends RenderingPlugin
 			case 'rendering_normalize':
 				return DefaultRendering.rendering_normalize
 
-			case 'RenderingResult':
+			case 'renderingresult':
 				return DefaultRendering.RenderingResult
 
 			case 'rendering_factory':

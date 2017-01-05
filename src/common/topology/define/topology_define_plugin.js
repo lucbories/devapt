@@ -84,19 +84,19 @@ export default class TopologyDefinePlugin extends TopologyDefineItem
 			let file_path = undefined
 			const pkg = this.topology_plugin_package
 
-			file_path = self.runtime.context.get_absolute_path('./node_modules/', pkg)
+			file_path = self.get_runtime().context.get_absolute_path('./node_modules/', pkg)
 			let file_path_stats = file_path ? fs.statSync(file_path) : undefined
 			if ( ! file_path_stats || ! file_path_stats.isDirectory())
 			{
-				file_path = self.runtime.context.get_absolute_path('../node_modules/', pkg)
+				file_path = self.get_runtime().context.get_absolute_path('../node_modules/', pkg)
 				file_path_stats = file_path ? fs.statSync(file_path) : undefined
 				if ( ! file_path_stats || ! file_path_stats.isDirectory())
 				{
-					file_path = self.runtime.context.get_absolute_path('../../node_modules/', pkg)
+					file_path = self.get_runtime().context.get_absolute_path('../../node_modules/', pkg)
 					file_path_stats = file_path ? fs.statSync(file_path) : undefined
 					if ( ! file_path_stats || ! file_path_stats.isDirectory())
 					{
-						file_path = self.runtime.context.get_absolute_path('../../../node_modules/', pkg)
+						file_path = self.get_runtime().context.get_absolute_path('../../../node_modules/', pkg)
 						file_path_stats = file_path ? fs.statSync(file_path) : undefined
 						if ( ! file_path_stats || ! file_path_stats.isDirectory())
 						{
@@ -122,7 +122,7 @@ export default class TopologyDefinePlugin extends TopologyDefineItem
 		// LOAD A PLUGIN FROM A PATH
 		else if ( T.isString(this.topology_plugin_file) )
 		{
-			const file_path = self.runtime.context.get_absolute_path(this.topology_plugin_file)
+			const file_path = self.get_runtime().context.get_absolute_path(this.topology_plugin_file)
 			console.log(context + ':load_rendering_plugins:file_path=%s for plugin=%s', file_path, this.get_name())
 
 			plugin_class = require(file_path)
@@ -191,6 +191,7 @@ export default class TopologyDefinePlugin extends TopologyDefineItem
 
 		const fn = this.topology_plugin_instance.find_rendering_function(arg_type)
 		// console.log(fn, context + ':find_rendering_function:rendering function for ' + this.get_name())
+
 		return fn
 	}
 }

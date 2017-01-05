@@ -237,7 +237,6 @@ export default class TopologyDefineApplication extends TopologyDefineItem
 	{
 		if ( (! T.isString(arg_type) ) || arg_type.length == 0)
 		{
-			debugger
 			this.error(context + ':find_rendering_function:bad type:', arg_type, typeof arg_type)
 			return undefined
 		}
@@ -245,13 +244,13 @@ export default class TopologyDefineApplication extends TopologyDefineItem
 		const tenant = this.get_topology_owner()
 		if (! tenant)
 		{
-			this.error('no owner tenant found for this application')
-			console.error('no owner tenant found for this application')
+			this.error(context + ':find_rendering_function:no owner tenant found for this application')
+			console.error(context + ':find_rendering_function:no owner tenant found for this application')
 			return undefined
 		}
 
 		const used_plugins_array = this.app_used_plugins.toArray()
-		// console.log('application.find_resource ' + arg_name + ' in packages ' + used_packages_array.toString() )
+		// console.log('application.find_rendering_function ' + arg_type + ' in packages ' + used_plugins_array.toString() )
 
 		let plugin_index = 0
 		for( ; plugin_index < used_plugins_array.length ; plugin_index++)
@@ -275,7 +274,7 @@ export default class TopologyDefineApplication extends TopologyDefineItem
 			}
 		}
 
-		this.warn(context + ':find_rendering_function NOT FOUND ' + arg_type + ' in plugin ' + used_plugins_array.toString() )
+		this.warn(context + ':find_rendering_function: NOT FOUND ' + arg_type + ' in plugin ' + used_plugins_array.toString() )
 		return undefined
 	}
 }

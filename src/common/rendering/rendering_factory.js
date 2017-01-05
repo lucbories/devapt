@@ -1,7 +1,7 @@
 // NPM IMPORTS
 import T from 'typr'
-import assert from 'assert'
-import VNode from 'virtual-dom/vnode/vnode'
+// import assert from 'assert'
+// import VNode from 'virtual-dom/vnode/vnode'
 import VText from 'virtual-dom/vnode/vtext'
 
 // COMMON IMPORTS
@@ -23,14 +23,14 @@ let context = 'common/rendering/rendering_factory'
 
 
 const from_string = (arg_item, arg_rendering_context=undefined)=>{
-	if (arg_rendering_context && arg_rendering_context.topology_defined_application && arg_rendering_context.topology_defined_application.find_resource)
+	if (arg_rendering_context && arg_rendering_context.resolver && arg_rendering_context.resolver.find_resource_description)
 	{
-		arg_rendering_context.trace_fn(context + ':from_string:search item [' + arg_item + '] in defined application [' + arg_rendering_context.topology_defined_application.get_name() + ']')
+		arg_rendering_context.trace_fn(context + ':from_string:search item [' + arg_item + '] in resolver [' + arg_rendering_context.resolver.get_name() + ']')
 
-		const r = arg_rendering_context.topology_defined_application.find_resource(arg_item)
+		const r = arg_rendering_context.resolver.find_resource_description(arg_item)
 		if (r)
 		{
-			const res_settings = r.get_settings_js()
+			const res_settings = r
 			res_settings.settings = res_settings.settings ? res_settings.settings : {}
 			if ( ! res_settings.settings.id)
 			{
@@ -65,17 +65,17 @@ const from_object = (arg_item, arg_rendering_context=undefined)=>{
 	// debugger
 	arg_rendering_context.trace_fn(arg_item, context + ':from_object:arg_item')
 	arg_rendering_context.trace_fn(type, context     + ':from_object:type')
-	arg_rendering_context.trace_fn(settings, context + ':from_object:settings')
-	arg_rendering_context.trace_fn(state, context    + ':from_object:state')
+	// arg_rendering_context.trace_fn(settings, context + ':from_object:settings')
+	// arg_rendering_context.trace_fn(state, context    + ':from_object:state')
 	arg_rendering_context.trace_fn(children, context + ':from_object:children')
 	
 	settings.children = children
 
-	if (arg_rendering_context && arg_rendering_context.topology_defined_application && arg_rendering_context.topology_defined_application.find_rendering_function)
+	if (arg_rendering_context && arg_rendering_context.resolver && arg_rendering_context.resolver.find_rendering_function)
 	{
 		arg_rendering_context.trace_fn(context + ':from_object:search rendering function into application plugins for ' + type)
 
-		const f = arg_rendering_context.topology_defined_application.find_rendering_function(type)
+		const f = arg_rendering_context.resolver.find_rendering_function(type)
 		if (f)
 		{
 			arg_rendering_context.trace_fn(context + ':from_object:search rendering function into application plugins: FOUND')
@@ -97,7 +97,7 @@ const from_object = (arg_item, arg_rendering_context=undefined)=>{
  * Create a RenderingResult with an item: string, function, view instance as object...
  * 
  * @param {any} arg_item - item configuration.
- * @param {object} arg_rendering_context - rendering context: { trace_fn:..., topology_defined_application:..., credentials:..., rendering_factory:... }.
+ * @param {object} arg_rendering_context - rendering context: { trace_fn:..., resolver:..., credentials:..., rendering_factory:... }.
  * @param {object} arg_children - private view children settings
  * 
  * @returns {RenderingResult}
@@ -105,9 +105,21 @@ const from_object = (arg_item, arg_rendering_context=undefined)=>{
 export default (arg_item, arg_rendering_context=undefined, arg_children={})=>{
 	arg_rendering_context.trace_fn = T.isFunction(arg_rendering_context.trace_fn) ? arg_rendering_context.trace_fn : ()=>{}
 	
+	// FORCE DEBUG
+	// arg_rendering_context.trace_fn = console.log
+
 	arg_rendering_context.trace_fn('-------- rendering_factory:ENTER --------')
 	arg_rendering_context.trace_fn(arg_children, 'children')
 	arg_rendering_context.trace_fn(T.isString(arg_item) ? arg_item : 'not a string', 'item')
+	arg_rendering_context.trace_fn(arg_rendering_context.resolver, 'arg_rendering_context.resolver')
+
+	// ITEM IS A NUMBER: a simple value to display
+	if( T.isNumber(arg_item) )
+	{
+		const result = new RenderingResult()
+		result.add_vtree('tag_' + uid(), new VText('' + arg_item) )
+		return result
+	}
 
 	// ITEM IS A STRING: a text or a view name
 	if( T.isString(arg_item) )

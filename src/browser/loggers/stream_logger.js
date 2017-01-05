@@ -110,7 +110,7 @@ export default class StreamLogger extends Logger
 		// console.log(context + ':convert_array_to_object:', arg_log_array, arg_log_array[3].length)
 		if (arg_log_array[3].length == 0)
 		{
-			const parts = arg_log_array[5].split(':')
+			const parts = T.isString(arg_log_array[5]) ? arg_log_array[5].split(':') : []
 			// console.log(context + ':convert_array_to_object:part 3 = "":', arg_log_array[3], arg_log_array[5], parts)
 
 			if (parts.length > 1 )

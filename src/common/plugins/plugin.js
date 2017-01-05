@@ -51,6 +51,18 @@ export default class Plugin extends Instance
 		this.is_enabled = false
 	}
 
+
+
+	/**
+	 * Get plugin js asset files for browser loading.
+	 * 
+	 * @returns {string}
+	 */
+	get_browser_plugin_file_url()
+	{
+		return undefined
+	}
+
 	
 	
 	/**

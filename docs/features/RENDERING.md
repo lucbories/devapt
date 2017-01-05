@@ -5,11 +5,89 @@ Rendering is the process of making an Html content.
 
 Devapt allows you to render page content on the server or on the browser side or all both together.
 
-Devapt rendering is still server side oriented because of rendering class into the server source tree.
-A work in progress is to rework all rendering process with:
-* stateless and isomorphic component classes with simple signature:
+Devapt rendering is a set of pure functions which take settings, state and context.
+* settings contains what to be rendering: a trre of component descriptions.
+* state has initial values of component: label, placeholder, items...
+* context is an object with rendering helpers: functions resolver, result data to be updated...
+
+Devapt rendering is stateless and isomorphic component classes with simple signature:
+
+All rendering functions update a virtual dom tree based on virtual-dom.
+Rendered virtual nodes are stored in a RenderingResult instance.
+On server side rendering, RenderingResult instance is serialized and given to the browser to update the browser dom tree.
+On browser side, rendering is processed by Component classes which update the real dom tree and manage UI interactions (user actions, stream events...).
+
+A work in progress is to give plugins component class to the browser with browserify build process.
+
+
+
+## At startup
+A page is rendered by the server and send to the browser.
+
+The initial page contains:
+* common page headers
+* applications initial settings and states: window.__INITIAL_STATE__
+* page initial content to be rendered: window.__INITIAL_CONTENT__
+* page initial content headers: css, js...
+* a single empty body DIV tag with id 'content'
+* a devapt bootstrap script
+
+Devapt bootstrap script calls:
 ```javascript
-const component_class = window.document.devapt().runtime().ui().get_component_class(class_name)
+window.devapt().on_dom_loaded( window.devapt().create_runtime )
+window.devapt().on_runtime_created( window.devapt().render_page_content )
+window.devapt().on_content_rendered( window.devapt().init_anchors_commands )
+```
+
+First line create Devapt runtime, load initial Redux state.
+
+Line two render initial content and initialize router current path:
+```javascript
+window.devapt().ui().process_rendering_result(json_result)
+window.devapt().router().set_hash_if_empty('/')
+```
+
+Line three update anchors path with application url prefix.
+
+
+
+## Rendering result process
+At startup <DIV id="content"> is empty and initial RenderingResult contains a virtual tree of the "content" tag.
+
+For example, "content" virtual tree children can contain:
+* "menubar":vnode_a
+* "separator":vnode_b
+* "table":vnode_c
+
+First children components are created and intialized with a vnode:
+```javascript
+// REMOVE "content" existing children
+
+var compo_a = window.devapt().ui("menubar")
+compo_a.process_rendering_result(vnode_a)
+compo_content.get_dom_element().appendChild( compo_a.get_dom_element() )
+
+var compo_b = window.devapt().ui("separator")
+compo_b.process_rendering_result(vnode_b)
+compo_content.get_dom_element().appendChild( compo_b.get_dom_element() )
+
+var compo_c = window.devapt().ui("table")
+compo_c.process_rendering_result(vnode_c)
+compo_content.get_dom_element().appendChild( compo_c.get_dom_element() )
+
+```
+
+
+
+## Rendering component
+Each rendering component is a base class of devapt/src/browser/Component.
+A Component has a private Rendering instance named "_rendering" which manage dom and vnode rendering actions.
+
+
+
+```javascript
+
+const component_instance = window.document.devapt().runtime().ui().get_component_class(class_name)
 const c = new component_class(settings)
 c.render(state)
 ```

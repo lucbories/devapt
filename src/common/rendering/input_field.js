@@ -1,11 +1,10 @@
 // NPM IMPORTS
 import T from 'typr'
-import assert from 'assert'
-import _ from 'lodash'
+// import assert from 'assert'
+// import _ from 'lodash'
 import h from 'virtual-dom/h'
 
 // COMMON IMPORTS
-import RenderingResult from './rendering_result'
 import rendering_normalize from './rendering_normalize'
 
 
@@ -36,7 +35,7 @@ const formats = ['text', 'number', 'date', 'datetime', 'datetime-local', 'email'
  * 
  * @param {object} arg_settings - rendering item settings.
  * @param {object} arg_state - component state.
- * @param {object} arg_rendering_context - rendering context: { trace_fn:..., topology_defined_application:..., credentials:..., rendering_factory:... }.
+ * @param {object} arg_rendering_context - rendering context: { trace_fn:..., resolver:..., credentials:..., rendering_factory:... }.
  * @param {RenderingResult} arg_rendering_result - rendering result to update.
  * 
  * @returns {RenderingResult} - updated Rendering result: VNode or Html text, headers.
@@ -47,6 +46,7 @@ export default (arg_settings, arg_state={}, arg_rendering_context, arg_rendering
 	
 	// GET SETTINGS ATTRIBUTES
 	const format = (T.isString(settings.format) && formats.indexOf(settings.format) > -1) ? settings.format : 'text'
+	const css_label_class = T.isString(settings.css_class_label) ? settings.css_class_label : undefined
 		
 	// GET STATE ATTRIBUTES
 	const placeholder_value = T.isString(state.placeholder) ? state.placeholder : undefined
@@ -54,7 +54,7 @@ export default (arg_settings, arg_state={}, arg_rendering_context, arg_rendering
 	const label_value = T.isString(state.label) ? state.label : undefined
 
 	// BUILD INPUT TAG
-	const input_id = settings.id
+	const input_id = label_value ? settings.id + '_input' : settings.id
 	const input_children = undefined
 	const input_props = { id:input_id, type:format, value:default_value, placeholder:placeholder_value, style:settings.style, class:settings.class }
 	const input = h('input', input_props, input_children)
@@ -66,10 +66,12 @@ export default (arg_settings, arg_state={}, arg_rendering_context, arg_rendering
 	}
 
 	// BUILD LABEL TAG
-	const label_children = [input]
-	const label_props = { for:input_id, value:label_value }
-	const label = h('label', label_props, label_children)
-	rendering_result.add_vtree(input_id, label)
+	const label_id = input_id + '_label'
+	const label_props = { id:label_id, for:input_id, class:css_label_class }
+	const label = h('label', label_props, [label_value])
+
+	const div = h('div', { id:settings.id }, [label, input])
+	rendering_result.add_vtree(settings.id, div)
 
 	return rendering_result
 }

@@ -9,7 +9,7 @@ import {SOURCE_LOCAL_FILE} from '../../common/datas/providers/json_provider'
 import Context from '../../common/base/context'
 import Transaction from '../../common/base/transaction'
 import RuntimeBase from '../../common/base/runtime_base'
-import LoggerManager from '../../common/loggers/logger_manager'
+// import LoggerManager from '../../common/loggers/logger_manager'
 import topology_registry from '../../common/topology/registry/index'
 
 // SERVER IMPORTS

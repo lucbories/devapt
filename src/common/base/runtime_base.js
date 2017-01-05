@@ -4,8 +4,10 @@ import assert from 'assert'
 // import Bacon from 'baconjs'
 
 // COMMON IMPORTS
-import Settingsable from './settingsable'
-import LoggerManager from '../loggers/logger_manager'
+import Settingsable           from './settingsable'
+import LoggerManager          from '../loggers/logger_manager'
+// import RenderingDefaultPlugin from '../default_plugins/rendering_default_plugin'
+// import RenderingPlugin        from '../plugins/rendering_plugin'
 
 
 let context = 'browser/runtime'
@@ -39,7 +41,7 @@ export default class RuntimeBase extends Settingsable
 		super({}, log_context, logger_manager)
 		
 		this.is_base_runtime = true
-		
+
 		this.current_state = undefined
 		this._state_store = undefined
 		

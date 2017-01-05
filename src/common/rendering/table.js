@@ -1,12 +1,12 @@
 // NPM IMPORTS
 import T from 'typr'
-import assert from 'assert'
-import _ from 'lodash'
+// import assert from 'assert'
+// import _ from 'lodash'
 import h from 'virtual-dom/h'
 
 // COMMON IMPORTS
-import RenderingResult from './rendering_result'
 import rendering_normalize from './rendering_normalize'
+import uid from '../utils/uid'
 
 
 let context = 'common/rendering/table'
@@ -35,7 +35,7 @@ const default_settings = {
  * 
  * @param {object} arg_settings - rendering item settings.
  * @param {object} arg_state - component state.
- * @param {object} arg_rendering_context - rendering context: { trace_fn:..., topology_defined_application:..., credentials:..., rendering_factory:... }.
+ * @param {object} arg_rendering_context - rendering context: { trace_fn:..., resolver:..., credentials:..., rendering_factory:... }.
  * @param {RenderingResult} arg_rendering_result - rendering result to update.
  * 
  * @returns {RenderingResult} - updated Rendering result: VNode or Html text, headers.
@@ -61,38 +61,47 @@ export default (arg_settings, arg_state={}, arg_rendering_context, arg_rendering
 	const cell_fn = (cell) =>{
 		return T.isFunction(rendering_factory) ? rendering_factory(cell, rendering_context, settings.children).get_final_vtree(undefined, rendering_result) : cell.toString()
 	}
-	const th_fn = (header, index) =>{
-		if ( T.isObject(header) && ! T.isString(header.type) )
+	const cell_content=(tag, cell_settings, index)=>{
+		// CELL CONTENT SETTINGS IS AN OBJECT
+		if ( T.isObject(cell_settings) )
 		{
-			if ( !T.isString(header.key) )
+			// CELL CONTENT IS A VALUE
+			if ( ! T.isString(cell_settings.type) && T.isString(cell_settings.value) )
 			{
-				header.key = header.view
+				if ( ! T.isString(cell_settings.key) )
+				{
+					cell_settings.key = uid()
+				}
+				
+				return h(tag, { id:settings.id + '_' + cell_settings.key }, [ cell_settings.value ])
 			}
-			if ( T.isString(header.value) )
+
+			// CELL CONTENT IS A VIEW
+			if ( ! T.isString(cell_settings.type) && T.isString(cell_settings.view) )
 			{
-				return h('th', { id:settings.id + '_' + header.key }, header.value)
+				if ( ! T.isString(cell_settings.key) )
+				{
+					cell_settings.key = cell_settings.view
+				}
+
+				return h(tag, { id:settings.id + '_' + cell_settings.key }, [ cell_fn(cell_settings.view) ] )
 			}
-			if ( T.isString(header.view) )
+
+			// CELL IS A RENDERING SETTINGS
+			if ( T.isString(cell_settings.type) )
 			{
-				return h('th', { id:settings.id + '_' + header.key }, [ cell_fn(header.view) ] )
+				return h(tag, { id:settings.id + '_' + tag + '_' + index }, [ cell_fn(cell_settings) ] )
 			}
+
+			const str_value = cell_settings.toString()
+			return h(tag, { id:settings.id + '_' + tag + '_' + index }, [ str_value ] )
 		}
-		return h('th', { id:settings.id + '_th_' + index }, cell_fn(header) )
+		
+		const str_value = T.isString(cell_settings) ? cell_settings : ( T.isFunction(cell_settings.toString) ? cell_settings.toString() : 'ERROR')
+		return h(tag, { id:settings.id + '_' + tag + '_' + index }, [ str_value ] )
 	}
-	const td_fn = (content, index)=>{
-		if ( T.isObject(content) && T.isString(content.key) && ! T.isString(content.type) )
-		{
-			if ( T.isString(content.value) )
-			{
-				return h('td', { id:settings.id + '_' + content.key }, content.value)
-			}
-			if ( T.isString(content.view) )
-			{
-				return h('td', { id:settings.id + '_' + content.key }, [ cell_fn(content.view) ] )
-			}
-		}
-		return h('td', undefined, cell_fn(content) )
-	}
+	const th_fn = (content, index)=>cell_content('th', content, index)
+	const td_fn = (content, index)=>cell_content('td', content, index)
 
 	const tr_th_fn = (cells, index)  =>h('tr', { id:settings.id + '_head_row_' + index }, (T.isArray(cells) ? cells : [cells]).map(th_fn) )
 	const tr_td_fn = (cells, index)  =>h('tr', { id:settings.id + '_body_row_' + index }, (T.isArray(cells) ? cells : [cells]).map(td_fn) )

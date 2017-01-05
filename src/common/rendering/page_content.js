@@ -38,7 +38,7 @@ const get_url = (arg_template, arg_url)=>arg_template.replace('{{url}}', arg_url
  * 
  * @param {object} arg_settings - rendering item settings.
  * @param {object} arg_state - component state.
- * @param {object} arg_rendering_context - rendering context: { trace_fn:..., topology_defined_application:..., credentials:..., rendering_factory:... }.
+ * @param {object} arg_rendering_context - rendering context: { trace_fn:..., resolver:..., credentials:..., rendering_factory:... }.
  * @param {RenderingResult} arg_rendering_result - rendering result to update.
  * 
  * @returns {RenderingResult} - updated Rendering result: VNode or Html text, headers.

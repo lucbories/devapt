@@ -115,17 +115,17 @@ export default class ExecutableRouteMiddleware extends ExecutableRoute
 					const view_name = arg_cfg_route.page_view
 					const menubar_name = T.isString(arg_cfg_route.page_menubar) ? arg_cfg_route.page_menubar : undefined
 
-					const renderer_result = renderer.render_page_content(title, view_name, menubar_name, credentials)
+					const html = renderer.render_html_page(title, view_name, menubar_name, credentials)
 
 					// MANAGE ERROR
-					if (! T.isString(renderer_result) )
+					if (! T.isString(html) )
 					{
 						res.status(500)
 						res.send('a rendering error occures for view [' + view_name + ']')
 						return
 					}
 
-					res.send(renderer_result)
+					res.send(html)
 				}
 			}
 			

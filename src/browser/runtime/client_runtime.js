@@ -15,6 +15,7 @@ import StreamLogger from '../loggers/stream_logger'
 import Service from './service'
 import UI from './ui'
 import Router from './router'
+import DisplayCommand from '../commands/display_command'
 
 
 let context = 'browser/runtime/client_runtime'
@@ -59,8 +60,8 @@ export default class ClientRuntime extends RuntimeBase
 		super(context)
 
 		// INIT LOGGING FEATURE ON BROWSER
-		// const console_logger = new ConsoleLogger(true)
-		// this.get_logger_manager().loggers.push(console_logger)
+		const console_logger = new ConsoleLogger(true)
+		this.get_logger_manager().loggers.push(console_logger)
 		
 		const stream_logger = new StreamLogger(undefined, true)
 		this.get_logger_manager().loggers.push(stream_logger)
@@ -91,8 +92,18 @@ export default class ClientRuntime extends RuntimeBase
 		
 		this.info('Client Runtime is created')
 
+		// this.enable_trace()
 		this.disable_trace()
-		// this.update_trace_enabled()
+		this.update_trace_enabled()
+	}
+
+
+	/**
+	 * Get UI.
+	 */
+	ui()
+	{
+		return this._ui
 	}
 
 
@@ -276,7 +287,7 @@ export default class ClientRuntime extends RuntimeBase
 		
 		// GET INITIAL STATE
 		const initial_app_state = this.get_app_initial_state(arg_settings.app_state_strategy)
-		this.debug(initial_app_state, 'initialState')
+		// this.debug('initialState', initial_app_state)
 		this.app_state_strategy = arg_settings.app_state_strategy
 		
 		// GET DEFAULT REDUCER
@@ -310,47 +321,60 @@ export default class ClientRuntime extends RuntimeBase
 
 		// CREATE UI WRAPPER
 		this._ui = new UI(this, this._state_store)
-		
+
 		// CREATE NAVIGATION ROUTER
 		this._router = new Router()
 
+		this._ui.load()
+
+		
 		// ADD COMMANDS ROUTE
-		this._commands = this._state_store.get_state().get('commands', {}).toJS()
-		Object.keys(this._commands).forEach(
-			(cmd_name)=>{
-				const cmd = this._commands[cmd_name]
-				if ( T.isString(cmd.url) )
-				{
-					// MIDDLEWARE RENDERING
-					const middleware = cmd.middleware
-					if ( T.isString(middleware) )
+		const add_cmd_cb = ()=>{
+			this._commands = this._state_store.get_state().get('commands', {}).toJS()
+			this._commands_instances = {}
+			Object.keys(this._commands).forEach(
+				(cmd_name)=>{
+					const cmd = this._commands[cmd_name]
+
+					if (cmd.type != 'display')
 					{
-						this.debug('load:add route handler for cmd [' + cmd_name + '] with middleware:' + middleware)
-						
-						const app_url = this._state_store.get_state().get('app_url', undefined)
-						const mw_route = T.isString(app_url) ? '/' + app_url + cmd.url : cmd.url
-						this._router.add_handler(cmd.url, ()=>this._ui.render_with_middleware(cmd, mw_route, this.session_credentials) )
+						console.warn('load:bad cmd [' + cmd_name + '] with type:' + cmd.type)
 						return
 					}
 
-					// VIEW RENDERING
-					if ( T.isString(cmd.view) )
+					cmd.name = cmd_name
+					if (! (cmd_name in this._commands_instances) )
 					{
-						this.debug('load:add route handler for cmd [' + cmd_name + '] with view:' + cmd.view)
+						this._commands_instances[cmd_name] = new DisplayCommand(this, cmd)
+					}
 
-						const route = cmd.url
-						const menubar = T.isString(cmd.menubar) ? cmd.menubar : undefined
-						this._router.add_handler(route, ()=>this._router.display_content(cmd.view, menubar) )
+					const display_command = this._commands_instances[cmd_name]
+					if (! display_command.is_valid())
+					{
+						this.error('load:no route handler for cmd [' + cmd_name + ']:no valid command settings')
+						console.error('load:no route handler for cmd [' + cmd_name + ']:no valid command settings')
 						return
 					}
-					
-					this.error('load:no route handler for cmd [' + cmd_name + ']:unknow cmd bad view/middleware')
+
+					const route = display_command.get_route()
+					this.debug('load:add route handler for cmd [' + cmd_name + '] with route:' + route)
+					console.debug(context + ':load:add route handler for cmd [' + cmd_name + '] with route:' + route)
+
+					this._router.add_handler(route,
+						()=>{
+							console.debug(context + ':load:execute handler for cmd [' + cmd_name + '] with route:' + route)
+							this._ui.pipe_display_command(display_command)
+						}
+					)
 				}
-			}
-		)
+			)
+		}
+		
+		add_cmd_cb()
 
 		// ENABLE HASH HANDLING
 		this._router.init()
+
 
 		this.leave_group('load')
 		this.separate_level_1()
@@ -571,12 +595,15 @@ export default class ClientRuntime extends RuntimeBase
 	/**
 	 * Get store reducers.
 	 * 
+	 * !!! Do not trace with Loggable.* into reducers with an enabled StreamLogger instance
+	 *  because it dispatch its received trace to update app state.
+	 * 
 	 * @returns {function} - reducer pure function: (previous state, action) => new state
 	 */
 	get_store_reducers()
 	{
 		return (arg_previous_state, arg_action) => {
-			this.info('reducer 1:type=' + arg_action.type + ' for ' + arg_action.component)
+			// console.info('reducer 1:type=' + arg_action.type + ' for ' + arg_action.component)
 			
 			// ADD LOG RECORD
 			if ( T.isString(arg_action.type) && arg_action.type == 'ADD_JSON_LOGS' && T.isArray(arg_action.logs) )
@@ -586,10 +613,20 @@ export default class ClientRuntime extends RuntimeBase
 				return arg_previous_state.setIn(path, logs)
 			}
 
+			// SET PAGE CONTENT
+			if (T.isString(arg_action.type) && arg_action.type ==  'SET_PAGE_CONTENT' && T.isString(arg_action.resource) && arg_action.resource == 'content')
+			{
+				if ( T.isArray(arg_action.content_body) )
+				{
+					const body_contents_path = ['views', 'content', 'state', 'body_contents']
+					return arg_previous_state.setIn(body_contents_path, fromJS(arg_action.content_body) )
+				}
+			}
+
 			// ADD JSON RESOURCE SETTINGS
 			if ( T.isString(arg_action.type) && arg_action.type == 'ADD_JSON_RESOURCE' && T.isString(arg_action.resource) && T.isObject(arg_action.json) )
 			{
-				this.debug('reducer:ADD_JSON_RESOURCE', arg_action.resource, arg_action.json)
+				// console.log('reducer:ADD_JSON_RESOURCE', arg_action.resource, arg_action.json)
 
 				if ( T.isString(arg_action.collection) )
 				{
@@ -610,7 +647,7 @@ export default class ClientRuntime extends RuntimeBase
 			// SET SESSION CREDENTIALS
 			if ( T.isString(arg_action.type) && arg_action.type == 'SET_CREDENTIALS' && T.isObject(arg_action.credentials) )
 			{
-				this.debug('reducer:SET_CREDENTIALS', arg_action.credentials)
+				console.log('reducer:SET_CREDENTIALS', arg_action.credentials)
 				return arg_previous_state.set('credentials', arg_action.credentials)
 			}
 
@@ -661,6 +698,8 @@ export default class ClientRuntime extends RuntimeBase
 	/**
 	 * Handle Redux store changes.
 	 * 
+	 * !! Do not trace with Loggable.* here.
+	 * 
 	 * @returns {nothing}
 	 */
 	handle_store_change()
@@ -670,7 +709,7 @@ export default class ClientRuntime extends RuntimeBase
 		
 		/// TODO
 		
-		this.info('handle_store_change:global', this._state_store.get_state())
+		// this.info('handle_store_change:global', this._state_store.get_state())
 	}
 	
 	

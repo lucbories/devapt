@@ -7,6 +7,7 @@ import _ from 'lodash'
 import {is_server} from '../utils/is_browser'
 import rendering_factory from './rendering_factory'
 import RenderingBuilderAssets from './rendering_builder_assets'
+import RenderingResolverBuilder from './rendering_resolver'
 
 
 const context = 'common/rendering/rendering_builder'
@@ -24,7 +25,16 @@ export default class RenderingBuilder extends RenderingBuilderAssets
      * Create a rendering wrapper class.
 	 * 
 	 * API:
-	 * 		->render_content(arg_title, arg_view, arg_menubar, arg_credentials):string - generate page HTML string.
+	 * 		->constructor(arg_runtime, arg_assets_styles, arg_assets_scripts, arg_assets_img, arg_assets_html, arg_application)
+	 * 
+	 * 		->get_content_description(arg_view_name, arg_menubar_name):object - Get application content description.
+	 * 		->get_initial_state(arg_view_name, arg_menubar_name):string - Get application initial state as a JSON string.
+	 * 
+	 * 		->render_html_page(arg_title, arg_view, arg_menubar, arg_credentials, arg_assets_services=undefined):string -  Render full page into HTML string.
+	 * 		->render_page(arg_title, arg_view, arg_menubar, arg_credentials, arg_assets_services=undefined):RenderingResult - Render full page.
+	 * 
+	 * 		->render_json_content(arg_view, arg_menubar, arg_credentials, arg_assets_services):object - Render page content (inside 'content' DIV element) with a menubar and a view and convert rendering result to JSON.
+	 * 		->render_content(arg_view, arg_menubar, arg_credentials, arg_assets_services):RenderingResult - Render page content (inside 'content' DIV element) with a menubar and a view.
 	 * 
 	 * @param {RuntimeBase} arg_runtime - runtime instance.
 	 * @param {string} arg_assets_styles - application service name to provide style assets.
@@ -37,6 +47,16 @@ export default class RenderingBuilder extends RenderingBuilderAssets
      */
 	constructor(arg_runtime, arg_assets_styles, arg_assets_scripts, arg_assets_img, arg_assets_html, arg_application)
 	{
+		if ( T.isObject(arg_assets_styles) && T.isString(arg_assets_styles.style) && T.isString(arg_assets_styles.script) && T.isString(arg_assets_styles.image) && T.isString(arg_assets_styles.html) )
+		{
+			arg_application = arg_assets_scripts
+
+			arg_assets_scripts = arg_assets_styles.script
+			arg_assets_img = arg_assets_styles.image
+			arg_assets_html = arg_assets_styles.html
+			arg_assets_styles = arg_assets_styles.style
+		}
+
 		super(arg_runtime, arg_assets_styles, arg_assets_scripts, arg_assets_img, arg_assets_html, arg_application)
 		
 		this.update_trace_enabled()
@@ -50,7 +70,7 @@ export default class RenderingBuilder extends RenderingBuilderAssets
 	 * @param {string} arg_view_name - main view name.
 	 * @param {string} arg_menubar_name - main menubar name.
 	 * 
-	 * @returns {string} - state string.
+	 * @returns {object} - content description object as { name:..., type:..., state:..., settings:..., children:... }.
 	 */
 	get_content_description(arg_view_name, arg_menubar_name)
 	{
@@ -63,10 +83,10 @@ export default class RenderingBuilder extends RenderingBuilderAssets
 			},
 			settings:{
 				assets_urls_templates:{
-					script:this.get_assets_script_url('{{url}}'),
-					style:this.get_assets_style_url('{{url}}'),
-					image:this.get_assets_image_url('{{url}}'),
-					html:this.get_assets_html_url('{{url}}')
+					script:is_server() ? this.get_assets_script_url('{{url}}') : this._runtime.ui()._ui_rendering.get_asset_url('{{url}}', 'script', this._runtime.session_credentials),
+					style: is_server() ? this.get_assets_style_url('{{url}}')  : this._runtime.ui()._ui_rendering.get_asset_url('{{url}}', 'style',  this._runtime.session_credentials),
+					image: is_server() ? this.get_assets_image_url('{{url}}')  : this._runtime.ui()._ui_rendering.get_asset_url('{{url}}', 'image',  this._runtime.session_credentials),
+					html:  is_server() ? this.get_assets_html_url('{{url}}')   : this._runtime.ui()._ui_rendering.get_asset_url('{{url}}', 'html',   this._runtime.session_credentials)
 				}
 			},
 			children:{
@@ -86,12 +106,12 @@ export default class RenderingBuilder extends RenderingBuilderAssets
 	
 	
 	/**
-	 * Get application initial state.
+	 * Get application initial state as a JSON string.
 	 * 
 	 * @param {string} arg_view_name - main view name.
 	 * @param {string} arg_menubar_name - main menubar name.
 	 * 
-	 * @returns {string} - state string.
+	 * @returns {string} - state JSON string.
 	 */
 	get_initial_state(arg_view_name, arg_menubar_name)
 	{
@@ -120,6 +140,46 @@ export default class RenderingBuilder extends RenderingBuilderAssets
 		initial_state.menubars   = this._application ? this._application.get_resources_settings('menubars') : {}
 		initial_state.menus      = this._application ? this._application.get_resources_settings('menus') : {}
 		initial_state.models     = this._application ? this._application.get_resources_settings('models') : {}
+
+		initial_state.assets_urls_templates = {
+			script:this.get_assets_script_url('{{url}}'),
+			style:this.get_assets_style_url('{{url}}'),
+			image:this.get_assets_image_url('{{url}}'),
+			html:this.get_assets_html_url('{{url}}')
+		}
+
+		initial_state.plugins_urls= {}
+		if ( T.isArray(initial_state.used_plugins) )
+		{
+			const tenant = this._application.get_topology_owner()
+			if (! tenant)
+			{
+				this.error('no owner tenant found for this application')
+				console.error(context + ':get_initial_state:no owner tenant found for this application')
+			} else {
+				_.forEach(initial_state.used_plugins,
+					(plugin_name)=>{
+						// console.log('plugin_name', plugin_name)
+
+						const plugin = tenant.get_topology_owner().plugin(plugin_name)
+						if ( ! plugin )
+						{
+							console.error(context + ':get_initial_state:plugin not found for [' + plugin_name + ']')
+							return
+						}
+						
+						if ( T.isFunction(plugin.topology_plugin_instance.get_browser_plugin_file_url) )
+						{
+							const url = plugin.topology_plugin_instance.get_browser_plugin_file_url()
+							if ( T.isString(url) )
+							{
+								initial_state.plugins_urls[plugin_name] = url
+							}
+						}
+					}
+				)
+			}
+		}
 		
 		if (! initial_state.views.content)
 		{
@@ -137,22 +197,44 @@ export default class RenderingBuilder extends RenderingBuilderAssets
 
 
 	/**
-	 * Render a complete page.
+	 * Render full page into HTML string.
 	 * 
-	 * @param {string|undefined} arg_tile - page title, application title (optional).
+	 * @param {string|undefined} arg_title - page title, application title (optional).
 	 * @param {string|Component|undefined} arg_view - main view name or instance (optional) (default application view name).
 	 * @param {string|Component|undefined} arg_menubar - main menubar name or instance (optional) (default application menubar name).
 	 * @param {Credentials} arg_credentials - credentials instance.
 	 * @param {object} arg_assets_services - assets record (optional).
 	 * 
-	 * @returns {string|RenderingResult} - rendering result.
+	 * @returns {string} - rendering HTML code.
 	 */
-	render_page_content(arg_title, arg_view, arg_menubar, arg_credentials, arg_assets_services=undefined)
+	render_html_page(arg_title, arg_view, arg_menubar, arg_credentials, arg_assets_services=undefined)
 	{
-		assert( T.isObject(arg_credentials) && arg_credentials.is_credentials, context + ':render_page_content:bad credentials object')
+		const rendering_result = this.render_page(arg_title, arg_view, arg_menubar, arg_credentials, arg_assets_services)
+		const html = rendering_result.get_final_html('page')
+		const rendered_html = this._runtime.context.render_credentials_template(html, arg_credentials)
+
+		return rendered_html
+	}
+
+
+
+	/**
+	 * Render full page.
+	 * 
+	 * @param {string|undefined} arg_title - page title, application title (optional).
+	 * @param {string|Component|undefined} arg_view - main view name or instance (optional) (default application view name).
+	 * @param {string|Component|undefined} arg_menubar - main menubar name or instance (optional) (default application menubar name).
+	 * @param {Credentials} arg_credentials - credentials instance.
+	 * @param {object} arg_assets_services - assets record (optional).
+	 * 
+	 * @returns {RenderingResult} - rendering result instance.
+	 */
+	render_page(arg_title, arg_view, arg_menubar, arg_credentials, arg_assets_services=undefined)
+	{
+		assert( T.isObject(arg_credentials) && arg_credentials.is_credentials, context + ':render_page:bad credentials object')
 		
 		// ONLY FOR SERVER SIDE
-		assert( is_server(), context + ':render_page_content:only for server side')
+		assert( is_server(), context + ':render_page:only for server side')
 
 
 		// SET ASSETS SERVICES NAMES
@@ -163,7 +245,7 @@ export default class RenderingBuilder extends RenderingBuilderAssets
 
 		// GET TOPOLOGY DEFINED APPLICATION
 		const topology_define_app = this.get_topology_defined_application(arg_credentials)
-		assert(topology_define_app, context + ':render_page_content:bad topology_define_app')
+		assert(topology_define_app, context + ':render_page:bad topology_define_app')
 		
 		// GET VIEW
 		const default_view_name = topology_define_app.app_default_view
@@ -183,7 +265,7 @@ export default class RenderingBuilder extends RenderingBuilderAssets
 
 		const view_name = T.isString(arg_view) ? arg_view : ( ( T.isObject(arg_view) && arg_view.is_component ) ? arg_view.get_name() : default_view_name )
 		const menubar_name = T.isString(arg_menubar) ? arg_menubar : ( ( T.isObject(arg_menubar) && arg_menubar.is_component ) ? arg_menubar.get_name() : default_menubar_name )
-		const content_result = this.render_content(view_name, menubar_name, arg_credentials, arg_assets_services)
+		const content_result = this.render_json_content(view_name, menubar_name, arg_credentials, arg_assets_services)
 		const stored_state = this.get_initial_state(view_name, menubar_name)
 
 		const page = {
@@ -238,7 +320,7 @@ export default class RenderingBuilder extends RenderingBuilderAssets
 
 		const rendering_context = {
 			trace_fn:undefined, /*console.log,*/
-			topology_defined_application:topology_define_app,
+			resolver:RenderingResolverBuilder.from_topology('server resolver from topology for page', topology_define_app),
 			credentials:arg_credentials,
 			rendering_factory:rendering_factory
 		}
@@ -254,7 +336,7 @@ export default class RenderingBuilder extends RenderingBuilderAssets
 		
 		content_result.assets_urls_templates = page.settings.assets_urls_templates
 
-		// console.log(context + ':render_page_content:content_result', content_result.vtrees.content.c)
+		// console.log(context + ':render_page:content_result', content_result.vtrees.content.c)
 
 		let content_json_str_result = JSON.stringify(content_result)
 		content_json_str_result = content_json_str_result.replace(/"class"/g, '"className"')
@@ -271,23 +353,39 @@ export default class RenderingBuilder extends RenderingBuilderAssets
 		])
 
 		const rendering_result = rendering_factory(page, rendering_context, page.children)
-		const html = rendering_result.get_final_html('page')
-		const rendered_html = this._runtime.context.render_credentials_template(html, arg_credentials)
-
-		return rendered_html
+		return rendering_result
 	}
 
 	
 
 	/**
-	 * Render a page part.
+	 * Render page content (inside 'content' DIV element) with a menubar and a view and convert rendering result to JSON.
 	 * 
 	 * @param {string|Component|undefined} arg_view - main view name or instance (optional) (default application view name).
 	 * @param {string|Component|undefined} arg_menubar - main menubar name or instance (optional) (default application menubar name).
 	 * @param {Credentials} arg_credentials - credentials instance.
 	 * @param {object} arg_assets_services - assets record (optional).
 	 * 
-	 * @returns {string|RenderingResult} - rendering result.
+	 * @returns {object} - rendering result converted to JSON object.
+	 */
+	render_json_content(arg_view, arg_menubar, arg_credentials, arg_assets_services)
+	{
+		const result = this.render_content(arg_view, arg_menubar, arg_credentials, arg_assets_services)
+		const json = result.convert_to_json()
+		return json
+	}
+
+	
+
+	/**
+	 * Render page content (inside 'content' DIV element) with a menubar and a view.
+	 * 
+	 * @param {string|Component|undefined} arg_view - main view name or instance (optional) (default application view name).
+	 * @param {string|Component|undefined} arg_menubar - main menubar name or instance (optional) (default application menubar name).
+	 * @param {Credentials} arg_credentials - credentials instance.
+	 * @param {object} arg_assets_services - assets record (optional).
+	 * 
+	 * @returns {RenderingResult} - rendering result instance.
 	 */
 	render_content(arg_view, arg_menubar, arg_credentials, arg_assets_services)
 	{
@@ -305,31 +403,58 @@ export default class RenderingBuilder extends RenderingBuilderAssets
 		{
 			assert( T.isString(arg_view) || T.isString(arg_menubar), context + ':bad view or menubar name string')
 			
-			return this._render_content_on_server(arg_view, arg_menubar, arg_credentials)
+			// RUN ON BROWSER SIDE
+			const rendering_result = this._render_content_on_server(arg_view, arg_menubar, arg_credentials)
+			return rendering_result
 		}
 
 		// RUN ON BROWSER SIDE
-		return this._render_content_on_browser(arg_view, arg_menubar, arg_credentials)
+		const rendering_result = this._render_content_on_browser(arg_view, arg_menubar, arg_credentials)
+		return rendering_result
 	}
 
 
 
+	/**
+	 * Render page content on browser side.
+	 * @private
+	 * 
+	 * @param {string|Component|undefined} arg_view - main view name or instance (optional) (default application view name).
+	 * @param {string|Component|undefined} arg_menubar - main menubar name or instance (optional) (default application menubar name).
+	 * @param {Credentials} arg_credentials - credentials instance.
+	 * 
+	 * @returns {RenderingResult} - rendering result instance.
+	 */
 	_render_content_on_browser(arg_view_name, arg_menubar_name, arg_credentials)
 	{
-		const store = window.devapt().runtime().get_state_store()
-		const rendering_resolver = undefined
+		const store = this._runtime.get_state_store()
+		const state = store.get_state()
+
+		const res_resolver = this._runtime.ui().get_resource_description_resolver()
+		const rf_resolver  = this._runtime.ui().get_rendering_function_resolver()
+		const rendering_resolver = RenderingResolverBuilder.from_resolvers('browser resolver from ui', res_resolver, rf_resolver)
 
 		// GET DEFAULT VIEW
-		const default_view_name = store.get('default_view', undefined)
+		const default_view_name = state.get('default_view', undefined)
 		
 		// GET DEFAULT MENUBAR
-		const default_menubar_name = store.get('default_menubar', undefined)
+		const default_menubar_name = state.get('default_menubar', undefined)
 		
 		return this._render_content_common(arg_view_name, arg_menubar_name, arg_credentials, default_view_name, default_menubar_name, rendering_resolver)
 	}
 
 
-	
+
+	/**
+	 * Render page content on server side.
+	 * @private
+	 * 
+	 * @param {string|Component|undefined} arg_view - main view name or instance (optional) (default application view name).
+	 * @param {string|Component|undefined} arg_menubar - main menubar name or instance (optional) (default application menubar name).
+	 * @param {Credentials} arg_credentials - credentials instance.
+	 * 
+	 * @returns {RenderingResult} - rendering result instance.
+	 */
 	_render_content_on_server(arg_view_name, arg_menubar_name, arg_credentials)
 	{
 		// GET TOPOLOGY DEFINED APPLICATION
@@ -342,8 +467,26 @@ export default class RenderingBuilder extends RenderingBuilderAssets
 		// GET DEFAULT MENUBAR
 		const default_menubar_name = topology_define_app.app_default_menubar
 		
-		return this._render_content_common(arg_view_name, arg_menubar_name, arg_credentials, default_view_name, default_menubar_name, topology_define_app)
+		const resolver = RenderingResolverBuilder.from_topology('server resolver from topology', topology_define_app)
+
+		return this._render_content_common(arg_view_name, arg_menubar_name, arg_credentials, default_view_name, default_menubar_name, resolver)
 	}
+
+
+
+	/**
+	 * Render page content helper on browser or server side.
+	 * @private
+	 * 
+	 * @param {string|Component|undefined} arg_view - main view name or instance (optional) (default application view name).
+	 * @param {string|Component|undefined} arg_menubar - main menubar name or instance (optional) (default application menubar name).
+	 * @param {Credentials} arg_credentials - credentials instance.
+	 * @param {string} arg_default_view_name - default view name.
+	 * @param {string} arg_default_menubar_name - default menubar name.
+	 * @param {RenderingResolver} arg_rendering_resolver - object with 'find_rendering_function(type name)' method.
+	 * 
+	 * @returns {RenderingResult} - rendering result instance.
+	 */
 
 
 	_render_content_common(arg_view_name, arg_menubar_name, arg_credentials, arg_default_view_name, arg_default_menubar_name, arg_rendering_resolver)
@@ -358,7 +501,7 @@ export default class RenderingBuilder extends RenderingBuilderAssets
 
 		const rendering_context = {
 			trace_fn:undefined,//console.log,//
-			topology_defined_application:arg_rendering_resolver,
+			resolver:arg_rendering_resolver,
 			credentials:arg_credentials,
 			rendering_factory:rendering_factory
 		}
@@ -367,6 +510,6 @@ export default class RenderingBuilder extends RenderingBuilderAssets
 		
 		rendering_result.assets_urls_templates = content.settings.assets_urls_templates
 
-		return rendering_result.convert_to_json()
+		return rendering_result
 	}
 }

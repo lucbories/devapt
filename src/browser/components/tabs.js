@@ -49,7 +49,7 @@ export default class Tabs extends Container
 	
 	_update_self(arg_prev_element, arg_new_element)
 	{
-		console.log(context + ':_update_self', arg_prev_element, arg_new_element)
+		// console.log(context + ':_update_self', arg_prev_element, arg_new_element)
 	}
 
 
@@ -66,7 +66,7 @@ export default class Tabs extends Container
 			this._children_component = []
 
 			const items = this.get_state_value('items', [])
-			console.log(context + ':get_children_component:init with items:', items)
+			// console.log(context + ':get_children_component:init with items:', items)
 
 			items.forEach(
 				(tab)=>{

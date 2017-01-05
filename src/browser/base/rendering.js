@@ -6,8 +6,9 @@ import diff from 'virtual-dom/diff'
 import patch from 'virtual-dom/patch'
 import create_element from 'virtual-dom/create-element'
 
-
 // COMMON IMPORTS
+import rendering_factory from '../../common/rendering/rendering_factory'
+import RenderingResolverBuilder from '../../common/rendering/rendering_resolver'
 
 // BROWSER IMPORTS
 
@@ -43,8 +44,6 @@ export default class Rendering
 		this._event_delegator = undefined
 		this.set_dom_element( document.getElementById(arg_dom_id) )
 		this._dom_vnode = undefined
-
-		// this.enable_trace()
 	}
 	
 	
@@ -129,22 +128,26 @@ export default class Rendering
 		const prev_elm = this.get_dom_element()
 		const parent_elm = prev_elm ? prev_elm.parentNode : undefined
 
+		// DEBUG
 		// console.log(prev_elm, context + ':set_dom_element:prev_elm')
 		// console.log(new_elm,  context + ':set_dom_element:new_elm')
 		// console.log(parent_elm,  context + ':set_dom_element:parent_elm')
 
+		if (! arg_element)
+		{
+			this._component.leave_group('set_dom_element:no given dom element')
+			return
+		}
+
 		// REMOVE PREVIOUS NODE FROM ITS PARENT
 		if (prev_elm != new_elm)
 		{
-			// console.log(context + ':set_dom_element:prev_elm <> new_elm')
-			if (parent_elm)
-			{
-				parent_elm.removeChild(prev_elm)
-			}
+			this._component.debug('set_dom_element:prev_elm <> new_elm')
 
 			// DISABLE EVENT DELEGATION
 			if (this._event_delegator)
 			{
+				this._component.debug('set_dom_element:destroy existing event delegator')
 				this._event_delegator.destroy()
 			}
 		}
@@ -152,8 +155,11 @@ export default class Rendering
 		// APPEND DOM ELEMENT TO ITS PARENT
 		if (parent_elm)
 		{
+			this._component.debug('set_dom_element:has parent_elm')
+
 			if ( ! this.has_child_element(parent_elm, new_elm) )
 			{
+				this._component.debug('set_dom_element:has parent_elm:append child')
 				parent_elm.appendChild(new_elm)
 			}
 		}
@@ -164,6 +170,7 @@ export default class Rendering
 		// ENABLE EVENT DELEGATION FOR ALL DOM SUB ELEMENTS
 		if (! this._event_delegator)
 		{
+			this._component.debug('set_dom_element:create event delegator')
 			const EventDelegate = require('dom-delegate').Delegate
 			this._event_delegator = new EventDelegate(this._dom_element)
 		} else {
@@ -253,50 +260,90 @@ export default class Rendering
 
 
 	/**
-	 * Render component DOM element.
+	 * Render component VNode.
 	 * 
-	 * @returns {Promise}
+	 * @returns {Promise} - Promise of this component to chain promises.
 	 */
 	render()
 	{
-		const is_rendered = this._component.get_state_value('is_rendered', false)
-		if (is_rendered)
+		this._component.enter_group('render')
+		
+		const credentials = this._component._runtime.session_credentials		
+		const res_resolver = this._component._runtime.ui().get_resource_description_resolver()
+		const rf_resolver  = this._component._runtime.ui().get_rendering_function_resolver()
+		const rendering_resolver = RenderingResolverBuilder.from_resolvers('browser resolver from ui', res_resolver, rf_resolver)
+
+		const rendering_context = {
+			trace_fn:undefined,//console.log,//
+			resolver:rendering_resolver,
+			credentials:credentials,
+			rendering_factory:rendering_factory
+		}
+		
+		// debugger
+
+		const description = res_resolver( this._component.get_name() )
+		description.settings = description.settings ? description.settings : {}
+		description.settings.id = this.get_dom_id()
+		
+		const rendering_result = rendering_factory(description, rendering_context, undefined)
+		
+		const vnode = rendering_result.get_vtree(this.get_dom_id())
+
+		if (!vnode)
 		{
-			return Promise.resolve()
+			const msg = context + ':render:%s:bad vnode for rendering result=' + this._component.get_name()
+			
+			console.log(msg + ':rendering_result', rendering_result)
+			console.log(msg + 'description', description)
+			console.error(msg)
+			
+			this._component.leave_group('render:error')
+			return Promise.reject(msg)
 		}
 
-		if ( ! this.has_vnode() )
-		{
-			return Promise.reject(context + ':render:no dom vnode to render for ' + this._component.get_name())
-		}
+		const ui = window.devapt().ui()
+		let p = this.process_rendering_vnode(vnode)
 
-		if ( ! this.has_dom_element() )
-		{
-			return Promise.reject(context + ':render:no dom element to render for ' + this._component.get_name())
-		}
+		// PROCESS HEADERS
+		ui._ui_rendering.process_rendering_result_headers(rendering_result.headers, credentials)
 
-		// const vnode = this.get_dom_vnode()
-		// const root_element = this.get_dom_element()
-		// const vnode_element = create_element(vnode)
-		// root_element.appendChild(vnode_element)
+		// PROCESS HEAD STYLES AND SCRIPTS
+		ui._ui_rendering.process_rendering_result_styles_urls (document.head, rendering_result.head_styles_urls, credentials)
+		ui._ui_rendering.process_rendering_result_styles_tags (document.head, rendering_result.head_styles_tags, credentials)
+		ui._ui_rendering.process_rendering_result_scripts_urls(document.head, rendering_result.head_scripts_urls, credentials)
+		ui._ui_rendering.process_rendering_result_scripts_tags(document.head, rendering_result.head_scripts_tags, credentials)
+
+		// PROCESS BODY STYLES AND SCRIPTS
+		ui._ui_rendering.process_rendering_result_styles_urls (document.body, rendering_result.body_styles_urls, credentials)
+		ui._ui_rendering.process_rendering_result_styles_tags (document.body, rendering_result.body_styles_tags, credentials)
+		ui._ui_rendering.process_rendering_result_scripts_urls(document.body, rendering_result.body_scripts_urls, credentials)
+		ui._ui_rendering.process_rendering_result_scripts_tags(document.body, rendering_result.body_scripts_tags, credentials)
+
+		this._component.leave_group('render:async')
+		return p
 	}
 
 
 
 	/**
-	 * PROCESS RENDERING RESULT: CREATE OR UPDATE DOM ELEMENT.
+	 * Process rendered VNode: Create or update DOM element.
+	 * 
+	 * @param {VNode} arg_vnode - rendered virtual node.
+	 * 
+	 * @returns {Promise} - Promise of this component to chain promises.
 	 */
 	process_rendering_vnode(arg_vnode)
 	{
 		this._component.enter_group('process_rendering_vnode')
+
+		// DEBUG
+		// debugger
 		// console.log(context + ':process_rendering_vnode:%s:vnode', this._component.get_name(), arg_vnode)
-		
-
-		// const ui = window.devapt().ui()
-
 
 		// GET COMPONENT ATTRIBUTES
 		const dom_id = this.get_dom_id()
+		this._component.debug('process_rendering_vnode:dom_id=' + dom_id)
 		
 		
 		// GET PREVIOUS VNODE OR BUILD IT FROM EXISTING HTML DOM
@@ -304,12 +351,14 @@ export default class Rendering
 		let prev_vnode = this.get_dom_vnode()
 		if ( ! prev_vnode && prev_element)
 		{
+			this._component.debug('process_rendering_vnode:no previous node, one previous element: create a previous vnode (parse previous element)')
 			// console.log(context + ':process_rendering_vnode:no previous vnode and dom element')
 			
 			prev_vnode = vdom_parser(prev_element)
 		}
 		if (! prev_element)
 		{
+			this._component.debug('process_rendering_vnode:no previous element: create previous element with a DIV')
 			// console.log(context + ':process_rendering_vnode:create dom element')
 			
 			prev_element = document.createElement('DIV')
@@ -334,6 +383,7 @@ export default class Rendering
 		// PATCH EXISTING HTML DOM
 		if (prev_vnode && new_vnode && prev_element)
 		{
+			this._component.debug('process_rendering_vnode:previous node, new vnode, previous element:patch existing DOM for ' + this._component.get_name())
 			// console.log(context + ':process_rendering_vnode:previous vnode and new vnode and dom element exist')
 
 			// console.log(context + ':process_rendering_vnode:prev_element', prev_element )
@@ -355,14 +405,18 @@ export default class Rendering
 		// BUILD HTML DOM
 		if (! prev_vnode && new_vnode)
 		{
-			// console.log(context + ':process_rendering_vnode:no previous vnode and new vnode')
+			this._component.debug('process_rendering_vnode:no previous node, new vnode:create element with new vnode')
+			// console.log(context + ':process_rendering_vnode:no previous vnode and new vnode', new_vnode)
 
-			this.set_dom_element( create_element(new_vnode) )
+			const dom_element = create_element(new_vnode)
+			this.set_dom_element(dom_element)
+			
+			// console.log(context + ':process_rendering_vnode:dom_elm', dom_element, this.get_dom_element())
 		}
 
 
 		this._component.leave_group('process_rendering_vnode')
-		return Promise.resolve()
+		return Promise.resolve(this._component)
 	}
 
 
@@ -374,9 +428,13 @@ export default class Rendering
 	 */
 	save_rendering()
 	{
+		this._component.info('save_rendering')
+
 		const dom_element = this.get_dom_element()
 		const vnode = vdom_parser(dom_element)
-		console.log(context + ':save_rendering:vnode', vnode)
+		
+		// console.info(context + ':save_rendering:vnode', vnode)
+
 		this.set_dom_vnode(vnode)
 	}
 }

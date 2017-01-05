@@ -6,6 +6,7 @@
 .project
 .buildpath
 npm-debug.log*
+*.ep
 
 jsconfig.json
 .vscode/launch.json
