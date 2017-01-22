@@ -12,13 +12,13 @@ import Component from '../base/component'
 import Container from '../base/container'
 import Table from '../components/table'
 import LogsTable from '../components/logs_table'
+import AttributesTable from '../components/attributes_table'
 import Tabs from '../components/tabs'
 import Tree from '../components/tree'
 import TableTree from '../components/table_tree'
 import Topology from '../components/topology'
 import RecordsTable from '../components/records_table'
 import InputField from '../components/input-field'
-// import Sparklines from '../components/sparklines'
 
 
 
@@ -110,7 +110,7 @@ export default class UIFactory extends Loggable
 		this.enter_group('create_local:component name=' + arg_component_name)
 
 		let state_path = undefined
-		let component_desc = arg_component_desc
+		let component_desc = arg_component_desc ? ( arg_component_desc.toJS ? arg_component_desc : fromJS(arg_component_desc) ) : undefined
 
 		// SEARCH DESCRIPTION INTO CACHE
 		if (! component_desc)
@@ -202,7 +202,7 @@ export default class UIFactory extends Loggable
 		this.enter_group('create_instance_mix:component name=' + arg_component_name)
 
 		// REGISTER COMPONENT APPLICATION STATE PATH
-		const state_path = arg_state_path ? arg_state_path : ( arg_component_desc.get('type') == 'menubar' ? ['menubars'] : ['views'] )
+		const state_path = arg_state_path ? arg_state_path : ( arg_component_desc.get('type') == 'menubar' ? ['menubars', arg_component_name] : ['views', arg_component_name] )
 		this._state_by_path[arg_component_name] = state_path
 		this._state_by_path[arg_component_name].push('state')
 
@@ -329,15 +329,15 @@ export default class UIFactory extends Loggable
 			case 'input-field':
 			case 'inputfield':   return InputField
 			
-			case 'logstable':    return LogsTable
-			case 'table':        return Table
-			case 'tabs':         return Tabs
+			case 'logstable':       return LogsTable
+			case 'attributestable': return AttributesTable
+			case 'table':           return Table
+			case 'tabs':            return Tabs
 			
 			case 'tabletree':    return TableTree
 			case 'topology':     return Topology
 			case 'recordstable': return RecordsTable
 			case 'tree':         return Tree
-			// case 'sparklines':   return Sparklines
 
 			case 'button':
 			case 'hbox':

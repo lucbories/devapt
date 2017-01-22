@@ -20,6 +20,7 @@ import script          from './script'
 import page            from './page'
 import page_content    from './page_content'
 import tabs            from './tabs'
+import textarea        from './textarea'
 // import tree            from './tree'
 // import treetable       from './treetable'
 
@@ -42,7 +43,8 @@ export {
 	script,
 	page,
 	page_content,
-	tabs/*,
+	tabs,
+	textarea/*,
 	tree,
 	treetabs*/
 }

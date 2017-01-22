@@ -159,6 +159,21 @@ export default class RenderingResult
 
 
 	/**
+	 * Remove a VTree instance.
+	 * 
+	 * @param {string} arg_tag_id - tag id string.
+	 * 
+	 * @returns {nothing}.
+	 */
+	remove_vtree(arg_tag_id)
+	{
+		assert( T.isString(arg_tag_id) && arg_tag_id.length > 0, context + ':add_vtree:bad tag id string')
+		delete this.vtrees[arg_tag_id]
+	}
+
+
+
+	/**
 	 * Convert all VNode to json objects.
 	 * 
 	 * @returns {RenderingResult}

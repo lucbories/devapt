@@ -17,6 +17,7 @@ const deep_prop = Ramda.path // f(field_path, value_to_query)
 // const clone = Ramda.clone
 // const map = Ramda.map
 const merge = Ramda.merge
+const flatten = Ramda.flatten
 
 
 /*
@@ -82,6 +83,7 @@ export const extract = (arg_field_config) => {
 	const field_name = prop_default('unnamed field', 'name', arg_field_config)
 	const field_path = prop_default(undefined, 'path', arg_field_config)
 	const field_value = prop_default(undefined, 'value', arg_field_config)
+	const flat_all = prop_default(undefined, 'flat_all', arg_field_config)
 
 	// console.log(field_name, context + ':extract:field_name')
 	// console.log(field_path, context + ':extract:field_path')
@@ -112,7 +114,7 @@ export const extract = (arg_field_config) => {
 						const v = f(x)
 						if ( check_method(v) )
 						{
-							return v
+							return flat_all ? flatten(v) : v
 						}
 						return default_value
 					}

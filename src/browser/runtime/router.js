@@ -81,6 +81,20 @@ export default class Router extends RouterState
 				return this.do_action_display_content(arg_home_view_name, arg_home_menubar_name)
 			}
 		)
+
+		
+		// REGISTER IGNORE ROUTE
+		this.add_handler('ignore:{path}',
+			()=>{
+				// NOTHING TODO
+			}
+		)
+		this.add_handler('ignore_{path}',
+			()=>{
+				// NOTHING TODO
+			}
+		)
+
 		
 		// REGISTER A PAGE ROUTE (view, menubar)
 		var route = 'view\={view}\,menubar\={menubar}'

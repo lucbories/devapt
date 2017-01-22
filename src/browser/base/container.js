@@ -207,7 +207,7 @@ export default class Container extends Component
 				}
 					
 				this.strategy_resize_state = (arg_items, arg_next_state) => {
-					if (this.max_size)
+					if (arg_items && arg_items.count && this.max_size)
 					{
 						const count = arg_items.count() -  this.max_size
 						if (count > 0)
@@ -227,7 +227,7 @@ export default class Container extends Component
 		// SET DEFAULT METHOD
 		if (! this.strategy_resize_state)
 		{
-			this.strategy_resize_state = () => {}
+			this.strategy_resize_state = (items, next_state) => next_state
 		}
 		if (! this.strategy_resize_ui)
 		{
@@ -306,6 +306,12 @@ export default class Container extends Component
 	 */
 	do_action_append(arg_items_array, arg_items_count)
 	{
+		if (! arg_items_array)
+		{
+			console.warn(context + ':do_action_append:%s:bad arguments', this.get_name())
+			return
+		}
+
 		if ( arguments.length == 2 && T.isNumber(arg_items_array) )
 		{
 			const tmp = arg_items_array
@@ -316,13 +322,11 @@ export default class Container extends Component
 		{
 			arg_items_count = arg_items_array.length
 		}
-		// console.log(context + ':do_action_append:%s:items,count:', this.get_name(), arg_items_array, arg_items_count)
-		assert( T.isNumber(arg_items_count), context + ':do_action_append:bad items count')
 		
-		// if (arg_items_count == 1)
-		// {
-		// 	arg_items_array = [arg_items_array]
-		// }
+		// DEBUG
+		// console.log(context + ':do_action_append:%s:items,count:', this.get_name(), arg_items_array, arg_items_count)
+		
+		assert( T.isNumber(arg_items_count), context + ':do_action_append:bad items count')
 		assert( T.isArray(arg_items_array), context + ':do_action_append:bad items array')
 
 		this.dispatch_action('append', {values:arg_items_array, count:arg_items_count } )
@@ -340,6 +344,12 @@ export default class Container extends Component
 	 */
 	do_action_prepend(arg_items_array, arg_items_count)
 	{
+		if (! arg_items_array)
+		{
+			console.warn(context + ':do_action_prepend:%s:bad arguments', this.get_name())
+			return
+		}
+
 		if ( arguments.length == 2 && T.isNumber(arg_items_array) )
 		{
 			const tmp = arg_items_array
@@ -350,17 +360,14 @@ export default class Container extends Component
 		{
 			arg_items_count = arg_items_array.length
 		}
+
+		// DEBUG
 		// console.log(context + ':do_action_prepend:%s:items,count:', this.get_name(), arg_items_array, arg_items_count)
 
 		assert( T.isNumber(arg_items_count), context + ':do_action_prepend:bad items count')
-		
-		// if (arg_items_count == 1)
-		// {
-		// 	arg_items_array = [arg_items_array]
-		// }
-
 		assert( T.isArray(arg_items_array), context + ':do_action_prepend:bad items array')
 		
+		// DEBUG
 		// console.log(context + ':do_action_prepend:arg_items_array', arg_items_array)
 
 		this.dispatch_action('prepend', { values:arg_items_array, count:arg_items_count } )
@@ -378,19 +385,23 @@ export default class Container extends Component
 	 */
 	do_action_replace(arg_items_array, arg_items_count)
 	{
+		if (! arg_items_array)
+		{
+			console.warn(context + ':do_action_replace:%s:bad arguments', this.get_name())
+			return
+		}
+
 		if ( arguments.length == 2 && T.isNumber(arg_items_array) )
 		{
 			const tmp = arg_items_array
 			arg_items_array = arg_items_count
 			arg_items_count = tmp
 		}
-		// console.log(context + ':do_action_replace:%s:items,count:', this.get_name(), arg_items_array, arg_items_count)
-		assert( T.isNumber(arg_items_count), context + ':do_action_replace:bad items count')
 		
-		// if (arg_items_count == 1)
-		// {
-		// 	arg_items_array = [arg_items_array]
-		// }
+		// DEBUG
+		// console.log(context + ':do_action_replace:%s:items,count:', this.get_name(), arg_items_array, arg_items_count)
+		
+		assert( T.isNumber(arg_items_count), context + ':do_action_replace:bad items count')
 		assert( T.isArray(arg_items_array), context + ':do_action_replace:bad items array')
 
 		this.dispatch_action('replace', {values:arg_items_array, count:arg_items_count } )
@@ -409,8 +420,8 @@ export default class Container extends Component
 	 */
 	do_action_insert_at(arg_index, arg_items_array, arg_items_count)
 	{
-		assert( T.isNumber(arg_index), context + ':do_action_replace:bad index number')
-		assert( T.isNumber(arg_items_count), context + ':do_action_replace:bad items count')
+		assert( T.isNumber(arg_index), context + ':do_action_insert_at:bad index number')
+		assert( T.isNumber(arg_items_count), context + ':do_action_insert_at:bad items count')
 		
 		if (arg_items_count == 1)
 		{
@@ -477,8 +488,14 @@ export default class Container extends Component
 	{
 		// console.log(context + ':reduce_action:prev state', arg_previous_state.toJS())
 		
+		if (! arg_previous_state)
+		{
+			console.error(context + ':reduce_action:%s:bad previous state for action=', this.get_name(), arg_action)
+			return undefined
+		}
+
 		// PUSH ACTION ON UI ACTIONS STACK
-		let stack = arg_previous_state.get('ui_actions_stack')
+		let stack =  arg_previous_state.get('ui_actions_stack')
 		stack = stack ? stack.push(arg_action) : fromJS([arg_action])
 
 		if (this._state_action_index >= stack.size - 1)
@@ -512,8 +529,17 @@ export default class Container extends Component
 			
 			case 'append': {
 				const values = arg_action.values
+
+				// DEBUG
 				// console.log('container:reduce_action:append:values', values)
+				// console.log('container:reduce_action:append:prev items', arg_previous_state.get('items').toJS())
 				
+				// NOTHING TO APPEND
+				if (values.length == 0)
+				{
+					return arg_previous_state
+				}
+
 				let items = arg_previous_state.get('items').concat(values)
 				next_state = next_state.set('items', items)
 				
@@ -535,11 +561,11 @@ export default class Container extends Component
 			
 			case 'replace': {
 				const values = arg_action.values
-				// console.log(context + ':reduce_action:replace:values', values)
+				console.log(context + ':reduce_action:replace:values', values)
 				
-				next_state = next_state.set('items', values)
+				next_state = next_state.set('items', fromJS(values))
 				
-				return this.strategy_resize_state(values, next_state)
+				return this.strategy_resize_state(fromJS(values), next_state)
 			}
 			
 			case 'insert_at': {
@@ -696,66 +722,6 @@ export default class Container extends Component
 			this.strategy_resize_ui()
 		}
 	}
-		// if (! arg_previous_state)
-		// {
-		// 	// console.info(context + ':handle_state_change:update initial items')
-			
-		// 	if ( T.isFunction(this.strategy_update) )
-		// 	{
-		// 		const new_items = arg_new_state.get('items').toJS()
-				
-		// 		this.strategy_update(new_items, new_items.length)
-		// 	}
-			
-		// 	if ( T.isFunction(this.strategy_resize_ui) )
-		// 	{
-		// 		this.strategy_resize_ui()
-		// 	}
-		// 	return
-		// }
-		
-		/*if ( arg_previous_state && arg_new_state && arg_previous_state.has('items') && arg_new_state.has('items') )
-		{
-			// console.log(context + ':handle_state_change:arg_previous_state', arg_previous_state.get('items').toJS())
-			// console.log(context + ':handle_state_change:arg_new_state', arg_new_state.get('items').toJS())
-			
-			if ( ! arg_previous_state.get('items').equals( arg_new_state.get('items') ) )
-			{
-				// console.info(context + ':handle_state_change:update items')
-				
-				const new_items = arg_new_state.get('items').toJS()
-				
-				if (new_items.length == 0)
-				{
-					this.ui_items_clear()
-					return
-				}
-				
-				if ( T.isFunction(this.strategy_update) )
-				{
-					// console.info(context + ':handle_state_change:strategy_update')
-					this.strategy_update(new_items, new_items.length)
-				}
-				
-				if ( T.isFunction(this.strategy_resize_ui) )
-				{
-					// console.info(context + ':handle_state_change:resize UI items')
-					this.strategy_resize_ui()
-				}
-				
-				return
-			}
-			
-			if ( arg_previous_state.getIn(['strategy', 'resize_max']) != arg_new_state.getIn(['strategy', 'resize_max']) )
-			{
-				if ( T.isFunction(this.strategy_resize_ui) )
-				{
-					// console.info(context + ':handle_state_change:resize UI items')
-					this.strategy_resize_ui()
-				}
-			}
-		}
-	}*/
 	
 	
 	
@@ -801,6 +767,9 @@ export default class Container extends Component
 		assert( T.isNumber(arg_items_count), context + ':ui_items_append:bad items count')
 		
 		// NOT YET IMPLEMENTED
+
+		const force_rendering = true
+		this.render(force_rendering)
 	}
 	
 	
@@ -819,6 +788,9 @@ export default class Container extends Component
 		assert( T.isNumber(arg_items_count), context + ':ui_items_prepend:bad items count')
 		
 		// NOT YET IMPLEMENTED
+
+		const force_rendering = true
+		this.render(force_rendering)
 	}
 	
 	
@@ -837,6 +809,9 @@ export default class Container extends Component
 		assert( T.isNumber(arg_items_count), context + ':ui_items_replace:bad items count')
 		
 		// NOT YET IMPLEMENTED
+
+		const force_rendering = true
+		this.render(force_rendering)
 	}
 	
 	

@@ -122,6 +122,10 @@ export default (arg_item, arg_rendering_context=undefined, arg_children={})=>{
 	}
 
 	// ITEM IS A STRING: a text or a view name
+	if ( T.isObject(arg_item) && T.isString(arg_item.view) )
+	{
+		arg_item = arg_item.view
+	}
 	if( T.isString(arg_item) )
 	{
 		if (arg_item in arg_children)

@@ -137,22 +137,28 @@ export default class TopologyDefinePlugin extends TopologyDefineItem
 				plugin_class = plugin_class.default
 			}
 
-			const plugin = new plugin_class(arg_runtime, plugins_mgr)
-			plugins_mgr.load_at_first(plugin)
-			plugin.$plugin_class = plugin_class
-			plugin.find_rendering_function = (type)=>{
-				if ( T.isFunction(plugin.$plugin_class.find_rendering_function) )
-				{
-					// console.log('plugin.$plugin_class.find_rendering_function FOUND')
-					return plugin.$plugin_class.find_rendering_function(type)
+			try
+			{
+				const plugin = new plugin_class(arg_runtime, plugins_mgr)
+				plugins_mgr.load_at_first(plugin)
+				plugin.$plugin_class = plugin_class
+				plugin.find_rendering_function = (type)=>{
+					if ( T.isFunction(plugin.$plugin_class.find_rendering_function) )
+					{
+						// console.log('plugin.$plugin_class.find_rendering_function FOUND')
+						return plugin.$plugin_class.find_rendering_function(type)
+					}
+					// console.log('plugin.$plugin_class.find_rendering_function NOT FOUND')
+					return undefined
 				}
-				// console.log('plugin.$plugin_class.find_rendering_function NOT FOUND')
-				return undefined
+
+				this.topology_plugin_instance = plugin
+
+				console.log(context + ':load_rendering_plugins:plugin=%s is loaded', this.get_name())
 			}
-
-			this.topology_plugin_instance = plugin
-
-			console.log(context + ':load_rendering_plugins:plugin=%s is loaded', this.get_name())
+			catch(e) {
+				console.error(context + ':load_rendering_plugins:plugin=%s error during load [%s]', this.get_name(), e.toString())
+			}
 		}
 			
 			

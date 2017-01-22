@@ -214,14 +214,26 @@ export default class BindingStream
 			}
 			else
 			{
-				console.error(context + ':bad bound object string:%s', arg_bound_object)
+				console.error(context + ':bind_stream:bad bound object string:%s', arg_bound_object)
+				return undefined
 			}
 		}
-		
+
+		// TODO: DO NOT USE TYPR TO TEST DOM ELEMENTS
+		// TYPR USE toString FUNCTION TO TEST TYPE against [object Object].
+		// FOR OBJECT, toString give [object Object]
+		// BUT DOM ELEMENTS toString GIVE [object HTMLXXXElement]
 		assert( T.isObject(arg_stream) && arg_stream.is_stream, context + ':bind_stream:bad stream object')
-		assert( T.isObject(arg_bound_object), context + ':bind_stream:bad bound object')
+		assert( T.isObject(arg_bound_object) || typeof arg_bound_object == 'object', context + ':bind_stream:bad bound object')
 		assert( T.isString(arg_bound_method), context + ':bind_stream:bad bound method string')
 		
+		// CHECK OBJECT METHOD
+		if ( ! (arg_bound_method in arg_bound_object) )
+		{
+			console.error(context + ':bind_stream:bad method [%s] for bound object=', arg_bound_method, arg_bound_object)
+			return undefined
+		}
+
 		// DEBUG
 		// arg_stream.get_transformed_stream().onValue(
 		// 	(values) => {

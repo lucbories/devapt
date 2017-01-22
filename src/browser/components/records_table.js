@@ -35,7 +35,7 @@ export default class RecordsTable extends Table
 		
 		this.is_one_record_table_component = true
 		
-		this.table_jqo = $("#" + this.get_dom_id())
+		// this.table_jqo = $("#" + this.get_dom_id())
 		this.records = {}
 		
 		const state = this.get_state_js()
@@ -76,7 +76,10 @@ export default class RecordsTable extends Table
 			records_of_key.forEach(
 				function(record)
 				{
-					self.add_record(record)
+					if ( T.isString(record) || T.isNumber(record) )
+					{
+						self.add_record_string(record)
+					}
 				}
 			)
 		}
@@ -87,33 +90,64 @@ export default class RecordsTable extends Table
 	/**
 	 * Add one record to the table.
 	 * 
-	 * @param {objetc} arg_records - datas records, plain object.
+	 * @param {string} arg_record_str - datas with one record string.
 	 * 
 	 * @returns {nothing}
 	 */
-	add_record(arg_record)
+	add_record_string(arg_record_str)
 	{
 		// console.log(arg_record, 'table.add_record:arg_record')
 		
 		var self = this
 		
-		if (arg_record in this.records)
+		if (arg_record_str in this.records)
 		{
 			return
 		}
 		
-		var row_id = this.get_dom_id() + '_' + arg_record
-		var html = '<tr colspan="3" id="' + row_id + '"><td>' + arg_record + '</td></tr>'
+		var row_id = this.get_dom_id() + '_' + arg_record_str
+		// var html = '<tr colspan="3" id="' + row_id + '"><td>' + arg_record_str + '</td></tr>'
 		
+		const table_elem = this.get_dom_element()
+		const table_body_elem = table_elem.getElementsByTagName( "tbody" )[0]
+
+		// APPEND FIRST ROW
+		let tr_element = document.createElement('tr')
+		tr_element.setAttribute('colspan', '3')
+		tr_element.setAttribute('id', row_id)
+		table_body_elem.appendChild(tr_element)
+		
+		let td_element = document.createElement('td')
+		td_element.innerHTML = arg_record_str
+		tr_element.appendChild(td_element)
+
+		// APPEND FIELDS ROWS
 		this.fields.forEach(
 			function(field, index)
 			{
-				html += '<tr> <td></td> <td>' + self.labels[index] + '</td> <td id="' + row_id + '_' + field + '">0</td> </tr>'
+				tr_element = document.createElement('tr')
+				table_body_elem.appendChild(tr_element)
+
+				td_element = document.createElement('td')
+				td_element.innerHTML = ''
+				tr_element.appendChild(td_element)
+				
+				td_element = document.createElement('td')
+				td_element.innerHTML = index < self.labels.length ? self.labels[index] : ''
+				tr_element.appendChild(td_element)
+
+				td_element = document.createElement('td')
+				td_element.innerHTML = '0'
+				td_element.setAttribute('id', row_id + '_' + field)
+				tr_element.appendChild(td_element)
+
+				// html += '<tr> <td></td> <td>' + self.labels[index] + '</td> <td id="' + row_id + '_' + field + '">0</td> </tr>'
 			}
 		)
 		
-		$('tbody', this.table_jqo).append(html)
-		this.records[arg_record] = row_id
+		// $('tbody', this.table_jqo).append(html)
+
+		this.records[arg_record_str] = row_id
 	}
 	
 	
@@ -195,7 +229,9 @@ export default class RecordsTable extends Table
 					}
 					
 					var field_id = row_id + '_' + field
-					$("#" + field_id).text(value)
+					// $("#" + field_id).text(value)
+					const element = document.getElementById(field_id)
+					element.textContent = value
 				}
 				else
 				{

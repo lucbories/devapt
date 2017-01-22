@@ -36,11 +36,23 @@ export default class UI extends Loggable
 	 * 	API:
 	 * 		->constructor(arg_runtime, arg_store)
 	 * 
+	 * 		->is_loaded():boolean - Test if UI is loaded and is ready to process display commands.
+	 * 		
+	 * 		->create_display_command(arg_cmd_settings):DisplayCommand - Create a DisplayCommand instance.
+	 * 		->pipe_display_command(arg_display_command):nothing - Append a display command to the UI commands pipe.
+	 * 
+	 * 		->get_current_layout():Layout - Get current application layout.
+	 * 		->get_resource_description_resolver():function - Get a resolver function to find UI component description.
+	 * 		->get_rendering_function_resolver():function - Get a resolver function to find UI rendering function.
+	 * 		->get_rendering_class_resolver():Class - Get a resolver function to find UI component class.
+	 * 		
+	 * 		->load():nothing - Load plugins.
+	 * 
 	 * 		->get(arg_name):Component - Get a UI component by its name.
 	 * 		->create(arg_name):Component - Create a UI component.
-	 * 		->find_component_desc(arg_state, arg_name, arg_state_path = []):Immutable.Map|undefined - Find a UI component state.
-	 * 
-	 * 		->render(arg_view_name):Promise(Component) - Render a view by its name.
+	 * 		
+	 * 		->register_rendering_plugin(arg_plugin_class):nothing - Register a browser rendering plugin.
+	 * 		->request_middleware(arg_middleware, arg_svc_route):Promise - Request server about middleware rendering.
 	 * 
 	 * @param {object} arg_runtime - client runtime.
 	 * @param {object} arg_store - UI components state store.
@@ -149,7 +161,16 @@ export default class UI extends Loggable
 			{
 				console.log(context + ':pipe_display_command:create a timer')
 
+				const max_loops = 100
+				let loop_counter = 0
 				const finished_cb = ()=>{
+					++loop_counter
+					if (loop_counter > max_loops)
+					{
+						console.log(context + ':pipe_display_command:UI is not loaded, delay of 50ms, max loops is reached=', max_loops)
+						return
+					}
+
 					if (! this.is_loaded())
 					{
 						console.log(context + ':pipe_display_command:UI is not loaded, delay of 50ms')
@@ -176,26 +197,6 @@ export default class UI extends Loggable
 
 		console.log(context + ':pipe_display_command:UI is already loaded', arg_display_command.get_name(), arg_display_command)
 		this._display_commands_pipe.push(arg_display_command)
-
-		// const finished_cb = ()=>{
-		// 	if (this.is_loaded())
-		// 	{
-		// 		console.log(context + ':pipe_display_command:UI is loaded')
-
-		// 		this._display_commands_pipe.push(arg_display_command)
-		// 	} else {
-		// 		console.log(context + ':pipe_display_command:UI is not loaded, delay of 50ms')
-
-		// 		setTimeout(finished_cb, 50)
-		// 	}
-		// }
-
-		// finished_cb()
-	}
-
-	add_waiting_display_command()
-	{
-
 	}
 
 
@@ -243,6 +244,13 @@ export default class UI extends Loggable
 		}
 	}
 
+	
+	
+	/**
+	 * Get a resolver function to find UI rendering function.
+	 * 
+	 * @returns {function} - (string)=>function.
+	 */
 	get_rendering_function_resolver()
 	{
 		return (arg_type)=>{
@@ -273,6 +281,13 @@ export default class UI extends Loggable
 		}
 	}
 
+	
+	
+	/**
+	 * Get a resolver function to find UI component class.
+	 * 
+	 * @returns {Class} - (string)=>Class.
+	 */
 	get_rendering_class_resolver()
 	{
 		return (arg_type)=>{
@@ -304,6 +319,11 @@ export default class UI extends Loggable
 	}
 
 
+	/**
+	 * Load plugins.
+	 * 
+	 * @returns {nothing}
+	 */
 	load()
 	{
 		// this._ui_layout = new LayoutSimple(this._runtime, {name:'main layout', type:'simple'})
@@ -374,8 +394,23 @@ export default class UI extends Loggable
 	create(arg_name)
 	{
 		const component_promise = this._ui_factory.create(arg_name)
-		// component._builder = this._ui_builder
 		return component_promise
+	}
+	
+	
+	
+	/**
+	 * Create a UI component.
+	 * 
+	 * @param {string} arg_name - component name.
+	 * @param {object} arg_component_desc - component description.
+	 * 
+	 * @returns {Component} - Component instance.
+	 */
+	create_local(arg_name, arg_component_desc)
+	{
+		const component = this._ui_factory.create_local(arg_name, arg_component_desc)
+		return component
 	}
 
 

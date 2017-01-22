@@ -129,4 +129,59 @@ export default class TopologyDefinePackage extends TopologyDefineItem
 			|| this.menu(arg_name)
 			|| this.menubar(arg_name)
 	}
+
+
+
+	/**
+	 * Get resources names.
+	 * 
+	 * @param {string} arg_type - resource type name (optional).
+	 * 
+	 * @returns {array} - resources names list.
+	 */
+	get_resources_names(arg_type=undefined)
+	{
+		// console.log(context + ':get_resources_names:get resources names for type=%s', arg_type)
+
+		if (arg_type)
+		{
+			switch(arg_type) {
+				case 'command':
+				case 'commands':    return this.commands().get_all_names()
+				
+				case 'service':
+				case 'services':    return this.services().get_all_names()
+
+				case 'datasource':
+				case 'datasources': return this.datasources().get_all_names()
+
+				case 'model':
+				case 'models':      return this.models().get_all_names()
+				
+				case 'view':
+				case 'views':       return this.views().get_all_names()
+
+				case 'menu':
+				case 'menus':       return this.menus().get_all_names()
+
+				case 'menubar':
+				case 'menubars':    return this.menubars().get_all_names()
+			}
+			return []
+		}
+
+		const types = ['commands', 'services', 'datasources', 'models', 'views', 'menus', 'menubars']
+		let names = []
+		_.forEach(types,
+			(type)=>{
+				const type_resources = this[type]().get_resources_names()
+				names = names.concat(type_resources)
+
+				// DEBUG
+				// console.log(context + ':get_resources_names:resources for type=%s', type, type_resources)
+				// console.log(context + ':get_resources_names:resources all types', names)
+			}
+		)
+		return names
+	}
 }

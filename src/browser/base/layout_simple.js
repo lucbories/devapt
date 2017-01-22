@@ -134,7 +134,7 @@ export default class LayoutSimple extends Layout
 				(component)=>{
 					this.debug('switch:target component is rendered for ' + arg_target_component_name)
 
-					component.set_parent_of(arg_previous_component)
+					component.set_dom_parent_of(arg_previous_component)
 					component.show()
 					component.update()
 					component.is_menubar     = arg_is_menubar
@@ -665,7 +665,7 @@ export default class LayoutSimple extends Layout
 				child_component.process_rendering_vnode(child_vnode, arg_rendering_result, arg_credentials)
 				
 				// APPEND CHILD DOM ELEMENT TO CONTENT DOM ELEMENT
-				if ( ! child_component.has_parent(content_element) )
+				if ( ! child_component.has_dom_parent(content_element) )
 				{
 					let child_element = child_component.get_dom_element()
 					if (! child_element)

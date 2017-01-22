@@ -1,8 +1,8 @@
 // NPM IMPORTS
 import T from 'typr'
-import assert from 'assert'
+// import assert from 'assert'
 import _ from 'lodash'
-import h from 'virtual-dom/h'
+// import h from 'virtual-dom/h'
 
 // COMMON IMPORTS
 import uid from '../utils/uid'

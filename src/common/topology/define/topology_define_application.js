@@ -97,8 +97,8 @@ export default class TopologyDefineApplication extends TopologyDefineItem
 		const tenant = this.get_topology_owner()
 		if (! tenant)
 		{
-			this.error('no owner tenant found for this application')
-			console.error('no owner tenant found for this application')
+			this.error('find_resource:no owner tenant found for this application')
+			console.error(context + ':find_resource:no owner tenant found for this application=' + this.get_name())
 			return undefined
 		}
 
@@ -137,9 +137,23 @@ export default class TopologyDefineApplication extends TopologyDefineItem
 	 */
 	get_resources_names(arg_type=undefined)
 	{
+		const tenant = this.get_topology_owner()
+		if (! tenant)
+		{
+			this.error('get_resources_names:no owner tenant found for this application')
+			console.error(context + ':get_resources_names:no owner tenant found for this application=' + this.get_name())
+			return undefined
+		}
+
 		let names = []
-		const used_packages_array = this.app_used_packages.get_latest_items()
-		names = used_packages_array.find( (arg_pkg)=> { names.concat(arg_pkg.get_all_names(arg_type)) } )
+		const used_packages_array = this.app_used_packages.toArray()
+		used_packages_array.map(
+			(arg_pkg_name)=>{
+				const pkg = tenant.package(arg_pkg_name)
+				names = names.concat( pkg.get_resources_names(arg_type) )
+				// console.log(context + ':get_resources_names:resources names package=%s', arg_pkg_name, names)
+			 }
+		)
 		return names
 	}
 

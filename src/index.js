@@ -1,4 +1,5 @@
 // COMMON IMPORTS
+import T from './common/utils/types'
 import RenderingBuilder from './common/rendering/rendering_builder'
 import RenderingPlugin from './common/plugins/rendering_plugin'
 import DefaultRenderingPlugin from './common/default_plugins/rendering_default_plugin'
@@ -29,4 +30,4 @@ import DefaultServicesPlugin from './server/default_plugins/services_default_plu
  */
 
 
-export default { runtime, RenderingBuilder, Component, Container, RenderingPlugin, ServicesPlugin, ServersPlugin, DefaultRenderingPlugin, DefaultServicesPlugin }
+export default { T, runtime, RenderingBuilder, Component, Container, RenderingPlugin, ServicesPlugin, ServersPlugin, DefaultRenderingPlugin, DefaultServicesPlugin }

@@ -41,6 +41,11 @@ const default_settings = {
  * @returns {RenderingResult} - updated Rendering result: VNode or Html text, headers.
  */
 export default (arg_settings, arg_state={}, arg_rendering_context, arg_rendering_result)=>{
+
+	// DEBUG
+	// console.log(context + ':rendering_function:arg_settings=', arg_settings)
+	// console.log(context + ':rendering_function:arg_state=', arg_state)
+
 	// NORMALIZE ARGS
 	const { settings, state, rendering_context, rendering_result } = rendering_normalize(default_settings, default_state, arg_settings, arg_state, arg_rendering_context, arg_rendering_result, context)
 	const rendering_factory = rendering_context ? rendering_context.rendering_factory : undefined
@@ -50,6 +55,9 @@ export default (arg_settings, arg_state={}, arg_rendering_context, arg_rendering
 	const headers_value = T.isArray(state.headers) ? (label_value ? [[label_value]].concat(state.headers) : state.headers) : (label_value ? [[label_value]] : undefined)
 	const items_value   = T.isArray(state.items)   ? state.items : undefined
 	const footers_value = T.isArray(state.footers) ? state.footers : undefined
+
+	// GET SETTINGS ATTRIBUTES
+	const has_body_cursor = T.isBoolean(settings.has_body_cursor) ? settings.has_body_cursor : undefined
 
 	// DEBUG
 	rendering_context.trace_fn(state.headers, context + ':state.headers')
@@ -111,16 +119,24 @@ export default (arg_settings, arg_state={}, arg_rendering_context, arg_rendering
 	const tbody_children = items_value   ? (T.isArray(items_value)   ? items_value   : [items_value]).map(tr_td_fn)   : undefined
 	const tfoot_children = footers_value ? (T.isArray(footers_value) ? footers_value : [footers_value]).map(tr_tf_fn) : undefined
 
-	const thead = h('thead', undefined, thead_children)
-	const tbody = h('tbody', undefined, tbody_children)
-	const tfoot = h('tfoot', undefined, tfoot_children)
+	const thead_props = undefined
+	const tbody_props = has_body_cursor ? { style:"cursor:pointer;" } : undefined
+	const tfoot_props = undefined
+
+	const thead = h('thead', thead_props, thead_children)
+	const tbody = h('tbody', tbody_props, tbody_children)
+	const tfoot = h('tfoot', tfoot_props, tfoot_children)
 
 	// BUILD TAG
 	const tag_id = settings.id
 	const tag_children = [thead, tbody, tfoot]
-	const tag_props = { id:tag_id, style:settings.style, class:settings.class }
+	const tag_props = { id:tag_id, style:settings.style, className:settings.class }
 	const tag = h('table', tag_props, tag_children)
-	
+
+	// DEBUG
+	// console.log(context + ':rendering_function:settings=', settings)
+	// console.log(context + ':rendering_function:tag_props=', tag_props)
+
 	rendering_result.add_vtree(tag_id, tag)
 
 	return rendering_result

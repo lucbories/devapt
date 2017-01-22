@@ -1,13 +1,15 @@
 // NPM IMPORTS
-import T from 'typr/lib/typr'
 import assert from 'assert'
 import Bacon from 'baconjs'
 import { fromJS } from 'immutable'
 
 // COMMON IMPORTS
+import T from '../../common/utils/types'
 import Credentials from '../../common/base/credentials'
 import ReduxStore from '../../common/state_store/redux_store'
 import RuntimeBase from '../../common/base/runtime_base'
+import DefaultRenderingPlugin from '../../common/default_plugins/rendering_default_plugin'
+import RenderingPlugin from '../../common/plugins/rendering_plugin'
 
 // BROWSER IMPORTS
 import ConsoleLogger from '../loggers/console_logger'
@@ -16,6 +18,7 @@ import Service from './service'
 import UI from './ui'
 import Router from './router'
 import DisplayCommand from '../commands/display_command'
+import Component from '../base/component'
 
 
 let context = 'browser/runtime/client_runtime'
@@ -84,6 +87,12 @@ export default class ClientRuntime extends RuntimeBase
 		
 		this.is_browser_runtime = true
 		
+		this.classes = {}
+		this.classes.T = T
+		this.classes.DefaultRenderingPlugin = DefaultRenderingPlugin
+		this.classes.Component = Component
+		this.classes.RenderingPlugin = RenderingPlugin
+
 		this._services = {}
 		this._services_promises = {}
 		this._ui = undefined
@@ -94,7 +103,7 @@ export default class ClientRuntime extends RuntimeBase
 
 		// this.enable_trace()
 		this.disable_trace()
-		this.update_trace_enabled()
+		// this.update_trace_enabled()
 	}
 
 
@@ -327,7 +336,7 @@ export default class ClientRuntime extends RuntimeBase
 
 		this._ui.load()
 
-		
+
 		// ADD COMMANDS ROUTE
 		const add_cmd_cb = ()=>{
 			this._commands = this._state_store.get_state().get('commands', {}).toJS()
@@ -392,6 +401,7 @@ export default class ClientRuntime extends RuntimeBase
 	 */
 	register_service(arg_svc_name, arg_svc_settings)
 	{
+		// this.enable_trace()
 		const self = this
 		this.enter_group('register_service:' + arg_svc_name)
 		
@@ -416,6 +426,7 @@ export default class ClientRuntime extends RuntimeBase
 		)
 		
 		this.info('Client Service is created (async):' + arg_svc_name)
+		console.info('Client Service is created (async):' + arg_svc_name)
 	
 		this.leave_group('register_service:async')
 		return this._services_promises[arg_svc_name]
@@ -459,9 +470,12 @@ export default class ClientRuntime extends RuntimeBase
 			this.debug('register_service_self:SERVICE IS ALREADY REGISTERED for ' + arg_svc_name)
 
 			const svc = this._services[arg_svc_name]
-			// console.log(context + ':register_service_self:SERVICE IS ALREADY REGISTERED:svc', svc)
+			
+			console.log(context + ':register_service_self:SERVICE IS ALREADY REGISTERED:svc', svc)
 			this.debug('register_service:svc promise resolved:' + arg_svc_name)
+			
 			arg_resolve_cb(svc)
+			
 			// this.leave_group('register_service_self')
 			return
 		}
@@ -475,7 +489,9 @@ export default class ClientRuntime extends RuntimeBase
 			// GET APPLICATION CREDENTIALS
 			// TODO CHECK CREDENTIAL FORMAT STRING -> MAP ?
 			arg_svc_settings.credentials = app_credentials
-			// console.log(context + ':register_service_self:credentials', arg_svc_settings.credentials = app_credentials)
+			
+			console.log(context + ':register_service_self:credentials', arg_svc_settings.credentials = app_credentials)
+			
 			assert( T.isObject(arg_svc_settings), context + ':register_service:bad service settings object')
 			
 			if ( T.isString(arg_svc_settings.credentials ) )
@@ -483,7 +499,9 @@ export default class ClientRuntime extends RuntimeBase
 				arg_svc_settings.credentials = JSON.parse(arg_svc_settings.credentials)
 			}
 			const svc = new Service(arg_svc_name, arg_svc_settings)
-			// console.log(context + ':register_service_self:SERVICE FROM GIVEN SETTINGS:svc', svc)
+			
+			console.log(context + ':register_service_self:SERVICE FROM GIVEN SETTINGS:svc', svc)
+			
 			self._services[arg_svc_name] = svc
 			this.debug('register_service:svc promise resolved:' + arg_svc_name)
 			arg_resolve_cb(svc)
@@ -501,7 +519,8 @@ export default class ClientRuntime extends RuntimeBase
 		this.debug('register_service_self:SERVICE FROM SERVER SETTINGS for ' + arg_svc_name)
 		get_settings_stream.onValue(
 			(response) => {
-				// console.log(context + ':register_service_self:SERVICE FROM SERVER SETTINGS:response', response)
+				console.log(context + ':register_service_self:SERVICE FROM SERVER SETTINGS:response', response)
+				
 				arg_svc_settings = response.settings
 				assert( T.isObject(arg_svc_settings), context + ':register_service:bad service settings object')
 				self.debug('register_service_self:SERVICE FROM SERVER SETTINGS:arg_svc_settings', arg_svc_settings)
@@ -669,11 +688,18 @@ export default class ClientRuntime extends RuntimeBase
 						// console.log(context + ':reducer 4:arg_previous_state', arg_previous_state.toJS())
 						
 						const prev_component_state = arg_previous_state.getIn(component.get_state_path())
-						
+						if (! prev_component_state)
+						{
+							console.log(context + ':reducer:arg_previous_state', arg_previous_state.toJS())
+							console.log(context + ':reducer:component.get_state_path()', component.get_state_path())
+							console.error(context + ':reducer:bad prev_component_state', prev_component_state)
+							return fromJS( { error:'no state' } )
+						}
+
 						// console.log(context + ':reducer 4:prev_component_state', prev_component_state.toJS())
 						
 						let new_component_state = component.reduce_action(prev_component_state, arg_action)
-						if (new_component_state != prev_component_state)
+						if (new_component_state && new_component_state != prev_component_state)
 						{
 							const prev_state_version = prev_component_state.get('state_version', 0)
 							new_component_state = new_component_state.set('state_version', prev_state_version + 1)

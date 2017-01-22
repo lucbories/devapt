@@ -487,8 +487,6 @@ export default class RenderingBuilder extends RenderingBuilderAssets
 	 * 
 	 * @returns {RenderingResult} - rendering result instance.
 	 */
-
-
 	_render_content_common(arg_view_name, arg_menubar_name, arg_credentials, arg_default_view_name, arg_default_menubar_name, arg_rendering_resolver)
 	{
 		const menubar = (arg_menubar_name ? arg_menubar_name : arg_default_menubar_name)

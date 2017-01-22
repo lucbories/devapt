@@ -35,6 +35,127 @@ export default class BindingLoader
 	constructor()
 	{
 	}
+
+
+
+	/**
+	 * Normalize an array of objects selectors in an array of objects.
+	 * @static
+	 * 
+	 * @param {RuntimeBase} arg_runtime - client runtime.
+	 * @param {Component} arg_component - component instance.
+	 * @param {array} arg_selectors - selectors strings array.
+	 * @param {array|string} arg_dom_types - selectors strings array or single string (default "dom").
+	 * 
+	 * @returns {array} - objects|strings array.
+	 */
+	static normalize_objects(arg_runtime, arg_component, arg_selectors, arg_dom_types = 'dom')
+	{
+		arg_component.enter_group('normalize_objects')
+
+		if ( ! T.isArray(arg_selectors) )
+		{
+			arg_component.leave_group('normalize_objects:bad selectors array')
+			return []
+		}
+
+		const objects = []
+		arg_selectors.forEach(
+			(selector, index)=>{
+				if ( ! T.isString(selector) )
+				{
+					console.warn('normalize_objects:component=%s:bad selector type=%s', arg_component.get_name(), typeof selector)
+					return
+				}
+
+				// DEBUG
+				// console.log(context + ':normalize_objects:component=%s:binding target dom selector=%s', arg_component.get_name(), dom_selector)
+
+				const object_type = T.isString(arg_dom_types) ? arg_dom_types : ( T.isArray(arg_dom_types) && arg_dom_types.length > index ? arg_dom_types[index] : 'dom')
+
+				if (object_type == 'view')
+				{
+					if (selector == 'this')
+					{
+						arg_component.debug('normalize_objects:view:this is found')
+						objects.push( arg_component)
+						return
+					}
+
+					arg_component.debug('normalize_objects:view:' + selector)
+					const target_object = arg_runtime._ui.get(selector)
+					if (target_object)
+					{
+						objects.push(target_object)
+						return
+					}
+
+					console.warn(context + ':normalize_objects:component=%s:bad view selector=%s', arg_component.get_name(), selector)
+					return
+				}
+
+				if (object_type == 'jquery')
+				{
+					if (selector == 'this')
+					{
+						arg_component.debug('normalize_objects:jquery:this is found')
+						objects.push( $( arg_component.get_dom_id() ) )
+						return
+					}
+					
+					arg_component.debug('normalize_objects:jquery:' + selector)
+					const jqo = $(selector)
+					if (jqo && jqo.length > 0)
+					{
+						objects.push(jqo)
+						return
+					}
+
+					console.warn(context + ':normalize_objects:component=%s:bad jquery selector=%s', arg_component.get_name(), selector, jqo)
+					return
+				}
+
+				if (object_type == 'dom')
+				{
+					if (selector == 'this')
+					{
+						arg_component.debug('normalize_objects:dom:this is found')
+						objects.push( arg_component.get_dom_element() )
+						return
+					}
+
+					arg_component.debug('normalize_objects:dom:' + selector)
+					const element = document.getElementById(selector)
+					if (element)
+					{
+						objects.push(element)
+						return
+					}
+
+					const selection = document.querySelector(selector)
+					if (selection)
+					{
+						objects.push(selection)
+						return
+					}
+
+					console.warn(context + ':normalize_objects:component=%s:bad dom selector=%s', arg_component.get_name(), selector)
+					return
+				}
+
+				if (object_type == 'delegate')
+				{
+					objects.push(selector)
+					return
+				}
+
+				console.warn(context + ':normalize_objects:component=%s:bad selector type=%s for selector=%s', arg_component.get_name(), object_type, selector)
+			}
+		)
+		
+		arg_component.leave_group('normalize_objects')
+		return objects
+	}
 	
 	
 
@@ -69,128 +190,32 @@ export default class BindingLoader
 		const source_timeline   = ('timeline' in arg_binding_cfg) ? arg_binding_cfg['timeline'] : undefined
 		const source_stream     = ('source_stream' in arg_binding_cfg) ? arg_binding_cfg['source_stream'] : undefined
 		// const source_event      = ('event' in arg_binding_cfg) ? arg_binding_cfg['event'] : undefined
-		
-		const source_dom_selector = ('dom_selector' in arg_binding_cfg) ? arg_binding_cfg['dom_selector'] : undefined
-		const source_dom_selectors = ('dom_selectors' in arg_binding_cfg) ? arg_binding_cfg['dom_selector'] : (source_dom_selector ? [source_dom_selector] : undefined)
 		const source_dom_event = ('dom_event' in arg_binding_cfg) ? arg_binding_cfg['dom_event'] : undefined
 		
-		const target_view = ('target_view' in arg_binding_cfg) ? arg_binding_cfg['target_view'] : undefined
-		const target_views = ('target_views' in arg_binding_cfg) ? arg_binding_cfg['target_views'] : (target_view ? [target_view] : undefined)
-		
-		const target_dom_selector = ('target_dom_selector' in arg_binding_cfg) ? arg_binding_cfg['target_dom_selector'] : undefined
-		const target_dom_selectors = ('target_dom_selectors' in arg_binding_cfg) ? arg_binding_cfg['target_dom_selectors'] : (target_dom_selector ? [target_dom_selector] : undefined)
-		
+		// SOURCES
+		const source_type = ('source_type' in arg_binding_cfg) ? arg_binding_cfg['source_type'] : undefined
+		const source_types = ('source_types' in arg_binding_cfg) ? arg_binding_cfg['source_types'] : (source_type ? [source_type] : undefined)
+
+		const source_selector = ('source_selector' in arg_binding_cfg) ? arg_binding_cfg['source_selector'] : undefined
+		const source_selectors = ('source_selectors' in arg_binding_cfg) ? arg_binding_cfg['source_selectors'] : (source_selector ? [source_selector] : undefined)
+
+		// TARGETS
+		const target_type = ('target_type' in arg_binding_cfg) ? arg_binding_cfg['target_type'] : undefined
+		const target_types = ('target_types' in arg_binding_cfg) ? arg_binding_cfg['target_types'] : (target_type ? [target_type] : undefined)
+
+		const target_selector = ('target_selector' in arg_binding_cfg) ? arg_binding_cfg['target_selector'] : undefined
+		const target_selectors = ('target_selectors' in arg_binding_cfg) ? arg_binding_cfg['target_selectors'] : (target_selector ? [target_selector] : undefined)
+
+		// METHOD
 		const target_method = ('target_method' in arg_binding_cfg) ? arg_binding_cfg['target_method'] : undefined
 		
-
 		// NORMALIZE SOURCES
-		let sources = []
-		if ( T.isArray(source_dom_selectors) )
-		{
-			source_dom_selectors.forEach(
-				(dom_selector)=>{
-					if ( ! T.isString(dom_selector) )
-					{
-						console.warn(context + ':load:component=%s:bad binding source dom selector type=%s', arg_component.get_name(), typeof dom_selector)
-						return
-					}
-					// console.log(context + ':load:component=%s:binding source dom selector=%s', arg_component.get_name(), dom_selector)
-
-					
-					if (type == 'emitter_dom')
-					{
-						sources.push(dom_selector)
-						return
-					}
-
-					if (dom_selector == 'this')
-					{
-						// if (type == 'emitter_dom')
-						// {
-						// 	sources.push(arg_component)
-						// 	return
-						// }
-
-						const jqo = $( '#' + arg_component.get_dom_id() )
-						sources.push(jqo)
-						return
-					}
-
-					const jqo = $(dom_selector)
-					if (jqo && jqo.length > 0)
-					{
-						sources.push(jqo)
-						return
-					}
-
-					console.warn(context + ':load:component=%s:bad binding source dom selector=%s', arg_component.get_name(), dom_selector)
-				}
-			)
-		}
-		
-
+		// console.log(context + ':load:component=%s:binding type=%s:source_selectors&source_types=', arg_component.get_name(), type, source_selectors, source_types)
+		const sources = source_selectors ? this.normalize_objects(arg_runtime, arg_component, source_selectors, source_types) : undefined
 
 		// NORMALIZE TARGETS
-		let targets = []
-		if ( T.isArray(target_views) )
-		{
-			target_views.forEach(
-				(view_name)=>{
-					if ( ! T.isString(view_name) )
-					{
-						console.warn(context + ':load:component=%s:bad binding target view type=%s', arg_component.get_name(), typeof view_name)
-						return
-					}
-					// console.log(context + ':load:component=%s:binding target view name=%s', arg_component.get_name(), view_name)
-
-					if (view_name == 'this')
-					{
-						targets.push(arg_component)
-						return
-					}
-
-					const target_object = arg_runtime._ui.get(view_name)
-					if (target_object)
-					{
-						targets.push(target_object)
-						return
-					}
-
-					console.warn(context + ':load:component=%s:bad binding target view=%s', arg_component.get_name(), view_name)
-				}
-			)
-		}
-		
-		if ( T.isArray(target_dom_selectors) )
-		{
-			target_dom_selectors.forEach(
-				(dom_selector)=>{
-					if ( ! T.isString(dom_selector) )
-					{
-						console.warn(context + ':load:component=%s:bad binding target dom selector type=%s', arg_component.get_name(), typeof dom_selector)
-						return
-					}
-					// console.log(context + ':load:component=%s:binding target dom selector=%s', arg_component.get_name(), dom_selector)
-
-					if (dom_selector == 'this')
-					{
-						const jqo = $( '#' + arg_component.get_dom_id() )
-						targets.push(jqo)
-						return
-					}
-
-					const jqo = $(dom_selector)
-					targets.push(jqo)
-					if (jqo && jqo.length > 0)
-					{
-						return
-					}
-
-					console.warn(context + ':load:component=%s:bad binding target dom selector=%s', arg_component.get_name(), dom_selector)
-				}
-			)
-		}
-
+		// console.log(context + ':load:component=%s:binding type=%s:target_selectors&target_types=', arg_component.get_name(), type, target_selectors, target_types)
+		const targets = target_selectors ? this.normalize_objects(arg_runtime, arg_component, target_selectors, target_types) : undefined
 
 		// GET STARTING VALUE
 		let starting_value = undefined
@@ -209,7 +234,7 @@ export default class BindingLoader
 
 
 		// BIND SOURCES AND TARGETS
-		// console.log(context + ':load:component=%s:binding type=%s', arg_component.get_name(), type)
+		console.log(context + ':load:component=%s:binding type=%s', arg_component.get_name(), type)
 		switch(type)
 		{
 			case 'timeline': {
@@ -243,7 +268,6 @@ export default class BindingLoader
 					.set_source_service_name(source_svc_name)
 					.set_source_service_method(source_svc_method)
 					.set_source_transformation(xform)
-					.set_source_timeline_name(source_timeline)
 					.set_targets_instances_array(targets)
 					.set_target_method_name(target_method)
 					.set_options(options)
@@ -264,6 +288,8 @@ export default class BindingLoader
 					}
 				)
 				
+				console.log(context + ':load:component=%s:binding type=%s:event=%s:sources=', arg_component.get_name(), type, source_dom_event, sources)
+				
 				return new BindingStream(arg_id, arg_runtime, arg_component)
 					.set_stream(streams)
 					.set_state_path(state_path)
@@ -280,26 +306,35 @@ export default class BindingLoader
 				assert( T.isString(source_dom_event),  context + format(':load:component=%s:bad source event=%s',     arg_component.get_name(), source_dom_event) )
 				assert( T.isString(target_method),  context + format(':load:component=%s:bad target method=%s',       arg_component.get_name(), target_method) )
 				
-				const nodata = undefined
+				const data = options && options.method && options.method.operands ? options.method.operands : undefined
 				const trace_enabled = true
 				const streams = []
 				sources.forEach(
-					(dom_selector)=>{
+					(arg_dom_selector)=>{
 						const stream = new Stream()
-						const handler = (component, dom_event_name, dom_selector, dom_event, dom_event_target, arg_data)=>{
+						const handler = (component, dom_event_name, arg_selector, dom_event, dom_event_target, arg_data)=>{
 							const data = {
+								is_event_handler:true,
 								component_name:component.get_name(),
 								event_name:dom_event_name,
-								dom_selector:dom_selector,
+								dom_selector:arg_selector,
 								target:dom_event_target,
 								data:arg_data
 							}
+							
+							console.log(context + ':load:component=%s:binding type=%s:event=%s:on handler:data=', arg_component.get_name(), type, source_dom_event, data)
+
 							stream.push(data)
 						}
-						arg_component.on_dom_event(source_dom_event, dom_selector, handler, nodata, trace_enabled)
+
+						// console.log(context + ':load:component=%s:binding type=%s:event=%s:selector.id=%s:selector=', arg_component.get_name(), type, source_dom_event, dom_id, arg_dom_selector)
+						
+						arg_component.on_dom_event(source_dom_event, arg_dom_selector, handler, data, trace_enabled)
 						streams.push(stream)
 					}
 				)
+				
+				// console.log(context + ':load:component=%s:binding type=%s:event=%s:sources=', arg_component.get_name(), type, source_dom_event, sources)
 				
 				return new BindingStream(arg_id, arg_runtime, arg_component)
 					.set_stream(streams)
@@ -327,36 +362,9 @@ export default class BindingLoader
 					.build()
 			}
 
-			// case 'stream': {
-			// 	console.log(context + ':load:stream', source_stream)
-			// 	assert( T.isObject(source_stream) && source_stream.is_stream, context + format(':load:component=%s:bad source stream', arg_component.get_name()) )
-			// 	assert( T.isArray(targets) && targets.length > 0, context + format(':load:component=%s:bad targets',  arg_component.get_name()) )
-			// 	// assert( T.isString(source_event),  context + format(':load:component=%s:bad source event=%s',     arg_component.get_name(), source_dom_event) )
-			// 	assert( T.isString(target_method),  context + format(':load:component=%s:bad target method=%s',       arg_component.get_name(), target_method) )
-				
-			// 	const method_cfg = T.isObject(options)    ? options.method  : undefined
-			// 	const operands   = T.isObject(method_cfg) ? method_cfg.operands : undefined
-			// 	const format_cfg = T.isObject(options)    ? options.format  : undefined
-			// 	const stream     = source_stream.get_transformed_stream()
-				
-			// 	const unsubscribes = []
-			// 	targets.forEach(
-			// 		(target)=>{
-			// 			const unsubscribe = this.bind_stream(stream, xform, target, target_method, options, format_cfg, undefined)
-			// 			unsubscribes.push(unsubscribe)
-			// 		}
-			// 	)
-
-			// 	this._unsubscribe = ()=>{
-			// 		unsubscribes.forEach(
-			// 			(unsubscribe)=>{
-			// 				unsubscribe()
-			// 			}
-			// 		)
-			// 	}
-
-			// 	return
-			// }
+			default:{
+				console.warn(context + ':load:component=%s:binding type=%s:type not found', arg_component.get_name(), type)
+			}
 		}
 	}
 }

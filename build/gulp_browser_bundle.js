@@ -41,6 +41,7 @@ module.exports = function (gulp, plugins, arg_task_name)
 			.ignore('socket.io')
 			.ignore('node-forge')
 			.require('./dist/browser/runtime/client_runtime.js', { expose:'client_runtime' } )
+			.require('./dist/browser/index.js', { expose:'devapt' } )
 			.require('./public/js/forge.min.js', { expose:'forge-browser' } )
 		
 		var stream = bundler.bundle()

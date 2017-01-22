@@ -5,6 +5,7 @@ import T from 'typr'
 import h from 'virtual-dom/h'
 
 // COMMON IMPORTS
+import uid from '../utils/uid'
 import rendering_normalize from './rendering_normalize'
 
 

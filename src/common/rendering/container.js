@@ -6,6 +6,7 @@ import h from 'virtual-dom/h'
 
 // COMMON IMPORTS
 import rendering_normalize from './rendering_normalize'
+import uid from '../utils/uid'
 
 
 let context = 'common/rendering/container'
@@ -49,10 +50,50 @@ export default (arg_settings, arg_state={}, arg_rendering_context, arg_rendering
 
 	// BUILD CELL
 	const cell_fn = (cell) => T.isFunction(rendering_factory) ? rendering_factory(cell, rendering_context, settings.children).get_final_vtree(undefined, rendering_result) : cell.toString()
+	const cell_content=(tag, cell_settings, index)=>{
+		// CELL CONTENT SETTINGS IS AN OBJECT
+		if ( T.isObject(cell_settings) )
+		{
+			// CELL CONTENT IS A VALUE
+			if ( ! T.isString(cell_settings.type) && T.isString(cell_settings.value) )
+			{
+				if ( ! T.isString(cell_settings.key) )
+				{
+					cell_settings.key = uid()
+				}
+				
+				return h(tag, { id:settings.id + '_' + cell_settings.key }, [ cell_settings.value ])
+			}
+
+			// CELL CONTENT IS A VIEW
+			if ( ! T.isString(cell_settings.type) && T.isString(cell_settings.view) )
+			{
+				if ( ! T.isString(cell_settings.key) )
+				{
+					cell_settings.key = cell_settings.view
+				}
+
+				return h(tag, { id:settings.id + '_' + cell_settings.key }, [ cell_fn(cell_settings.view) ] )
+			}
+
+			// CELL IS A RENDERING SETTINGS
+			if ( T.isString(cell_settings.type) )
+			{
+				return h(tag, { id:settings.id + '_' + tag + '_' + index }, [ cell_fn(cell_settings) ] )
+			}
+
+			const str_value = cell_settings.toString()
+			return h(tag, { id:settings.id + '_' + tag + '_' + index }, [ str_value ] )
+		}
+		
+		const str_value = T.isString(cell_settings) ? cell_settings : ( T.isFunction(cell_settings.toString) ? cell_settings.toString() : 'ERROR')
+		return h(tag, { id:settings.id + '_' + tag + '_' + index }, [ str_value ] )
+	}
+	const child_content = (content, index)=>cell_content('div', content, index)
 
 	// BUILD TAG
 	const tag_id = settings.id
-	const tag_children = items_value ? items_value.map(cell_fn) : undefined
+	const tag_children = items_value ? items_value.map(child_content) : undefined
 	const tag_props = { id:tag_id, style:settings.style, className:settings.class }
 	const tag = h('div', tag_props, tag_children )
 	

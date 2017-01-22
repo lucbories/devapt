@@ -103,6 +103,9 @@ export default class TopologyDefineService extends TopologyDefineItem
 				case 'html_assets':
 				case 'middleware':
 				case 'messages':
+				case 'resources_query':
+				case 'rest_api_resources_query':
+				case 'rest_api_models_modifier':
 					break;
 				default: return false
 			}

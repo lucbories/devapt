@@ -70,6 +70,8 @@ export default class ResourcesSvcProvider extends ServiceExecProvider
 		this.debug('application_name', application_name)
 		// console.log('application_name', application_name)
 		
+		console.log(context + ':process:with method=%s for tenant=%s and app=%s', arg_method, tenant_name, application_name)
+
 		const defined_tenant = this.get_runtime().defined_world_topology.tenant(tenant_name)
 		assert( T.isObject(defined_tenant) && defined_tenant.is_topology_define_tenant, context + ':process:bad tenant object')
 
@@ -86,10 +88,10 @@ export default class ResourcesSvcProvider extends ServiceExecProvider
 			case 'get': {
 				assert( T.isString(args.resource) && args.resource.length > 0, context + ':process:get:bad resource name string')
 				const resource_name = args.resource
-				const type = (collection && collection) != '*' ? collection : undefined
+				const type = (collection && collection != '*') ? collection : undefined
 				
 				// DEBUG
-				console.log('find resource name=%s with type=%s for tenant=%s and app=%s', resource_name, type, tenant_name, application_name)
+				// console.log('find resource name=%s with type=%s for tenant=%s and app=%s', resource_name, type, tenant_name, application_name)
 
 				const resource_instance = application.find_resource(resource_name, type)
 
@@ -107,7 +109,11 @@ export default class ResourcesSvcProvider extends ServiceExecProvider
 			}
 
 			case 'list': {
-				return Promise.resolve( application.get_resources_names(collection) )
+				
+				// DEBUG
+				// console.log('list resources of collection=%s for tenant=%s and app=%s', collection, tenant_name, application_name)
+				
+				return Promise.resolve( { resources_names:application.get_resources_names(collection) } )
 			}
 
 			// case 'render': { // TODO

@@ -2,6 +2,9 @@
 import T from 'typr/lib/typr'
 import assert from 'assert'
 
+// COMMON IMPORTS
+import html_entities from '../../common/utils/html_entities'
+
 // BROWSER IMPORTS
 import Container from '../base/container'
 
@@ -195,12 +198,10 @@ export default class Table extends Container
 	{
 		const table_elem = this.get_dom_element()
 		const table_body_elem = table_elem.getElementsByTagName( "tbody" )[0]
-		const tr_elems = table_body_elem.children
-		const tr_elems_count = tr_elems.length
-		let row_index = 0
-		for( ; row_index < tr_elems_count ; row_index++)
+
+		while(table_body_elem.hasChildNodes())
 		{
-			const tr_elem = tr_elems[row_index]
+			const tr_elem = table_body_elem.lastChild
 			this.delete_row_elem(tr_elem)
 			table_body_elem.removeChild(tr_elem)
 		}
@@ -218,7 +219,7 @@ export default class Table extends Container
 	 */
 	ui_items_append(arg_items_array, arg_items_count)
 	{
-		// console.log(context + ':ui_items_append:arg_items_array', arg_items_array)
+		// console.log(context + ':ui_items_append:arg_items_array', arg_items_array, arg_items_count)
 
 		let arg_options = arg_options ? arg_options : {}
 		arg_options.mode = 'append'
@@ -254,21 +255,16 @@ export default class Table extends Container
 	 * 
 	 * @returns {nothing}
 	 */
-	ui_items_replace(arg_items_array, arg_items_count)
+	ui_items_replace(arg_items_array/*, arg_items_count*/)
 	{
 		// console.log(context + ':ui_items_replace:arg_items_array', arg_items_array.length)
 		
-		// TODO : update strategy: cleat and replace, update by counts comparison, update by ids comparison...
-		// this.ui_items_clear()
+		// REMOVE ALL EXISTING ROWS
+		this.ui_items_clear()
 		
-		const current_items_count = this.ui_items_get_count()
-		const delta_count = arg_items_array.length - current_items_count
-		const items_to_prepend = (delta_count > 0 && current_items_count > 0) ? arg_items_array.slice(0, delta_count) : arg_items_array
-		// console.log(context + ':ui_items_prepend:items_to_prepend', items_to_prepend)
-
 		let arg_options = arg_options ? arg_options : {}
 		arg_options.mode = 'replace'
-		this.update_rows(items_to_prepend, arg_options)
+		this.update_rows(arg_items_array, arg_options)
 	}
 	
 	
@@ -378,26 +374,50 @@ export default class Table extends Container
 	
 	
 	/**
+	 * Build a row cell DOM element.
+	 *
+	 * @param {any}      arg_cell_value   - cell value.
+	 * @param {integer}  arg_row_index    - row index.
+	 * @param {integer}  arg_column_index - column index.
+	 * @param {Document} arg_document     - DOM document.
+	 * 
+	 * @returns {Element} - TD DOM Element.
+	 */
+	build_cell(arg_cell_value, arg_row_index, arg_column_index, arg_document)
+	{
+		const td_elem = arg_document.createElement('td')
+
+		td_elem.setAttribute('data-column-index', arg_column_index)
+		td_elem.innerText = arg_cell_value
+
+		return td_elem
+	}
+
+	
+	
+	/**
 	 * Build a table row DOM element.
 	 *
 	 * @param {array} arg_row_array - row values array.
 	 * @param {integer} arg_row_index - row index.
 	 * @param {integer} arg_max_cols - max columns number.
+	 * @param {integer} arg_depth        - path depth.
 	 * 
 	 * @returns {Element} - TD DOM Element.
 	 */
-	build_row(arg_row_array, arg_row_index, arg_max_cols)
+	build_row(arg_row_array, arg_row_index, arg_max_cols/*, arg_depth*/)
 	{
 		const this_document = this.get_dom_element().ownerDocument
 		const row_elem = this_document.createElement('tr')
 		row_elem.setAttribute('data-row-index', arg_row_index)
 
+		// DEBUG
 		// console.log(context + ':build_row:rows_index=%i row_array max_cols', arg_row_index, arg_row_array, arg_max_cols)
 		
 		if( ! T.isArray(arg_row_array) )
 		{
 			console.warn(context + ':build_row:row_array is not an array at rows_index=%i', arg_row_index, arg_row_array)
-			return
+			return undefined
 		}
 
 		arg_row_array.forEach(
@@ -406,14 +426,75 @@ export default class Table extends Container
 				{
 					return
 				}
-				const td_elem = this_document.createElement('td')
-				td_elem.setAttribute('data-column-index', index)
-				td_elem.innerText = cell
+
+				const td_elem = this.build_cell(cell, arg_row_index, index, this_document)
+				if (! td_elem)
+				{
+					console.warn(context + ':build_row:bad cell element at rows_index=%i at column_index=%i', arg_row_index, index)
+					return
+				}
+
 				row_elem.appendChild(td_elem)
 			}
 		)
 		
 		return row_elem
+	}
+
+	
+	
+	/**
+	 * Build a table row DOM element.
+	 *
+	 * @param {Element} arg_body_element - table body element.
+	 * @param {array}   arg_row_array    - row values array.
+	 * @param {integer} arg_row_index    - row index.
+	 * @param {integer} arg_max_rows     - max rows number.
+	 * @param {integer} arg_max_cols     - max columns number.
+	 * @param {string}  arg_mode         - fill mode:append/prepend
+	 * @param {string}  arg_max_rows_action - action on max rows.
+	 * @param {integer} arg_depth        - path depth.
+	 * 
+	 * @returns {Element} - TD DOM Element.
+	 */
+	process_row_array(arg_body_element, arg_row_array, arg_row_index, arg_max_rows, arg_max_cols, arg_mode, arg_max_rows_action, arg_depth=0)
+	{
+		const rows_count = arg_body_element.children.length
+		const row_elem = this.build_row(arg_row_array, arg_row_index, arg_max_cols, arg_depth)
+		if (! row_elem)
+		{
+			console.warn(context + ':update_rows:%s:at %i:max cols=%i:bad row element for ', this.get_name(), arg_row_index, arg_max_cols, arg_row_array)
+			return
+		}
+
+		if (arg_max_rows && (rows_count + arg_row_index) > arg_max_rows)
+		{
+			if (arg_max_rows_action == 'remove_bottom')
+			{
+				// TODO
+				console.warn('TODO remove_bottom')
+			}
+			else if (arg_max_rows_action == 'remove_top')
+			{
+				// TODO
+				console.warn('TODO remove_top')
+			}
+			else
+			{
+				return
+			}
+			
+		}
+
+		// console.log(context + ':update_rows:rows_index=%i mode=%s', row_index, arg_options.mode)
+		if (arg_mode == 'prepend')
+		{
+			arg_body_element.insertBefore(row_elem, arg_body_element.firstChild )
+		}
+		else
+		{
+			arg_body_element.appendChild(row_elem)
+		}
 	}
 	
 	
@@ -437,56 +518,42 @@ export default class Table extends Container
 		arg_options = arg_options ? arg_options : {}
 		arg_options.mode = arg_options.mode ? arg_options.mode : 'append'
 		
-		// const table_body = $('tbody', '#' + arg_table_id)
 		const table_elem = this.get_dom_element()
 		const table_body_elem = table_elem.getElementsByTagName( "tbody" )[0]
 
 		const max_cols = T.isNumber(state.max_columns) ? state.max_columns : undefined
 		const max_rows = T.isNumber(state.max_rows) ? state.max_rows : undefined
 		const max_rows_action = T.isString(state.max_rows_action) ? state.max_rows_action : undefined
-		// const rows_count = $('tr', table_body).length
-		const rows_count = table_body_elem.children.length
+
+		let fields_count = this.get_state_value('fields_count', 0)
+		if (fields_count == 0)
+		{
+			const headers = this.get_state_value('headers', [])
+			if ( T.isArray(headers) && headers.length > 0 )
+			{
+				const last_headers = headers[headers.length - 1]
+				if ( T.isArray(last_headers) )
+				{
+					fields_count = last_headers.length
+				}
+			}
+		}
 
 		// DEBUG
 		// console.log( context + ':update_rows:arg_rows_array=', arg_rows_array)
 		// console.log( context + ':update_rows:rows_count=%i', rows_count)
 		
 		arg_rows_array.forEach(
-			(row_array, row_index) => {
+			(arg_row_array, row_index) => {
 
-				// const html_row = this.build_row(row_array, row_index, max_cols)
-				const row_elem = this.build_row(row_array, row_index, max_cols)
-				
-				if (max_rows && (rows_count + row_index) > max_rows)
+				const row_array = T.isArray(arg_row_array) ? arg_row_array : (fields_count == 1 ? [arg_row_array] : undefined)
+				if (! row_array)
 				{
-					if (max_rows_action == 'remove_bottom')
-					{
-						// TODO
-						console.warn('TODO remove_bottom')
-					}
-					else if (max_rows_action == 'remove_top')
-					{
-						// TODO
-						console.warn('TODO remove_top')
-					}
-					else
-					{
-						return
-					}
-					
+					console.warn(context + ':update_rows:%s:at %i:fields_count=%i:bad row array for ', this.get_name(), row_index, fields_count, arg_row_array)
+					return
 				}
 
-				// console.log(context + ':update_rows:rows_index=%i mode=%s', row_index, arg_options.mode, table_body)
-				if (arg_options.mode == 'prepend')
-				{
-					// table_body.prepend(html_row)
-					table_body_elem.insertBefore(row_elem, table_body_elem.firstChild )
-				}
-				else
-				{
-					// table_body.append(html_row)
-					table_body_elem.appendChild(row_elem)
-				}
+				this.process_row_array(table_body_elem, row_array, row_index, max_rows, max_cols, arg_options.mode, max_rows_action)
 			}
 		)
 	}
@@ -507,45 +574,6 @@ export default class Table extends Container
 
 		// console.log(context + ':update_section_collection:%s:def= values=', this.get_name(), arg_collection_def, arg_collection_values)
 
-		// SEE JQUERY
-		function text(elem)
-		{
-			let node = undefined
-			let text_resul = ''
-			let i = 0
-			const nodeType = elem.nodeType
-
-			if ( ! nodeType )
-			{
-				// If no nodeType, this is expected to be an array
-				while ( ( node = elem[ i++ ] ) )
-				{
-					// Do not traverse comment nodes
-					text_resul += text(node)
-				}
-			} else if ( nodeType === 1 || nodeType === 9 || nodeType === 11 ) {
-				// Use textContent for elements
-				return elem.textContent
-			} else if ( nodeType === 3 || nodeType === 4 ) {
-				return elem.nodeValue
-			}
-
-			// Do not include comment or processing instruction nodes
-			return text_resul
-		}
-
-		function htmlDecode(t)
-		{
-			if (! T.isString(t) )
-			{
-				return ''
-			}
-
-			const elem = document.createElement('div')
-			elem.innerHTML = t
-			return text(elem)
-		}
-
 		if (arg_collection_def && arg_collection_def.collection_name && arg_collection_def.collection_dom_id && arg_collection_values)
 		{
 			const arg_collection_name = arg_collection_def.collection_name
@@ -559,8 +587,12 @@ export default class Table extends Container
 			}
 
 			var collection_dom_template_default = "<tr> <td></td> <td> {collection_key} </td> <td id='{collection_id}'>{collection_value}</td> </tr>"
-			var collection_dom_template = arg_collection_def.collection_dom_template ? htmlDecode(arg_collection_def.collection_dom_template) : collection_dom_template_default
+			var collection_dom_template = arg_collection_def.collection_dom_template ? html_entities.decode(arg_collection_def.collection_dom_template) : collection_dom_template_default
 			
+			// DEBUG
+			// console.log(context + ':update_section_collection:arg_collection_def.collection_dom_template=%s', arg_collection_def.collection_dom_template)
+			// console.log(context + ':update_section_collection:collection_dom_template=%s', collection_dom_template)
+
 			var collection_key_safe = undefined
 			var collection_value = undefined
 			var collection_id = undefined

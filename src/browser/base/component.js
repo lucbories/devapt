@@ -7,9 +7,8 @@ import _ from 'lodash'
 import uid from '../../common/utils/uid.js'
 
 // BROWSER IMPORTS
-import Stateable from '../../common/base/stateable'
 import BindingsLoader from './bindings_loader'
-import Rendering from './rendering'
+import Dom from './dom'
 
 
 const context = 'browser/base/component'
@@ -23,29 +22,13 @@ const context = 'browser/base/component'
  * 
  * @license Apache-2.0
  */
-export default class Component extends Stateable
+export default class Component extends Dom
 {
 	/**
 	 * Creates an instance of Component.
-	 * @extends Stateable
+	 * @extends Dom
 	 * 
 	 * 	API
-	 * 		->get_name():string - Get name.
-	 * 		->get_dom_id():string - Get DOM id.
-	 * 		
-	 * 		->has_dom_element():boolean - Test DOM Element instance.
-	 * 		->get_dom_element():Element - Get DOM element.
-	 * 		->set_dom_element(arg_element):nothing -Set DOM element.
-	 * 
-	 * 		->on_dom_event(arg_dom_event, arg_dom_selector, arg_handler, arg_data=undefined, arg_debug=true):nothing - Mount dom event handler with delegator.
-	 * 		
-	 * 		->has_dom_vnode():boolean - Test DOM Virtual Node.
-	 * 		->get_dom_vnode():VNode - Get DOM Virtual Node.
-	 * 		->set_dom_vnode(arg_vnode):nothing - Set DOM Virtual Node.
-	 * 
-	 * 		->show():nothing - Show component.
-	 * 		->hide():nothing - Hide component.
-	 * 
 	 * 		->render():Promise - Render component DOM element.
 	 * 		->process_rendering_vnode(arg_rendering_result, arg_credentials):nothing - Process rendering VNode: create or update DOM element.
 	 * 		->save_rendering():nothing - Save rendering virtul node. Update component VNode with current component HTML.
@@ -65,6 +48,12 @@ export default class Component extends Stateable
 	 * 
 	 * 		->get_children_component():array - Get view children components.
 	 * 
+	 * 		->get_text_value():string - Get component content value string.
+	 * 		->set_text_value(arg_value):nothing - Set component content value string.
+	 * 
+	 * 		->get_object_value():object - Get component content value object.
+	 * 		->get_object_value(arg_value):nothing - Set component content value object.
+	 * 
 	 * @param {RuntimeBase} arg_runtime - client runtime.
 	 * @param {Immutable.Map} arg_state - component initial state.
 	 * @param {string} arg_log_context - context of traces of this instance (optional).
@@ -74,280 +63,23 @@ export default class Component extends Stateable
 	constructor(arg_runtime, arg_state, arg_log_context)
 	{
 		const log_context = arg_log_context ? arg_log_context : context
-		const default_settings = {}
-		super(default_settings, arg_runtime, arg_state, log_context)
+		super(arg_runtime, arg_state, log_context)
 		
 		this.is_component   = true
 		this.is_menubar     = false
 		this.is_breadcrumbs = false
 
-		// SET NAME
-		this._name = arg_state.get('name', undefined)
-		if (!this._name)
-		{
-			this._name = 'component_' + uid()
-		}
-
 		// CHILDREN COMPONENTS
 		this._children_components = undefined
 
 		this._is_loaded = false
-		// this._is_rendered = false
-		this._is_visible = false
-		this._visiblility = undefined
 		this._bindings = {}
-		this._runtime = this.get_runtime()
-		this._builder = undefined
-		this._rendering = new Rendering(this, arg_state.get('dom_id', this._name))
+
+		this._ready_promise = Promise.resolve()
 
 		// console.info(context + ':constructor:creating component ' + this.get_name())
 
 		// this.enable_trace()
-	}
-	
-	
-	
-	/**
-	 * Get name.
-	 * 
-	 * @returns {string} - component name.
-	 */
-	get_name()
-	{
-		return this._name
-	}
-	
-	
-	
-	/**
-	 * Get DOM id.
-	 * 
-	 * @returns {string} - component DOM id.
-	 */
-	get_dom_id()
-	{
-		return this._rendering.get_dom_id()
-	}
-	
-	
-	
-	/**
-	 * Test DOM Element instance.
-	 * 
-	 * @returns {boolean}
-	 */
-	has_dom_element()
-	{
-		return this._rendering.has_dom_element()
-	}
-	
-	
-	
-	/**
-	 * Get DOM element.
-	 * 
-	 * @returns {Element}
-	 */
-	get_dom_element()
-	{
-		return this._rendering.get_dom_element()
-	}
-	
-	
-	
-	/**
-	 * Set DOM element.
-	 * 
-	 * @param {Element} arg_element - element instance.
-	 * 
-	 * @returns {nothing}
-	 */
-	set_dom_element(arg_element)
-	{
-		this._rendering.set_dom_element(arg_element)
-	}
-
-
-
-	/**
-	 * Test if component element has given parent element.
-	 * 
-	 * @param {Element} arg_element - parent element to test.
-	 * 
-	 * @returns {boolean}
-	 */
-	has_parent(arg_element)
-	{
-		const dom_elem = this.get_dom_element()
-		if (!arg_element)
-		{
-			return !! dom_elem.parentElement
-		}
-		return dom_elem && dom_elem.parentElement == arg_element
-	}
-	
-
-
-	/**
-	 * Parent element.
-	 * 
-	 * @returns {Element} - parent element.
-	 */
-	get_parent_element()
-	{
-		const dom_elem = this.get_dom_element()
-		return dom_elem ? dom_elem.parentElement : undefined
-	}
-
-
-
-	/**
-	 * Set given parent element.
-	 * 
-	 * @param {Element} arg_parent_element - parent element.
-	 * 
-	 * @returns {boolean}
-	 */
-	set_parent(arg_parent_element)
-	{
-		const dom_elem = this.get_dom_element()
-		if (dom_elem && arg_parent_element)
-		{
-			arg_parent_element.appendChild(dom_elem)
-		}
-	}
-
-
-
-	/**
-	 * Set given parent element.
-	 * 
-	 * @param {Component} arg_component - parent element component.
-	 * 
-	 * @returns {nothing}
-	 */
-	set_parent_of(arg_component)
-	{
-		const dom_elem = this.get_dom_element()
-		if (dom_elem && arg_component && arg_component.has_parent())
-		{
-			arg_component.get_parent_element().appendChild(dom_elem)
-		}
-	}
-	
-	
-	
-	/**
-	 * Mount dom event handler.
-	 * 
-	 * @{string}   arg_dom_event - dom event name.
-	 * @{string}   arg_dom_selector - dom selector string ('tag_name.class1.class2').
-	 * @{function} arg_handler - handler function f(component, event name, selection, event, target).
-	 * @{any}      arg_data - handler datas, default undefined (optional).
-	 * @{boolean}  arg_debug - trace flag, default true (optional).
-	 * 
-	 * @returns {nothing}
-	 */
-	on_dom_event(arg_dom_event, arg_dom_selector, arg_handler, arg_data=undefined, arg_debug=true)
-	{
-		this._rendering.on_dom_event(arg_dom_event, arg_dom_selector, arg_handler, arg_data, arg_debug)
-	}
-	
-	
-	
-	/**
-	 * Test DOM Virtual Node.
-	 * 
-	 * @returns {boolean}
-	 */
-	has_dom_vnode()
-	{
-		return this._rendering.has_dom_vnode()
-	}
-	
-	
-	
-	/**
-	 * Get DOM Virtual Node.
-	 * 
-	 * @returns {VNode}
-	 */
-	get_dom_vnode()
-	{
-		return this._rendering.get_dom_vnode()
-	}
-	
-	
-	
-	/**
-	 * Set DOM Virtual Node.
-	 * 
-	 * @param {VNode} arg_vnode - VNode instance.
-	 * 
-	 * @returns {nothing}
-	 */
-	set_dom_vnode(arg_vnode)
-	{
-		this._rendering.set_dom_vnode(arg_vnode)
-	}
-
-
-
-	/**
-	 * Get visibility.
-	 * 
-	 * @param {boolean} arg_check - if true, check style display value.
-	 * 
-	 * @returns {boolean}
-	 */
-	is_visible(arg_check=false)
-	{
-		if (arg_check)
-		{
-			const dom_elem = this.get_dom_element()
-			this._is_visible = dom_elem && dom_elem.style.display != 'none'
-		}
-		return this._is_visible
-	}
-
-
-
-	/**
-	 * Show component.
-	 * 
-	 * @returns {nothing}
-	 */
-	show()
-	{
-		const dom_elem = this.get_dom_element()
-		if (dom_elem)
-		{
-			dom_elem.style.display = this._visiblility ? this._visiblility : 'block'
-			
-			console.log(context + ':show:this._visiblility=%s, dom_elem.style.display=%s', this._visiblility, dom_elem.style.display)
-
-			this._is_visible = true
-		}
-		// $('#' + this.get_dom_id() ).show()
-	}
-
-
-
-	/**
-	 * Hide component.
-	 * 
-	 * @returns {nothing}
-	 */
-	hide()
-	{
-		const dom_elem = this.get_dom_element()
-		if (dom_elem)
-		{
-			this._visiblility = dom_elem.style.display == 'none' ? undefined : dom_elem.style.display
-			dom_elem.style.display = 'none'
-			this._is_visible = false
-		}
-		// $('#' + this.get_dom_id() ).hide()
 	}
 
 
@@ -363,6 +95,18 @@ export default class Component extends Stateable
 	{
 		this.enter_group('render')
 
+		this._ready_promise = this._ready_promise.then(
+			()=>{
+				return this._render(arg_force)
+			}
+		)
+
+		this.leave_group('render:async')
+		return this._ready_promise
+	}
+
+	_render(arg_force)
+	{
 		// const is_rendered = this.get_state_value('is_rendered', false)
 		// if (! arg_force && this._is_rendered)
 		// {
@@ -404,7 +148,6 @@ export default class Component extends Stateable
 			}
 		)
 
-		this.leave_group('renderasync')
 		return promise
 	}
 	
@@ -444,6 +187,20 @@ export default class Component extends Stateable
 	update()
 	{
 		this.enter_group('update')
+
+		this._ready_promise = this._ready_promise.then(
+			()=>{
+				return this._update()
+			}
+		)
+
+		this.leave_group('update:async')
+		return this._ready_promise
+	}
+
+
+	_update()
+	{
 		this.debug('update:name=' + this.get_name() + ',dom_id=' + this.get_dom_id() )
 
 		var new_elm = document.getElementById(this.get_dom_id())
@@ -453,8 +210,8 @@ export default class Component extends Stateable
 
 		if (!new_elm)
 		{
-			this.leave_group('update')
-			return
+			// this.leave_group('update')
+			return Promise.resolve()
 		}
 
 		if (prev_elm != new_elm)
@@ -467,14 +224,26 @@ export default class Component extends Stateable
 			this._dom_element = new_elm
 		}
 		
+		let promise = Promise.resolve()
 		if ( T.isFunction(this._update_self) )
 		{
-			this.debug(':update:call _update_self')
-			this._update_self(prev_elm, new_elm)
+			this.debug(':update:call _update_self (async)')
+
+			promise = promise.then(
+				()=>{
+					this._update_self(prev_elm, new_elm)
+				}
+			)
 		}
 
-		this.update_children()
-		this.leave_group('update')
+		promise = promise.then(
+			()=>
+			{
+				this.update_children()
+			}
+		)
+
+		return promise
 	}
 
 
@@ -625,9 +394,9 @@ export default class Component extends Stateable
 				)
 			}
 			
-			if ( T.isArray(bindings.jquery) )
+			if ( T.isArray(bindings.emitter_jquery) )
 			{
-				bindings.jquery.forEach(
+				bindings.emitter_jquery.forEach(
 					(bind_cfg) => {
 						bind_cfg.type = 'emitter_jquery'
 						const id = 'binding_' + uid()
@@ -636,9 +405,9 @@ export default class Component extends Stateable
 				)
 			}
 			
-			if ( T.isArray(bindings.dom) )
+			if ( T.isArray(bindings.emitter_dom) )
 			{
-				bindings.dom.forEach(
+				bindings.emitter_dom.forEach(
 					(bind_cfg) => {
 						bind_cfg.type = 'emitter_dom'
 						const id = 'binding_' + uid()
@@ -711,7 +480,12 @@ export default class Component extends Stateable
 	 */
 	dispatch_update_state_action(arg_new_state)
 	{
-		const new_state = arg_new_state.toJS()
+		if ( ! T.isObject(arg_new_state) )
+		{
+			return
+		}
+
+		const new_state = arg_new_state.toJS ? arg_new_state.toJS() : arg_new_state
 		// console.log(context + ':dispatch_update_state_action:new state:', new_state)
 
 		const action = { type:'ADD_JSON_RESOURCE', resource:this.get_name(), path:this.get_state_path(), json:new_state }
@@ -776,5 +550,182 @@ export default class Component extends Stateable
 		
 		this.debug(':get_children_component:', this._children_component)
 		return this._children_component
+	}
+
+
+	
+	/**
+	 * Get component content value string.
+	 * 
+	 * @returns {string}
+	 */
+	get_text_value()
+	{
+		return this.get_dom_text()
+	}
+	
+
+
+	/**
+	 * Set component content value string.
+	 * 
+	 * @param {string} arg_value - component values string.
+	 * 
+	 * @returns {nothing}
+	 */
+	set_text_value(arg_value)
+	{
+		this.set_dom_text('' + arg_value)
+	}
+
+
+
+	/**
+	 * Get component content value object.
+	 * 
+	 * @returns {object}
+	 */
+	get_object_value()
+	{
+		let json = undefined
+		
+		const str = this.get_dom_text()
+
+		try {
+			json = JSON.parse(str)
+		}
+		catch(e){
+			console.warn(context + ':get_object_value:error %s:bad json string=%s:', e, str)
+		}
+
+		return json
+	}
+	
+
+
+	/**
+	 * Set component content value object
+	 * 
+	 * @param {object} arg_value - component values object.
+	 * 
+	 * @returns {nothing}
+	 */
+	set_object_value(arg_value)
+	{
+		try {
+			const str = JSON.stringify(arg_value)
+			this.set_dom_text(str)
+		}
+		catch(e){
+			console.warn(context + ':set_object_value:error %s:bad object=:', e, arg_value)
+		}
+	}
+
+
+
+	/**
+	 * Render a component inside this element from a json description.
+	 * 
+	 * @param {object} arg_options - json source configuration.
+	 * 
+	 * @returns {nothing}
+	 */
+	render_inside_from_json(arg_options)
+	{
+		console.log(context + ':render_inside_from_json:options=', arg_options)
+
+		if (arg_options.is_event_handler)
+		{
+			arg_options = arg_options.data
+		}
+
+		// CHECK CONFIGURATION
+		if ( ! T.isObject(arg_options) )
+		{
+			console.warn(context + ':render_inside_from_json:bad options object')
+			return
+		}
+		if ( ! T.isString(arg_options.json_source_view) )
+		{
+			console.warn(context + ':render_inside_from_json:bad options.json_source_view string')
+			return
+		}
+		if ( ! T.isString(arg_options.json_source_getter) )
+		{
+			console.warn(context + ':render_inside_from_json:bad options.json_source_getter string')
+			return
+		}
+		const source_object = this.get_runtime().ui().get(arg_options.json_source_view)
+		if ( ! T.isObject(source_object) || ! source_object.is_component )
+		{
+			console.warn(context + ':render_inside_from_json:%s:view=%s:bad json source component', this.get_name(), arg_options.json_source_view, source_object)
+			return
+		}
+		if ( ! (arg_options.json_source_getter in source_object) )
+		{
+			console.warn(context + ':render_inside_from_json:bad json source method for component')
+			return
+		}
+		if ( ! ( T.isFunction( source_object[arg_options.json_source_getter] )) )
+		{
+			console.warn(context + ':render_inside_from_json:bad json source method for component')
+			return
+		}
+
+		// GET JSON FROM SOURCE
+		try{
+			const json = source_object[arg_options.json_source_getter]()
+
+			// DEBUG
+			console.log(context + ':render_inside_from_json:json=', json)
+
+			// CHECK COMPONENT NAME
+			if ( ! T.isString(json.name) )
+			{
+				console.warn(context + ':render_inside_from_json:bad json.name string')
+				return
+			}
+
+			// STORE COMPONENT DESCRIPTION
+			const action = { type:'ADD_JSON_RESOURCE', resource:json.name, collection:'views', json:json }
+			this.get_runtime().get_state_store().dispatch(action)
+
+			// CREATE COMPONENT ELEMENT
+			const this_element = this.get_dom_element()
+			if ( ! this_element)
+			{
+				console.warn(context + ':render_inside_from_json:bad dom element')
+				return
+			}
+
+			const this_document = this_element.ownerDocument
+			const existing_element = this_document.getElementById(json.name)
+			let sub_element = undefined
+			if (existing_element)
+			{
+				if (existing_element.parentElement == this_element)
+				{
+					sub_element = existing_element
+				} else {
+					console.warn(context + ':render_inside_from_json:a previous element exist with given name=%s', json.name)
+					return
+				}
+			} else {
+				sub_element = this_element.ownerDocument.createElement('div')
+				sub_element.setAttribute('id', json.name)
+				this_element.appendChild(sub_element)
+			}
+
+			const component = this.get_runtime().ui().create_local(json.name, json)
+			component.render(true)
+			.then(
+				()=>{
+					window.devapt().content_rendered()
+				}
+			)
+		} catch(e){
+			console.warn(context + ':render_inside_from_json:error %s', e)
+			return
+		}
 	}
 }

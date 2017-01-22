@@ -292,11 +292,11 @@ export default class Rendering
 
 		if (!vnode)
 		{
-			const msg = context + ':render:%s:bad vnode for rendering result=' + this._component.get_name()
+			const msg = context + ':render:%s:bad vnode for rendering result'
 			
-			console.log(msg + ':rendering_result', rendering_result)
-			console.log(msg + 'description', description)
-			console.error(msg)
+			console.error(msg + ' for ' + this._component.get_name())
+			console.log(msg + ':rendering_result=', this._component.get_name(), rendering_result)
+			console.log(msg + ':description=', this._component.get_name(), description)
 			
 			this._component.leave_group('render:error')
 			return Promise.reject(msg)

@@ -88,6 +88,7 @@ export default class DefaultPlugin extends RenderingPlugin
 			case 'tabletree':
 			case 'hbox':
 			case 'vbox':
+			case 'textarea':
 				return true
 		}
 		
@@ -177,6 +178,9 @@ export default class DefaultPlugin extends RenderingPlugin
 			
 			case 'vbox':
 				return DefaultRendering.vbox
+
+			case 'textarea':
+				return DefaultRendering.textarea
 		}
 
 		return undefined

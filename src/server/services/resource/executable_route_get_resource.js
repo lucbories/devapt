@@ -51,7 +51,7 @@ export default class ExecutableRouteGetResources extends ExecutableRoute
 		this.info('LIST resources')
 				
 		// GET RESOURCES LIST
-		const resources_list = arg_application.resources.get_all_names(arg_cfg_route.collection)
+		const resources_list = arg_application.get_resources_names(arg_cfg_route.collection)
 		
 		// SEND OUTPUT
 		res.contentType = 'json';
@@ -92,7 +92,7 @@ export default class ExecutableRouteGetResources extends ExecutableRoute
 				self.send_resources_list(res, arg_application, arg_cfg_route)
 				
 				self.leave_group('ExecutableRouteGetResources.exec_http')
-				return next()
+				return
 			}
 			assert( T.isString(arg_cfg_route.item), context + ':bad collection item string')
 			
@@ -107,7 +107,7 @@ export default class ExecutableRouteGetResources extends ExecutableRoute
 				self.send_resources_list(res, arg_application, arg_cfg_route)
 				
 				self.leave_group('ExecutableRouteGetResources.exec_http')
-				return next()
+				return
 			}
 			
 			
@@ -117,34 +117,27 @@ export default class ExecutableRouteGetResources extends ExecutableRoute
 			{
 				self.info('GET one resource [' + resource_name + '] of any collection')
 				
-				resource = arg_application.resources.find_by_name(resource_name)
+				resource = arg_application.find_resource(resource_name)
 			}
 			else
 			{
 				self.info('GET one resource [' + resource_name + '] of one collection [' + arg_cfg_route.collection + ']')
 				
 				// LOOKUP RESOURCE
-				resource = arg_application.resources.find_by_name(resource_name)
-				if (resource)
-				{
-					self.debug('resource found but test collection name')
-					assert(resource.$type == arg_cfg_route.collection, context + ':bad type [' + resource.$type + '] for resource [' + resource_name + ']')
-				}
-				else
+				resource = arg_application.find_resource(resource_name, arg_cfg_route.collection)
+				if ( ! resource)
 				{
 					self.debug('resource not found [' + resource_name + ']')
-					// const resources = arg_application.resources.get_all_names()
-					// console.log(resources, 'arg_application.resources')
-				}
-				
-				// CHECK RESOURCE TYPE
-				if (resource && resource.$type != arg_cfg_route.collection)
-				{
 					console.error('bad resource type')
 					console.log(resource.$type, 'resource.$type')
 					console.log(arg_cfg_route.collection, 'arg_cfg_route.collection')
 					resource = null
 				}
+				
+				// CHECK RESOURCE TYPE
+				// if (resource && resource.$type != arg_cfg_route.collection)
+				// {
+				// }
 			}
 			
 			// RESOURCE NOT FOUND ?
@@ -156,7 +149,7 @@ export default class ExecutableRouteGetResources extends ExecutableRoute
 				res.send({ error: 'Resource not found [' + resource_name + ']' })
 				
 				// next( new Error('Resource not found [' + resource_name + ']') )
-				return next()
+				return
 			}
 			
 			
@@ -193,7 +186,7 @@ export default class ExecutableRouteGetResources extends ExecutableRoute
 			res.send({ resource: resource.export_settings() })
 			
 			self.leave_group('ExecutableRouteGetResources.exec_http')
-			return next()
+			return
 		}
 	}
 	
