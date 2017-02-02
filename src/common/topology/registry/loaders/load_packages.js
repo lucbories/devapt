@@ -1,9 +1,10 @@
 // NPM IMPORTS
 import assert from 'assert'
-import T from 'typr'
 import path from 'path'
+import _ from 'lodash'
 
 // COMMON IMPORTS
+import T from '../../../utils/types'
 import parser from '../../../utils/parser/parser'
 
 
@@ -114,23 +115,32 @@ function load_package(logs, arg_package_name, arg_package_config, arg_base_dir, 
 	if (T.isString(arg_package_config.commands))
 	{
 		logs.info(context, 'loading world...packages.' + arg_package_name + '.commands is a string')
-		const file_path_name = path.join(arg_base_dir, arg_package_config.commands)
-		arg_package_config.commands = require(file_path_name).commands
+		
+		const absolute_path_name = path.join(arg_base_dir, arg_package_config.base_dir, arg_package_config.commands)
+		arg_package_config.commands = parser.read(absolute_path_name, 'utf8').commands
+
+		// const file_path_name = path.join(arg_base_dir, arg_package_config.commands)
+		// arg_package_config.commands = require(file_path_name).commands
 	}
+	// console.log( Object.keys(arg_package_config.commands), 'arg_package_config.commands for ' + arg_package_name)
 
 	// LOAD SERVICES
 	if (T.isString(arg_package_config.services))
 	{
 		logs.info(context, 'loading world...packages.' + arg_package_name + '.services is a string')
-		const file_path_name = path.join(arg_base_dir, arg_package_config.services)
-		arg_package_config.services = require(file_path_name).services
+		
+		const absolute_path_name = path.join(arg_base_dir, arg_package_config.base_dir, arg_package_config.services)
+		arg_package_config.services = parser.read(absolute_path_name, 'utf8').services
+
+		// const file_path_name = path.join(arg_base_dir, arg_package_config.services)
+		// arg_package_config.services = require(file_path_name).services
 	}
 	if ( T.isObject(arg_package_config.services) )
 	{
 		logs.info(context, 'loading world...packages.' + arg_package_name + '.services is now an object')
 		// load_services(arg_package_config.services)
 	}
-	// console.log(arg_package_config.services, 'arg_package_config.services for ' + arg_package_name)
+	// console.log( Object.keys(arg_package_config.services), 'arg_package_config.services for ' + arg_package_name)
 
 	// CHECK ATTRIBUTES
 	assert(T.isString(arg_package_config.base_dir), error_msg_bad_base_dir  + ' for package ' + arg_package_name)
@@ -147,6 +157,7 @@ function load_package(logs, arg_package_name, arg_package_config, arg_base_dir, 
 	arg_package_config.resources_by_name = {}
 	arg_package_config.resources_by_type = {}
 	arg_package_config.resources_by_file = {}
+	arg_package_config.resources_by_type.templates = {}
 	arg_package_config.resources_by_type.views = {}
 	arg_package_config.resources_by_type.models = {}
 	arg_package_config.resources_by_type.menubars = {}
@@ -184,6 +195,47 @@ function load_package(logs, arg_package_name, arg_package_config, arg_base_dir, 
 		}
 	)
 	
+	// LOAD TEMPLATES
+	const templates = arg_package_config.templates
+	templates.forEach(
+		(template_file) => {
+			logs.info(context, 'loading world...packages.' + arg_package_name + ' templates file:' + template_file)
+			
+			let relative_path_name = path.join(arg_package_config.base_dir, template_file)
+			let absolute_path_name = path.join(arg_base_dir , relative_path_name)
+			
+			let config = parser.read(absolute_path_name, 'utf8')
+			// console.log(config, 'config')
+			
+			// GET TEMPLATES
+			if (! config.templates )
+			{
+				return
+			}
+			config = config.templates
+
+			files[relative_path_name] = config
+			arg_package_config.resources_by_file[relative_path_name] = {}
+			
+			// CHECK package
+			assert(T.isObject(config), error_msg_bad_package_config + ' for file ' + template_file)
+			
+			const types = ['views', 'models', 'menubars', 'menus', 'datasources']
+			types.forEach(
+				(type_name)=>{
+					logs.info(context, 'loading begin world...packages.' + arg_package_name + ' templates file:' + template_file + ' of type:' + type_name)
+					
+					if ( config[type_name] && T.isObject(config[type_name]) )
+					{
+						load_package_template(logs, arg_package_name, arg_package_config, config[type_name], type_name, relative_path_name)
+					}
+
+					logs.info(context, 'loading end world...packages.' + arg_package_name + ' templates file:' + template_file + ' of type:' + type_name)
+				}
+			)
+		}
+	)
+	
 	// LOAD RESOURCES
 	const resources = arg_package_config.resources
 	resources.forEach(
@@ -210,33 +262,6 @@ function load_package(logs, arg_package_name, arg_package_config, arg_base_dir, 
 					if ( config[type_name] && T.isObject(config[type_name]) )
 					{
 						load_package_children(logs, arg_package_name, arg_package_config, config[type_name], type_name, relative_path_name)
-
-						// Object.keys(config[type_name]).forEach(
-						// 	(res_name) => {
-						// 		logs.debug(context, 'loading world...packages.' + arg_package_name + ' resources file:' + resource_file + ' of type:' + type_name + ' for ' + res_name)
-								
-						// 		let res_obj = config[type_name][res_name]
-								
-						// 		if (type_name !== 'menus' && type_name !== 'models')
-						// 		{
-						// 			res_obj.class_name = res_obj.class_name ? res_obj.class_name : res_obj.type
-						// 			assert(T.isString(res_obj.class_name), error_msg_bad_resource_config + ' for file ' + resource_file + ' for resource ' + res_name)
-						// 		}
-								
-						// 		res_obj.collection = type_name
-						// 		res_obj.name = res_name
-								
-						// 		arg_package_config.resources_by_name[res_name] = res_obj
-						// 		arg_package_config.resources_by_type[type_name][res_name] = res_obj
-						// 		arg_package_config.resources_by_file[relative_path_name][res_name] = res_obj
-						// 		arg_package_config[type_name][res_name] = res_obj
-
-						// 		if ( T.isObject(res_obj.children) )
-						// 		{
-						// 			load_package_children(logs, arg_package_name, arg_package_config, res_obj.children, type_name, relative_path_name)
-						// 		}
-						// 	}
-						// )
 					}
 				}
 			)
@@ -255,7 +280,20 @@ function load_package_children(logs, arg_package_name, arg_package_config, arg_c
 			logs.debug(context, 'loading world...packages.' + arg_package_name + ' resource children for ' + res_name)
 			
 			let res_obj = arg_children[res_name]
+
+			// TEMPLATE
+			if ( T.isNotEmptyString(res_obj.template) )
+			{
+				const template_name = res_obj.template
+				const template_resource = arg_package_config.templates[template_name]
+				assert(T.isObject(template_resource), error_msg_bad_resource_config + ' for ' + res_name + ' with template ' + template_name)
+				const clone = _.clone(template_resource)
+				res_obj = _.merge(res_obj, clone)
+				arg_children[res_name] = res_obj
+				// console.log(context + ':loading world...packages.' + arg_package_name + ' resource [%s] of collection [%s] from template [%s]:', res_name, type_name, template_name, res_obj)
+			}
 			
+			// GET RESOURCE TYPE
 			if (type_name !== 'menus' && type_name !== 'models')
 			{
 				res_obj.class_name = res_obj.class_name ? res_obj.class_name : res_obj.type
@@ -274,6 +312,41 @@ function load_package_children(logs, arg_package_name, arg_package_config, arg_c
 			{
 				load_package_children(logs, arg_package_name, arg_package_config, res_obj.children, type_name, relative_path_name)
 			}
+		}
+	)
+}
+
+
+function load_package_template(logs, arg_package_name, arg_package_config, arg_children, type_name, relative_path_name)
+{
+	Object.keys(arg_children).forEach(
+		(res_name) => {
+			logs.debug(context, 'loading begin world...packages.' + arg_package_name + ' resource template for ' + res_name)
+			
+			let res_obj = arg_children[res_name]
+			
+			if (type_name !== 'menus' && type_name !== 'models')
+			{
+				res_obj.class_name = res_obj.class_name ? res_obj.class_name : res_obj.type
+				assert(T.isString(res_obj.class_name), error_msg_bad_resource_config + ' for resource ' + res_name)
+			}
+			
+			res_obj.collection = type_name
+			res_obj.name = res_name
+
+			// console.log('arg_package_config.templates', arg_package_config.templates)
+			// console.log('arg_package_config.resources_by_type.templates', arg_package_config.resources_by_type.templates)
+			// console.log('arg_package_config.resources_by_file[relative_path_name]', arg_package_config.resources_by_file[relative_path_name])
+
+			arg_package_config.resources_by_type.templates[res_name] = res_obj
+			arg_package_config.resources_by_file[relative_path_name][res_name] = res_obj
+			arg_package_config.templates[res_name] = res_obj
+
+			// if ( T.isObject(res_obj.children) )
+			// {
+			// 	load_package_template(logs, arg_package_name, arg_package_config, res_obj.children, type_name, relative_path_name)
+			// }
+			logs.debug(context, 'loading end world...packages.' + arg_package_name + ' resource template for ' + res_name)
 		}
 	)
 }

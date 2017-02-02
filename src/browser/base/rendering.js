@@ -1,5 +1,4 @@
 // NPM IMPORTS
-import T from 'typr/lib/typr'
 import assert from 'assert'
 import vdom_parser from 'vdom-parser'
 import diff from 'virtual-dom/diff'
@@ -7,6 +6,7 @@ import patch from 'virtual-dom/patch'
 import create_element from 'virtual-dom/create-element'
 
 // COMMON IMPORTS
+import T from '../../common/utils/types'
 import rendering_factory from '../../common/rendering/rendering_factory'
 import RenderingResolverBuilder from '../../common/rendering/rendering_resolver'
 
@@ -198,11 +198,22 @@ export default class Rendering
 		assert( T.isObject(this._event_delegator), context + ':on_dom_event:bad event delegator object' )
 
 		const name = this._component.get_name()
-		this._event_delegator.on(arg_dom_event, arg_dom_selector,
+		let selector = undefined
+		if ( T.isObject(arg_dom_selector) && arg_dom_selector.is_component)
+		{
+			selector = arg_dom_selector.get_dom_id()
+		} else if ( T.isString(arg_dom_selector) )
+		{
+			selector = arg_dom_selector
+		} else {
+			return false
+		}
+		
+		this._event_delegator.on(arg_dom_event, selector,
 			(event, target)=>{
 				if (arg_debug)
 				{
-					console.log(context + ':dom event delegate:component=%s event=%s selector=%s target=', name, arg_dom_event, arg_dom_selector, target, event, arg_data)
+					console.log(context + ':on_dom_event:handler:component=%s event=%s selector=%s target=', name, arg_dom_event, arg_dom_selector, target, event, arg_data)
 				}
 
 				if ( T.isFunction(arg_handler) )
@@ -214,6 +225,8 @@ export default class Rendering
 				return false
 			}
 		)
+
+		return true
 	}
 	
 	

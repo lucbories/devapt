@@ -142,6 +142,7 @@ export default class UIRendering extends Loggable
 		{
 			if (e.getAttribute('src') == arg_url)
 			{
+				window.devapt().monitor_asset_loading(arg_tag, arg_id, arg_url, e)
 				return
 			}
 			e.parentNode.removeChild(e)
@@ -151,14 +152,9 @@ export default class UIRendering extends Loggable
 		e.setAttribute('id', arg_id)
 		e.setAttribute('src', arg_url)
 		e.setAttribute('type', arg_type)
+		// e.setAttribute('defer', 'true')
 
-		e.onload = ()=>{
-			console.log('ASSET loaded tag=%s, id=%s, url=%s', arg_tag, arg_id, arg_url)
-		}
-
-		e.onerror = ()=>{
-			console.error('ASSET loading error tag=%s, id=%s, url=%s', arg_tag, arg_id, arg_url)
-		}
+		window.devapt().monitor_asset_loading(arg_tag, arg_id, arg_url, e)
 
 		if (has_bootstrap_element)
 		{
@@ -234,6 +230,7 @@ export default class UIRendering extends Loggable
 					// console.log('e exists', e)
 					if (e.getAttribute('href') == url_href)
 					{
+						window.devapt().monitor_asset_loading('link', url.id, url_href, e)
 						return
 					}
 					// console.log('existing e is different', e, url_href)
@@ -246,6 +243,8 @@ export default class UIRendering extends Loggable
 				e.setAttribute('media', url.media ? url.media : 'all')
 				e.setAttribute('rel', 'stylesheet')
 				arg_dom_element.appendChild(e)
+
+				window.devapt().monitor_asset_loading('link', url.id, url_href, e)
 			}
 		)
 	}

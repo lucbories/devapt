@@ -5,6 +5,7 @@ var private_devapt = {
 	content_rendered_listeners:[],
 	content_rendered_persistent_listeners:[],
 	runtime:undefined,
+	asset_promise:undefined,
 	ui:undefined,
 	service:undefined,
 	router:undefined,
@@ -283,7 +284,40 @@ private_devapt.init_app_state_save = function()
 
 
 // *********************************************************************************
-// UPDATE ANCHORS WITH COMMANDS ATTRIBUTES
+// MONITOR ASSET LOADING WITH A PROMSE FOR ASSETS DEPENDENCIES
+var private_asset_promises = {}
+private_devapt.monitor_asset_loading = function(arg_tag, arg_id, arg_url, arg_elem)
+{
+	if (arg_id in private_asset_promises)
+	{
+		return private_asset_promises[arg_id]
+	}
+	var promise_cb = function(resolve, reject)
+	{
+		arg_elem.onload = ()=>{
+			console.log('ASSET loaded tag=%s, id=%s, url=%s', arg_tag, arg_id, arg_url)
+			resolve('ASSET loaded tag=' + arg_tag + ', id=' + arg_id + ', url=' + arg_url)
+		}
+
+		arg_elem.onerror = ()=>{
+			console.error('ASSET loading error tag=%s, id=%s, url=%s', arg_tag, arg_id, arg_url)
+			reject('ASSET loading error tag=' + arg_tag + ', id=' + arg_id + ', url=' + arg_url)
+		}
+	}
+	private_asset_promises[arg_id] = new Promise(promise_cb)
+	console.log('ASSET init event for tag=%s, id=%s, url=%s', arg_tag, arg_id, arg_url)
+	return private_asset_promises[arg_id]
+}
+// ASSET PROMISE GETTER
+private_devapt.asset_promise = function(arg_asset_id)
+{
+	if (arg_asset_id in private_asset_promises)
+	{
+		return private_asset_promises[arg_asset_id]
+	}
+	return Promise.reject('asset promise not found for [' + arg_asset_id + ']')
+}
+// INIT SCRIPTS ASSETS MONITORING
 private_devapt.init_scripts_load_events = function()
 {
 	console.log('devapt-bootstrap:init_scripts_load_events')
@@ -296,16 +330,7 @@ private_devapt.init_scripts_load_events = function()
 		var tag = e.tagName
 		var id = e.getAttribute('id')
 		var url = e.getAttribute('src')
-
-		console.log('ASSET init event for tag=%s, id=%s, url=%s', tag, id, url)
-
-		e.onload = ()=>{
-			console.log('ASSET loaded tag=%s, id=%s, url=%s', tag, id, url)
-		}
-
-		e.onerror = ()=>{
-			console.error('ASSET loading error tag=%s, id=%s, url=%s', tag, id, url)
-		}
+		private_devapt.monitor_asset_loading(tag, id, url, e)
 	}
 }
 

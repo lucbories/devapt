@@ -1,7 +1,10 @@
 // NPM IMPORTS
-import T from 'typr/lib/typr'
 import assert from 'assert'
 import { fromJS } from 'immutable'
+import _ from 'lodash'
+
+// COMMON IMPORTS
+import T from '../../common/utils/types'
 
 // BROWSER IMPORTS
 import Component from './component'
@@ -110,6 +113,8 @@ export default class Container extends Component
 	 */
 	load(arg_state)
 	{
+		this.enter_group('load')
+
 		const state = arg_state ? arg_state : this.get_state()
 		
 		// console.info(context + ':load:loading ' + this.get_name())
@@ -122,6 +127,7 @@ export default class Container extends Component
 		if (this.is_loaded)
 		{
 			// console.info(context + ':load:already loaded component ' + this.get_name())
+			this.leave_group('load:already loaded')
 			return
 		}
 
@@ -234,11 +240,12 @@ export default class Container extends Component
 			this.strategy_resize_ui = () => {}
 		}
 
-		this.init_bindings()
+		// this.init_bindings()
 
-		this.update()
+		// this.update()
 		
 		this.is_loaded = true
+		this.leave_group('load')
 	}
 	
 	
@@ -729,14 +736,18 @@ export default class Container extends Component
 	// DEFINE UI HANDLERS FOR STATE UPDATE
 	// -----------------------------------------------------------------------------------------------------
 	
+	
+	
+	
 	/**
 	 * Get container items count.
 	 * 
-	 * @returns {nothing}
+	 * @returns {integer}
 	 */
 	ui_items_get_count()
 	{
-		// NOT YET IMPLEMENTED
+		const dom_elem = this.get_dom_element()
+		return dom_elem.children.length
 	}
 	
 	
@@ -748,7 +759,13 @@ export default class Container extends Component
 	 */
 	ui_items_clear()
 	{
-		// NOT YET IMPLEMENTED
+		const dom_elem = this.get_dom_element()
+
+		while(dom_elem.hasChildNodes())
+		{
+			const child_elem = dom_elem.lastChild
+			dom_elem.removeChild(child_elem)
+		}
 	}
 	
 	
@@ -871,5 +888,67 @@ export default class Container extends Component
 	ui_items_remove_last()
 	{
 		// NOT YET IMPLEMENTED
+	}
+
+
+
+	/**
+	 * Hide an element.
+	 * 
+	 * @param {Element} arg_element - DOM element to hide.
+	 * 
+	 * @returns {nothing}
+	 */
+	ui_items_hide_item(arg_element)
+	{
+		arg_element.style.display = 'none'
+	}
+
+
+
+	/**
+	 * Show an element.
+	 * 
+	 * @param {Element} arg_element - DOM element to hide.
+	 * 
+	 * @returns {nothing}
+	 */
+	ui_items_show_item(arg_element)
+	{
+		arg_element.style.display = 'block'
+	}
+
+
+
+	/**
+	 * Toggle items visibility belonging a given filter.
+	 * 
+	 * @param {string} arg_selector - items selector.
+	 * @param {string} arg_filter_text - filter string.
+	 * 
+	 * @returns {nothing}
+	 */
+	ui_items_filter(arg_selector, arg_filter_text)
+	{
+		console.log(context + ':ui_items_filter:selector=%s:filter=%s',arg_selector, arg_filter_text)
+
+		const dom_element = this.get_dom_element()
+		const selected_elements = dom_element.querySelectorAll(arg_selector)
+		if ( ! T.isNodeList(selected_elements) || selected_elements.length == 0)
+		{
+			return
+		}
+
+		_.forEach(selected_elements,
+			(element)=>{
+				const text = '' + this._get_dom_text(element)
+				if ( text.search(arg_filter_text) >= 0 )
+				{
+					this.ui_items_show_item(element)
+				} else {
+					this.ui_items_hide_item(element)
+				}
+			}
+		)
 	}
 }

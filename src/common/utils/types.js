@@ -22,6 +22,11 @@ types_fn.isNotEmptyString = (o)=>{
 }
 
 
+types_fn.isNotEmptyArray = (o)=>{
+	return types_fn.isArray(o) && o.length > 0
+}
+
+
 // DOM ELEMENT TEST
 // For a tr element: "[object HTMLTableRowElement]"
 types_fn.isElement = (o)=>{
@@ -31,6 +36,18 @@ types_fn.isElement = (o)=>{
 	}
 	const str = o.toString()
 	return str.startsWith('[object HTML') && str.endsWith('Element]')
+}
+
+
+// DOM NODE LIST TEST
+// For a tr element: "[object NodeList]"
+types_fn.isNodeList = (o)=>{
+	if (typeof o != 'object')
+	{
+		return false
+	}
+	const str = o.toString()
+	return str == '[object NodeList]'
 }
 
 

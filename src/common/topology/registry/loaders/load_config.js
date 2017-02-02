@@ -4,7 +4,7 @@ import T from 'typr'
 import path from 'path'
 
 // COMMON IMPORTS
-import LoggerConsole from '../../../loggers/logger_console'
+import LoggerConsole from '../../../loggers/logger_console_standalone'
 
 // SERVER IMPORTS
 import load_nodes from './load_nodes'
@@ -108,6 +108,7 @@ function load_config(arg_state, arg_initial_config, arg_base_dir, arg_world_dir,
 		arg_state.config.resources.by_type.menus = {} // Resource names (map name:name)
 		arg_state.config.resources.by_type.datasources = {} // Resource names (map name:name)
 		arg_state.config.resources.by_type.loggers = {} // Resource names (map name:name)
+		arg_state.config.resources.by_type.templates = {} // Resource names (map name:name)
 		
 		arg_state.config.nodes = load_nodes(logs, config.nodes, arg_world_dir)
 		if (arg_state.config.nodes && ! arg_state.config.nodes.error)

@@ -1,11 +1,10 @@
 // NPM IMPORTS
-import T from 'typr/lib/typr'
 import assert from 'assert'
 import { format } from 'util'
+import _ from 'lodash'
 
 // COMMON IMPORTS
-// import uid from '../../common/utils/uid.js'
-// import { transform } from '../../common/utils/transform'
+import T from '../../common/utils/types'
 import Stream from '../../common/messaging/stream'
 
 // BROWSER IMPORTS
@@ -167,7 +166,7 @@ export default class BindingLoader
 	 * @param {Component} arg_component - component instance.
 	 * @param {Immutable.Map|undefined} arg_binding_cfg - component binding configuration.
 	 * 
-	 * @returns {BindingStream} 
+	 * @returns {BindingStream|array} 
 	 */
 	static load(arg_id, arg_runtime, arg_component, arg_binding_cfg)
 	{
@@ -182,7 +181,7 @@ export default class BindingLoader
 		// GET CONFIGURATION ATTRIBUTES
 		const type = ('type' in arg_binding_cfg) ? arg_binding_cfg['type'] : undefined
 		const state_path = ('state_path' in arg_binding_cfg) ? arg_binding_cfg['state_path'] : ['bindings_values', arg_id]
-		const xform = ('transform' in arg_binding_cfg) ? arg_binding_cfg['transform'] : undefined
+		let xform = ('transform' in arg_binding_cfg) ? arg_binding_cfg['transform'] : undefined
 		const options = ('options' in arg_binding_cfg) ? arg_binding_cfg['options'] : undefined
 		
 		const source_svc_name   = ('service' in arg_binding_cfg) ? arg_binding_cfg['service'] : undefined
@@ -208,6 +207,7 @@ export default class BindingLoader
 
 		// METHOD
 		const target_method = ('target_method' in arg_binding_cfg) ? arg_binding_cfg['target_method'] : undefined
+		const target_methods = ('target_methods' in arg_binding_cfg) ? arg_binding_cfg['target_methods'] : undefined
 		
 		// NORMALIZE SOURCES
 		// console.log(context + ':load:component=%s:binding type=%s:source_selectors&source_types=', arg_component.get_name(), type, source_selectors, source_types)
@@ -290,6 +290,25 @@ export default class BindingLoader
 				
 				console.log(context + ':load:component=%s:binding type=%s:event=%s:sources=', arg_component.get_name(), type, source_dom_event, sources)
 				
+				if (!xform)
+				{
+					xform = (event)=>{
+						const method_cfg = T.isObject(options) ? options.method : undefined
+						const operands   = T.isObject(method_cfg) ? method_cfg.operands : undefined
+						
+						console.log(context + ':load:component=%s:binding type=%s:event=%s:on handler:data=', arg_component.get_name(), type, source_dom_event, operands)
+						
+						return {
+							is_event_handler:true,
+							component_name:undefined,
+							event_name:source_dom_event,
+							dom_selector:undefined,
+							target:event.target,
+							data:operands
+						}
+					}
+				}
+
 				return new BindingStream(arg_id, arg_runtime, arg_component)
 					.set_stream(streams)
 					.set_state_path(state_path)
@@ -301,49 +320,125 @@ export default class BindingLoader
 			}
 
 			case 'emitter_dom': {
-				assert( T.isArray(sources),         context + format(':load:component=%s:bad sources array=%s',       arg_component.get_name()) )
+				assert( T.isArray(sources), context + format(':load:component=%s:bad sources array=%s',               arg_component.get_name()) )
 				assert( T.isArray(targets) && targets.length > 0, context + format(':load:component=%s:bad targets',  arg_component.get_name()) )
 				assert( T.isString(source_dom_event),  context + format(':load:component=%s:bad source event=%s',     arg_component.get_name(), source_dom_event) )
-				assert( T.isString(target_method),  context + format(':load:component=%s:bad target method=%s',       arg_component.get_name(), target_method) )
+				assert( T.isString(target_method) || T.isNotEmptyArray(target_methods),  context + format(':load:component=%s:bad target method=%s:methods=%s', arg_component.get_name(), target_method, target_methods) )
 				
 				const data = options && options.method && options.method.operands ? options.method.operands : undefined
-				const trace_enabled = true
-				const streams = []
-				sources.forEach(
-					(arg_dom_selector)=>{
-						const stream = new Stream()
-						const handler = (component, dom_event_name, arg_selector, dom_event, dom_event_target, arg_data)=>{
-							const data = {
-								is_event_handler:true,
-								component_name:component.get_name(),
-								event_name:dom_event_name,
-								dom_selector:arg_selector,
-								target:dom_event_target,
-								data:arg_data
+				const trace_enabled = false
+
+				if ( T.isString(target_method) )
+				{
+					const streams = []
+					sources.forEach(
+						(arg_dom_selector)=>{
+							const stream = new Stream()
+							const handler = (component, dom_event_name, arg_selector, dom_event, dom_event_target, arg_data)=>{
+								const data = {
+									is_event_handler:true,
+									component_name:component.get_name(),
+									event_name:dom_event_name,
+									dom_selector:arg_selector,
+									target:dom_event_target,
+									data:arg_data
+								}
+								
+								console.log(context + ':load:component=%s:binding type=%s:event=%s:on handler:data=', arg_component.get_name(), type, source_dom_event, data)
+
+								stream.push(data)
 							}
+
+							console.log(context + ':load:component=%s:binding type=%s:event=%s:selector=%s', arg_component.get_name(), type, source_dom_event, arg_dom_selector)
 							
-							console.log(context + ':load:component=%s:binding type=%s:event=%s:on handler:data=', arg_component.get_name(), type, source_dom_event, data)
-
-							stream.push(data)
+							arg_component.on_dom_event(source_dom_event, arg_dom_selector, handler, data, trace_enabled)
+							streams.push(stream)
 						}
+					)
+					
+					// console.log(context + ':load:component=%s:binding type=%s:event=%s:sources=', arg_component.get_name(), type, source_dom_event, sources)
+					
+					return new BindingStream(arg_id, arg_runtime, arg_component)
+						.set_stream(streams)
+						.set_state_path(state_path)
+						.set_source_transformation(xform)
+						.set_targets_instances_array(targets)
+						.set_target_method_name(target_method)
+						.set_options(options)
+						.build()
+				}
 
-						// console.log(context + ':load:component=%s:binding type=%s:event=%s:selector.id=%s:selector=', arg_component.get_name(), type, source_dom_event, dom_id, arg_dom_selector)
-						
-						arg_component.on_dom_event(source_dom_event, arg_dom_selector, handler, data, trace_enabled)
-						streams.push(stream)
-					}
-				)
-				
-				// console.log(context + ':load:component=%s:binding type=%s:event=%s:sources=', arg_component.get_name(), type, source_dom_event, sources)
-				
-				return new BindingStream(arg_id, arg_runtime, arg_component)
-					.set_stream(streams)
-					.set_state_path(state_path)
-					.set_source_transformation(xform)
-					.set_targets_instances_array(targets)
-					.set_target_method_name(target_method)
-					.set_options(options)
-					.build()
+				if ( T.isNotEmptyArray(target_methods) )
+				{
+					const binding_streams = []
+					sources.forEach(
+						(arg_dom_selector)=>{
+							console.log(context + ':load:component=%s:target_methods binding type=%s:event=%s:selector=%s:methods=', arg_component.get_name(), type, source_dom_event, arg_dom_selector, target_methods)
+							
+							const stream = new Stream()
+							const handler = (component, dom_event_name, arg_selector, dom_event, dom_event_target, arg_data)=>{
+								const data = {
+									is_event_handler:true,
+									component_name:component.get_name(),
+									event_name:dom_event_name,
+									dom_selector:arg_selector,
+									target:dom_event_target,
+									data:arg_data
+								}
+								
+								console.log(context + ':load:component=%s:target_methods binding type=%s:event=%s:on handler:data=', arg_component.get_name(), type, source_dom_event, data)
+
+								stream.push(data)
+							}
+
+							arg_component.on_dom_event(source_dom_event, arg_dom_selector, handler, data, trace_enabled)
+							
+							_.forEach(targets,
+								(target, index)=>{
+									const method = index < target_methods.length ? target_methods[index] : target_methods[target_methods.length - 1]
+									let method_name = undefined
+									let method_operands = undefined
+									if ( T.isObject(method) )
+									{
+										method_name = method.method
+										method_operands = method.operands
+									}
+									else if ( T.isString(method) )
+									{
+										method_name = method
+										if (data)
+										{
+											method_operands = {
+												method:{
+													operands:data
+												}
+											}
+										}
+									} else {
+										console.warn(context + ':load:component=%s:error bad method:binding type=%s:event=%s:selector=%s:methods=%s', arg_component.get_name(), type, source_dom_event, arg_dom_selector, target_methods)
+										return
+									}
+
+									console.log(context + ':load:component=%s:target_methods binding type=%s:method_name=%s:method_operands=', arg_component.get_name(), type, method_name, method_operands)
+
+									const binding_stream = new BindingStream(arg_id, arg_runtime, arg_component)
+										.set_stream(stream)
+										.set_state_path(state_path)
+										.set_source_transformation(xform)
+										.set_targets_instances_array([target])
+										.set_target_method_name(method_name)
+										.set_options(method_operands)
+										.build()
+									binding_streams.push(binding_stream)
+								}
+							)
+						}
+					)
+
+					return binding_streams
+				}
+
+				break
 			}
 
 			case 'stream': {

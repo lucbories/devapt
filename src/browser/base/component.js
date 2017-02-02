@@ -1,9 +1,9 @@
 // NPM IMPORTS
-import T from 'typr/lib/typr'
 import assert from 'assert'
 import _ from 'lodash'
 
 // COMMON IMPORTS
+import T from '../../common/utils/types'
 import uid from '../../common/utils/uid.js'
 
 // BROWSER IMPORTS
@@ -52,7 +52,7 @@ export default class Component extends Dom
 	 * 		->set_text_value(arg_value):nothing - Set component content value string.
 	 * 
 	 * 		->get_object_value():object - Get component content value object.
-	 * 		->get_object_value(arg_value):nothing - Set component content value object.
+	 * 		->set_object_value(arg_value):nothing - Set component content value object.
 	 * 
 	 * @param {RuntimeBase} arg_runtime - client runtime.
 	 * @param {Immutable.Map} arg_state - component initial state.
@@ -76,6 +76,8 @@ export default class Component extends Dom
 		this._bindings = {}
 
 		this._ready_promise = Promise.resolve()
+		this._assets_dependancies = []
+		this._assets_promise = undefined
 
 		// console.info(context + ':constructor:creating component ' + this.get_name())
 
@@ -187,6 +189,8 @@ export default class Component extends Dom
 	update()
 	{
 		this.enter_group('update')
+
+		console.info(context + ':update:%s', this.get_name())
 
 		this._ready_promise = this._ready_promise.then(
 			()=>{
@@ -335,14 +339,75 @@ export default class Component extends Dom
 			return
 		}
 
-		this.init_bindings()
+		this.init_assets()
 
-		this.update()
+		// this.update()
 
 		this._is_loaded = true
 		this.leave_group('load')
 	}
 	
+
+
+	/**
+	 * Get assets promises.
+	 * 
+	 * @returns {Promise}
+	 */
+	get_assets_promise()
+	{
+		return this._assets_promise
+	}
+	
+
+
+	/**
+	 * Get assets dependancies.
+	 * 
+	 * @returns {array}
+	 */
+	get_assets_dependancies()
+	{
+		return this._assets_dependancies
+	}
+	
+
+
+	/**
+	 * Get assets promises.
+	 * 
+	 * @param {string} arg_asset_id - asset element id.
+	 * 
+	 * @returns {nothing}
+	 */
+	add_assets_dependancy(arg_asset_id)
+	{
+		return this._assets_dependancies.push(arg_asset_id)
+	}
+
+
+
+	/**
+	 * Init assets promises.
+	 * 
+	 * @returns {nothing}
+	 */
+	init_assets()
+	{
+		this.enter_group('init_assets')
+
+		const assets_promises = []
+		this._assets_dependancies.forEach(
+			(asset_id)=>{
+				assets_promises.push( window.devapt().asset_promise(asset_id) )
+			}
+		)
+		// console.log(context + ':init:%s:assets:', this.get_name(), this._assets_dependancies)
+
+		this._assets_promise = Promise.all(assets_promises)
+
+		this.leave_group('init_assets')
+	}
 	
 	
 	/**
@@ -378,7 +443,12 @@ export default class Component extends Dom
 						
 						if ( T.isString(stream) )
 						{
-							stream = this.get_named_stream(stream)
+							let source_component = this
+							if ( bind_cfg.source_type == 'views' && T.isNotEmptyString(bind_cfg.source_selector) )
+							{
+								source_component = window.devapt().ui(bind_cfg.source_selector)
+							}
+							stream = source_component.get_named_stream(stream)
 						}
 
 						if ( T.isObject(stream) && stream.is_stream )
@@ -400,7 +470,17 @@ export default class Component extends Dom
 					(bind_cfg) => {
 						bind_cfg.type = 'emitter_jquery'
 						const id = 'binding_' + uid()
-						this._bindings[id] = BindingsLoader.load(id, this._runtime, this, bind_cfg)
+						const binding_streams = BindingsLoader.load(id, this._runtime, this, bind_cfg)
+						if ( T.isArray(binding_streams) )
+						{
+							_.forEach(binding_streams,
+								(binding, index)=>{
+									this._bindings[id + '_' + index] = binding
+								}
+							)
+						} else {
+							this._bindings[id] = binding_streams
+						}
 					}
 				)
 			}
@@ -411,7 +491,17 @@ export default class Component extends Dom
 					(bind_cfg) => {
 						bind_cfg.type = 'emitter_dom'
 						const id = 'binding_' + uid()
-						this._bindings[id] = BindingsLoader.load(id, this._runtime, this, bind_cfg)
+						const binding_streams = BindingsLoader.load(id, this._runtime, this, bind_cfg)
+						if ( T.isArray(binding_streams) )
+						{
+							_.forEach(binding_streams,
+								(binding, index)=>{
+									this._bindings[id + '_' + index] = binding
+								}
+							)
+						} else {
+							this._bindings[id] = binding_streams
+						}
 					}
 				)
 			}
@@ -528,21 +618,74 @@ export default class Component extends Dom
 		{
 			this._children_component = []
 
+			// GET APPLICATION STATE AND INIT APPLICATION STATE PATH
+			const ui = window.devapt().ui()
+			const current_app_state = ui.store.get_state()
+			const state_path = ['views']
+			const component_desc = ui._ui_factory.find_component_desc(current_app_state, this.get_name(), state_path)
+			const children = component_desc ? component_desc.get('children', undefined) : undefined
+			const children_names = children ? Object.keys( children.toJS() ) : []
+			this.debug(':get_children_component:init with children_names:', children_names)
+
 			const items = this.get_state_value('items', [])
 			this.debug(':get_children_component:init with items:', items)
 
-			items.forEach(
+			const all_children = _.concat(children_names, items)
+			// console.info(context + ':get_children_component:all_children:%s:', this.get_name(), all_children)
+
+			const unique_children = {}
+			all_children.forEach(
 				(item)=>{
-					this.debug(':get_children_component:loop on item:', item)
+					if ( T.isObject(item) )
+					{
+						this.debug(':get_children_component:loop on item object')
+						
+						if ( T.isString(item.view) )
+						{
+							if (item.viewitem in unique_children)
+							{
+								return
+							}
+
+							this.debug(':get_children_component:loop on item string:', item.view)
+							
+							const component = window.devapt().ui(item.view)
+							if (component && component.is_component)
+							{
+								this._children_component.push(component)
+								unique_children[component.get_name()] = true
+								return
+							}
+
+							this.warn(':get_children_component:bad item component for:', item.view)
+							return
+						}
+
+						this.warn(':get_children_component:bad item object for:', item.toString())
+						return
+					}
+					
 					if ( T.isString(item) )
 					{
+						if (item in unique_children)
+						{
+							return
+						}
+
+						this.debug(':get_children_component:loop on item string:', item)
 						const component = window.devapt().ui(item)
 						if (component && component.is_component)
 						{
 							this._children_component.push(component)
+							unique_children[component.get_name()] = true
 							return
 						}
+
+						this.warn(':get_children_component:bad item component for:', item)
+						return
 					}
+
+					this.warn(':get_children_component:bad item type for:', item.toString())
 				}
 			)
 		}
@@ -630,10 +773,38 @@ export default class Component extends Dom
 	 * 
 	 * @returns {nothing}
 	 */
-	render_inside_from_json(arg_options)
+	register_and_render_inside_from_json(arg_options)
 	{
-		console.log(context + ':render_inside_from_json:options=', arg_options)
+		this.enter_group('register_and_render_inside_from_json')
 
+		const json = this.register_from_json(arg_options)
+
+		if (! T.isObject(json) )
+		{
+			this.leave_group('register_and_render_inside_from_json:error:bad json object')
+			return
+		}
+
+		this.render_inside_from_json(json.name, json)
+
+		this.leave_group('register_and_render_inside_from_json')
+	}
+
+
+
+	/**
+	 * Register a component description from a json content.
+	 * 
+	 * @param {object} arg_options - json source configuration.
+	 * 
+	 * @returns {nothing}
+	 */
+	register_from_json(arg_options)
+	{
+		this.enter_group('register_from_json')
+		
+		console.log(context + ':register_from_json:options=', arg_options)
+		
 		if (arg_options.is_event_handler)
 		{
 			arg_options = arg_options.data
@@ -642,33 +813,39 @@ export default class Component extends Dom
 		// CHECK CONFIGURATION
 		if ( ! T.isObject(arg_options) )
 		{
-			console.warn(context + ':render_inside_from_json:bad options object')
+			console.warn(context + ':register_from_json:bad options object')
+			this.leave_group('register_from_json:error:bad options object')
 			return
 		}
 		if ( ! T.isString(arg_options.json_source_view) )
 		{
-			console.warn(context + ':render_inside_from_json:bad options.json_source_view string')
+			console.warn(context + ':register_from_json:bad options.json_source_view string')
+			this.leave_group('register_from_json:error:bad options.json_source_view string')
 			return
 		}
 		if ( ! T.isString(arg_options.json_source_getter) )
 		{
-			console.warn(context + ':render_inside_from_json:bad options.json_source_getter string')
+			console.warn(context + ':register_from_json:bad options.json_source_getter string')
+			this.leave_group('register_from_json:error:bad options.json_source_getter string')
 			return
 		}
 		const source_object = this.get_runtime().ui().get(arg_options.json_source_view)
 		if ( ! T.isObject(source_object) || ! source_object.is_component )
 		{
-			console.warn(context + ':render_inside_from_json:%s:view=%s:bad json source component', this.get_name(), arg_options.json_source_view, source_object)
+			console.warn(context + ':register_from_json:%s:view=%s:bad json source component', this.get_name(), arg_options.json_source_view, source_object)
+			this.leave_group('register_from_json:error:bad json source component')
 			return
 		}
 		if ( ! (arg_options.json_source_getter in source_object) )
 		{
-			console.warn(context + ':render_inside_from_json:bad json source method for component')
+			console.warn(context + ':register_from_json:bad json source method for component')
+			this.leave_group('register_from_json:error:bad json source method for component')
 			return
 		}
 		if ( ! ( T.isFunction( source_object[arg_options.json_source_getter] )) )
 		{
-			console.warn(context + ':render_inside_from_json:bad json source method for component')
+			console.warn(context + ':register_from_json:bad json source method for component')
+			this.leave_group('register_from_json:error:bad json source method for component')
 			return
 		}
 
@@ -677,12 +854,13 @@ export default class Component extends Dom
 			const json = source_object[arg_options.json_source_getter]()
 
 			// DEBUG
-			console.log(context + ':render_inside_from_json:json=', json)
+			console.log(context + ':register_from_json:json=', json)
 
 			// CHECK COMPONENT NAME
 			if ( ! T.isString(json.name) )
 			{
-				console.warn(context + ':render_inside_from_json:bad json.name string')
+				console.warn(context + ':register_from_json:bad json.name string')
+				this.leave_group('register_from_json:error:bad json.name string')
 				return
 			}
 
@@ -690,16 +868,45 @@ export default class Component extends Dom
 			const action = { type:'ADD_JSON_RESOURCE', resource:json.name, collection:'views', json:json }
 			this.get_runtime().get_state_store().dispatch(action)
 
+			this.leave_group('register_from_json')
+			return json
+		}
+		catch(e) {
+			console.warn(context + ':register_from_json:error %s', e)
+
+			this.leave_group('register_from_json:error:' + e)
+			return undefined
+		}
+	}
+
+
+
+	/**
+	 * Render a component inside this element from a json description.
+	 * 
+	 * @param {string} arg_name - component name.
+	 * @param {object} arg_json_desc - component description.
+	 * 
+	 * @returns {nothing}
+	 */
+	render_inside_from_json(arg_name, arg_json_desc)
+	{
+		this.enter_group('render_inside_from_json')
+		
+		console.log(context + ':render_inside_from_json:name and description:', arg_name, arg_json_desc)
+		
+		try{
 			// CREATE COMPONENT ELEMENT
 			const this_element = this.get_dom_element()
 			if ( ! this_element)
 			{
 				console.warn(context + ':render_inside_from_json:bad dom element')
+				this.leave_group('render_inside_from_json:error:bad dom element')
 				return
 			}
 
 			const this_document = this_element.ownerDocument
-			const existing_element = this_document.getElementById(json.name)
+			const existing_element = this_document.getElementById(arg_name)
 			let sub_element = undefined
 			if (existing_element)
 			{
@@ -707,16 +914,17 @@ export default class Component extends Dom
 				{
 					sub_element = existing_element
 				} else {
-					console.warn(context + ':render_inside_from_json:a previous element exist with given name=%s', json.name)
+					console.warn(context + ':render_inside_from_json:a previous element exist with given name=%s', arg_name)
+					this.leave_group('render_inside_from_json:error:bad dom element')
 					return
 				}
 			} else {
 				sub_element = this_element.ownerDocument.createElement('div')
-				sub_element.setAttribute('id', json.name)
+				sub_element.setAttribute('id', arg_name)
 				this_element.appendChild(sub_element)
 			}
 
-			const component = this.get_runtime().ui().create_local(json.name, json)
+			const component = this.get_runtime().ui().create_local(arg_name, arg_json_desc)
 			component.render(true)
 			.then(
 				()=>{

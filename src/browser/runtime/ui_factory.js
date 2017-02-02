@@ -1,10 +1,10 @@
 // NPM IMPORTS
-import T from 'typr/lib/typr'
 import assert from 'assert'
 // import _ from 'lodash'
 import { fromJS } from 'immutable'
 
 // COMMON IMPORTS
+import T from '../../common/utils/types'
 import Loggable from '../../common/base/loggable'
 
 // BROWSER IMPORTS
@@ -13,6 +13,7 @@ import Container from '../base/container'
 import Table from '../components/table'
 import LogsTable from '../components/logs_table'
 import AttributesTable from '../components/attributes_table'
+import Dock from '../components/dock'
 import Tabs from '../components/tabs'
 import Tree from '../components/tree'
 import TableTree from '../components/table_tree'
@@ -233,9 +234,19 @@ export default class UIFactory extends Loggable
 
 		const component = new component_class(this._runtime, comp_state)
 		this._cache[arg_component_name] = component
-		const promise = component.render()
-		promise.then(
-			()=>component.load(),
+		let promise = component.render()
+		.then(
+			()=>{
+				return component.load()
+			},
+			(reason)=>{
+				this.error(reason)
+			}
+		)
+		.then(
+			()=>{
+				component.init_bindings()
+			},
 
 			(reason)=>{
 				this.error(reason)
@@ -323,11 +334,13 @@ export default class UIFactory extends Loggable
 	{
 		switch(arg_type.toLocaleLowerCase())
 		{
-			case 'component':    return Component
-			case 'container':    return Container
+			case 'component':	return Component
+
+			case 'container':	return Container
+			case 'dock':		return Dock
 
 			case 'input-field':
-			case 'inputfield':   return InputField
+			case 'inputfield':	return InputField
 			
 			case 'logstable':       return LogsTable
 			case 'attributestable': return AttributesTable
@@ -340,12 +353,12 @@ export default class UIFactory extends Loggable
 			case 'tree':         return Tree
 
 			case 'button':
+			case 'script':
+			case 'menubar':
 			case 'hbox':
 			case 'vbox':
 			case 'list':
 			case 'page':
-			case 'script':
-			case 'menubar':
 			default:             return Component
 		}
 		

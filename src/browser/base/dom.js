@@ -1,9 +1,9 @@
 // NPM IMPORTS
-import T from 'typr/lib/typr'
 // import assert from 'assert'
 // import _ from 'lodash'
 
 // COMMON IMPORTS
+import T from '../../common/utils/types'
 import uid from '../../common/utils/uid.js'
 
 // BROWSER IMPORTS
@@ -46,6 +46,11 @@ export default class Dom extends Stateable
 	 * 
 	 * 		->get_dom_text():string - DOM element manipulation:get dom element text.
 	 * 		->set_dom_text(arg_text_value):nothing - DOM element manipulation:set dom element text value.
+	 * 		->clear_dom_text():nothing - DOM element manipulation:clear dom element text value.
+	 * 
+	 * 		->get_dom_value():string - DOM element manipulation:get dom element value.
+	 * 		->set_dom_value(arg_value):nothing - DOM element manipulation:set dom element value.
+	 * 		->clear_dom_value():nothing - DOM element manipulation:clear dom element value.
 	 * 
 	 * 		->on_dom_event(arg_dom_event, arg_dom_selector, arg_handler, arg_data=undefined, arg_debug=true):nothing - Mount dom event handler with delegator.
 	 * 		
@@ -303,6 +308,29 @@ export default class Dom extends Stateable
 
 
 
+	/**
+	 * DOM element manipulation:clear dom element text value.
+	 * 
+	 * @returns {nothing}
+	 */
+	clear_dom_text()
+	{
+		const dom_elem = this.get_dom_element()
+		if (! dom_elem)
+		{
+			return
+		}
+
+		const node_type = dom_elem.nodeType
+
+		if ( node_type === 1 || node_type === 9 || node_type === 11 )
+		{
+			dom_elem.textContent = ''
+		}
+	}
+
+
+
 	_get_dom_text(arg_element)
 	{
 		const node_type = arg_element.nodeType
@@ -337,6 +365,62 @@ export default class Dom extends Stateable
 		}
 
 		return undefined
+	}
+
+
+
+	/**
+	 * DOM element manipulation:get dom element value.
+	 * 
+	 * @returns {string}
+	 */
+	get_dom_value()
+	{
+		const dom_elem = this.get_dom_element()
+		if (! dom_elem || ! ('value' in dom_elem) )
+		{
+			return undefined
+		}
+
+		return dom_elem.value
+	}
+
+
+
+	/**
+	 * DOM element manipulation:set dom element value.
+	 * 
+	 * @param {string} arg_value - dom value.
+	 * 
+	 * @returns {nothing}
+	 */
+	set_dom_value(arg_value)
+	{
+		const dom_elem = this.get_dom_element()
+		if (! dom_elem || ! ('value' in dom_elem) )
+		{
+			return
+		}
+
+		dom_elem.value = arg_value
+	}
+
+
+
+	/**
+	 * DOM element manipulation:clear dom element value.
+	 * 
+	 * @returns {nothing}
+	 */
+	clear_dom_value()
+	{
+		const dom_elem = this.get_dom_element()
+		if (! dom_elem || ! ('value' in dom_elem) )
+		{
+			return
+		}
+
+		dom_elem.value = ''
 	}
 	
 	

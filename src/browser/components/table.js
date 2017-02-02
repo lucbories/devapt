@@ -22,7 +22,7 @@ export default class Table extends Container
 {
 	
 	/**
-	 * Creates an instance of Component.
+	 * Creates an instance of Table.
 	 * 
 	 * @param {object} arg_runtime - client runtime.
 	 * @param {object} arg_state - component state.

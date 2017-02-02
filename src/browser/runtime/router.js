@@ -1,8 +1,10 @@
 // NPM IMPORTS
-import T from 'typr/lib/typr'
 import assert from 'assert'
 import Crossroads from 'crossroads'
 import Hasher from 'hasher'
+
+// COMMON IMPORTS
+import T from '../../common/utils/types'
 
 // BROWSER IMPORTS
 import RouterState from './router_state'
@@ -76,11 +78,11 @@ export default class Router extends RouterState
 	init(arg_home_view_name, arg_home_menubar_name)
 	{
 		// REGISTER HOME PAGE ROUTE
-		this.add_handler('',
-			() => {
-				return this.do_action_display_content(arg_home_view_name, arg_home_menubar_name)
-			}
-		)
+		// this.add_handler('',
+		// 	() => {
+		// 		return this.do_action_display_content(arg_home_view_name, arg_home_menubar_name)
+		// 	}
+		// )
 
 		
 		// REGISTER IGNORE ROUTE

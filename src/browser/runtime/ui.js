@@ -49,7 +49,8 @@ export default class UI extends Loggable
 	 * 		->load():nothing - Load plugins.
 	 * 
 	 * 		->get(arg_name):Component - Get a UI component by its name.
-	 * 		->create(arg_name):Component - Create a UI component.
+	 * 		->create(arg_name):Promise - Create a UI component.
+	 * 		->create_local(arg_name, arg_component_desc):Component - Create a UI component.
 	 * 		
 	 * 		->register_rendering_plugin(arg_plugin_class):nothing - Register a browser rendering plugin.
 	 * 		->request_middleware(arg_middleware, arg_svc_route):Promise - Request server about middleware rendering.

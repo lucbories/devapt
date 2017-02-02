@@ -211,7 +211,7 @@ export default class AttributesTable extends Table
 		const tr_elems = table_body_elem.children
 
 		let row_index = 0
-		let previous_index = undefined
+		// let previous_index = undefined
 		for( ; row_index < tr_elems.length ; row_index++)
 		{
 			const tr_elem  = tr_elems[row_index]
@@ -230,7 +230,7 @@ export default class AttributesTable extends Table
 				// case 'object':
 			}
 
-			previous_index = tr_index
+			// previous_index = tr_index
 		}
 
 		return result_object
@@ -255,7 +255,7 @@ export default class AttributesTable extends Table
 
 		if ( T.isString(arg_cell_value) )
 		{
-			console.log(context + ':build_cell:%s:string:at row %i:value=%s', this.get_name(), arg_row_index, arg_cell_value)
+			// console.log(context + ':build_cell:%s:string:at row %i:value=%s', this.get_name(), arg_row_index, arg_cell_value)
 
 			td_elem.innerText = arg_cell_value
 			td_elem.setAttribute('devapt-data-type', 'string')
@@ -263,26 +263,26 @@ export default class AttributesTable extends Table
 		}
 		else if ( T.isNumber(arg_cell_value) )
 		{
-			console.log(context + ':build_cell:%s:number:at row %i:value=%s', this.get_name(), arg_row_index, arg_cell_value)
+			// console.log(context + ':build_cell:%s:number:at row %i:value=%s', this.get_name(), arg_row_index, arg_cell_value)
 
 			td_elem.innerText = arg_cell_value
 			td_elem.setAttribute('devapt-data-type', 'number')
 		}
 		else if ( T.isBoolean(arg_cell_value) )
 		{
-			console.log(context + ':build_cell:%s:boolean:at row %i:value=%s', this.get_name(), arg_row_index, arg_cell_value)
+			// console.log(context + ':build_cell:%s:boolean:at row %i:value=%s', this.get_name(), arg_row_index, arg_cell_value)
 
 			td_elem.innerText = arg_cell_value ? 'true' : 'false'
 			td_elem.setAttribute('devapt-data-type', 'boolean')
 		}
 		else if ( T.isFunction(arg_cell_value) )
 		{
-			console.log(context + ':build_cell:%s:function:at row %i:value=%s', this.get_name(), arg_row_index, 'Function')
+			// console.log(context + ':build_cell:%s:function:at row %i:value=%s', this.get_name(), arg_row_index, 'Function')
 
 			td_elem.innerText = 'Function'
 			td_elem.setAttribute('devapt-data-type', 'function')
 		} else {
-			console.log(context + ':build_cell:%s:array:at row %i:unknow=%s', this.get_name(), arg_row_index, arg_cell_value)
+			// console.log(context + ':build_cell:%s:array:at row %i:unknow=%s', this.get_name(), arg_row_index, arg_cell_value)
 
 			td_elem.innerText = 'unknow'
 			td_elem.setAttribute('devapt-data-type', 'unknow')
@@ -414,7 +414,7 @@ export default class AttributesTable extends Table
 
 		if ( T.isArray(attribute_value) )
 		{
-			console.log(context + ':process_row_array:%s:array:at row %i:depth=%i', this.get_name(), arg_row_index, arg_depth )
+			// console.log(context + ':process_row_array:%s:array:at row %i:depth=%i', this.get_name(), arg_row_index, arg_depth )
 
 			/*
 			TODO EXPANDABLE ICONS:
@@ -439,7 +439,7 @@ export default class AttributesTable extends Table
 		}
 		else if ( T.isObject(attribute_value) )
 		{
-			console.log(context + ':process_row_array:%s:object:at row %i:depth=%i', this.get_name(), arg_row_index, arg_depth )
+			// console.log(context + ':process_row_array:%s:object:at row %i:depth=%i', this.get_name(), arg_row_index, arg_depth )
 
 			// OPEN=\u25BF CLOSE=\u25B9
 			const first_row_elem = this.build_row_collapsed([attribute_name, ''], arg_row_index, 2, arg_depth)
@@ -460,7 +460,7 @@ export default class AttributesTable extends Table
 		}
 
 		// DEFAULT CASE
-		console.log(context + ':process_row_array:%s:default:at row %i:depth=%i', this.get_name(), arg_row_index, arg_depth )
+		// console.log(context + ':process_row_array:%s:default:at row %i:depth=%i', this.get_name(), arg_row_index, arg_depth )
 		
 		const row_elem = this.build_row(arg_row_array, arg_row_index, 2, arg_depth)
 		if (! row_elem)

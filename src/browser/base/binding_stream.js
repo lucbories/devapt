@@ -139,8 +139,8 @@ export default class BindingStream
 		} else {
 			assert( T.isObject(this._stream) && this._stream.is_stream, context + format(':build:component=%s:bad stream object', this._component.get_name()) )
 		}
-		assert( T.isArray(this._targets) && this._targets.length > 0, context + format(':build:component=%s,timeline=%s:bad targets',  this._component.get_name(), this._source_timeline, this._source_svc_method) )
-		assert( T.isString(this._target_method),  context + format(':build:component=%s,timeline=%s:bad target method=%s',       this._component.get_name(), this._source_timeline, this._target_method) )
+		assert( T.isArray(this._targets) && this._targets.length > 0, context + format(':build:component=%s,timeline=%s:bad targets',            this._component.get_name(), this._source_timeline, this._source_svc_method) )
+		assert( T.isString(this._target_method),                      context + format(':build:component=%s,timeline=%s:bad target method=%s',   this._component.get_name(), this._source_timeline, this._target_method) )
 		
 		const method_cfg = T.isObject(this._options) ? this._options.method  : undefined
 		const operands   = T.isObject(method_cfg)    ? method_cfg.operands   : undefined
