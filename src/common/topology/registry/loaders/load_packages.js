@@ -5,6 +5,7 @@ import _ from 'lodash'
 
 // COMMON IMPORTS
 import T from '../../../utils/types'
+import attr_iter from '../../../utils/attributes_iterator'
 import parser from '../../../utils/parser/parser'
 
 
@@ -289,7 +290,16 @@ function load_package_children(logs, arg_package_name, arg_package_config, arg_c
 				assert(T.isObject(template_resource), error_msg_bad_resource_config + ' for ' + res_name + ' with template ' + template_name)
 				const clone = _.clone(template_resource)
 				res_obj = _.merge(res_obj, clone)
+				const xform_fn = (v)=>{
+					if ( T.isNotEmptyString(v) )
+					{
+						return v.replace('{{devapt-template-id}}', res_name)
+					}
+					return v
+				}
+				res_obj = attr_iter(res_obj, xform_fn)
 				arg_children[res_name] = res_obj
+
 				// console.log(context + ':loading world...packages.' + arg_package_name + ' resource [%s] of collection [%s] from template [%s]:', res_name, type_name, template_name, res_obj)
 			}
 			

@@ -1,10 +1,10 @@
 // NPM IMPORTS
-import T from 'typr'
 // import assert from 'assert'
 // import _ from 'lodash'
 import h from 'virtual-dom/h'
 
 // COMMON IMPORTS
+import T from '../utils/types'
 import rendering_normalize from './rendering_normalize'
 import uid from '../utils/uid'
 
@@ -68,12 +68,13 @@ export default (arg_settings, arg_state={}, arg_rendering_context, arg_rendering
 			// CELL CONTENT IS A VIEW
 			if ( ! T.isString(cell_settings.type) && T.isString(cell_settings.view) )
 			{
-				if ( ! T.isString(cell_settings.key) )
-				{
-					cell_settings.key = cell_settings.view
-				}
+				// if ( ! T.isString(cell_settings.key) )
+				// {
+				// 	cell_settings.key = cell_settings.view
+				// }
 
-				return h(tag, { id:settings.id + '_' + cell_settings.key }, [ cell_fn(cell_settings.view) ] )
+				// return h(tag, { id:settings.id + '_' + cell_settings.key }, [ cell_fn(cell_settings.view) ] )
+				return cell_fn(cell_settings.view)
 			}
 
 			// CELL IS A RENDERING SETTINGS

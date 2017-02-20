@@ -278,6 +278,12 @@ export default class UI extends Loggable
 				}
 				index++
 			}
+
+			if (! f)
+			{
+				console.warn(context + ':get_rendering_function_resolver:resolver:type not found for [%s] in plugins [%s]', arg_type, this._ordered_used_plugins_name.toString())
+			}
+
 			return f
 		}
 	}

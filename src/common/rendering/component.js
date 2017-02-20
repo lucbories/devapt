@@ -1,35 +1,34 @@
 // NPM IMPORTS
+import T from 'typr'
 // import assert from 'assert'
 // import _ from 'lodash'
-// import h from 'virtual-dom/h'
+import h from 'virtual-dom/h'
 
 // COMMON IMPORTS
-// import T from '../utils/types'
 import rendering_normalize from './rendering_normalize'
-import table from './table'
 
 
-let context = 'common/rendering/hbox'
+let context = 'common/rendering/component'
 
 
 
 // DEFAULT STATE
 const default_state = {
-	label:undefined,
-	items:undefined,    // array (rows) of array (cells)
+	label:undefined
 }
 
 // DEFAULT SETTINGS
 const default_settings = {
 	class:undefined,
 	style:undefined,
-	id:undefined
+	id:undefined,
+	attributes:undefined
 }
 
 
 
 /**
- * HBox rendering with given state, produce a rendering result.
+ * Component rendering with given state, produce a rendering result.
  * 
  * @param {object} arg_settings - rendering item settings.
  * @param {object} arg_state - component state.
@@ -41,10 +40,19 @@ const default_settings = {
 export default (arg_settings, arg_state={}, arg_rendering_context, arg_rendering_result)=>{
 	// NORMALIZE ARGS
 	const { settings, state, rendering_context, rendering_result } = rendering_normalize(default_settings, default_state, arg_settings, arg_state, arg_rendering_context, arg_rendering_result, context)
+
+	// GET SETTINGS ATTRIBUTES
 		
 	// GET STATE ATTRIBUTES
-	state.columns = undefined
-	state.footers = undefined
+	const label_value = T.isString(state.label) ? state.label : undefined
 
-	return table(settings, state, rendering_context, rendering_result)
+	// BUILD TAG
+	const tag_id = settings.id
+	const tag_children = label_value
+	const tag_props = { id:tag_id, style:settings.style, className:settings.class, attributes:settings.attributes }
+	const tag = h('div', tag_props, tag_children)
+	
+	rendering_result.add_vtree(tag_id, tag)
+
+	return rendering_result
 }

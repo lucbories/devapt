@@ -20,11 +20,11 @@ window.devapt = function() { return private_devapt }
 // ON DOM LOADED HANDLER
 function dom_loaded_listener(arg_callback, arg_operand)
 {
-	console.log('devapt-bootstrap:dom_loaded_listener')
+	// console.log('devapt-bootstrap:dom_loaded_listener')
 
 	var cb = function()
 	{
-		console.log('devapt-bootstrap:dom_loaded_listener:cb')
+		// console.info('devapt-bootstrap:dom_loaded_listener:cb')
 
 		document.removeEventListener("DOMContentLoaded", cb, false);
 
@@ -42,14 +42,14 @@ function dom_loaded_listener(arg_callback, arg_operand)
 
 private_devapt.on_dom_loaded = function(arg_callback, arg_operand)
 {
-	console.log('devapt-bootstrap:on_dom_loaded')
+	// console.log('devapt-bootstrap:on_dom_loaded')
 
 	if (document.readyState != 'loading')
 	{
-		console.log('devapt-bootstrap:on_dom_loaded:loaded')
+		console.info('devapt-bootstrap:on_dom_loaded:loaded')
 		arg_callback(arg_operand)
 	} else {
-		console.log('devapt-bootstrap:on_dom_loaded:not loaded')
+		console.info('devapt-bootstrap:on_dom_loaded:not loaded')
 
 		// Mozilla, Opera, Webkit, IE9+
 		if (document.addEventListener)
@@ -66,7 +66,7 @@ private_devapt.on_dom_loaded = function(arg_callback, arg_operand)
 // CREATE RUNTIME
 private_devapt.create_runtime = function()
 {
-	console.log('devapt-bootstrap:create_runtime')
+	console.info('devapt-bootstrap:create_runtime')
 	
 	function reducers(prev_state/*, action*/)
 	{
@@ -145,7 +145,7 @@ private_devapt.create_runtime = function()
 
 private_devapt.on_runtime_created = function(arg_callback, arg_operand)
 {
-	console.log('devapt-bootstrap:on_runtime_created')
+	// console.log('devapt-bootstrap:on_runtime_created')
 
 	private_devapt.runtime_created_listeners.push( { callback:arg_callback, operands:arg_operand})
 }
@@ -153,7 +153,7 @@ private_devapt.on_runtime_created = function(arg_callback, arg_operand)
 
 private_devapt.runtime_created = function()
 {
-	console.log('devapt-bootstrap:runtime_created')
+	console.info('devapt-bootstrap:runtime_created')
 
 	private_devapt.runtime_created_listeners.forEach(
 		function(cb_record)
@@ -169,7 +169,7 @@ private_devapt.runtime_created = function()
 // RENDER PAGE CONTENTT
 private_devapt.render_page_content = function(arg_operand)
 {
-	console.log('devapt-bootstrap:render_page_content')
+	console.info('devapt-bootstrap:render_page_content')
 	
 	var json_result = arg_operand ? arg_operand : window.__INITIAL_CONTENT__ 
 	// console.log(json_result, 'js-devapt-init-content')
@@ -188,9 +188,10 @@ private_devapt.render_page_content = function(arg_operand)
 
 
 // ON RUNTIME CREATED HANDLER
-private_devapt.on_content_rendered = function(arg_callback, arg_operand, arg_persistent=false)
+private_devapt.on_content_rendered = function(arg_callback, arg_operand, arg_persistent)
 {
-	console.log('devapt-bootstrap:on_content_rendered')
+	arg_persistent = arg_persistent ? arg_persistent : false
+	// console.log('devapt-bootstrap:on_content_rendered')
 
 	if (arg_persistent)
 	{
@@ -205,7 +206,7 @@ private_devapt.on_content_rendered = function(arg_callback, arg_operand, arg_per
 // ON RUNTIME CREATED HANDLER
 private_devapt.content_rendered = function()
 {
-	console.log('devapt-bootstrap:content_rendered')
+	console.info('devapt-bootstrap:content_rendered')
 
 	private_devapt.content_rendered_listeners.forEach(
 		function(cb_record)
@@ -230,7 +231,7 @@ private_devapt.content_rendered = function()
 // UPDATE ANCHORS WITH COMMANDS ATTRIBUTES
 private_devapt.init_anchors_commands = function()
 {
-	console.log('devapt-bootstrap:init_anchors_commands')
+	console.info('devapt-bootstrap:init_anchors_commands')
 
 	var label = undefined
 	var href = undefined
@@ -269,7 +270,7 @@ private_devapt.init_anchors_commands = function()
 // UPDATE ANCHORS WITH COMMANDS ATTRIBUTES
 private_devapt.init_app_state_save = function()
 {
-	console.log('devapt-bootstrap:init_app_state_save')
+	console.info('devapt-bootstrap:init_app_state_save')
 
 	var runtime = private_devapt.runtime()
 	if (! runtime)
@@ -294,18 +295,18 @@ private_devapt.monitor_asset_loading = function(arg_tag, arg_id, arg_url, arg_el
 	}
 	var promise_cb = function(resolve, reject)
 	{
-		arg_elem.onload = ()=>{
-			console.log('ASSET loaded tag=%s, id=%s, url=%s', arg_tag, arg_id, arg_url)
+		arg_elem.onload = function(){
+			console.info('ASSET loaded tag=%s, id=%s, url=%s', arg_tag, arg_id, arg_url)
 			resolve('ASSET loaded tag=' + arg_tag + ', id=' + arg_id + ', url=' + arg_url)
 		}
 
-		arg_elem.onerror = ()=>{
+		arg_elem.onerror = function(){
 			console.error('ASSET loading error tag=%s, id=%s, url=%s', arg_tag, arg_id, arg_url)
 			reject('ASSET loading error tag=' + arg_tag + ', id=' + arg_id + ', url=' + arg_url)
 		}
 	}
 	private_asset_promises[arg_id] = new Promise(promise_cb)
-	console.log('ASSET init event for tag=%s, id=%s, url=%s', arg_tag, arg_id, arg_url)
+	console.info('ASSET init event for tag=%s, id=%s, url=%s', arg_tag, arg_id, arg_url)
 	return private_asset_promises[arg_id]
 }
 // ASSET PROMISE GETTER
@@ -320,7 +321,7 @@ private_devapt.asset_promise = function(arg_asset_id)
 // INIT SCRIPTS ASSETS MONITORING
 private_devapt.init_scripts_load_events = function()
 {
-	console.log('devapt-bootstrap:init_scripts_load_events')
+	console.info('devapt-bootstrap:init_scripts_load_events')
 
 	var scripts = document.getElementsByTagName('script')
 	var i = 0
@@ -371,6 +372,19 @@ private_devapt.private_ajax.get_json = private_devapt.private_ajax.get_html
 
 window.devapt().init_scripts_load_events()
 window.devapt().on_dom_loaded( window.devapt().create_runtime )
+
+window.devapt().on_content_rendered(
+	function()
+	{
+		var socket = io()
+		window.onbeforeunload = function(/*e*/)
+		{
+			socket.emit('end')
+			socket.disconnect()
+		}
+	}
+)
+
 window.devapt().on_runtime_created( window.devapt().render_page_content )
 window.devapt().on_content_rendered( window.devapt().init_anchors_commands )
 window.devapt().on_content_rendered( window.devapt().init_app_state_save )

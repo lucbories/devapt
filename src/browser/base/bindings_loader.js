@@ -44,11 +44,11 @@ export default class BindingLoader
 	 * @param {RuntimeBase} arg_runtime - client runtime.
 	 * @param {Component} arg_component - component instance.
 	 * @param {array} arg_selectors - selectors strings array.
-	 * @param {array|string} arg_dom_types - selectors strings array or single string (default "dom").
+	 * @param {array|string} arg_dom_types - selected items types strings array or single string (default "dom").
 	 * 
 	 * @returns {array} - objects|strings array.
 	 */
-	static normalize_objects(arg_runtime, arg_component, arg_selectors, arg_dom_types = 'dom')
+	static normalize_objects(arg_runtime, arg_component, arg_selectors, arg_types = 'dom')
 	{
 		arg_component.enter_group('normalize_objects')
 
@@ -70,7 +70,7 @@ export default class BindingLoader
 				// DEBUG
 				// console.log(context + ':normalize_objects:component=%s:binding target dom selector=%s', arg_component.get_name(), dom_selector)
 
-				const object_type = T.isString(arg_dom_types) ? arg_dom_types : ( T.isArray(arg_dom_types) && arg_dom_types.length > index ? arg_dom_types[index] : 'dom')
+				const object_type = T.isString(arg_types) ? arg_types : ( T.isArray(arg_types) && arg_types.length > index ? arg_types[index] : arg_types[arg_types.length - 1])
 
 				if (object_type == 'view')
 				{
@@ -206,7 +206,7 @@ export default class BindingLoader
 		const target_selectors = ('target_selectors' in arg_binding_cfg) ? arg_binding_cfg['target_selectors'] : (target_selector ? [target_selector] : undefined)
 
 		// METHOD
-		const target_method = ('target_method' in arg_binding_cfg) ? arg_binding_cfg['target_method'] : undefined
+		const target_method  = ('target_method' in arg_binding_cfg)  ? arg_binding_cfg['target_method']  : undefined
 		const target_methods = ('target_methods' in arg_binding_cfg) ? arg_binding_cfg['target_methods'] : undefined
 		
 		// NORMALIZE SOURCES
@@ -444,15 +444,16 @@ export default class BindingLoader
 			case 'stream': {
 				assert( T.isObject(source_stream) && source_stream.is_stream, context + format(':load:component=%s:bad source stream', arg_component.get_name()) )
 				assert( T.isArray(targets) && targets.length > 0, context + format(':load:component=%s:bad targets',  arg_component.get_name()) )
-				// assert( T.isString(source_dom_event),  context + format(':load:component=%s:bad source event=%s',     arg_component.get_name(), source_dom_event) )
-				assert( T.isString(target_method),  context + format(':load:component=%s:bad target method=%s',       arg_component.get_name(), target_method) )
+				assert( T.isString(target_method) || T.isNotEmptyArray(target_methods),  context + format(':load:component=%s:bad target method=%s',       arg_component.get_name(), target_method) )
+				
+				console.log(context + ':load:component=%s:target_methods binding type=%s:method_name=%s:method_operands=', arg_component.get_name(), type, target_method, options)
 				
 				return new BindingStream(arg_id, arg_runtime, arg_component)
 					.set_stream(source_stream)
 					.set_state_path(state_path)
 					.set_source_transformation(xform)
 					.set_targets_instances_array(targets)
-					.set_target_method_name(target_method)
+					.set_target_method_name(target_methods ? target_methods : target_method)
 					.set_options(options)
 					.build()
 			}

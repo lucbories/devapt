@@ -1,11 +1,11 @@
 // NPM IMPORTS
 import T from 'typr'
-import assert from 'assert'
+// import assert from 'assert'
 import _ from 'lodash'
 import h from 'virtual-dom/h'
 
 // COMMON IMPORTS
-import RenderingResult from './rendering_result'
+// import RenderingResult from './rendering_result'
 import rendering_normalize from './rendering_normalize'
 
 

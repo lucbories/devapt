@@ -1,7 +1,7 @@
 // NPM IMPORTS
 import T from 'typr'
 import assert from 'assert'
-import _ from 'lodash'
+// import _ from 'lodash'
 
 // COMMON IMPORTS
 import Loggable from '../base/loggable'

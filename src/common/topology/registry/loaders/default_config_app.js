@@ -7,6 +7,8 @@ export const default_config = {
 			'packages':{}
 		}
 	},
+
+	'deployments':{},
 	
 	'security':{
 		'is_readonly':false,

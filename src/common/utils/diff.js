@@ -22,7 +22,8 @@ export const diff = () => {
 			}
 
 			let diff = {}
-			for (var key in obj1)
+			let key = undefined
+			for (key in obj1)
 			{
 				if ( this.isFunction( obj1[key] ) )
 				{
@@ -38,7 +39,7 @@ export const diff = () => {
 				diff[key] = this.map(obj1[key], value2)
 			}
 			
-			for (var key in obj2)
+			for (key in obj2)
 			{
 				if ( this.isFunction(obj2[key]) || ('undefined' != typeof( diff[key] ) ) )
 				{
@@ -66,10 +67,10 @@ export const diff = () => {
 			
 			if ('undefined' == typeof(value2))
 			{
-				return this.VALUE_DELETED;
+				return this.VALUE_DELETED
 			}
 
-			return this.VALUE_UPDATED;
+			return this.VALUE_UPDATED
 		},
 		
 		

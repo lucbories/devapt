@@ -207,8 +207,8 @@ export default class Component extends Dom
 	{
 		this.debug('update:name=' + this.get_name() + ',dom_id=' + this.get_dom_id() )
 
-		var new_elm = document.getElementById(this.get_dom_id())
-		var prev_elm = this.get_dom_element()
+		const new_elm = document.getElementById(this.get_dom_id())
+		const prev_elm = this.get_dom_element()
 		// console.log(prev_elm, context + ':update:prev_elm')
 		// console.log(new_elm,  context + ':update:new_elm')
 
@@ -614,9 +614,9 @@ export default class Component extends Dom
 	 */
 	get_children_component()
 	{
-		if ( ! this._children_component)
+		if ( ! this._children_components)
 		{
-			this._children_component = []
+			this._children_components = []
 
 			// GET APPLICATION STATE AND INIT APPLICATION STATE PATH
 			const ui = window.devapt().ui()
@@ -652,7 +652,7 @@ export default class Component extends Dom
 							const component = window.devapt().ui(item.view)
 							if (component && component.is_component)
 							{
-								this._children_component.push(component)
+								this._children_components.push(component)
 								unique_children[component.get_name()] = true
 								return
 							}
@@ -676,7 +676,7 @@ export default class Component extends Dom
 						const component = window.devapt().ui(item)
 						if (component && component.is_component)
 						{
-							this._children_component.push(component)
+							this._children_components.push(component)
 							unique_children[component.get_name()] = true
 							return
 						}
@@ -691,8 +691,8 @@ export default class Component extends Dom
 		}
 
 		
-		this.debug(':get_children_component:', this._children_component)
-		return this._children_component
+		this.debug(':get_children_component:', this._children_components)
+		return this._children_components
 	}
 
 
@@ -936,4 +936,209 @@ export default class Component extends Dom
 			return
 		}
 	}
+
+
+
+	/**
+	 * Expand component to fullscreen (inside browser window).
+	 * 
+	 * @returns {nothing}
+	 */
+	expand_to_fullscreen()
+	{
+		console.log(context + ':expand_to_fullscreen')
+
+		let dom_elem = this.get_dom_element()
+		const bcolor = 'background-color'
+		const lmargin = 'margin-left'
+
+		if (dom_elem.parentNode && dom_elem.parentNode.className.indexOf('devapt-dock-item') > -1)
+		{
+			dom_elem = dom_elem.parentNode
+		}
+
+		dom_elem.className = dom_elem.className ? dom_elem.className : ''
+
+		if ( dom_elem.className.indexOf('devapt-fullscreen') < 0 )
+		{
+			this.saved_dom = {
+				body_overflow:document.body.style.overflow,
+				className:dom_elem.className,
+				style:{
+					position:dom_elem.style.position,
+					left:    dom_elem.style.left,
+					top:     dom_elem.style.top,
+					height:  dom_elem.style.height,
+					width:   dom_elem.style.width,
+					bcolor:  dom_elem.style[bcolor],
+					lmargin: dom_elem.style[lmargin],
+					zindex:  dom_elem.style['z-index']
+				}
+			}
+
+			document.body.style.overflow = 'hidden'
+
+			dom_elem.style.position   = 'fixed'
+			dom_elem.style.left       = '20px'
+			dom_elem.style.top        = '20px'
+			dom_elem.style.height     = '100%'
+			dom_elem.style.width      = '100%'
+			dom_elem.style[bcolor]    = 'white'
+			dom_elem.style[lmargin]   = '0px'
+			dom_elem.style['z-index'] = 999
+			dom_elem.className       += ' devapt-fullscreen'
+
+			this.resize()
+		}
+	}
+
+
+
+	/**
+	 * Collapse component from fullscreen to original size.
+	 * 
+	 * @returns {nothing}
+	 */
+	collapse_from_fullscreen()
+	{
+		// console.log(context + ':collapse_from_fullscreen')
+
+		let dom_elem = this.get_dom_element()
+		const bcolor = 'background-color'
+		const lmargin = 'margin-left'
+
+		if (dom_elem.parentNode && dom_elem.parentNode.className.indexOf('devapt-dock-item') > -1)
+		{
+			dom_elem = dom_elem.parentNode
+		}
+
+		dom_elem.className = dom_elem.className ? dom_elem.className : ''
+
+		if ( dom_elem.className.indexOf('devapt-fullscreen') > -1 && T.isObject(this.saved_dom) && T.isObject(this.saved_dom.style) )
+		{
+			document.body.style.overflow = this.saved_dom.body_overflow
+
+			dom_elem.style.position   = this.saved_dom.style.position
+			dom_elem.style.left       = this.saved_dom.style.left
+			dom_elem.style.top        = this.saved_dom.style.top
+			dom_elem.style.height     = this.saved_dom.style.height
+			dom_elem.style.width      = this.saved_dom.style.width
+			dom_elem.style[bcolor]    = this.saved_dom.style.bcolor
+			dom_elem.style[lmargin]   = this.saved_dom.style.lmargin
+			dom_elem.style['z-index'] = this.saved_dom.style.zindex
+
+			dom_elem.className = this.saved_dom.className
+
+			this.saved_dom = {}
+
+			this.resize()
+		}
+	}
+
+
+
+	/**
+	 * Toggle component fullscreen mode.
+	 * 
+	 * @returns {nothing}
+	 */
+	toggle_from_fullscreen()
+	{
+		let dom_elem = this.get_dom_element()
+
+		if (dom_elem.parentNode && dom_elem.parentNode.className.indexOf('devapt-dock-item') > -1)
+		{
+			dom_elem = dom_elem.parentNode
+		}
+
+		dom_elem.className = dom_elem.className ? dom_elem.className : ''
+
+		if ( dom_elem.className.indexOf('devapt-fullscreen') > -1 )
+		{
+			this.collapse_from_fullscreen()
+			return
+		}
+
+		this.expand_to_fullscreen()
+	}
+
+
+
+	/**
+	 * Resize component.
+	 * 
+	 * @returns {nothing}
+	 */
+	resize()
+	{
+		this.get_children_component().forEach(
+			(component)=>{
+				this.debug(':resize:component=' + component.get_name())
+				component.resize()
+			}
+		)
+	}
+
+
+	/*
+function resize() {
+    // position the full screen button in the top right
+    var top = 8;
+    var right = (dom.topPanel.clientWidth - dom.results.clientWidth) + 6;
+    dom.fullscreen.style.top = top + 'px';
+    dom.fullscreen.style.right = right + 'px';
+  }
+
+  function toggleFullscreen() {
+    if (fullscreen) {
+      exitFullscreen();
+    }
+    else {
+      showFullscreen()
+    }
+  }
+
+  function showFullscreen() {
+    dom.frame.className = 'cle fullscreen';
+    document.body.style.overflow = 'hidden'; // (works only if body.style.height is defined)
+    fullscreen = true;
+    resize();
+    scrollDown();
+    dom.input.focus();
+  }
+
+  function exitFullscreen() {
+    dom.frame.className = 'cle';
+    document.body.style.overflow = '';
+    fullscreen = false;
+    resize();
+    scrollDown();
+  }
+  if (keynum == 27) { // ESC
+      if (fullscreen) {
+        exitFullscreen();
+        util.preventDefault(event);
+        util.stopPropagation(event);
+      }
+    }
+    else if (event.ctrlKey && keynum == 122) { // Ctrl+F11
+      toggleFullscreen();
+      if (fullscreen) {
+        dom.input.focus();
+      }
+      util.preventDefault(event);
+      util.stopPropagation(event);
+    }
+	/**
+   * Resize event handler
+   *
+  function onWindowResize () {
+    if (dom.frame.parentNode != container) {
+      destroy();
+    }
+
+    resize();
+  }
+
+	*/
 }

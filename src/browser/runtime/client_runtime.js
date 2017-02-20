@@ -156,7 +156,7 @@ export default class ClientRuntime extends RuntimeBase
 					break
 				}
 				const state_str = localStorage.getItem(store_key)
-				console.log('get_app_initial_state:state_str', typeof state_str)
+				// console.log('get_app_initial_state:state_str', typeof state_str)
 				state = T.isString(state_str) ? JSON.parse(state_str) : window_state
 				break
 			}
@@ -168,7 +168,7 @@ export default class ClientRuntime extends RuntimeBase
 					break
 				}
 				const state_str = sessionStorage.getItem(store_key)
-				console.log('get_app_initial_state:state_str', typeof state_str)
+				// console.log('get_app_initial_state:state_str', typeof state_str)
 				state = T.isString(state_str)  ? JSON.parse(state_str) : window_state
 				break
 			}
@@ -367,11 +367,11 @@ export default class ClientRuntime extends RuntimeBase
 
 					const route = display_command.get_route()
 					this.debug('load:add route handler for cmd [' + cmd_name + '] with route:' + route)
-					console.debug(context + ':load:add route handler for cmd [' + cmd_name + '] with route:' + route)
+					// console.debug(context + ':load:add route handler for cmd [' + cmd_name + '] with route:' + route)
 
 					this._router.add_handler(route,
 						()=>{
-							console.debug(context + ':load:execute handler for cmd [' + cmd_name + '] with route:' + route)
+							// console.debug(context + ':load:execute handler for cmd [' + cmd_name + '] with route:' + route)
 							this._ui.pipe_display_command(display_command)
 						}
 					)
@@ -426,7 +426,7 @@ export default class ClientRuntime extends RuntimeBase
 		)
 		
 		this.info('Client Service is created (async):' + arg_svc_name)
-		console.info('Client Service is created (async):' + arg_svc_name)
+		// console.info('Client Service is created (async):' + arg_svc_name)
 	
 		this.leave_group('register_service:async')
 		return this._services_promises[arg_svc_name]
@@ -471,7 +471,7 @@ export default class ClientRuntime extends RuntimeBase
 
 			const svc = this._services[arg_svc_name]
 			
-			console.log(context + ':register_service_self:SERVICE IS ALREADY REGISTERED:svc', svc)
+			// console.log(context + ':register_service_self:SERVICE IS ALREADY REGISTERED:svc', svc)
 			this.debug('register_service:svc promise resolved:' + arg_svc_name)
 			
 			arg_resolve_cb(svc)
@@ -490,7 +490,7 @@ export default class ClientRuntime extends RuntimeBase
 			// TODO CHECK CREDENTIAL FORMAT STRING -> MAP ?
 			arg_svc_settings.credentials = app_credentials
 			
-			console.log(context + ':register_service_self:credentials', arg_svc_settings.credentials = app_credentials)
+			// console.log(context + ':register_service_self:credentials', arg_svc_settings.credentials = app_credentials)
 			
 			assert( T.isObject(arg_svc_settings), context + ':register_service:bad service settings object')
 			
@@ -500,7 +500,7 @@ export default class ClientRuntime extends RuntimeBase
 			}
 			const svc = new Service(arg_svc_name, arg_svc_settings)
 			
-			console.log(context + ':register_service_self:SERVICE FROM GIVEN SETTINGS:svc', svc)
+			// console.log(context + ':register_service_self:SERVICE FROM GIVEN SETTINGS:svc', svc)
 			
 			self._services[arg_svc_name] = svc
 			this.debug('register_service:svc promise resolved:' + arg_svc_name)
@@ -519,7 +519,7 @@ export default class ClientRuntime extends RuntimeBase
 		this.debug('register_service_self:SERVICE FROM SERVER SETTINGS for ' + arg_svc_name)
 		get_settings_stream.onValue(
 			(response) => {
-				console.log(context + ':register_service_self:SERVICE FROM SERVER SETTINGS:response', response)
+				// console.log(context + ':register_service_self:SERVICE FROM SERVER SETTINGS:response', response)
 				
 				arg_svc_settings = response.settings
 				assert( T.isObject(arg_svc_settings), context + ':register_service:bad service settings object')
@@ -666,7 +666,7 @@ export default class ClientRuntime extends RuntimeBase
 			// SET SESSION CREDENTIALS
 			if ( T.isString(arg_action.type) && arg_action.type == 'SET_CREDENTIALS' && T.isObject(arg_action.credentials) )
 			{
-				console.log('reducer:SET_CREDENTIALS', arg_action.credentials)
+				// console.log('reducer:SET_CREDENTIALS', arg_action.credentials)
 				return arg_previous_state.set('credentials', arg_action.credentials)
 			}
 

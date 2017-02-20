@@ -66,8 +66,10 @@ export default class DefaultPlugin extends RenderingPlugin
 			case 'rendering_normalize':
 			case 'renderingresult':
 			case 'rendering_factory':
+				return true
 			
 			// RENDERING FUNCTIONS
+			case 'component':
 			case 'container':
 			case 'button':
 			case 'label':
@@ -89,6 +91,7 @@ export default class DefaultPlugin extends RenderingPlugin
 			case 'hbox':
 			case 'vbox':
 			case 'textarea':
+			case 'dock':
 				return true
 		}
 		
@@ -125,6 +128,9 @@ export default class DefaultPlugin extends RenderingPlugin
 				return DefaultRendering.rendering_factory
 			
 			// RENDERING FUNCTIONS
+			case 'component':
+				return DefaultRendering.component
+			
 			case 'container':
 				return DefaultRendering.container
 
@@ -181,6 +187,9 @@ export default class DefaultPlugin extends RenderingPlugin
 
 			case 'textarea':
 				return DefaultRendering.textarea
+
+			case 'dock':
+				return DefaultRendering.dock
 		}
 
 		return undefined

@@ -210,7 +210,7 @@ export default class RenderingBuilder extends RenderingBuilderAssets
 	render_html_page(arg_title, arg_view, arg_menubar, arg_credentials, arg_assets_services=undefined)
 	{
 		const rendering_result = this.render_page(arg_title, arg_view, arg_menubar, arg_credentials, arg_assets_services)
-		const html = rendering_result.get_final_html('page')
+		const html = '<!DOCTYPE html>' + rendering_result.get_final_html('page')
 		const rendered_html = this._runtime.context.render_credentials_template(html, arg_credentials)
 
 		return rendered_html
@@ -411,6 +411,32 @@ export default class RenderingBuilder extends RenderingBuilderAssets
 		// RUN ON BROWSER SIDE
 		const rendering_result = this._render_content_on_browser(arg_view, arg_menubar, arg_credentials)
 		return rendering_result
+	}
+
+
+	/**
+	 * Get rendering function resolver.
+	 * 
+	 * @returns {Function} - rendering function resolver.
+	 */
+	static get_rendering_function_resolver(arg_credentials)
+	{
+		if ( is_server() )
+		{
+			// GET TOPOLOGY DEFINED APPLICATION
+			const topology_define_app = this.get_topology_defined_application(arg_credentials)
+			assert(topology_define_app, context + ':render_content:bad topology_define_app')
+			
+			// GET SERVER RESOLVER
+			const resolver = RenderingResolverBuilder.from_topology('server resolver from topology', topology_define_app)
+			return resolver
+		}
+
+		// GET BROWSER RESOLVER
+		const res_resolver = window.devapt().ui().get_resource_description_resolver()
+		const rf_resolver  = window.devapt().ui().get_rendering_function_resolver()
+		const rendering_resolver = RenderingResolverBuilder.from_resolvers('browser resolver from ui', res_resolver, rf_resolver)
+		return rendering_resolver
 	}
 
 

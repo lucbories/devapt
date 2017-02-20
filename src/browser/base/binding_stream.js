@@ -1,9 +1,9 @@
 // NPM IMPORTS
-import T from 'typr/lib/typr'
 import assert from 'assert'
 import { format } from 'util'
 
 // COMMON IMPORTS
+import T from '../../common/utils/types'
 import uid from '../../common/utils/uid.js'
 import { transform } from '../../common/utils/transform'
 
@@ -124,7 +124,7 @@ export default class BindingStream
 	 */
 	build()
 	{
-		// console.info(context + ':build:loading binding for component ' + this._component.get_name(), this._stream)
+		console.info(context + ':build:loading binding for component ' + this._component.get_name(), this._target_method, this._stream)
 		
 		this._component.enter_group('build')
 
@@ -140,7 +140,7 @@ export default class BindingStream
 			assert( T.isObject(this._stream) && this._stream.is_stream, context + format(':build:component=%s:bad stream object', this._component.get_name()) )
 		}
 		assert( T.isArray(this._targets) && this._targets.length > 0, context + format(':build:component=%s,timeline=%s:bad targets',            this._component.get_name(), this._source_timeline, this._source_svc_method) )
-		assert( T.isString(this._target_method),                      context + format(':build:component=%s,timeline=%s:bad target method=%s',   this._component.get_name(), this._source_timeline, this._target_method) )
+		assert( T.isString(this._target_method) || T.isNotEmptyArray(this._target_method), context + format(':build:component=%s,timeline=%s:bad target method=%s',   this._component.get_name(), this._source_timeline, this._target_method) )
 		
 		const method_cfg = T.isObject(this._options) ? this._options.method  : undefined
 		const operands   = T.isObject(method_cfg)    ? method_cfg.operands   : undefined
@@ -150,8 +150,29 @@ export default class BindingStream
 		this._targets.forEach(
 			(target, index)=>{
 				const stream = T.isArray(this._stream) ? (this._stream.length > index ? this._stream[index] : this._stream[this._stream.length - 1]) : this._stream
-				const unbind = this.bind_stream(stream, this._source_xform, target, this._target_method, operands, format_cfg, this._starting_value)
-				unsubscribes.push(unbind)
+				
+				let unbind = undefined
+				if ( T.isString(this._target_method) )
+				{
+					// console.info(context + ':build:loading binding for component ' + this._component.get_name() + ' with method=' + this._target_method)
+					
+					unbind = this.bind_stream(stream, this._source_xform, target, this._target_method, operands, format_cfg, this._starting_value)
+					unsubscribes.push(unbind)
+				}
+				else if ( T.isNotEmptyArray(this._target_method) )
+				{
+					this._target_method.forEach(
+						(method_name)=>{
+							if ( T.isString(method_name) )
+							{
+								// console.info(context + ':build:loading binding for component ' + this._component.get_name() + ' with methods=' + method_name)
+								
+								unbind = this.bind_stream(stream, this._source_xform, target, method_name, operands, format_cfg, this._starting_value)
+								unsubscribes.push(unbind)
+							}
+						}
+					)
+				}
 			}
 		)
 
@@ -196,8 +217,8 @@ export default class BindingStream
 	 */
 	bind_stream(arg_stream, arg_values_xform, arg_bound_object, arg_bound_method, arg_method_operands, arg_format_object, arg_starting_value, arg_options)
 	{
-		// console.info(context + ':bind_stream:loading binding for component ' + this._component.get_name(), this._stream, arg_bound_object, this._source_timeline)
-		
+		// console.info(context + ':bind_stream:loading binding for component ' + this._component.get_name(), arg_bound_method, arg_method_operands, this._stream, arg_bound_object, this._source_timeline)
+
 		let unbind_cb = undefined
 
 		// SET TARGET OBJECT
@@ -235,11 +256,11 @@ export default class BindingStream
 		}
 
 		// DEBUG
-		// arg_stream.get_transformed_stream().onValue(
-		// 	(values) => {
-		// 		console.log(context + ':bind_stream:on initial stream:%s:bound method=%s, bound object, values', this._component.get_name(), arg_bound_method, arg_bound_object, values)
-		// 	}
-		// )
+		arg_stream.get_transformed_stream().onValue(
+			(values) => {
+				console.log(context + ':bind_stream:on initial stream:%s:bound method=%s, bound object, values', this._component.get_name(), arg_bound_method, arg_bound_object, values)
+			}
+		)
 
 		// SET FORMATTING FUNCTION
 		let formatting_xform = undefined
@@ -274,7 +295,16 @@ export default class BindingStream
 
 			if (arg_method_operands)
 			{
-				unbind_cb = xform_stream.toProperty().assign(arg_bound_object, arg_bound_method, ...arg_method_operands)
+				if ( T.isArray(arg_method_operands) )
+				{
+					// console.log(context + ':bind_stream:set a stream handler for method=%s with array operands=', arg_bound_method, arg_method_operands)
+					unbind_cb = xform_stream.toProperty().assign(arg_bound_object, arg_bound_method, ...arg_method_operands)
+				}
+				else
+				{ 
+					// console.log(context + ':bind_stream:set a stream handler for method=%s with not array operands=', arg_bound_method, arg_method_operands)
+					unbind_cb = xform_stream.toProperty().assign(arg_bound_object, arg_bound_method, arg_method_operands)
+				}
 			}
 			else
 			{

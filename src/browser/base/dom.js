@@ -83,7 +83,7 @@ export default class Dom extends Stateable
 			this._name = 'component_' + uid()
 		}
 
-		this._is_visible = false
+		this._is_visible = true
 		this._visiblility = undefined
 		
 		this._rendering = new Rendering(this, arg_state.get('dom_id', this._name))
@@ -533,6 +533,27 @@ export default class Dom extends Stateable
 			this._visiblility = dom_elem.style.display == 'none' ? undefined : dom_elem.style.display
 			dom_elem.style.display = 'none'
 			this._is_visible = false
+		}
+	}
+
+
+
+	/**
+	 * Toggle component visbility.
+	 * 
+	 * @returns {nothing}
+	 */
+	toggle()
+	{
+		const dom_elem = this.get_dom_element()
+		if (dom_elem)
+		{
+			if (this._is_visible)
+			{
+				this.hide()
+			} else {
+				this.show()
+			}
 		}
 	}
 }

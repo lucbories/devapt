@@ -92,7 +92,7 @@ export default class InputField extends Component
 
 		switch(arg_stream_name.toLocaleLowerCase()) {
 			case 'enter':{
-				console.log(context + ':get_named_stream:%s:stream found=%s', this.get_name(), arg_stream_name.toLocaleLowerCase())
+				// console.log(context + ':get_named_stream:%s:stream found=%s', this.get_name(), arg_stream_name.toLocaleLowerCase())
 				
 				const stream = new Stream.from_dom_event(dom_elem, 'keydown')
 
@@ -100,7 +100,7 @@ export default class InputField extends Component
 				.debounce(300) // limit the rate of queries
 				.filter( // get text value
 					(event)=>{
-						// console.log(context + ':keydown(enter) stream:value', event.target.value)
+						console.log(context + ':keydown(enter) stream:value', event.target.value)
 						return event.keyCode == 13
 					}
 				)
@@ -110,7 +110,7 @@ export default class InputField extends Component
 				return stream
 			}
 			case 'keydown':{
-				console.log(context + ':get_named_stream:%s:stream found=%s', this.get_name(), arg_stream_name.toLocaleLowerCase())
+				// console.log(context + ':get_named_stream:%s:stream found=%s', this.get_name(), arg_stream_name.toLocaleLowerCase())
 				
 				const stream = new Stream.from_dom_event(dom_elem, 'keydown')
 
@@ -118,7 +118,7 @@ export default class InputField extends Component
 				.debounce(300) // limit the rate of queries
 				.map( // get text value
 					(event)=>{
-						console.log(context + ':keydown stream:value', event.target.value)
+						// console.log(context + ':keydown stream:value', event.target.value)
 						return event.target.value
 					}
 				)

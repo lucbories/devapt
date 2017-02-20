@@ -11,7 +11,7 @@ const vdom_to_json = vdom_as_json.toJson
 const vdom_from_json = vdom_as_json.fromJson
 
 // COMMON IMPORTS
-import {is_browser, is_server} from '../utils/is_browser'
+import {is_browser/*, is_server*/} from '../utils/is_browser'
 import uid from '../utils/uid'
 
 
@@ -45,6 +45,7 @@ export default class RenderingResult
 	 * 
 	 * 		->add_html(arg_tag_id, arg_html):nothing - take Html text and convert it to a virtual tree.
 	 * 		->add_vtree(arg_tag_id, arg_vtree):nothing - add a virtual tree.
+	 * 		->remove_vtree(arg_tag_id):nothing - remove a virtual tree.
 	 * 
 	 * 		->get_vtree_json(arg_tag_id):VTree - get an existing VTree as Json.
 	 * 		->get_vtree(arg_id):VTree - get an existing VTree instance.

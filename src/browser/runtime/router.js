@@ -109,7 +109,7 @@ export default class Router extends RouterState
 		
 		// SETUP HASHER
 		const parseHash = (arg_newHash, arg_oldHash) => {
-			console.log('Hasher parse cb for new [%s] and old [%s]', arg_newHash, arg_oldHash)
+			// console.log('Hasher parse cb for new [%s] and old [%s]', arg_newHash, arg_oldHash)
 
 			// debugger
 
@@ -134,13 +134,13 @@ export default class Router extends RouterState
 	 */
 	add_handler(arg_route, arg_handler)
 	{
-		console.log('Crossroads add route handler for route:', arg_route)
+		// console.log('Crossroads add route handler for route:', arg_route)
 
 		this._router_engine.addRoute(arg_route,
 			(...args) => {
-				var hash = Hasher.getHash()
+				// var hash = Hasher.getHash()
 				
-				console.log('Crossroads route cb with hash [%s] and args:', hash, args)
+				// console.log('Crossroads route cb with hash [%s] and args:', hash, args)
 
 				return arg_handler(args)
 			}

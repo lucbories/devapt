@@ -119,7 +119,7 @@ export default (arg_settings, arg_state={}, arg_rendering_context, arg_rendering
 			const type  = T.isString(item.type)  && item.type.length  > 0 ? item.type  : 'text/css'
 			const media = T.isString(item.media) && item.media.length > 0 ? item.media : 'all'
 
-			return h('script', { id:item.id, type:type, media:media }, item.content)
+			return h('style', { id:item.id, type:type, media:media }, item.content)
 		}
 	}
 

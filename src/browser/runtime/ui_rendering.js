@@ -152,7 +152,7 @@ export default class UIRendering extends Loggable
 		e.setAttribute('id', arg_id)
 		e.setAttribute('src', arg_url)
 		e.setAttribute('type', arg_type)
-		// e.setAttribute('defer', 'true')
+		// e.setAttribute('async', 'false')
 
 		window.devapt().monitor_asset_loading(arg_tag, arg_id, arg_url, e)
 
@@ -250,11 +250,11 @@ export default class UIRendering extends Loggable
 	}
 
 
-	process_rendering_result_styles_tags(arg_dom_element, arg_rendering_result_scripts_tags=[]/*, arg_credentials*/)
+	process_rendering_result_styles_tags(arg_dom_element, arg_rendering_result_styles_tags=[]/*, arg_credentials*/)
 	{
-		this.debug('process_rendering_result_styles_tags:rendering body_styles_tags', arg_rendering_result_scripts_tags)
+		this.debug('process_rendering_result_styles_tags:rendering body_styles_tags', arg_rendering_result_styles_tags)
 		
-		arg_rendering_result_scripts_tags.forEach(
+		arg_rendering_result_styles_tags.forEach(
 			(tag)=>{
 				this.debug('process_rendering_result_styles_tags:loop on tag')
 
@@ -270,9 +270,11 @@ export default class UIRendering extends Loggable
 				}
 
 				e = document.createElement('style')
-				e.text = tag.content
 				e.setAttribute('id', tag.id)
-				e.setAttribute('type', 'text/stylesheet')
+				e.setAttribute('type', 'text/css')
+				e.setAttribute('media', tag.media)
+				e.textContent = tag.content
+
 				arg_dom_element.appendChild(e)
 			}
 		)
