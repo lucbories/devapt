@@ -6,7 +6,7 @@ var buffer = require('vinyl-buffer')
 var gutil = require('gulp-util');
 var browserify = require('browserify')
 
-var DST = 'dist'
+var DST = 'public/assets/build'
 var DST_BROWSER_INDEX = './dist/browser/index.js'
 var DST_BROWSER_BUNDLE = 'devapt-browser.js'
 

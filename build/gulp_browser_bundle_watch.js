@@ -9,7 +9,7 @@ var assign = require('lodash').assign
 var path = require('path')
 
 
-var DST = 'dist'
+var DST = 'public/assets/build'
 var DST_BROWSER_INDEX = './dist/browser/index.js'
 var DST_BROWSER_BUNDLE = 'devapt-browser.js'
 var DST_FILENAME = path.join(__dirname, '../', DST_BROWSER_INDEX)
