@@ -1,15 +1,16 @@
-
+// NPM IMPORTS
 import T from 'typr'
 import assert from 'assert'
 
-// import { store, config } from '../store/index'
-
+// COMMON IMPORTS
 import Instance from './instance'
-import MetricDuration from '../metrics/metric_duration'
-// import MetricHost from '../metrics/metric_host'
+
+// SERVER INSTANCE
+import MetricDuration from '../../server/metrics/metric_duration'
+// import MetricHost from '../../server/metrics/metric_host'
 
 
-let context = 'common/base/transaction'
+const context = 'common/base/transaction'
 
 
 
@@ -324,7 +325,6 @@ export default class Transaction extends Instance
 		
 		const self = this
 		this.metric_duration.before()
-		
 		try
 		{
 			let tx_promise = Promise.resolve(true)
@@ -422,7 +422,7 @@ export default class Transaction extends Instance
 					console.log('executable failure')
 					self.metric_duration.after()
 					
-					console.error('tx failure', reason)
+					console.error(context + ':exception:tx failure', reason)
 					self.rollback()
 					return false
 				}

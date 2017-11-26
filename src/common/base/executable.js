@@ -1,6 +1,5 @@
-
+// COMMON IMPORTS
 import Errorable from './errorable'
-
 
 
 let context = 'common/base/executable'

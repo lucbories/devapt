@@ -1,5 +1,5 @@
-
-import T from 'typr'
+// COMMON IMPORTS
+import T from '../utils/types'
 import uid from '../utils/uid'
 
 
@@ -135,7 +135,8 @@ export default class Logger
 			return args
 		}
 
-		if (T.isArray(args) && args.length > 0)
+		// console.log('Logger.format:args', typeof args, args)
+		if (args.length && args.length > 0)
 		{
 			let str = ''
 
@@ -181,17 +182,17 @@ export default class Logger
 	/**
 	 * Trace DEBUG formatted message.
 	 * 
-	 * @param {string|array} arg_msg - variadic messages to format.
+	 * @param {string|array} arg_opds - variadic messages to format.
 	 * 
 	 * @returns {nothing}
 	 */
-	debug(...arg_msg)
+	debug(arg_opds)
 	{
 		if (this.is_trace_enabled && this.is_trace_enabled_debug)
 		{
 			if ( T.isFunction(this.debug_self) )
 			{
-				this.debug_self( Logger.format(arg_msg) )
+				this.debug_self(arg_opds)
 			}
 		}
 	}
@@ -201,17 +202,17 @@ export default class Logger
 	/**
 	 * Trace INFO formatted message.
 	 * 
-	 * @param {string|array} arg_msg - variadic messages to format.
+	 * @param {string|array} arg_opds - variadic messages to format.
 	 * 
 	 * @returns {nothing}
 	 */
-	info(...arg_msg)
+	info(arg_opds)
 	{
 		if (this.is_trace_enabled && this.is_trace_enabled_info)
 		{
 			if ( T.isFunction(this.info_self) )
 			{
-				this.info_self( Logger.format(arg_msg) )
+				this.info_self(arg_opds)
 			}
 		}
 	}
@@ -221,17 +222,17 @@ export default class Logger
 	/**
 	 * Trace WARN formatted message.
 	 * 
-	 * @param {string|array} arg_msg - variadic messages to format.
+	 * @param {string|array} arg_opds - variadic messages to format.
 	 * 
 	 * @returns {nothing}
 	 */
-	warn(...arg_msg)
+	warn(arg_opds)
 	{
 		if (this.is_trace_enabled && this.is_trace_enabled_warn)
 		{
 			if ( T.isFunction(this.warn_self) )
 			{
-				this.warn_self( Logger.format(arg_msg) )
+				this.warn_self(arg_opds)
 			}
 		}
 	}
@@ -241,17 +242,17 @@ export default class Logger
 	/**
 	 * Trace ERROR formatted message.
 	 * 
-	 * @param {string|array} arg_msg - variadic messages to format.
+	 * @param {string|array} arg_opds - variadic messages to format.
 	 * 
 	 * @returns {nothing}
 	 */
-	error(...arg_msg)
+	error(arg_opds)
 	{
 		if (this.is_trace_enabled && this.is_trace_enabled_error)
 		{
 			if ( T.isFunction(this.error_self) )
 			{
-				this.error_self( Logger.format(arg_msg) )
+				this.error_self(arg_opds)
 			}
 		}
 	}

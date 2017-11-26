@@ -1,0 +1,178 @@
+{
+	"nodes":{
+		"NodeA":{
+			"host":"localhost",
+			"is_master":true,
+			"servers":{
+				"NodeALocal8080":{
+					"type":"express",
+					"port":8080,
+					"protocole":"http",
+					"middlewares":[],
+					"use_socketio":true,
+					
+					"security": {
+						"authentication": {
+							"enabled":false,
+							"plugins":["file_users"]
+						}
+					}
+				}
+			}
+		}
+	},
+	
+	"tenants":{
+		"TenantA":{
+		},
+		"TenantB":{
+			"applications":{
+				"ApplicationA":{
+					"url":"devtools",
+					
+					"provided_services":{
+						"devtools_store": { "servers":["NodeALocal8080"] },
+						"devtools_panel": { "servers":["NodeALocal8080"] },
+						"metrics_http": { "servers":["NodeALocal8080"] },
+						"metrics_host": { "servers":["NodeALocal8080"] },
+						"metrics_nodejs": { "servers":["NodeALocal8080"] },
+						"metrics_bus": { "servers":["NodeALocal8080"] },
+						"topology": { "servers":["NodeALocal8080"] },
+						"logs": { "servers":["NodeALocal8080"] },
+						"messages": { "servers":["NodeALocal8080"] }
+					},
+
+					"used_services":["common_assets"],
+					
+					"used_packages": ["PackageA"],
+					"used_plugins":["foundation6"],
+
+					"license":"APACHE-LICENSE-2.0"
+				}
+			},
+
+			"packages":{
+				"PackageA":{
+					"base_dir":"../devtools",
+					"resources":[
+						"ui_menubars.json",
+						"ui_messages.json",
+						"ui_logs.json",
+						"ui_metrics.json",
+						"ui_topology.json",
+						"ui_runtime.json"
+					],
+					"templates":[],
+					"includes":[]
+				}
+			},
+			
+			"security":{}
+		}
+	},
+
+	"security":{
+		"is_readonly":false,
+		
+		"connexions":{},
+		
+		"authentication": {
+			"enabled":false,
+			
+			"plugins":{
+				"token123": {
+					"mode":"token",
+					"expiration":60,
+					"secret":"APPPPPPP449++((éç(à"
+				},
+				
+				"file_users": {
+					"mode":"jsonfile",
+					"file_name":"users.json",
+					"username_fieldname":"login",
+					"password_fieldname":"password"
+				}
+			},
+			
+			"default_plugins": ["file_users"]
+		},
+		
+		"authorization": {
+			"enabled":false,
+			"mode":"database",
+			
+			"model":"MODEL_AUTH_USERS_ROLES",
+			"role":"label",
+			"username":"users_login",
+			
+			"alt": {
+				"mode":"jsonfile",
+				"file":"users.json"
+			},
+			
+			"roles":{
+				"*": {
+					"list_resources":"ROLE_RESOURCES_LIST",
+					"get_resource":"ROLE_RESOURCE_GET"
+				},
+				"views": {
+					"list_resources":"ROLE_RESOURCES_LIST",
+					"get_resource":"ROLE_RESOURCE_GET"
+				}
+			}
+		}
+	},
+
+	"plugins":{
+		"rendering":[
+			{
+				"name":"Devtools",
+				"file":"js/devtools_rendering_plugin"
+			},
+			{
+				"name":"Cytoscape",
+				"package":"devapt-features-cytoscape"
+			},
+			{
+				"name":"Foundation6",
+				"package":"devapt-features-foundation6"
+			},
+			{
+				"name":"Sparklines",
+				"package":"devapt-features-sparklines"
+			}
+		]
+	},
+	
+	"loggers":{
+		"winston":{
+			"transports":{
+				"file_1":{
+					"type":"file",
+					"level": "debug",
+					"filename": "./tmp/debug_by_json.log",
+					"maxsize":100000,
+					"maxFiles":2
+				},
+				"console_1":{
+					"type":"console",
+					"level":"debug"
+				}
+			}
+		}
+	},
+	
+	"traces":{
+		"modules":{
+			".*":false
+		},
+		
+		"classes":{
+			".*":false
+		},
+		
+		"instances":{
+			".*":false
+		}
+	}
+}

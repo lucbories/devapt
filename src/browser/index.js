@@ -1,6 +1,14 @@
 
-import runtime from './client_runtime'
+// COMMON IMPORTS
+import T from '../common/utils/types'
+// import es5 from '../common/utils/es5-compat'
+import runtime from './runtime/client_runtime'
+import DefaultRenderingPlugin from '../common/default_plugins/rendering_default_plugin'
+import RenderingPlugin        from '../common/plugins/rendering_plugin'
 
+// BROWSER IMPORTS
+import Component        from '../browser/base/component'
+import Container        from '../browser/base/container'
 
 
 /**
@@ -11,4 +19,4 @@ import runtime from './client_runtime'
  * @auhtor Luc BORIES
  */
 
-export default { runtime }
+export default { T, runtime, Component, Container, RenderingPlugin, DefaultRenderingPlugin }

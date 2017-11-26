@@ -1,9 +1,11 @@
-
+// NPM IMPORTS
 import T from 'typr'
 import assert from 'assert'
 
-import Stream from './stream'
+// COMMON IMPORTS
 import Instance from '../base/instance'
+import Stream from './stream'
+
 
 let context = 'common/messaging/bus'
 

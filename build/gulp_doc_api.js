@@ -2,7 +2,7 @@
 'use strict'
 
 
-var jsdoc = require('gulp-jsdoc3')
+// var jsdoc = require('gulp-jsdoc3')
 
 
 var SRC_BROWSER  = 'src/browser/**/*.js'
@@ -44,16 +44,14 @@ const jsconfig = {
 /*
 	GENERATE DOCS API
 */
-module.exports = function (gulp/*, plugins*/)
+module.exports = function (gulp, plugins, arg_task_name)
 {
-	return function (arg_task_name)
-	{
-		gulp.task(arg_task_name,
-			function(cb)
-			{
-				gulp.src([SRC_COMMON, SRC_BROWSER, SRC_SERVER])
-					.pipe( jsdoc(jsconfig, cb) )
-			}
-		)
-	}
+	// console.log('defining task [%s]', arg_task_name)
+	gulp.task(arg_task_name,
+		function(done)
+		{
+			return gulp.src([SRC_COMMON, SRC_BROWSER, SRC_SERVER])
+				.pipe( plugins.jsdoc(jsconfig, done) )
+		}
+	)
 }

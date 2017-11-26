@@ -1,12 +1,12 @@
-
+// NPM IMPORTS
 import T from 'typr'
 import assert from 'assert'
 
+// COMMON IMPORTS
 import Plugin from './plugin'
-import runtime from '../base/runtime'
 
 
-const context = 'common/rendering/plugins/rendering_plugin'
+const context = 'common/plugins/features_plugin'
 
 
 
@@ -20,16 +20,19 @@ export default class FeaturesPlugin extends Plugin
     /**
      * Create a Featured Plugin instance.
 	 * @extends Instance
-	 * @param {PluginsManager} arg_manager - plugins manager
-	 * @param {string} arg_name - plugin name
-	 * @param {string} arg_class - plugin class name
-	 * @param {object} arg_settings - plugin settings map
+	 * 
+	 * @param {RuntimeBase} arg_runtime - runtime instance.
+	 * @param {PluginsManager} arg_manager - plugins manager.
+	 * @param {string} arg_name - plugin name.
+	 * @param {string} arg_class - plugin class name.
+	 * @param {object} arg_settings - plugin settings map.
 	 * @param {string|undefined} arg_log_context - optional.
+	 * 
 	 * @returns {nothing}
      */
-	constructor(arg_manager, arg_name, arg_class, arg_settings, arg_log_context)
+	constructor(arg_runtime, arg_manager, arg_name, arg_class, arg_settings, arg_log_context)
 	{
-		super(arg_manager, arg_name, arg_class, arg_settings, arg_log_context ? arg_log_context : context)
+		super(arg_runtime, arg_manager, arg_name, arg_class, arg_settings, arg_log_context ? arg_log_context : context)
 		
 		this.is_features_plugin = true
 	}
@@ -61,17 +64,20 @@ export default class FeaturesPlugin extends Plugin
 			return new feature_class(arg_name, arg_settings, arg_state)
 		}
 		
-		assert(false, context + ':not yet implemented')
+		assert(false, context + ':create:not yet implemented')
 		
 		return undefined
 	}
+
 	
     
 	/**
      * Get a feature class.
 	 * @abstract
 	 * @static
+	 * 
      * @param {string} arg_class_name - feature class name.
+	 * 
      * @returns {object} feature class.
      */
 	static get_class(arg_class_name)
@@ -84,41 +90,50 @@ export default class FeaturesPlugin extends Plugin
 	}
 	
     
+
 	/**
      * Get a feature class.
 	 * @abstract
+	 * 
      * @param {string} arg_class_name - feature class name.
+	 * 
      * @returns {object} feature class.
      */
 	get_feature_class(arg_class_name)
 	{
-		assert( T.isString(arg_class_name), context + ':get_class:bad class string')
+		assert( T.isString(arg_class_name), context + ':get_feature_class:bad class string')
 		
-		assert(false, context + ':get_class:not yet implemented')
+		assert(false, context + ':get_feature_class:not yet implemented')
 		
 		return false
 	}
 	
     
+
 	/**
      * Test if a feature class is known into self contained plugins.
 	 * @abstract
+	 * 
      * @param {string} arg_class_name - feature class name.
+	 * 
      * @returns {boolean} feature class found or not.
      */
 	has(arg_class_name)
 	{
 		assert( T.isString(arg_class_name), context + ':bad class string')
 		
-		assert(false, context + ':not yet implemented')
+		assert(false, context + ':has:not yet implemented')
 		
 		return false
 	}
+
 	
 	
 	/**
 	 * Load a feature class from a script file.
+	 * 
 	 * @param {string} arg_path - path file name
+	 * 
 	 * @returns {object|undefined} - class object
 	 */
 	load_feature_class(arg_path)
@@ -127,7 +142,7 @@ export default class FeaturesPlugin extends Plugin
 		
 		try
 		{
-			const file_path_name = runtime.context.get_absolute_plugin_path(arg_path)
+			const file_path_name = this._runtime.context.get_absolute_plugin_path(arg_path)
 			// console.info('loading plugin at [' + arg_path + '] at [' + file_path_name + ']')
 			
 			const required = require(file_path_name)

@@ -1,17 +1,21 @@
-
+// NPM IMPORTS
 import T from 'typr'
 import assert from 'assert'
 
-import runtime from '../base/runtime'
+// COMMON IMPORTS
 import Instance from '../base/instance'
 import DistributedMessage from '../base/distributed_message'
 import DistributedMetrics from '../base/distributed_metrics'
 import DistributedLogs from '../base/distributed_logs'
-
+import {is_browser, is_server} from '../utils/is_browser'
 
 
 const context = 'common/base/distributed_instance'
 
+
+
+const server_runtime_file = '../../server/base/runtime'
+const browser_runtime_file = 'see window.devapt().runtime()'
 
 
 /**
@@ -86,9 +90,25 @@ export default class DistributedInstance extends Instance
 
 		super.load()
 
-		this.msg_bus = runtime.node.get_msg_bus()
-		this.metrics_bus = runtime.node.get_metrics_bus()
-		this.logs_bus = runtime.node.get_logs_bus()
+		
+		if (! this.is_client_runtime)
+		{
+			let runtime = undefined
+			
+			if (is_server())
+			{
+				runtime = require(server_runtime_file).default
+			}
+
+			if (is_browser())
+			{
+				runtime = window.devapt().runtime()
+			}
+
+			this.msg_bus = runtime.node.get_msg_bus()
+			this.metrics_bus = runtime.node.get_metrics_bus()
+			this.logs_bus = runtime.node.get_logs_bus()
+		}
 
 		// console.log(context + ':load:name=%s this.metrics_bus', this.get_name(), this.metrics_bus.get_name())
 	}

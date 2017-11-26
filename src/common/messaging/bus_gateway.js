@@ -1,8 +1,9 @@
-
+// NPM IMPORTS
 import T from 'typr'
 import assert from 'assert'
 
-import Instance from '../base/instance'
+// COMMON IMPORTS
+import Instance from '..//base/instance'
 import DistributedMessage from '../base/distributed_message'
 import DistributedMetrics from '../base/distributed_metrics'
 import DistributedLogs from '../base/distributed_logs'

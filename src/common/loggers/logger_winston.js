@@ -11,10 +11,10 @@ import Logger from './logger'
 
 const customLevels = {
 	levels: {
-		debug: 0,
-		info: 1,
-		warn: 2,
-		error: 3
+		debug: 3,
+		info: 2,
+		warn: 1,
+		error: 0
 	},
 	colors: {
 		debug: 'blue',
@@ -43,7 +43,7 @@ export default class LoggerWinston extends Logger
 		super(arg_enabled)
 		
 		this.is_logger_winston = true
-		
+
 		let transports = []
 		
 		// console.log(arg_settings, context + ':' + arg_settings)
@@ -67,12 +67,12 @@ export default class LoggerWinston extends Logger
 							case 'file': {
 								const transport = this.create_file_transport(transport_cfg)
 								transports.push(transport)
-								break;
+								break
 							}
 							case 'console': {
 								const transport = this.create_console_transport(transport_cfg)
 								transports.push(transport)
-								break;
+								break
 							}
 						}
 					}
@@ -91,6 +91,7 @@ export default class LoggerWinston extends Logger
 		
 		const logger_cfg = {
 			levels: customLevels.levels,
+			colors: customLevels.colors,
 			transports: transports
 		}
 		
@@ -109,7 +110,7 @@ export default class LoggerWinston extends Logger
 	create_console_transport(arg_transport_cfg)
 	{
 		arg_transport_cfg = T.isObject(arg_transport_cfg) ? arg_transport_cfg : {}
-		
+
 		// DEFAULT CONFIGURATION
 		const default_transport_cfg = {
 			level:'debug',
@@ -212,44 +213,52 @@ export default class LoggerWinston extends Logger
 	
 	/**
 	 * Logger DEBUG implementation.
-	 * @param {string} arg_msg - message string.
+	 * 
+	 * @param {array} arg_opds - log record array.
+	 * 
 	 * @returns {nothing}
 	 */
-	debug_self(arg_msg)
+	debug_self(arg_opds)
 	{
-		this.logger.log('debug', arg_msg)
+		this.logger.log('debug', arg_opds)
 	}
 	
 	
 	/**
 	 * Logger INFO implementation.
-	 * @param {string} arg_msg - message string.
+	 * 
+	 * @param {array} arg_opds - log record array.
+	 * 
 	 * @returns {nothing}
 	 */
-	info_self(arg_msg)
+	info_self(arg_opds)
 	{
-		this.logger.log('info', arg_msg)
+		this.logger.log('info', arg_opds)
 	}
 	
 	
 	/**
 	 * Logger WARN implementation.
-	 * @param {string} arg_msg - message string.
+	 * 
+	 * @param {array} arg_opds - log record array.
+	 * 
 	 * @returns {nothing}
 	 */
-	warn_self(arg_msg)
+	warn_self(arg_opds)
 	{
-		this.logger.log('warn', arg_msg)
+		this.logger.log('warn', arg_opds)
 	}
 	
 	
 	/**
 	 * Logger ERROR implementation.
-	 * @param {string} arg_msg - message string.
+	 * 
+	 * @param {array} arg_opds - log record array.
+	 * 
 	 * @returns {nothing}
 	 */
-	error_self(arg_msg)
+	error_self(arg_opds)
 	{
-		this.logger.log('error', arg_msg)
+		this.logger.log('error', arg_opds)
 	}
 }

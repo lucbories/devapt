@@ -1,7 +1,8 @@
-
+// NPM IMPORTS
 import T from 'typr'
 import assert from 'assert'
 
+// COMMON IMPORTS
 import FeaturesPlugin from './features_plugin'
 
 
@@ -19,14 +20,16 @@ export default class RenderingPlugin extends FeaturesPlugin
     /**
      * Create a rendering Plugin instance.
 	 * @extends Instance
-	 * @param {PluginsManager} arg_manager - plugins manager
-	 * @param {string} arg_name - plugin name
+	 * 
+	 * @param {RuntimeBase} arg_runtime - runtime instance.
+	 * @param {PluginsManager} arg_manager - plugins manager.
+	 * @param {string} arg_name - plugin name.
 	 * @param {string} arg_version - plugin version.
 	 * @returns {nothing}
      */
-	constructor(arg_manager, arg_name, arg_version)
+	constructor(arg_runtime, arg_manager, arg_name, arg_version)
 	{
-		super(arg_manager, arg_name, 'RenderingPlugin', { version: arg_version }, context)
+		super(arg_runtime, arg_manager, arg_name, 'RenderingPlugin', { version: arg_version }, context)
 		
 		this.is_rendering_plugin = true
 		
@@ -41,6 +44,7 @@ export default class RenderingPlugin extends FeaturesPlugin
 			html:{}
 		}
 	}
+
 	
     
 	/**
@@ -51,9 +55,9 @@ export default class RenderingPlugin extends FeaturesPlugin
      */
 	get_feature_class(arg_class_name)
 	{
-		assert( T.isString(arg_class_name), context + ':get_class:bad class string')
+		assert( T.isString(arg_class_name), context + ':get_feature_class:bad class string')
 		
-		assert(false, context + ':get_class:not yet implemented')
+		assert(false, context + ':get_feature_class:not yet implemented')
 		
 		return undefined
 	}
@@ -161,5 +165,19 @@ export default class RenderingPlugin extends FeaturesPlugin
 			}
 		}
 		return null
+	}
+
+
+
+	/**
+	 * Find a rendering function.
+	 * 
+	 * @param {string} arg_type - rendering item type.
+	 * 
+	 * @returns {Function} - rendering function.
+	 */
+	static find_rendering_function(arg_type)
+	{
+		return undefined
 	}
 }

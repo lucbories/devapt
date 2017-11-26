@@ -5,7 +5,8 @@
 .settings
 .project
 .buildpath
-npm-debug.log
+npm-debug.log*
+*.ep
 
 jsconfig.json
 .vscode/launch.json

@@ -1,9 +1,9 @@
-
+// NPM IMPORTS
 import T from 'typr'
 import assert from 'assert'
-
 import Simplebus from 'simplebus'
 
+// COMMON IMPORTS
 import Stream from './stream'
 import BusGateway from './bus_gateway'
 

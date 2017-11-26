@@ -1,9 +1,7 @@
-import {describe, it} from 'mocha';
-import {expect} from 'chai';
-import {List, Map} from 'immutable';
+import {describe, it} from 'mocha'
+import {expect} from 'chai'
 import T from 'typr'
 
-import { store, config, runtime } from '../store/index'
 import Collection from '../base/collection'
 import Resource from '../base/resource'
 

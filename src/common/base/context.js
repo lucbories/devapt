@@ -1,11 +1,20 @@
-
+// NPM IMPORTS
 import T from 'typr'
 import assert from 'assert'
 import fs from 'fs'
 import path from 'path'
 import mustache from 'mustache'
-import forge from 'node-forge'
 
+// COMMON IMPORTS
+import {is_browser} from '../utils/is_browser'
+
+let  forge = undefined
+if ( is_browser() )
+{
+	forge = require('forge-browser').forge
+} else {
+	forge = require('node-forge')
+}
 
 let context = 'common/base/context'
 
@@ -25,7 +34,7 @@ export default class Context
      */
 	constructor(arg_runtime)
 	{
-		assert( T.isObject(arg_runtime) && arg_runtime.is_runtime, context + ':bad runtime object')
+		assert( T.isObject(arg_runtime) && arg_runtime.is_server_runtime, context + ':bad runtime object')
 		this.is_context = true
 		this.$runtime = arg_runtime
 	}
@@ -231,34 +240,19 @@ export default class Context
     /**
      * Get credentials string.
 	 * 
-     * @param {object} arg_request - request object.
+     * @param {object} arg_credentials - Credetials object.
 	 * 
      * @returns {string} credentials string.
      */
-	get_credentials_string(arg_request)
+	get_credentials_string(arg_credentials)
 	{
-		// logs.debug('get_credentials_string')
-
-		// TODO: credentials
-		const auth_mgr = this.$runtime ? this.$runtime.security().authentication() : null
-		if (! auth_mgr)
-		{
-			return undefined
-		}
-		
-		if ( ! arg_request )
-		{
-			return undefined
-		}
-		
-		const credentials = auth_mgr.get_credentials(arg_request)
-		if (! credentials)
+		if (! arg_credentials)
 		{
 			return ''
 		}
 		
 		// TODO: use security token
-		return 'username=' + credentials.username + '&password=' + credentials.password
+		return 'username=' + arg_credentials.get_user() + '&password=' + arg_credentials.get_pass_digest() + '&token=' + arg_credentials.get_token()
 	}
 	
 	
@@ -296,15 +290,17 @@ export default class Context
      * Render credentials template.
 	 * 
      * @param {string} arg_html - template html string.
-     * @param {object} arg_request - request object.
+     * @param {Request|Credentials} arg_request_or_credentials - request object.
 	 * 
      * @returns {string} rendered template.
      */
-	render_credentials_template(arg_html, arg_request)
+	render_credentials_template(arg_html, arg_request_or_credentials)
 	{
-		let credentials_str = this.get_credentials_string(arg_request)
-		let credentials_url = this.get_credentials_string(arg_request)
-		let credentials_obj = this.get_credentials(arg_request)
+		assert( T.isObject(arg_request_or_credentials), context + ':render_credentials_template:bad arg_request_or_credentials object')
+
+		let credentials_obj = arg_request_or_credentials.is_credentials ? arg_request_or_credentials : this.get_credentials(arg_request_or_credentials)
+		let credentials_str = this.get_credentials_string(credentials_obj)
+		let credentials_url = this.get_credentials_string(credentials_obj)
 		// console.log(credentials_str, 'credentials_str')
 		
 		
@@ -320,16 +316,22 @@ export default class Context
 		{
 			const base64_encoded = forge.util.encode64(credentials_obj.username + ':' + credentials_obj.password)
 
-			const credentials_datas = {
-				credentials_str:credentials_str,
-				credentials_url:credentials_url,
-				credentials_username:credentials_obj.username,
-				credentials_password:credentials_obj.password,
-				credentials_token:credentials_obj.token,
-				credentials_expire:credentials_obj.expire,
-				credentials_basic_base64:base64_encoded
-				// credentials_obj: `{ \"username\":\"${credentials_obj.username}\", "password":"${credentials_obj.password}" }`
-			}
+			const credentials_datas = credentials_obj.get_credentials_for_template()
+			credentials_datas.credentials_str = credentials_str
+			credentials_datas.credentials_url = credentials_url
+			credentials_datas.credentials_basic_base64 = base64_encoded
+			credentials_datas.url = '{{url}}'
+
+			// 	credentials_token:credentials_obj.token,
+			// 	credentials_user_name:credentials_obj.username,
+			// 	credentials_pass_digest:credentials_obj.password,
+				
+			// 	credentials_login:credentials_obj.ts_login,
+			// 	credentials_expire:credentials_obj.expire,
+
+			// 	credentials_basic_base64:base64_encoded
+			// 	// credentials_obj: `{ \"username\":\"${credentials_obj.username}\", "password":"${credentials_obj.password}" }`
+			// }
 			return mustache.render(arg_html, credentials_datas)
 		}
 		

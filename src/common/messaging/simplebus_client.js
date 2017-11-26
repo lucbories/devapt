@@ -1,8 +1,9 @@
-
+// NPM IMPORTS
 import T from 'typr'
 import assert from 'assert'
 import Simplebus from 'simplebus'
 
+// COMMON IMPORTS
 import Stream from './stream'
 import BusGateway from './bus_gateway'
 
@@ -13,12 +14,12 @@ let context = 'common/messaging/simplebus_client'
 
 
 /**
- * @file Base class for message bus client.
+ * @file QueueLib messages bus client.
  * 
  * @author Luc BORIES
  * @license Apache-2.0
  */
-export default class SimpleBusClient extends BusGateway
+export default class QueueLibBusClient extends BusGateway
 {
 	/**
 	 * Create a bus client.
@@ -31,7 +32,7 @@ export default class SimpleBusClient extends BusGateway
 	 */
 	constructor(arg_name, arg_log_context, arg_logger_manager)
 	{
-		super('SimpleBusClient', arg_name, arg_log_context, arg_logger_manager)
+		super('QueueLibClient', arg_name, arg_log_context, arg_logger_manager)
 		
 		this.is_simplebus_client = true
 		this.simplebus_client = undefined

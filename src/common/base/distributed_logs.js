@@ -1,7 +1,8 @@
-
+// NPM IMPORTS
 import T from 'typr'
 import assert from 'assert'
 
+// COMMON IMPORTS
 import DistributedMessage from './distributed_message'
 
 
@@ -33,7 +34,7 @@ export default class DistributedLogs extends DistributedMessage
 		assert( T.isString(arg_level) , context + ':bad log level string')
 		assert( T.isArray(arg_values), context + ':bad logs values array')
 
-		super(arg_sender_name, arg_target_name, { ts:arg_timestamp, level:arg_level, logs:arg_values })
+		super(arg_sender_name, arg_target_name, { ts:arg_timestamp, level:arg_level, source:'SERVER', logs:arg_values })
 
 		this.is_distributed_logs = true
 	}
@@ -60,6 +61,18 @@ export default class DistributedLogs extends DistributedMessage
 	get_logs_level()
 	{
 		return this.payload.level
+	}
+    
+    
+
+	/**
+	 * Get logs source.
+	 * 
+	 * @returns {string} - logs source.
+	 */
+	get_logs_source()
+	{
+		return this.payload.source
 	}
     
     
