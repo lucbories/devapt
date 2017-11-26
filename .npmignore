@@ -9,7 +9,3 @@ tmp/
 .gitignore
 gulpfile.js
 json.config
-run_master.js
-run_nodeB.js
-start_master.js
-start_nodeB.js
